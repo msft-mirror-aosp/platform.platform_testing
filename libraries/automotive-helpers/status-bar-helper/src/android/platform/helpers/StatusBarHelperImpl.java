@@ -217,7 +217,7 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
                 getUiElementFromConfig(
                         AutomotiveConfigConstants.BLUETOOTH_CONNECTED_DISCONNECTED_TEXT);
         UiObject2 btconnectedDisconnectedText =
-                getSpectatioUiUtil().findUiObject(btconnectedDisconnectedTextSelector);
+                getSpectatioUiUtil().waitForUiObject(btconnectedDisconnectedTextSelector);
         getSpectatioUiUtil()
                 .validateUiObject(
                         btconnectedDisconnectedText,
@@ -340,7 +340,7 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
         BySelector disabledPhoneProfileNameSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.DISABLED_PHONE_PROFILE);
         UiObject2 disabledPhoneProfile =
-                getSpectatioUiUtil().findUiObject(disabledPhoneProfileNameSelector);
+                getSpectatioUiUtil().waitForUiObject(disabledPhoneProfileNameSelector);
         getSpectatioUiUtil()
                 .validateUiObject(
                         disabledPhoneProfile, AutomotiveConfigConstants.DISABLED_PHONE_PROFILE);
@@ -353,7 +353,7 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
         BySelector disabledMediaProfileNameSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.DISABLED_MEDIA_PROFILE);
         UiObject2 disabledMediaProfile =
-                getSpectatioUiUtil().findUiObject(disabledMediaProfileNameSelector);
+                getSpectatioUiUtil().waitForUiObject(disabledMediaProfileNameSelector);
         getSpectatioUiUtil()
                 .validateUiObject(
                         disabledMediaProfile, AutomotiveConfigConstants.DISABLED_MEDIA_PROFILE);
@@ -394,7 +394,7 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
         BySelector bluetoothConnectedSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.BT_CONNECTED_STATUS);
         UiObject2 bluetoothConnected =
-                getSpectatioUiUtil().findUiObject(bluetoothConnectedSelector);
+                getSpectatioUiUtil().waitForUiObject(bluetoothConnectedSelector);
         getSpectatioUiUtil()
                 .validateUiObject(
                         bluetoothConnected, AutomotiveConfigConstants.BT_CONNECTED_STATUS);
@@ -479,7 +479,7 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
         BySelector bluetoothDisconnectedSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.BT_DISCONNECTED_STATUS);
         UiObject2 bluetoothDisconnected =
-                getSpectatioUiUtil().findUiObject(bluetoothDisconnectedSelector);
+                getSpectatioUiUtil().waitForUiObject(bluetoothDisconnectedSelector);
         getSpectatioUiUtil()
                 .validateUiObject(
                         bluetoothDisconnected, AutomotiveConfigConstants.BT_DISCONNECTED_STATUS);
@@ -491,7 +491,7 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
         BySelector bluetoothPaletteMediaButtonSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_BUTTON);
         UiObject2 bluetoothPaletteMediaButton =
-                getSpectatioUiUtil().findUiObject(bluetoothPaletteMediaButtonSelector);
+                getSpectatioUiUtil().waitForUiObject(bluetoothPaletteMediaButtonSelector);
         getSpectatioUiUtil()
                 .validateUiObject(
                         bluetoothPaletteMediaButton, AutomotiveConfigConstants.MEDIA_BUTTON);
@@ -503,7 +503,7 @@ public class StatusBarHelperImpl extends AbstractStandardAppHelper implements IA
         BySelector disabledMediaProfileNameSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.DISABLED_MEDIA_PROFILE);
         UiObject2 disabledMediaProfile =
-                getSpectatioUiUtil().findUiObject(disabledMediaProfileNameSelector);
+                getSpectatioUiUtil().waitForUiObject(disabledMediaProfileNameSelector);
         getSpectatioUiUtil()
                 .validateUiObject(
                         disabledMediaProfile, AutomotiveConfigConstants.DISABLED_MEDIA_PROFILE);

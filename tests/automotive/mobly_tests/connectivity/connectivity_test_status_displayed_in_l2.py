@@ -34,57 +34,59 @@ from utilities.main_utils import common_main
 from utilities import constants
 import logging
 
+
 class BluetoothConnectionStatusOnLevelTwo(bluetooth_base_test.BluetoothBaseTest):
 
+    def setup_test(self):
+        # Pair the devices
 
-   def setup_test(self):
-       # Pair the devices
-       self.bt_utils.pair_primary_to_secondary()
-       super().enable_recording()
+        self.bt_utils.pair_primary_to_secondary()
+        super().enable_recording()
 
-   def test_connection_status_displayed_on_device_screen(self):
-       # Log BT Connection State after pairing
-       bt_connection_state=self.call_utils.get_bt_connection_status_using_adb_command(self.discoverer)
-       logging.info("BT State after pairing: <%s>", bt_connection_state)
+    def test_connection_status_displayed_on_device_screen(self):
+        # Log BT Connection State after pairing
+        bt_connection_state = self.call_utils.get_bt_connection_status_using_adb_command(
+            self.discoverer)
+        logging.info("BT State after pairing: <%s>", bt_connection_state)
 
-       for i in range(0, 2):
-           # Open bluetooth settings.
-           self.call_utils.open_bluetooth_settings()
+        for i in range(0, 2):
+            # Open bluetooth settings.
+            self.call_utils.open_bluetooth_settings_form_status_bar()
 
-           # Find the target device and disconnect it on the Level One page
-           target_name = self.target.mbs.btGetName()
-           self.call_utils.press_bluetooth_toggle_on_device(target_name)
-           self.discoverer.mbs.waitUntilConnectionStatus("Disconnected")
+            # Find the target device and disconnect it on the Level One page
+            target_name = self.target.mbs.btGetName()
+            self.call_utils.press_bluetooth_toggle_on_device(target_name)
+            self.discoverer.mbs.waitUntilConnectionStatus("Disconnected")
 
-           # Click on the target device.
-           self.discoverer.mbs.pressDeviceInBluetoothSettings(target_name)
+            # Click on the target device.
+            self.discoverer.mbs.pressDeviceInBluetoothSettings(target_name)
 
-           # Confirm that target device displays "disconnected"
-           summary = self.discoverer.mbs.getDeviceSummary()
-           asserts.assert_true(
-               constants.DISCONNECTED_SUMMARY_STATUS in summary,
-               "Expected \'%s\' in device summary after disconnecting, but found none"
-               % constants.DISCONNECTED_SUMMARY_STATUS
-           )
+            # Confirm that target device displays "disconnected"
+            summary = self.discoverer.mbs.getDeviceSummary()
+            asserts.assert_true(
+                constants.DISCONNECTED_SUMMARY_STATUS in summary,
+                "Expected \'%s\' in device summary after disconnecting, but found none"
+                % constants.DISCONNECTED_SUMMARY_STATUS
+            )
 
+            # Open bluetooth settings and connect device on Level one page
+            self.call_utils.open_bluetooth_settings()
+            self.call_utils.press_bluetooth_toggle_on_device(target_name)
+            self.discoverer.mbs.waitUntilConnectionStatus("Connected")
 
-           # Open bluetooth settings and connect device on Level one page
-           self.call_utils.open_bluetooth_settings()
-           self.call_utils.press_bluetooth_toggle_on_device(target_name)
-           self.discoverer.mbs.waitUntilConnectionStatus("Connected")
+            # Click on the target device.
+            self.call_utils.open_bluetooth_settings()
+            self.discoverer.mbs.pressDeviceInBluetoothSettings(target_name)
 
-           # Click on the target device.
-           self.call_utils.open_bluetooth_settings()
-           self.discoverer.mbs.pressDeviceInBluetoothSettings(target_name)
+            # Confirm that target device displays "connected"
+            summary = self.discoverer.mbs.getDeviceSummary()
+            asserts.assert_true(
+                constants.CONNECTED_SUMMARY_STATUS in summary,
+                "Expected \'%s\' in device summary after connecting, but found none"
+                % constants.CONNECTED_SUMMARY_STATUS
+            )
 
-           # Confirm that target device displays "connected"
-           summary = self.discoverer.mbs.getDeviceSummary()
-           asserts.assert_true(
-               constants.CONNECTED_SUMMARY_STATUS in summary,
-               "Expected \'%s\' in device summary after connecting, but found none"
-               % constants.CONNECTED_SUMMARY_STATUS
-           )
 
 if __name__ == '__main__':
-   # Take test args
-   common_main()
+    # Take test args
+    common_main()

@@ -29,8 +29,8 @@ from utilities.main_utils import common_main
 from bluetooth_test import bluetooth_base_test
 from utilities import constants
 
-class BluetoothDisableEnablePhoneTest(bluetooth_base_test.BluetoothBaseTest):
 
+class BluetoothDisableEnablePhoneTest(bluetooth_base_test.BluetoothBaseTest):
     NO_PHONE_TAG = 'no phone'
 
     def setup_test(self):
@@ -38,59 +38,56 @@ class BluetoothDisableEnablePhoneTest(bluetooth_base_test.BluetoothBaseTest):
         self.bt_utils.pair_primary_to_secondary()
         super().enable_recording()
 
-
     def test_disable_enable_phone(self):
         # Log BT Connection State after pairing
-        bt_connection_state=self.call_utils.get_bt_connection_status_using_adb_command(self.discoverer)
+        bt_connection_state = self.call_utils.get_bt_connection_status_using_adb_command(
+            self.discoverer)
         logging.info("BT State after pairing : <%s>", bt_connection_state)
 
         for _ in range(2):
-          # Navigate to the bluetooth settings page
-          self.call_utils.open_bluetooth_settings()
-          target_name = self.target.mbs.btGetName()
-          # Disable phone for the listed paired device via the preference button
-          self.call_utils.press_phone_toggle_on_device(target_name)
+            # Navigate to the bluetooth settings page
+            self.call_utils.open_bluetooth_settings_form_status_bar()
+            target_name = self.target.mbs.btGetName()
+            # Disable phone for the listed paired device via the preference button
+            self.call_utils.press_phone_toggle_on_device(target_name)
 
+            # Confirm that the phone button is unchecked
+            asserts.assert_false(
+                self.discoverer.mbs.isPhonePreferenceChecked(),
+                "Expected phone button to be unchecked after pressing it.")
 
-          # Confirm that the phone button is unchecked
-          asserts.assert_false(
-              self.discoverer.mbs.isPhonePreferenceChecked(),
-              "Expected phone button to be unchecked after pressing it.")
+            # Click on device and confirm that the summary says "No phone"
+            self.discoverer.mbs.pressDeviceInBluetoothSettings(target_name)
+            summary = self.discoverer.mbs.getDeviceSummary()
+            asserts.assert_true(
+                self.NO_PHONE_TAG in summary,
+                ("Expected device summary (on Level Two page) to include \'%s\'"
+                 % self.NO_PHONE_TAG)
+            )
+            self.call_utils.open_phone_app()
+            asserts.assert_true(
+                self.discoverer.mbs.isConnectToBluetoothDisplayed(),
+                "Connect to bluetooth message is not displayed")
 
+            # Go back to the bluetooth settings page and enable phone via the preference button
+            self.call_utils.press_home()
+            self.call_utils.open_bluetooth_settings()
+            self.call_utils.press_phone_toggle_on_device(target_name)
+            self.discoverer.mbs.waitUntilConnectionStatus("Connected")
 
-          # Click on device and confirm that the summary says "No phone"
-          self.discoverer.mbs.pressDeviceInBluetoothSettings(target_name)
-          summary = self.discoverer.mbs.getDeviceSummary()
-          asserts.assert_true(
-              self.NO_PHONE_TAG in summary,
-              ("Expected device summary (on Level Two page) to include \'%s\'"
-               % self.NO_PHONE_TAG)
-          )
-          self.call_utils.open_phone_app()
-          asserts.assert_true(
-               self.discoverer.mbs.isConnectToBluetoothDisplayed(),
-               "Connect to bluetooth message is not displayed")
+            # Confirm that the phone button is re-enabled
+            asserts.assert_true(
+                self.discoverer.mbs.isPhonePreferenceChecked(),
+                "Expected phone button to be checked after pressing it a second time.")
 
-          # Go back to the bluetooth settings page and enable phone via the preference button
-          self.call_utils.press_home()
-          self.call_utils.open_bluetooth_settings()
-          self.call_utils.press_phone_toggle_on_device(target_name)
-          self.discoverer.mbs.waitUntilConnectionStatus("Connected")
-
-          # Confirm that the phone button is re-enabled
-          asserts.assert_true(
-              self.discoverer.mbs.isPhonePreferenceChecked(),
-              "Expected phone button to be checked after pressing it a second time.")
-
-          # Click on the device and confirm that the summary doesn't include "phone"
-          self.discoverer.mbs.pressDeviceInBluetoothSettings(target_name)
-          summary = self.discoverer.mbs.getDeviceSummary()
-          asserts.assert_false(
-              self.NO_PHONE_TAG in summary,
-              "Found unexpected \'%s\' in device summary after re-enabling phone."
-              % self.NO_PHONE_TAG
-          )
-
+            # Click on the device and confirm that the summary doesn't include "phone"
+            self.discoverer.mbs.pressDeviceInBluetoothSettings(target_name)
+            summary = self.discoverer.mbs.getDeviceSummary()
+            asserts.assert_false(
+                self.NO_PHONE_TAG in summary,
+                "Found unexpected \'%s\' in device summary after re-enabling phone."
+                % self.NO_PHONE_TAG
+            )
 
 
 if __name__ == '__main__':

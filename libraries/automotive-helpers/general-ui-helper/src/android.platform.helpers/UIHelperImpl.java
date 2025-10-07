@@ -26,6 +26,7 @@ import androidx.test.uiautomator.UiObject2;
 public class UIHelperImpl extends AbstractStandardAppHelper implements IAutoGeneralUIHelper {
 
     private static final String LOG_TAG = UIHelperImpl.class.getSimpleName();
+    private static final int MS_WAIT = 10000;
 
     private SpectatioUiUtil mSpectatioUiUtil;
 
@@ -70,6 +71,6 @@ public class UIHelperImpl extends AbstractStandardAppHelper implements IAutoGene
     /** {@inheritDoc} */
     @Override
     public boolean hasElementWithText(String text) {
-        return mSpectatioUiUtil.hasUiElement(text);
+        return mSpectatioUiUtil.waitForText(text, MS_WAIT, SpectatioUiUtil.TextMatchType.EXACT);
     }
 }

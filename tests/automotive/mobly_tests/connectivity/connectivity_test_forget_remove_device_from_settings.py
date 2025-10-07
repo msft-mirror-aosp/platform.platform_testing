@@ -37,12 +37,12 @@ class BluetoothForgetDeviceFromSettingsTest(bluetooth_base_test.BluetoothBaseTes
     def setup_class(self):
         super().setup_class()
         self.common_utils = CommonUtils(self.target, self.discoverer)
-        super().enable_recording()
         self.call_utils.press_home()
 
     def setup_test(self):
         # Pair the devices
         self.bt_utils.pair_primary_to_secondary()
+        super().enable_recording()
 
     def test_forget_remove_device_from_settings(self):
         # Log BT Connection State after pairing
