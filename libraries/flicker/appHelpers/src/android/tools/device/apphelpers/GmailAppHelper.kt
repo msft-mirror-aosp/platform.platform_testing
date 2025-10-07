@@ -17,6 +17,10 @@
 package android.tools.device.apphelpers
 
 import android.app.Instrumentation
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
+import android.net.Uri
 import android.tools.traces.component.ComponentNameMatcher
 import android.tools.traces.component.IComponentNameMatcher
 import androidx.test.platform.app.InstrumentationRegistry
@@ -26,10 +30,30 @@ class GmailAppHelper
 @JvmOverloads
 constructor(
     instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation(),
-    appName: String = "Gmail",
-    appComponent: IComponentNameMatcher =
-        ComponentNameMatcher(
-            packageName = "com.google.android.gm",
-            className = "com.google.android.gm.ConversationListActivityGmail",
-        ),
-) : StandardAppHelper(instrumentation, appName, appComponent)
+    pkgManager: PackageManager = instrumentation.context.packageManager,
+    appName: String = getGmailAppName(pkgManager),
+    appComponent: IComponentNameMatcher = getGmailComponent(pkgManager),
+) : StandardAppHelper(instrumentation, appName, appComponent) {
+
+    override val openAppIntent =
+        pkgManager.getLaunchIntentForPackage(packageName)
+            ?: error("Unable to find intent for Gmail")
+
+    companion object {
+        private fun getGmailIntent(): Intent {
+            val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:"))
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            return intent
+        }
+
+        private fun getResolveInfo(pkgManager: PackageManager): ResolveInfo =
+            pkgManager.resolveActivity(getGmailIntent(), PackageManager.MATCH_DEFAULT_ONLY)
+                ?: error("unable to resolve Gmail activity")
+
+        private fun getGmailComponent(pkgManager: PackageManager): ComponentNameMatcher =
+            ComponentNameMatcher(packageName = "com.google.android.gm", className = "")
+
+        private fun getGmailAppName(pkgManager: PackageManager): String =
+            getResolveInfo(pkgManager).loadLabel(pkgManager).toString()
+    }
+}
