@@ -45,6 +45,7 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
 
     private static final int WAIT_MS = 10000;
     private static final String RADIO_APP = "Radio";
+    private static final String NEWS_APP = "News";
     private MediaSessionManager mMediaSessionManager;
     private UiAutomation mUiAutomation;
 
@@ -998,6 +999,22 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
         getSpectatioUiUtil()
                 .validateUiObject(playListSlider, AutomotiveConfigConstants.PLAYS_LIST_SLIDER);
         getSpectatioUiUtil().clickAndWait(playListSlider);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void openMediaAppAndPlayGivenSong(String appName, String media) {
+        sAppGridHelper.get().open();
+        sAppGridHelper.get().openApp(appName);
+        selectMediaTrack(media);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void openNewsAppAndPlayGivenChannel(String media) {
+        sAppGridHelper.get().open();
+        sAppGridHelper.get().openApp(NEWS_APP);
+        selectMediaTrack(media);
     }
 
     /** {@inheritDoc} */

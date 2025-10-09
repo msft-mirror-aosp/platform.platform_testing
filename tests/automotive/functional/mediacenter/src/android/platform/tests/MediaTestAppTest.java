@@ -51,6 +51,9 @@ public class MediaTestAppTest {
     private static final String ADVANCE_SONG_NAME = "Standard Custom Actions";
     private static final String RABITHOLE_SONG_NAME = "A normal 15s song";
     private static final String CUSTOM_SONG_NAME = "Long playback error message";
+    private static final String RADIO_STATION = "99.7 Now!";
+    private static final String NEWS_CHANNEL_NAME = "FOX NEWS";
+    private static final String RADIO_APP = "Radio";
     private static final String LOG_TAG = MediaTestAppTest.class.getSimpleName();
 
     @ClassRule
@@ -323,5 +326,56 @@ public class MediaTestAppTest {
 
         Log.i(LOG_TAG, "Act: Open Media widget");
         sAutoHomeHelper.get().openMediaWidget();
+    }
+
+    private void openRadioAppFromGrid() {
+        Log.i(LOG_TAG, "Act: Open Appgrid");
+        sAppGridHelper.get().open();
+
+        Log.i(LOG_TAG, "Act: Open Radio App");
+        sAppGridHelper.get().openApp(RADIO_APP);
+
+        Log.i(LOG_TAG, "Assert: Radio App is Open");
+        assertTrue(
+                "Radio app is not opened",
+                sAppGridHelper
+                        .get()
+                        .checkPackageInForeground(AutomotiveConfigConstants.RADIO_PACKAGE));
+
+        Log.i(LOG_TAG, "Act: Select Test Media App Category back to Basic");
+        sMediaCenterHelper
+                .get()
+                .navigateMediaAppCategories(AutomotiveConfigConstants.BROWSE_RADIO_CATEGORY);
+        Log.i(LOG_TAG, "Act: Select Radio track");
+        sMediaCenterHelper.get().selectMediaTrack(RADIO_STATION);
+    }
+
+    @Test
+    public void testSwitchRadioAppFromMediaApps() {
+        assertTrue(
+                "Test Media app is launched",
+                sAppGridHelper
+                        .get()
+                        .checkPackageInForeground(AutomotiveConfigConstants.MEDIA_CENTER_PACKAGE));
+
+        openRadioAppFromGrid();
+
+        Log.i(LOG_TAG, "Assert: Radio App is open and playing the station");
+        assertTrue(
+                "Radio App is Not open",
+                sMediaCenterHelper.get().isMediaAppOpenAndTrackPlaying(RADIO_STATION));
+
+        sMediaCenterHelper.get().openMediaAppAndPlayGivenSong(TEST_MEDIA_APP, mDefaultSongName);
+
+        Log.i(LOG_TAG, "Assert: Test Media App is open and playing the song");
+        assertTrue(
+                "Test Media App is Not open",
+                sMediaCenterHelper.get().isMediaAppOpenAndTrackPlaying(DEFAULT_SONG_NAME));
+
+        sMediaCenterHelper.get().openNewsAppAndPlayGivenChannel(NEWS_CHANNEL_NAME);
+        Log.i(LOG_TAG, "Assert: News App is open and playing the channel");
+        assertTrue(
+                "News App is Not open",
+                sMediaCenterHelper.get().isMediaAppOpenAndTrackPlaying("Fox News"));
     }
 }
