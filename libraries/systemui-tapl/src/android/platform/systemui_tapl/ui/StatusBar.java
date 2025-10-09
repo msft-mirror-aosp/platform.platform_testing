@@ -33,9 +33,7 @@ import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assume.assumeFalse;
 
 import android.annotation.Nullable;
-import android.graphics.Point;
 import android.graphics.Rect;
-import android.platform.helpers.foldable.UnfoldAnimationTestingUtils;
 import android.platform.systemui_tapl.controller.NotificationController;
 import android.platform.uiautomatorhelpers.DeviceHelpers;
 import android.platform.uiautomatorhelpers.WaitUtils;
@@ -46,10 +44,9 @@ import androidx.test.uiautomator.SearchCondition;
 import androidx.test.uiautomator.UiObject2;
 import androidx.test.uiautomator.Until;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
@@ -314,23 +311,19 @@ public class StatusBar {
         return getClock().getText();
     }
 
-    /** Returns the position of views in StatusBar. */
-    public Set<UnfoldAnimationTestingUtils.Icon> getStatusBarViewPositions() {
-        Set<UnfoldAnimationTestingUtils.Icon> statusBarViewPositions = new HashSet<>();
+    /** Returns items in the StatusBar like clock, connectivity, battery indicators, etc. */
+    public List<StatusBarItem> getStatusBarItems() {
+        final List<StatusBarItem> statusBarItems = new ArrayList<>();
         mStatusBarViewIds.forEach(
                 viewId -> {
                     UiObject2 viewUiObject =
                             DeviceHelpers.INSTANCE.waitForNullableObj(
                                     statusBarSelector(viewId), SHORT_WAIT);
                     if (viewUiObject != null) {
-                        Rect iconPosition = viewUiObject.getVisibleBounds();
-                        statusBarViewPositions.add(
-                                new UnfoldAnimationTestingUtils.Icon(
-                                        viewId,
-                                        new Point(iconPosition.centerX(), iconPosition.centerY())));
+                        statusBarItems.add(new StatusBarItem(viewId, viewUiObject));
                     }
                 });
-        return statusBarViewPositions;
+        return statusBarItems;
     }
 
     /** Assert that DND icon is visible. */
