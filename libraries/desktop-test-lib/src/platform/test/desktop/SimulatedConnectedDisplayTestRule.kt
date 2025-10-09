@@ -131,7 +131,7 @@ class SimulatedConnectedDisplayTestRule(val initDisplayCount: Int = 0) : TestRul
             Settings.Secure.getInt(
                 context.contentResolver,
                 Settings.Secure.MIRROR_BUILT_IN_DISPLAY,
-                -1
+                0,
             )
         if (mirroringState == 0) {
             // Only validate added displays in topology when mirroring is false

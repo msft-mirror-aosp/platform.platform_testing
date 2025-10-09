@@ -17,7 +17,9 @@
 package platform.test.desktop
 
 import android.view.Display
+import com.android.server.testutils.TestUtils
 import com.google.common.truth.Truth.assertWithMessage
+import kotlin.test.assertEquals
 import org.junit.Assume.assumeTrue
 import org.junit.rules.TestRule
 import org.junit.runner.Description
@@ -125,28 +127,45 @@ class PeripheralsResponse(val devices: List<PeripheralDevice> = emptyList()) {
 
 /**
  * A test rule allowing to request peripherals during the test and disconnects them after the test.
- *
- * @param physicalPeripheralsController The controller to use for physical peripherals.
- * @param simulatedPeripheralsController The controller to use for simulated peripherals.
  */
-class PeripheralDeviceTestRule(
-    physicalPeripheralsController: PeripheralsController? = null,
-    simulatedPeripheralsController: PeripheralsController? = null,
-) : TestRule, PeripheralsController {
-
-    private val physicalController = physicalPeripheralsController ?: PhysicalDeviceController()
-    private val simulatedController = simulatedPeripheralsController ?: SimulatedDeviceController()
+class PeripheralDeviceTestRule : TestRule, PeripheralsController {
+    private val physicalController = PhysicalDeviceController()
+    private val simulatedController = SimulatedDeviceController()
 
     override fun apply(base: Statement, description: Description): Statement =
         object : Statement() {
             override fun evaluate() {
-                try {
+                // try-with-resources, ensuring cleanup steps are executed during
+                // CleanupExecutor#close(). If the close() method also throws an exception(s),
+                // the exception(s) from close() are suppressed and added to the primary exception.
+                TestUtils.CleanupExecutor(TAG).use {
+                    // Last cleanup steps: release all resources
+                    it.addCleanup(simulatedController::close)
+                    it.addCleanup(physicalController::close)
+
+                    // Ensure no peripherals connected before the test
+                    disconnectAll()
+
+                    // First cleanup step: disconnect all peripherals
+                    it.addCleanup(::disconnectAll)
+                    // Run the test
                     base.evaluate()
-                } finally {
-                    requestPeripherals(PeripheralsRequest())
                 }
             }
         }
+
+    fun startMonitoring(): Boolean {
+        val sim = simulatedController.startMonitoring()
+        val phys = physicalController.startMonitoring()
+        return sim && phys
+    }
+
+    fun stopMonitoring() {
+        simulatedController.stopMonitoring()
+        physicalController.stopMonitoring()
+    }
+
+    fun disconnectAll() = requestPeripherals(PeripheralsRequest())
 
     fun requestPeripherals(vararg peripherals: Peripheral): PeripheralsResponse =
         requestPeripherals(PeripheralsRequest(peripherals.toList()))
@@ -189,8 +208,8 @@ class PeripheralDeviceTestRule(
         // Assume that all physical peripherals are connected, if not - skip the test.
         assumeTrue(
             "Can't connect all " +
-                "requested physical peripherals: ${request} " +
-                "response: ${response}",
+                "requested physical peripherals: $request " +
+                "response: $response",
             physicalRequestedCount == physicalConnectedCount,
         )
     }
@@ -199,12 +218,16 @@ class PeripheralDeviceTestRule(
         request: PeripheralsRequest,
         response: PeripheralsResponse,
     ) {
-        assertWithMessage(
-                "Can't connect all " +
-                    "requested simulated peripherals: ${request} " +
-                    "response: ${response}"
-            )
-            .that(request.peripherals.size)
-            .isEqualTo(response.devices.count { it.connected })
+        assertEquals(
+            request.peripherals.size,
+            response.devices.count { it.connected },
+            "Can't connect all " +
+                "requested simulated peripherals: $request " +
+                "response: $response",
+        )
+    }
+
+    private companion object {
+        const val TAG = "PeripheralDeviceTestRule"
     }
 }
