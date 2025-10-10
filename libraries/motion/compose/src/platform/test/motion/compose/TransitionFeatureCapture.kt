@@ -59,38 +59,36 @@ fun <T> TimeSeriesCaptureScope<SemanticsNodeInteractionsProvider>.animatedVisibi
             null
         }
     }) {
-        feature(
-            FeatureCapture(name) { rootTransition ->
-                DataPoint.of(
-                    buildMap {
-                        val enterExitTransitions =
-                            rootTransition.transitions.filterEnterExitTransitions()
+        feature(name) { rootTransition ->
+            DataPoint.of(
+                buildMap {
+                    val enterExitTransitions =
+                        rootTransition.transitions.filterEnterExitTransitions()
 
-                        enterExitTransitions
-                            .filterByDirection(
-                                source = EnterExitState.PreEnter,
-                                target = EnterExitState.Visible,
-                            )
-                            .forEachIndexed { index, transition ->
-                                val transitionLabel = "${getTransitionLabel(index)}::Enter"
+                    enterExitTransitions
+                        .filterByDirection(
+                            source = EnterExitState.PreEnter,
+                            target = EnterExitState.Visible,
+                        )
+                        .forEachIndexed { index, transition ->
+                            val transitionLabel = "${getTransitionLabel(index)}::Enter"
 
-                                put(transitionLabel, animatedVisibility.capture(transition))
-                            }
-                        enterExitTransitions
-                            .filterByDirection(
-                                source = EnterExitState.Visible,
-                                target = EnterExitState.PostExit,
-                            )
-                            .forEachIndexed { index, transition ->
-                                val transitionLabel = "${getTransitionLabel(index)}::Exit"
+                            put(transitionLabel, animatedVisibility.capture(transition))
+                        }
+                    enterExitTransitions
+                        .filterByDirection(
+                            source = EnterExitState.Visible,
+                            target = EnterExitState.PostExit,
+                        )
+                        .forEachIndexed { index, transition ->
+                            val transitionLabel = "${getTransitionLabel(index)}::Exit"
 
-                                put(transitionLabel, animatedVisibility.capture(transition))
-                            }
-                    },
-                    animatedVisibilityTransitions,
-                )
-            }
-        )
+                            put(transitionLabel, animatedVisibility.capture(transition))
+                        }
+                },
+                animatedVisibilityTransitions,
+            )
+        }
     }
 }
 
