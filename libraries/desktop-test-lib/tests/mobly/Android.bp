@@ -11,36 +11,28 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
 
 package {
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
-python_library_host {
-    name: "desktop-test-lib-mobly",
-    srcs: ["mobly/*.py"],
-    libs: ["mobly"],
-    pkg_path: "desktop_test_lib",
-}
-
-java_library {
-    name: "desktop-test-lib",
-    static_libs: [
-        "Interactive",
-        "androidx.core_core-ktx",
-        "androidx.test.runner",
-        "androidx.test.rules",
-        "kotlin-stdlib",
-        "kotlinx_coroutines",
-        "mockito-target-minus-junit4",
-        "uiautomator-helpers",
-        "truth",
-        "servicestests-utils",
-        "kotlin-test",
+python_test_host {
+    name: "DesktopTestLibTestsMobly",
+    srcs: ["src/*.py"],
+    main: "src/__main__.py",
+    libs: [
+        "mobly",
+        "desktop-test-lib-mobly",
     ],
-    srcs: [
-        "src/**/*.kt",
-        "src/**/*.java",
+    device_common_data: [
+        // module for the APK we are going to install on the device and run tests from
+        ":DesktopTestLibTests",
     ],
+    test_options: {
+        unit_test: false,
+        // This option is used to identify Mobly modules in ATest
+        runner: "mobly",
+        tags: ["mobly"],
+    },
+    test_suites: ["general-tests"],
 }
