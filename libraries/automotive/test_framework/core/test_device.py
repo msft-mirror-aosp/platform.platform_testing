@@ -406,6 +406,73 @@ class TestDeviceAdb:
     logcat_command = f'logcat -d{logcat_args}{grep_pipe} || true'
     return self.execute_shell_command(logcat_command, raise_exception=False)
 
+  def grep_from_logcat_with_log_in_subprocess(
+      self, grep_text, logcat_args=None
+  ) -> str:
+    """
+      Starts a subprocess to filter logcat output and logs it to a log file.
+
+      Args:
+        grep_text: Grep string to filter the logcat output.
+        logcat_args: Additional arguments for logcat.
+    """
+    logcat_args = f' {logcat_args}' if logcat_args else ''
+
+    logcat_command = f'logcat{logcat_args} -e {grep_text}'
+    return self.execute_shell_command_in_subprocess_with_log(
+        logcat_command
+    )
+
+  def poll_logcat_with_grep_text_and_check_for_expected_result(
+      self, grep_text, expected_result, timeout=5, poll_interval=0.1
+  ):
+    """
+      Polls the logcat output for a specific text until found or timeout.
+
+      Args:
+          grep_text: The text to search for in the logcat output.
+          expected_result: The expected result to find.
+          timeout: The maximum time (in seconds) to wait.
+          poll_interval: The time (in seconds) between polls.
+
+      Returns:
+          True if the expected result is found within the timeout,
+          False otherwise.
+    """
+    deadline = time.perf_counter() + timeout
+    while time.perf_counter() < deadline:
+      logcat_result = self.grep_from_logcat(grep_text)
+      if expected_result in logcat_result:
+        return True
+      time.sleep(poll_interval)
+
+    return False
+
+  def poll_logs_from_file_and_check_for_expected_result(
+      self, file_path, expected_result, timeout=5, poll_interval=0.1
+  ):
+    """
+      Polls the file contents for a specific text until found or timeout.
+
+      Args:
+          file_path: The path to the file to poll.
+          expected_result: The expected result to find in the file.
+          timeout: The maximum time (in seconds) to wait.
+          poll_interval: The time (in seconds) between polls.
+
+      Returns:
+          True if the expected result is found within the timeout,
+          False otherwise.
+    """
+    deadline = time.perf_counter() + timeout
+    while time.perf_counter() < deadline:
+      logcat_result = self.read_file(file_path)
+      if expected_result in logcat_result:
+        return True
+      time.sleep(poll_interval)
+
+    return False
+
   def clear_logcat(self) -> None:
     """
       Clears the logcat buffer.
@@ -462,12 +529,14 @@ class TestDevice:
     """
     return self._services
 
-  def update_logcat_config_to_verbose_and_persist(self) -> None:
+  def update_logcat_config_to_persist_for_given_log_level(
+      self, log_level: str = 'V'
+  ) -> None:
     """
       Enables verbose logs and restarts the logcat service, preserving the
       buffer.
     """
-    self.adb.execute_shell_command('setprop persist.log.tag V')
+    self.adb.execute_shell_command(f'setprop persist.log.tag {log_level}')
     self.services.logcat.stop()
     self.services.logcat.update_config(logcat.Config(clear_log=False))
     self.services.logcat.start()

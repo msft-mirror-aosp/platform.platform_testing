@@ -27,6 +27,7 @@ class SpectatioHostBaseTestClass(base_test.BaseTestClass):
             test_sometest
   """
   _LOG_TAG = 'SpectatioHostBaseTestClass'
+  default_log_level = 'V'  # Default log level for all devices = Verbose
 
   def setup_class(self) -> None:
     """
@@ -40,7 +41,9 @@ class SpectatioHostBaseTestClass(base_test.BaseTestClass):
     # Configure devices to logcat verbosely and persist logs.
     logging.info(f'{self._LOG_TAG}: Configuring device logcat')
     for device in self.context.get_all_devices():
-      device.update_logcat_config_to_verbose_and_persist()
+      device.update_logcat_config_to_persist_for_given_log_level(
+          log_level=self.default_log_level
+      )
 
     logging.info(f'{self._LOG_TAG}: Base test class setup complete.')
 
