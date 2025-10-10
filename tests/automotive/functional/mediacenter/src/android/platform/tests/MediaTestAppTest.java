@@ -28,7 +28,9 @@ import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoAppGridHelper;
 import android.platform.helpers.IAutoHomeHelper;
 import android.platform.helpers.IAutoMediaHelper;
+import android.platform.helpers.IAutoSettingHelper;
 import android.platform.helpers.IAutoTestMediaAppHelper;
+import android.platform.helpers.SettingsConstants;
 import android.platform.test.option.StringOption;
 import android.util.Log;
 
@@ -64,6 +66,8 @@ public class MediaTestAppTest {
             new HelperAccessor<>(IAutoHomeHelper.class);
     private static HelperAccessor<IAutoAppGridHelper> sAppGridHelper =
             new HelperAccessor<>(IAutoAppGridHelper.class);
+    private static HelperAccessor<IAutoSettingHelper> sSettingHelper =
+            new HelperAccessor<>(IAutoSettingHelper.class);
 
     @BeforeClass
     public static void setup() {
@@ -285,5 +289,39 @@ public class MediaTestAppTest {
         assertTrue(
                 "Album thumbnail is not displaying",
                 sMediaCenterHelper.get().isAlbumThumbnailDisplaying());
+    }
+
+    @Test
+    public void testMediaIncDecVolume() {
+        Log.i(LOG_TAG, "Act: Open the Sound Setting");
+        sSettingHelper.get().openSetting(SettingsConstants.SOUND_SETTINGS);
+
+        assertTrue(
+                "Sound Setting did not open", sSettingHelper.get().checkMenuExists("Media volume"));
+
+        // Decrease the media volume
+        Log.i(LOG_TAG, "Act: Set Media volume to Low");
+        int lowMediaVolume = sSettingHelper.get().setMediaSoundLevelLow();
+
+        // Increase the media volume
+        Log.i(LOG_TAG, "Act: Set Media volume to High");
+        int highMediaVolume = sSettingHelper.get().setMediaSoundLevelHigh();
+
+        // Verify that the media volume  has changed.
+        Log.i(LOG_TAG, "Assert: Media volume is adjusted");
+        assertTrue(
+                "Media volume was not increased (from "
+                        + lowMediaVolume
+                        + " to "
+                        + highMediaVolume
+                        + ")",
+                lowMediaVolume < highMediaVolume);
+
+        // Close settings app
+        Log.i(LOG_TAG, "Act: Exit Settings App");
+        sSettingHelper.get().exit();
+
+        Log.i(LOG_TAG, "Act: Open Media widget");
+        sAutoHomeHelper.get().openMediaWidget();
     }
 }
