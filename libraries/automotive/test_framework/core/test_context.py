@@ -20,6 +20,7 @@ class TestContext:
 
   _LOG_TAG = 'TestContext'
   _DEFAULT_NUMBER_OF_DEVICES: int = 1
+  _NUMBER_OF_DEVICES_KEY = 'number_of_devices'
 
   def __init__(self, test_instance: base_test.BaseTestClass) -> None:
     self._test_instance: base_test.BaseTestClass = test_instance
@@ -105,9 +106,20 @@ class TestContext:
     """
       Factory method for creating the DeviceManager.
     """
-    num_devices: int = self.get_test_arg(
-        'number_of_devices',
-        default=self._DEFAULT_NUMBER_OF_DEVICES,
+    num_devices: int = self._DEFAULT_NUMBER_OF_DEVICES
+    if self._NUMBER_OF_DEVICES_KEY in self._test_instance.user_params:
+      num_devices = self._test_instance.user_params[self._NUMBER_OF_DEVICES_KEY]
+    else:
+      logging.warning(
+          '%s: %s is not in testbed config. Using default value: %d',
+          self._LOG_TAG,
+          self._NUMBER_OF_DEVICES_KEY,
+          self._DEFAULT_NUMBER_OF_DEVICES,
+      )
+    logging.info(
+        '%s: Registering %d device(s) for test execution',
+        self._LOG_TAG,
+        num_devices,
     )
     ads: list[android_device.AndroidDevice] = (
         self._test_instance.register_controller(

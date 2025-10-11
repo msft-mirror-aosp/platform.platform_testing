@@ -106,10 +106,19 @@ class DeviceManager:
           A dictionary mapping device tags (e.g., 'device1') to TestDevice
           objects.
     """
+    logging.info(
+        f'{self._LOG_TAG}: Discovering and ordering devices.'
+    )
+    logging.debug(
+        f'{self._LOG_TAG}: Number of devices: {self._num_of_devices}.'
+    )
     default_devices: dict[str, test_device.TestDevice] = {}
     ordered_devices: dict[str, test_device.TestDevice] = {}
 
     for i in range(self._num_of_devices):
+      logging.debug(
+          f'{self._LOG_TAG}: Discovering device: {i + 1}.'
+      )
       original_tag: str = f'device{i + 1}'
       device: test_device.TestDevice = test_device.TestDevice(
           android_device.get_device(self._ads, label=original_tag)
@@ -118,10 +127,31 @@ class DeviceManager:
 
       instance_name: str = self._get_instance_name(device)
 
+      logging.debug(
+        f'{self._LOG_TAG}: Instance Name: {instance_name}'
+      )
+
       final_tag: str = original_tag
       if self._is_device_tag_update_needed(instance_name, i + 1):
+        logging.debug(
+            f'{self._LOG_TAG}: Device Tag Update Needed: Original Tag:'
+            f' {original_tag}, Instance Name: {instance_name}'
+        )
         final_tag = f'device{self._get_instance_number(instance_name)}'
+        logging.debug(
+            f'{self._LOG_TAG}: Device Tag Update from Original Tag:'
+            f' {original_tag} to Final Tag: {final_tag}'
+        )
+
       ordered_devices[final_tag] = device
+
+    logging.debug(
+      f'{self._LOG_TAG}: Default devices: {default_devices.items()}'
+    )
+
+    logging.debug(
+      f'{self._LOG_TAG}: Ordered devices: {ordered_devices.items()}'
+    )
 
     if len(ordered_devices) != self._num_of_devices:
       logging.warning(
