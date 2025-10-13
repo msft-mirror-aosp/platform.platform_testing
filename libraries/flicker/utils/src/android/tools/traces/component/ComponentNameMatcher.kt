@@ -140,6 +140,8 @@ class ComponentNameMatcher(var component: ComponentName) : IComponentNameMatcher
 
         @JvmField val POINTER_LOCATION = ComponentNameMatcher("", "PointerLocation")
 
+        @JvmField val POPUP_WINDOW = ComponentNameMatcher("", "PopupWindow")
+
         @JvmField
         val WIRED_CHARGING_ANIMATION = ComponentNameMatcher("", "Wired Charging Animation#")
 
@@ -185,31 +187,36 @@ class ComponentNameMatcher(var component: ComponentName) : IComponentNameMatcher
         val ADD_ITEM_ACTIVITY =
             ComponentNameMatcher(
                 "com.google.android.apps.nexuslauncher",
-                "com.android.launcher3.dragndrop.AddItemActivity",)
+                "com.android.launcher3.dragndrop.AddItemActivity",
+            )
 
         @JvmField
         val SETTINGS_NETWORK_ACTIVITY =
             ComponentNameMatcher(
                 "com.android.settings",
-                "com.android.settings.Settings\$NetworkDashboardActivity")
+                "com.android.settings.Settings\$NetworkDashboardActivity",
+            )
 
         @JvmField
         val SHARE_CHOOSER_ACTIVITY =
             ComponentNameMatcher(
                 "com.android.intentresolver",
-                "com.android.intentresolver.ChooserActivityLauncher")
+                "com.android.intentresolver.ChooserActivityLauncher",
+            )
 
         @JvmField
         val PERMISSION_DIALOG_ACTIVITY =
             ComponentNameMatcher(
                 "com.google.android.permissioncontroller",
-                "com.android.permissioncontroller.permission.ui.GrantPermissionsActivity")
+                "com.android.permissioncontroller.permission.ui.GrantPermissionsActivity",
+            )
 
         @JvmField
-        val QUICK_SHARE_DIALOG_ACTIVITY = ComponentNameMatcher(
-            "com.google.android.gms",
-            "com.google.android.gms.nearby.sharing.receive.ReceiveActivity"
-        )
+        val QUICK_SHARE_DIALOG_ACTIVITY =
+            ComponentNameMatcher(
+                "com.google.android.gms",
+                "com.google.android.gms.nearby.sharing.receive.ReceiveActivity",
+            )
 
         /**
          * Creates a component matcher from a window or layer name.
