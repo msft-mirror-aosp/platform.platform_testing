@@ -1187,4 +1187,32 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
         String songName = getSpectatioUiUtil().getTextForUiElement(songObject);
         return (songName != null && songName.equals(defaultSongName));
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public void clickOnThreeDotButtonMediaCard() {
+        BySelector threedotbutton =
+                getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_CARD_THREE_DOT_BUTTON);
+        UiObject2 threedotbuttonObject = getSpectatioUiUtil().findUiObject(threedotbutton);
+        getSpectatioUiUtil().clickAndWait(threedotbuttonObject);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isExtendedMenuDisplayedOnMediaCard() {
+        BySelector extendedmenu =
+                getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_CARD_EXTENDED_MENU);
+        getSpectatioUiUtil().waitForUiObject(extendedmenu, WAIT_MS);
+        return getSpectatioUiUtil().hasUiElement(extendedmenu);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void closeExtendedMenu() {
+        BySelector extendedmenuclose =
+                getUiElementFromConfig(
+                        AutomotiveConfigConstants.MEDIA_CARD_EXTENDED_MENU_CLOSE_BUTTON);
+        UiObject2 extendedmenucloseObject = getSpectatioUiUtil().findUiObject(extendedmenuclose);
+        getSpectatioUiUtil().clickAndWait(extendedmenucloseObject);
+    }
 }

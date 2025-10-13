@@ -566,4 +566,25 @@ public interface IAutoMediaHelper extends IAppHelper, Scrollable {
      * <p>This method is used to play a news channel
      */
     void openNewsAppAndPlayGivenChannel(String media);
+
+    /**
+     * Setup expectations: on Media card
+     *
+     * <p>This method is used to click on overflow/three dot button on Media Card Widget.
+     */
+    void clickOnThreeDotButtonMediaCard();
+
+    /**
+     * Setup expectations: on Media card
+     *
+     * <p>This method is used to click on extended menu close button on Media Card Widget.
+     */
+    void closeExtendedMenu();
+
+    /**
+     * Setup expectations: on Media card
+     *
+     * <p>This method is used to verify the extended menu is opened on Media Card Widget.
+     */
+    boolean isExtendedMenuDisplayedOnMediaCard();
 }

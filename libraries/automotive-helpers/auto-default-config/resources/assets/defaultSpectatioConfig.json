@@ -1607,6 +1607,18 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "playback_action_id2"
     },
+    "MEDIA_CARD_THREE_DOT_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "overflow_button"
+    },
+    "MEDIA_CARD_EXTENDED_MENU": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "view_pager"
+    },
+    "MEDIA_CARD_EXTENDED_MENU_CLOSE_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "media_card_panel_handlebar"
+    },
     "PLAYS_LIST_SLIDER": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "media_card_panel_handlebar"
@@ -1642,8 +1654,7 @@
     },
     "ALBUM_THUMBNAIL": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "album_art",
-      "PACKAGE": "com.android.car.media"
+      "VALUE": "album_art"
     },
     "BASIC_SONGS_CATEGORY": {
       "TYPE": "MULTIPLE",
