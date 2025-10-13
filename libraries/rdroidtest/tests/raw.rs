@@ -1,5 +1,6 @@
 //! Test use of `rdroidtest`.
 
+use anyhow::Result;
 use rdroidtest::{ptest, test};
 
 // Tests using raw declarative macros.
@@ -16,10 +17,24 @@ fn grumble() {
     assert_eq!(result, 2);
 }
 
+test!(with_result, grumble_with_result);
+fn grumble_with_result() -> Result<()> {
+    let result = 1 + 1;
+    assert_eq!(result, 2);
+    Ok(())
+}
+
 test!(clap_hands, ignore_if: !feeling_happy());
 fn clap_hands() {
     let result = 1 + 1;
     assert_eq!(result, 3);
+}
+
+test!(with_result, clap_hands_with_result, ignore_if: !feeling_happy());
+fn clap_hands_with_result() -> Result<()> {
+    let result = 1 + 1;
+    assert_eq!(result, 3);
+    Ok(())
 }
 
 fn feeling_happy() -> bool {
@@ -31,6 +46,12 @@ fn is_less_than_five(param: u32) {
     assert!(param < 5);
 }
 
+ptest!(with_result, is_less_than_five_with_result, my_instances());
+fn is_less_than_five_with_result(param: u32) -> Result<()> {
+    assert!(param < 5);
+    Ok(())
+}
+
 ptest!(is_even, my_instances(), ignore_if: feeling_odd);
 fn is_even(param: u32) {
     assert_eq!(param % 2, 0);
@@ -39,6 +60,12 @@ fn is_even(param: u32) {
 ptest!(is_odd, my_instances(), ignore_if: |p| !feeling_odd(p));
 fn is_odd(param: u32) {
     assert_eq!(param % 2, 1);
+}
+
+ptest!(with_result, is_odd_with_result, my_instances(), ignore_if: |p| !feeling_odd(p));
+fn is_odd_with_result(param: u32) -> Result<()> {
+    assert_eq!(param % 2, 1);
+    Ok(())
 }
 
 fn feeling_odd(param: &u32) -> bool {

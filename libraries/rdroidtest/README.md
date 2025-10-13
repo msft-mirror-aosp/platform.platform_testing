@@ -44,6 +44,20 @@ fn one_plus_one() {
 }
 ```
 
+Tests may also return a `Result`. This is preferred, as it will give more helpful errors on test
+failure:
+
+```rust
+use anyhow::{ensure, Error};
+use rdroidtest::rdroidtest;
+
+#[rdroidtest]
+fn one_plus_one() -> Result<(), Error> {
+    ensure!(1 + 1 == 2);
+    Ok(())
+}
+```
+
 To ignore a test, you can add an `ignore_if` attribute whose argument is an expression that
 evaluates to a boolean:
 

@@ -59,6 +59,28 @@ macro_rules! test {
             }
         );
     };
+    (with_result, $test_name:ident) => {
+        $crate::_paste::paste!(
+            #[$crate::_linkme::distributed_slice($crate::runner::RDROIDTEST_TESTS)]
+            fn [< __test_ $test_name >]() -> $crate::_libtest_mimic::Trial {
+                $crate::_libtest_mimic::Trial::test(
+                    $crate::_prepend_module_path!(::std::stringify!($test_name)),
+                    move || $crate::runner::run_with_result($test_name),
+                )
+            }
+        );
+    };
+    (with_result, $test_name:ident, ignore_if: $ignore_expr:expr) => {
+        $crate::_paste::paste!(
+            #[$crate::_linkme::distributed_slice($crate::runner::RDROIDTEST_TESTS)]
+            fn [< __test_ $test_name >]() -> $crate::_libtest_mimic::Trial {
+                $crate::_libtest_mimic::Trial::test(
+                    $crate::_prepend_module_path!(::std::stringify!($test_name)),
+                    move || $crate::runner::run_with_result($test_name),
+                ).with_ignored_flag($ignore_expr)
+            }
+        );
+    };
 }
 
 /// Macro to generate a wrapper function for a parameterized test.
@@ -116,6 +138,41 @@ macro_rules! ptest {
                             name
                         ),
                         move || $crate::runner::run(|| $test_name(val)),
+                    ).with_ignored_flag(ignored)
+                }).collect()
+            }
+        );
+    };
+    (with_result, $test_name:ident, $param_gen:expr) => {
+        $crate::_paste::paste!(
+            #[$crate::_linkme::distributed_slice($crate::runner::RDROIDTEST_PTESTS)]
+            fn [< __ptest_ $test_name >]() -> Vec<$crate::_libtest_mimic::Trial> {
+                $param_gen.into_iter().map(|(name, val)| {
+                    $crate::_libtest_mimic::Trial::test(
+                        format!(
+                            "{}/{}",
+                            $crate::_prepend_module_path!(::std::stringify!($test_name)),
+                            name
+                        ),
+                        move || $crate::runner::run_with_result(|| $test_name(val)),
+                    )
+                }).collect()
+            }
+        );
+    };
+    (with_result, $test_name:ident, $param_gen:expr, ignore_if: $ignore_expr:expr) => {
+        $crate::_paste::paste!(
+            #[$crate::_linkme::distributed_slice($crate::runner::RDROIDTEST_PTESTS)]
+            fn [< __ptest_ $test_name >]() -> Vec<$crate::_libtest_mimic::Trial> {
+                $param_gen.into_iter().map(|(name, val)| {
+                    let ignored = $ignore_expr(&val);
+                    $crate::_libtest_mimic::Trial::test(
+                        format!(
+                            "{}/{}",
+                            $crate::_prepend_module_path!(::std::stringify!($test_name)),
+                            name
+                        ),
+                        move || $crate::runner::run_with_result(|| $test_name(val)),
                     ).with_ignored_flag(ignored)
                 }).collect()
             }

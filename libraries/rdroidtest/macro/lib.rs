@@ -2,7 +2,7 @@
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::{quote, ToTokens};
-use syn::{parse_macro_input, ItemFn, Meta};
+use syn::{parse_macro_input, ItemFn, Meta, ReturnType};
 
 /// Macro to mark an `rdroidtest` test function.  Can take one optional argument, an expression that
 /// evaluates to a `Vec` of parameter (name, value) pairs.
@@ -16,6 +16,11 @@ pub fn rdroidtest(args: TokenStream, item: TokenStream) -> TokenStream {
 
     // If the attribute has any arguments, they are expected to be a parameter generator expression.
     let param_gen: Option<TokenStream2> = if args.is_empty() { None } else { Some(args.into()) };
+
+    let has_result = match &item.sig.output {
+        ReturnType::Default => false,
+        ReturnType::Type(_, _) => true,
+    };
 
     // Look for `#[ignore]` and `#[ignore_if(<expr>)]` attributes on the wrapped item.
     let mut ignore_if: Option<TokenStream2> = None;
@@ -44,11 +49,21 @@ pub fn rdroidtest(args: TokenStream, item: TokenStream) -> TokenStream {
     }
 
     // Build up an invocation of the appropriate `rdroidtest` declarative macro.
-    let invocation = match (param_gen, ignore_if) {
-        (Some(pg), Some(ii)) => quote! { ::rdroidtest::ptest!( #fn_name, #pg, ignore_if: #ii ); },
-        (Some(pg), None) => quote! { ::rdroidtest::ptest!( #fn_name, #pg ); },
-        (None, Some(ii)) => quote! { ::rdroidtest::test!( #fn_name, ignore_if: #ii ); },
-        (None, None) => quote! { ::rdroidtest::test!( #fn_name ); },
+    let invocation = match (param_gen, ignore_if, has_result) {
+        (Some(pg), Some(ii), false) => {
+            quote! { ::rdroidtest::ptest!( #fn_name, #pg, ignore_if: #ii ); }
+        }
+        (Some(pg), None, false) => quote! { ::rdroidtest::ptest!( #fn_name, #pg ); },
+        (None, Some(ii), false) => quote! { ::rdroidtest::test!( #fn_name, ignore_if: #ii ); },
+        (None, None, false) => quote! { ::rdroidtest::test!( #fn_name ); },
+        (Some(pg), Some(ii), true) => {
+            quote! { ::rdroidtest::ptest!( with_result, #fn_name, #pg, ignore_if: #ii ); }
+        }
+        (Some(pg), None, true) => quote! { ::rdroidtest::ptest!( with_result, #fn_name, #pg ); },
+        (None, Some(ii), true) => {
+            quote! { ::rdroidtest::test!( with_result, #fn_name, ignore_if: #ii ); }
+        }
+        (None, None, true) => quote! { ::rdroidtest::test!( with_result, #fn_name ); },
     };
 
     let mut stream = TokenStream2::new();
