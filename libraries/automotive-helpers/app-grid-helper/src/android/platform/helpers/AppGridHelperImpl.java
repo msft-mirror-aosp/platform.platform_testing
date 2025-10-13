@@ -125,6 +125,7 @@ public class AppGridHelperImpl extends AbstractStandardAppHelper implements IAut
 
         getSpectatioUiUtil().validateUiObject(app, String.format("Given app %s", appName));
         getSpectatioUiUtil().clickAndWaitUntilNewWindowAppears(app);
+        getSpectatioUiUtil().waitForIdle();
     }
 
     /** {@inherticDoc} */
