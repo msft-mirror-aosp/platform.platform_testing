@@ -31,6 +31,9 @@ class ExpandedBubbleBar(val selectedBubble: BubbleBarItem) {
 
     init {
         assertThat(bubbles.size).isAtLeast(1)
+        // The actual check is done in the accessor which will throw an exception if the expanded
+        // bubble is not visible.
+        assertThat(expandedBubble).isNotNull()
     }
 
     /** @return all the bubbles in the bubble bar. */
