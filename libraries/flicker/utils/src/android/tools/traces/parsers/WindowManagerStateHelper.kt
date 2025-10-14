@@ -35,6 +35,7 @@ import android.tools.traces.WaitCondition
 import android.tools.traces.component.ComponentNameMatcher.Companion.BUBBLE
 import android.tools.traces.component.ComponentNameMatcher.Companion.IME
 import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
+import android.tools.traces.component.ComponentNameMatcher.Companion.POPUP_WINDOW
 import android.tools.traces.component.ComponentNameMatcher.Companion.SNAPSHOT
 import android.tools.traces.component.ComponentNameMatcher.Companion.SPLASH_SCREEN
 import android.tools.traces.component.ComponentNameMatcher.Companion.SPLIT_DIVIDER
@@ -545,7 +546,12 @@ constructor(
          */
         fun withTopVisibleApps(vararg matchers: IComponentMatcher): StateSyncBuilder {
             return add("withTopVisibleApps") {
-                val visibleApps = it.wmState.visibleAppWindows
+                val visibleApps =
+                    it.wmState.visibleAppWindows.filter { appWindow ->
+                        TOP_APPS_IGNORE_MATCHERS.none { matcher ->
+                            matcher.windowMatchesAnyOf(appWindow)
+                        }
+                    }
 
                 if (visibleApps.size < matchers.size || visibleApps !is List) {
                     // Not enough windows in the visible list or visibleApps collection is not List
@@ -611,6 +617,8 @@ constructor(
         // uses it, and some tests might be sensitive to the waiting interval.
         private const val DEFAULT_RETRY_LIMIT = 20
         private const val DEFAULT_RETRY_INTERVAL_MS = 300L
+
+        private val TOP_APPS_IGNORE_MATCHERS = listOf(POPUP_WINDOW)
 
         /** @return true if it should wait for some activities to become visible. */
         private fun shouldWaitForActivities(
