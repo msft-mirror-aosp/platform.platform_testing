@@ -35,6 +35,7 @@ import android.platform.uiautomatorhelpers.DeviceHelpers.uiDevice
 import android.platform.uiautomatorhelpers.DeviceHelpers.waitForObj
 import android.platform.uiautomatorhelpers.FLING_GESTURE_INTERPOLATOR
 import android.view.Display.DEFAULT_DISPLAY
+import android.view.KeyEvent
 import android.view.WindowManager
 import android.view.WindowManager.LayoutParams.TYPE_APPLICATION
 import android.view.WindowMetrics
@@ -237,6 +238,12 @@ class NotificationShade internal constructor(val displayId: Int = DEFAULT_DISPLA
     fun closeWithBackButton() {
         LauncherInstrumentation().pressBack()
         waitForShadeToClose(displayId)
+    }
+
+    /** Closes the shade with keyboard shortcut (Meta + N). */
+    fun closeWithKeyboardShortcut() {
+        uiDevice.pressKeyCode(KeyEvent.KEYCODE_N, KeyEvent.META_META_ON)
+        waitForShadeToClose()
     }
 
     private val quickSettingsContainer: UiObject2

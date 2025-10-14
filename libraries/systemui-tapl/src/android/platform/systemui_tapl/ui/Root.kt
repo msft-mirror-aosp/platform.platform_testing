@@ -248,6 +248,13 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
         return NotificationShade(displayId)
     }
 
+    /** Opens notification shade via keyboard shortcut (Meta + N) */
+    fun openNotificationShadeViaKeyboardShortcut(): NotificationShade {
+        uiDevice.pressKeyCode(KeyEvent.KEYCODE_N, KeyEvent.META_META_ON)
+        waitForShadeToOpen()
+        return NotificationShade(displayId)
+    }
+
     private val qsSelector = sysuiResSelector("quick_settings_panel", displayId)
 
     private val notificationSwipeX: Float
