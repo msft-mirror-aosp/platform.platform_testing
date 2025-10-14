@@ -439,33 +439,6 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
     val bubbleBarFlyout: BubbleBarFlyout
         get() = BubbleBarFlyout()
 
-    /**
-     * Try to expand the bubble bar by either clicking on the [BubbleBar] itself, or if it is not
-     * shown, try to click on [StashedBubbleBar] handle.
-     */
-    fun expandBubbleBar(): ExpandedBubbleBar {
-        // Perform a quick check for bubble bar and handle so we don't have to wait for them to show
-        try {
-            if (uiDevice.hasObject(BubbleBar.BUBBLE_BAR_VIEW)) {
-                return bubbleBar.expand()
-            }
-        } catch (e: FailedEnsureException) {
-            // Bubble bar may have been animating to handle. By the time we try to click, it may be
-            // gone, ignore the failure and try to click on the handle.
-        }
-        if (uiDevice.hasObject(StashedBubbleBar.HANDLE_VIEW)) {
-            return stashedBubbleBar.click()
-        }
-        // Wait for bubble bar or handle to show
-        waitForNullableObj(BubbleBar.BUBBLE_BAR_VIEW)?.let {
-            return bubbleBar.expand()
-        }
-        waitForNullableObj(StashedBubbleBar.HANDLE_VIEW)?.let {
-            return stashedBubbleBar.click()
-        }
-        throw AssertionError("Could not expand bubble bar as bar or handle is not visible")
-    }
-
     /** Verifies that the bubble bar is hidden. */
     fun verifyBubbleBarIsHidden() {
         BubbleBar.BUBBLE_BAR_VIEW.assertInvisible(LONG_WAIT)
