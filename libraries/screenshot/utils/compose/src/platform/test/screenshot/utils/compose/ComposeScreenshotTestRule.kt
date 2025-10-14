@@ -32,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalCursorBlinkEnabled
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.ViewRootForTest
@@ -138,16 +139,20 @@ class ComposeScreenshotTestRule(
                 CustomLocale(locale = emulationSpec.locale) {
                     PlatformTheme {
                         Surface(color = MaterialTheme.colorScheme.background) {
-                            content()
+                            // Turn off text input caret blinking - caret will always be visible.
+                            // Blinking would lead to flakiness if a text input field has focus.
+                            CompositionLocalProvider(LocalCursorBlinkEnabled provides false) {
+                                content()
 
-                            // Clear the focus early. This disposable effect will run after any
-                            // DisposableEffect in content() but will run before layout/drawing, so
-                            // clearing focus early here will make sure we never draw a focused
-                            // effect.
-                            if (clearFocus) {
-                                DisposableEffect(Unit) {
-                                    focusManager.clearFocus()
-                                    onDispose {}
+                                // Clear the focus early. This disposable effect will run after any
+                                // DisposableEffect in content() but will run before layout/drawing,
+                                // so clearing focus early here will make sure we never draw a
+                                // focused effect.
+                                if (clearFocus) {
+                                    DisposableEffect(Unit) {
+                                        focusManager.clearFocus()
+                                        onDispose {}
+                                    }
                                 }
                             }
                         }
