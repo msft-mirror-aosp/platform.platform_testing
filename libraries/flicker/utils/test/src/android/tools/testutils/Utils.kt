@@ -134,8 +134,6 @@ fun getWmTraceReaderFromAsset(
     relativePathWithoutExtension: String,
     from: Long = Long.MIN_VALUE,
     to: Long = Long.MAX_VALUE,
-    addInitialEntry: Boolean = true,
-    legacyTrace: Boolean = false,
 ): Reader {
     val traceData = readAsset("$relativePathWithoutExtension.perfetto-trace")
     val trace =

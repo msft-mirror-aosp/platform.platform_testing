@@ -94,10 +94,10 @@ class LayersTraceParser(
         val idAndLayers =
             layersRows
                 .groupBy { it["layer_row_id"].toString() }
-                .map { (layerId, layerRows) ->
+                .map { (rowId, layerRows) ->
                     val args = Args.build(layerRows)
                     val isVisible = layerRows[0]["is_visible"] == 1L
-                    Pair(layerId, newLayer(args, isVisible))
+                    Pair(rowId, newLayer(args, isVisible))
                 }
                 .toMutableList()
         idAndLayers.sortBy { it.first.toLong() }
