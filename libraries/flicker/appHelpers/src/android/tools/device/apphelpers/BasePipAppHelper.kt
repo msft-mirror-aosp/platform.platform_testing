@@ -265,7 +265,7 @@ abstract class BasePipAppHelper(
     }
 
     /** Close the pip window by pressing the expand button */
-    fun expandPipWindowToApp(wmHelper: WindowManagerStateHelper) {
+    private fun expandPipWindow(wmHelper: WindowManagerStateHelper) {
         val windowRect = getWindowRect(wmHelper)
         uiDevice.click(windowRect.centerX(), windowRect.centerY())
         // search and interact with the expand button
@@ -275,7 +275,18 @@ abstract class BasePipAppHelper(
             uiDevice.findObject(expandSelector) ?: error("PIP window expand button not found")
         val expandButtonBounds = expandPipObject.visibleBounds
         uiDevice.click(expandButtonBounds.centerX(), expandButtonBounds.centerY())
+    }
+
+    /** Expand the PiP to fullscreen window by pressing the expand button */
+    fun expandPipWindowToFullscreenApp(wmHelper: WindowManagerStateHelper) {
+        expandPipWindow(wmHelper)
         wmHelper.StateSyncBuilder().withPipGone().withFullScreenApp(this).waitForAndVerify()
+    }
+
+    /** Expand the PiP to freeform window by pressing the expand button */
+    fun expandPipWindowToFreeformApp(wmHelper: WindowManagerStateHelper) {
+        expandPipWindow(wmHelper)
+        wmHelper.StateSyncBuilder().withPipGone().withFreeformApp(this).waitForAndVerify()
     }
 
     /** Double click on the PIP window to expand it */
