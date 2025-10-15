@@ -28,6 +28,7 @@ import platform.test.motion.compose.values.MotionTestValues
 import platform.test.motion.golden.FeatureCapture
 import platform.test.motion.golden.TimeSeriesCaptureScope
 import platform.test.motion.golden.asDataPoint
+import platform.test.motion.golden.feature
 
 /** Common, generic [FeatureCapture] implementations for Compose. */
 object ComposeFeatureCaptures {
@@ -114,5 +115,5 @@ fun TimeSeriesCaptureScope<SemanticsNodeInteractionsProvider>.feature(
     name: String = capture.name,
     useUnmergedTree: Boolean = false,
 ) {
-    on(matcher, useUnmergedTree = useUnmergedTree) { feature(capture, name) }
+    on(matcher, useUnmergedTree = useUnmergedTree) { feature(name, capture) }
 }
