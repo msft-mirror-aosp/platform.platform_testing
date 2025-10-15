@@ -27,6 +27,8 @@ class VhalGears(base_test.BaseTestClass):
         test_args = get_test_args(shell_escape=True)
         snippet_config = Config(am_instrument_options=test_args)
         self.main_device.load_snippet('mbs', android_device.MBS_PACKAGE, config=snippet_config)
+        if not self.main_device.is_adb_root:
+            self.main_device.root_adb()
 
     def setup_test(self):
         pass
@@ -34,11 +36,24 @@ class VhalGears(base_test.BaseTestClass):
     def teardown_test(self):
         pass
 
-    def test_set_driver_temp(self):
+    def test_transmission(self):
         """Shift the car to park and check the UI for the gear indicator change."""
         self.main_device.mbs.shiftToPark()
+        self.main_device.mbs.shiftToReverse() # check for camera overlay here
+        self.main_device.mbs.shiftToNeutral()
+        self.main_device.mbs.shiftToDrive()
 
-        # todo - where is the gear indicator in the ref device ui?
+        # todo - cluster display's gear indicators change their "selected" property in response
+        # to this.  perform ui validation that way
+
+    def test_rpm(self):
+        self.main_device.mbs.setEngineRpm("1000")
+        asserts.assert_true(self.main_device.mbs.hasUIElementWithText("1.0"), 'RPM set')
+
+    def test_speed(self):
+        self.main_device.mbs.setVehicleSpeed("30")
+        self.main_device.mbs.setVehicleSpeed("60")
+        # todo - cuttlefish speed display doesn't update in response to this.  bug?
 
 
 if __name__ == '__main__':

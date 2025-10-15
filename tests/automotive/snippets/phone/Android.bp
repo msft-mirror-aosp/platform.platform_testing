@@ -21,6 +21,7 @@ android_test {
     name: "AutomotiveSnippet",
     static_libs: [
         "automotive-dial-app-helper",
+        "automotive-hvac-helper",
         "automotive-vehiclehardkeys-app-helper",
         "automotive-settings-app-helper",
         "automotive-sms-helper",

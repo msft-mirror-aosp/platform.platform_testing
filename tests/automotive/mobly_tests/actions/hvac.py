@@ -27,6 +27,8 @@ class VhalHvac(base_test.BaseTestClass):
         test_args = get_test_args(shell_escape=True)
         snippet_config = Config(am_instrument_options=test_args)
         self.main_device.load_snippet('mbs', android_device.MBS_PACKAGE, config=snippet_config)
+        if not self.main_device.is_adb_root:
+            self.main_device.root_adb()
 
     def setup_test(self):
         pass
@@ -41,6 +43,22 @@ class VhalHvac(base_test.BaseTestClass):
         self.main_device.mbs.setDriverHvacTemperature("65")
         asserts.assert_true(self.main_device.mbs.hasUIElementWithText("65"), 'Temperature set')
 
+    def test_set_passenger_temp(self):
+        """Set the passenger temperature and check the UI for the resulting expected temp."""
+        self.main_device.mbs.setPassengerHvacTemperature("69")
+        asserts.assert_true(self.main_device.mbs.hasUIElementWithText("69"), 'Temperature set')
+        self.main_device.mbs.setPassengerHvacTemperature("64")
+        asserts.assert_true(self.main_device.mbs.hasUIElementWithText("64"), 'Temperature set')
+
+    def test_set_driver_seat_heater(self):
+        """Click the seat heater buttons and check the property value."""
+        self.main_device.mbs.showHideHvac()
+
+        initial_seat_temp = self.main_device.mbs.getDriverSeatTemperature()
+        for i in range(1, 4):
+            self.main_device.mbs.clickDriverSeatTemperature()
+            new_seat_temp = self.main_device.mbs.getDriverSeatTemperature()
+            asserts.assert_equal(new_seat_temp, (initial_seat_temp + i) % 3, 'Seat temp fail')
 
 if __name__ == '__main__':
     common_main()
