@@ -23,6 +23,7 @@ android_test {
     static_libs: [
         "androidx.test.runner",
         "androidx.test.rules",
+        "automotive-settings-app-helper",
         "automotive-app-grid-helper",
         "automotive-home-helper",
         "automotive-media-center-app-helper",
@@ -31,6 +32,7 @@ android_test {
         "hamcrest-library",
         "platform-test-junit-rules",
         "platform-test-options",
+        "com_android_car_settings_flags_lib",
     ],
     srcs: ["src/**/*.java"],
     test_suites: ["catbox"],
