@@ -1,0 +1,6 @@
+TestBeds:
+  - Name: TestBed
+    Controllers:
+      AndroidDevice:
+        - serial: serial_number
+          label: auto

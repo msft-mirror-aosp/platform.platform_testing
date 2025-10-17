@@ -20,7 +20,6 @@ import static com.google.common.util.concurrent.MoreExecutors.newDirectExecutorS
 
 import android.app.UiAutomation;
 import android.car.VehicleGear;
-import android.os.ParcelFileDescriptor;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -35,7 +34,6 @@ import com.google.android.mobly.snippet.rpc.Rpc;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ListenableFuture;
 
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 public class CarPropertySnippet implements Snippet {
@@ -126,129 +124,118 @@ public class CarPropertySnippet implements Snippet {
     }
     @Rpc(description = "Select drive on the vehicle's transmission")
     public void shiftToDrive() {
-        PropertyCommand.start()
-                .set()
-                .propertyName("GEAR_SELECTION")
-                .intValue(VehicleGear.GEAR_DRIVE)
-                .execute(this);
+        set("GEAR_SELECTION").value(VehicleGear.GEAR_DRIVE).execute(mUiAutomation);
     }
 
     @Rpc(description = "Select reverse on the vehicle's transmission")
     public void shiftToReverse() {
-        PropertyCommand.start()
-                .set()
-                .propertyName("GEAR_SELECTION")
-                .intValue(VehicleGear.GEAR_REVERSE)
-                .execute(this);
+        set("GEAR_SELECTION").value(VehicleGear.GEAR_REVERSE).execute(mUiAutomation);
     }
 
     @Rpc(description = "Select neutral on the vehicle's transmission")
     public void shiftToNeutral() {
-        PropertyCommand.start()
-                .set()
-                .propertyName("GEAR_SELECTION")
-                .intValue(VehicleGear.GEAR_NEUTRAL)
-                .execute(this);
+        set("GEAR_SELECTION").value(VehicleGear.GEAR_NEUTRAL).execute(mUiAutomation);
     }
 
     @Rpc(description = "Select park on the vehicle's transmission")
     public void shiftToPark() {
-        PropertyCommand.start()
-                .set()
-                .propertyName("GEAR_SELECTION")
-                .intValue(VehicleGear.GEAR_PARK)
-                .execute(this);
+        set("GEAR_SELECTION").value(VehicleGear.GEAR_PARK).execute(mUiAutomation);
     }
 
     @Rpc(description = "Set the engine's rpm")
     public void setEngineRpm(String rpm) {
-        PropertyCommand.start()
-                .set()
-                .propertyName("ENGINE_RPM")
-                .floatValue(Float.parseFloat(rpm))
-                .execute(this);
+        set("ENGINE_RPM").value(Float.parseFloat(rpm)).execute(mUiAutomation);
     }
 
     @Rpc(description = "Set the vehicle's speed in meters per second")
     public void setVehicleSpeed(String metersPerSecond) {
-        PropertyCommand.start()
-                .set()
-                .propertyName("PERF_VEHICLE_SPEED")
-                .floatValue(Float.parseFloat(metersPerSecond))
-                .execute(this);
+        set("PERF_VEHICLE_SPEED").value(Float.parseFloat(metersPerSecond)).execute(mUiAutomation);
     }
 
-    private interface CommandStart {
-        GetSet get();
-        GetSet set();
+    @Rpc(description = "Engage or disengage the parking brake (pass 'true' or 'false')")
+    public void setParkingBrake(String engage) {
+        set("PARKING_BRAKE_ON").value(Boolean.parseBoolean(engage)).execute(mUiAutomation);
     }
 
-    private interface GetSet {
-        PropertyName propertyName(String propertyName);
+    @Rpc(description = "Get the state of the parking brake")
+    public boolean getParkingBrake() {
+        return get("PARKING_BRAKE_ON").booleanValue(mUiAutomation);
     }
 
-    private interface PropertyName {
-        PropertyValue floatValue(float value);
-        PropertyValue intValue(int value);
+    private static SetProp set(String name) {
+        return new SetProp(name);
     }
 
-    private interface PropertyValue {
-        void execute(CarPropertySnippet s);
-    }
-
-    private static class PropertyCommand
-        implements CommandStart, GetSet, PropertyName, PropertyValue
-    {
-        private final StringBuilder command =
-                new StringBuilder("dumpsys android.hardware.automotive.vehicle.IVehicle/default ");
-
-        private PropertyCommand() {
-
+    private static class SetProp {
+        private final ExecutableCommand mCommand;
+        public SetProp(String name) {
+            String command =
+                    "dumpsys android.hardware.automotive.vehicle.IVehicle/default --set "
+                            + name + " ";
+            mCommand = new ExecutableCommand(command);
         }
 
-        public static CommandStart start() {
-            return new PropertyCommand();
+        public ExecuteSet value(boolean value) {
+            return new ExecuteSet(mCommand.append("-i ").append(value ? "1" : "0"));
         }
 
-        public GetSet get() {
-            command.append("--get ");
-            return this;
+        public ExecuteSet value(float value) {
+            return new ExecuteSet(mCommand.append("-f ").append("" + value));
         }
 
-        public GetSet set() {
-            command.append("--set ");
-            return this;
-        }
-
-        public PropertyName propertyName(String propertyName) {
-            command.append(propertyName);
-            command.append(" ");
-            return this;
-        }
-
-        public PropertyValue floatValue(float value) {
-            command.append("-f ");
-            command.append(value);
-            return this;
-        }
-
-        public PropertyValue intValue(int value) {
-            command.append("-i ");
-            command.append(value);
-            return this;
-        }
-
-        public void execute(CarPropertySnippet s) {
-            s.executeShellCommand(command.toString());
+        public ExecuteSet value(int value) {
+            return new ExecuteSet(mCommand.append("-i ").append("" + value));
         }
     }
 
-    private void executeShellCommand(String command) {
-        //noinspection EmptyTryBlock
-        try (ParcelFileDescriptor ignored = mUiAutomation.executeShellCommand(command)) {
+    private static class ExecuteSet {
+        private final ExecutableCommand mCommand;
+        public ExecuteSet(ExecutableCommand command) {
+            mCommand = command;
+        }
 
-        } catch (IOException e) {
-            throw new RuntimeException("IOException while executing command: " + command, e);
+        public void execute(UiAutomation uiAutomation) {
+            mCommand.execute(uiAutomation);
+        }
+    }
+
+    private static GetProp get(String name) {
+        return new GetProp(name);
+    }
+
+    private static class GetProp {
+        private final ExecutableCommand mCommand;
+        public GetProp(String name) {
+            String command =
+                    "dumpsys android.hardware.automotive.vehicle.IVehicle/default --get " + name;
+            mCommand = new ExecutableCommand(command);
+        }
+
+        public boolean booleanValue(UiAutomation uiAutomation) {
+            return intValue(uiAutomation) != 0;
+        }
+
+        public float floatValue(UiAutomation uiAutomation) {
+            return Float.parseFloat(execute(uiAutomation, "float"));
+        }
+
+        public int intValue(UiAutomation uiAutomation) {
+            return Integer.parseInt(execute(uiAutomation, "int32"));
+        }
+
+        private String execute(UiAutomation uiAutomation, String typeName) {
+            String VALUE_OBJECT_HEADER = "RawPropValues{";
+            String output = mCommand.executeWithOutput(uiAutomation);
+            int valuesObjectStart = output.indexOf(VALUE_OBJECT_HEADER);
+            int valuesStart = valuesObjectStart + VALUE_OBJECT_HEADER.length();
+            int valuesObjectEnd = output.indexOf("}", valuesStart);
+            String values = output.substring(valuesStart, valuesObjectEnd);
+
+            String typeHeader = typeName + "Values: [";
+            int valueListStart = values.indexOf(typeHeader);
+            int valueStart = valueListStart + typeHeader.length();
+            int valueEnd = values.indexOf("]", valueStart);
+            return values.substring(valueStart, valueEnd);
         }
     }
 }

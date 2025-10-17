@@ -33,6 +33,7 @@ android_test {
         "android-support-multidex",
         "automotive-notifications-app-helper",
         "vehicle-actions-library",
+        "snippet-utilities",
     ],
     srcs: ["src/**/*.java"],
     manifest: "AndroidAutomotiveManifest.xml",
