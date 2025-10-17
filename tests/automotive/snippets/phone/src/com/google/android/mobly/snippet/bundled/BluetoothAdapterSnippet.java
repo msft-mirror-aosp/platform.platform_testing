@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Build;
+import android.os.SystemClock;
 import android.util.Log;
 
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -37,7 +38,9 @@ import com.google.android.mobly.snippet.bundled.utils.Utils;
 import com.google.android.mobly.snippet.rpc.Rpc;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -61,7 +64,7 @@ public class BluetoothAdapterSnippet implements Snippet {
     // Default timeout in seconds for UI update.
     private static final int TIMEOUT_UI_UPDATE_SEC = 8;
     // Timeout in seconds for Bluetooth profile connections.
-    private static final int PROFILE_CONNECTION_TIMEOUT_SEC = 120;
+    private static final int PROFILE_CONNECTION_TIMEOUT_SEC = 15;
     private final Context mContext;
     private static final BluetoothAdapter sBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     private static final Pattern TEXT_PATTERN_ALLOW =
@@ -84,7 +87,8 @@ public class BluetoothAdapterSnippet implements Snippet {
     static final String PAN = "PAN";
     private static final Set<String> ALL_PROFILES =
             new HashSet<>(Arrays.asList(A2DP_SINK, HEADSET_CLIENT, MAP_CLIENT, PBAP_CLIENT, PAN));
-    Set<String> mConnectedProfiles = new HashSet<>();
+    Map<String, Long> mConnectedProfiles = new HashMap<>();
+    Map<String, Long> mDisconnectedProfiles = new HashMap<>();
 
     public BluetoothAdapterSnippet() throws Throwable {
         mContext = InstrumentationRegistry.getInstrumentation().getContext();
@@ -243,7 +247,7 @@ public class BluetoothAdapterSnippet implements Snippet {
         BluetoothDevice device =
                 com.google.android.mobly.snippet.bundled.bluetooth.BluetoothAdapterSnippet
                         .getKnownDeviceByAddress(deviceAddress);
-        mConnectedProfiles = new HashSet<>();
+        mConnectedProfiles = new HashMap<>();
         ProfileConnectionBroadcastReceiver receiver =
                 new ProfileConnectionBroadcastReceiver(mContext);
         IntentFilter a2dpSinkFilter =
@@ -270,12 +274,20 @@ public class BluetoothAdapterSnippet implements Snippet {
             if (!Utils.waitUntil(
                     () -> mConnectedProfiles.size() == ALL_PROFILES.size(),
                     PROFILE_CONNECTION_TIMEOUT_SEC)) {
+                String connectedProfilesAndDelay = "";
+                for (Map.Entry<String, Long> entry : mConnectedProfiles.entrySet()) {
+                    String profile = entry.getKey();
+                    Long delay = entry.getValue();
+                    connectedProfilesAndDelay += (profile + ": " + delay + " ms\n");
+                }
                 throw new BluetoothAdapterSnippetException(
                         "Failed to connect all required bluetooth profiles with device "
                                 + deviceAddress
                                 + " after "
                                 + PROFILE_CONNECTION_TIMEOUT_SEC
-                                + " secs.");
+                                + " secs.\n"
+                                + "profile and the time it took to connect: \n"
+                                + connectedProfilesAndDelay);
             }
         } finally {
             mContext.unregisterReceiver(receiver);
@@ -288,15 +300,56 @@ public class BluetoothAdapterSnippet implements Snippet {
         BluetoothDevice device =
                 com.google.android.mobly.snippet.bundled.bluetooth.BluetoothAdapterSnippet
                         .getKnownDeviceByAddress(deviceAddress);
-        int result = (int) Utils.invokeByReflection(device, "disconnect");
-        if (result == BluetoothStatusCodes.ERROR_BLUETOOTH_NOT_ENABLED) {
-            throw new BluetoothAdapterSnippetException(
-                    "Failed to initiate the profile disconnection process to device: "
-                            + deviceAddress);
+        mDisconnectedProfiles = new HashMap<>();
+        ProfileConnectionBroadcastReceiver receiver =
+                new ProfileConnectionBroadcastReceiver(mContext);
+        IntentFilter a2dpSinkFilter =
+                new IntentFilter(BLUETOOTH_A2DP_SINK_ACTION_CONNECTION_STATE_CHANGED);
+        IntentFilter headsetClientFilter =
+                new IntentFilter(BLUETOOTH_HEADSET_CLIENT_ACTION_CONNECTION_STATE_CHANGED);
+        IntentFilter mapClientFilter =
+                new IntentFilter(BLUETOOTH_MAP_CLIENT_ACTION_CONNECTION_STATE_CHANGED);
+        IntentFilter pbapClientFilter =
+                new IntentFilter(BLUETOOTH_PBAP_CLIENT_ACTION_CONNECTION_STATE_CHANGED);
+        IntentFilter panFilter = new IntentFilter(BLUETOOTH_PAN_ACTION_CONNECTION_STATE_CHANGED);
+        mContext.registerReceiver(receiver, a2dpSinkFilter);
+        mContext.registerReceiver(receiver, headsetClientFilter);
+        mContext.registerReceiver(receiver, mapClientFilter);
+        mContext.registerReceiver(receiver, pbapClientFilter);
+        mContext.registerReceiver(receiver, panFilter);
+        try {
+            int result = (int) Utils.invokeByReflection(device, "disconnect");
+            if (result == BluetoothStatusCodes.ERROR_BLUETOOTH_NOT_ENABLED) {
+                throw new BluetoothAdapterSnippetException(
+                        "Failed to initiate the profile disconnection process to device: "
+                                + deviceAddress);
+            }
+            if (!Utils.waitUntil(
+                    () -> mDisconnectedProfiles.size() == ALL_PROFILES.size(),
+                    PROFILE_CONNECTION_TIMEOUT_SEC)) {
+                String disconnectedProfilesAndDelay = "";
+                for (Map.Entry<String, Long> entry : mDisconnectedProfiles.entrySet()) {
+                    String profile = entry.getKey();
+                    Long delay = entry.getValue();
+                    disconnectedProfilesAndDelay += (profile + ": " + delay + " ms\n");
+                }
+                throw new BluetoothAdapterSnippetException(
+                        "Failed to disconnect all required bluetooth profiles with device "
+                                + deviceAddress
+                                + " after "
+                                + PROFILE_CONNECTION_TIMEOUT_SEC
+                                + " secs.\n"
+                                + "profile and the time it took to disconnect: \n"
+                                + disconnectedProfilesAndDelay);
+            }
+        } finally {
+            mContext.unregisterReceiver(receiver);
         }
     }
 
     class ProfileConnectionBroadcastReceiver extends BroadcastReceiver {
+
+        long mStartTime = SystemClock.elapsedRealtime();
 
         ProfileConnectionBroadcastReceiver(Context context) throws Throwable {
             Utils.adaptShellPermissionIfRequired(context);
@@ -312,10 +365,18 @@ public class BluetoothAdapterSnippet implements Snippet {
                             "ProfileConnectionBroadcastReceiver",
                             " Action " + action + ", new A2DP Sink State :" + newState);
                     if (newState == BluetoothProfile.STATE_CONNECTED) {
-                        mConnectedProfiles.add(A2DP_SINK);
+                        mConnectedProfiles.put(
+                                A2DP_SINK, SystemClock.elapsedRealtime() - mStartTime);
                         Log.d(
                                 "ProfileConnectionBroadcastReceiver",
                                 A2DP_SINK + " added to mConnectedProfiles");
+                    }
+                    if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                        mDisconnectedProfiles.put(
+                                A2DP_SINK, SystemClock.elapsedRealtime() - mStartTime);
+                        Log.d(
+                                "ProfileConnectionBroadcastReceiver",
+                                A2DP_SINK + " added to mDisconnectedProfiles");
                     }
                 }
                 case BLUETOOTH_HEADSET_CLIENT_ACTION_CONNECTION_STATE_CHANGED -> {
@@ -323,10 +384,18 @@ public class BluetoothAdapterSnippet implements Snippet {
                             "ProfileConnectionBroadcastReceiver",
                             " Action " + action + ", new Headset Client State :" + newState);
                     if (newState == BluetoothProfile.STATE_CONNECTED) {
-                        mConnectedProfiles.add(HEADSET_CLIENT);
+                        mConnectedProfiles.put(
+                                HEADSET_CLIENT, SystemClock.elapsedRealtime() - mStartTime);
                         Log.d(
                                 "ProfileConnectionBroadcastReceiver",
                                 HEADSET_CLIENT + " added to mConnectedProfiles");
+                    }
+                    if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                        mDisconnectedProfiles.put(
+                                HEADSET_CLIENT, SystemClock.elapsedRealtime() - mStartTime);
+                        Log.d(
+                                "ProfileConnectionBroadcastReceiver",
+                                HEADSET_CLIENT + " added to mDisconnectedProfiles");
                     }
                 }
                 case BLUETOOTH_MAP_CLIENT_ACTION_CONNECTION_STATE_CHANGED -> {
@@ -334,10 +403,18 @@ public class BluetoothAdapterSnippet implements Snippet {
                             "ProfileConnectionBroadcastReceiver",
                             " Action " + action + ", new MAP Client State :" + newState);
                     if (newState == BluetoothProfile.STATE_CONNECTED) {
-                        mConnectedProfiles.add(MAP_CLIENT);
+                        mConnectedProfiles.put(
+                                MAP_CLIENT, SystemClock.elapsedRealtime() - mStartTime);
                         Log.d(
                                 "ProfileConnectionBroadcastReceiver",
                                 MAP_CLIENT + " added to mConnectedProfiles");
+                    }
+                    if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                        mDisconnectedProfiles.put(
+                                MAP_CLIENT, SystemClock.elapsedRealtime() - mStartTime);
+                        Log.d(
+                                "ProfileConnectionBroadcastReceiver",
+                                MAP_CLIENT + " added to mDisconnectedProfiles");
                     }
                 }
                 case BLUETOOTH_PBAP_CLIENT_ACTION_CONNECTION_STATE_CHANGED -> {
@@ -345,10 +422,18 @@ public class BluetoothAdapterSnippet implements Snippet {
                             "ProfileConnectionBroadcastReceiver",
                             " Action " + action + ", new PBAP Client State :" + newState);
                     if (newState == BluetoothProfile.STATE_CONNECTED) {
-                        mConnectedProfiles.add(PBAP_CLIENT);
+                        mConnectedProfiles.put(
+                                PBAP_CLIENT, SystemClock.elapsedRealtime() - mStartTime);
                         Log.d(
                                 "ProfileConnectionBroadcastReceiver",
                                 PBAP_CLIENT + " added to mConnectedProfiles");
+                    }
+                    if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                        mDisconnectedProfiles.put(
+                                PBAP_CLIENT, SystemClock.elapsedRealtime() - mStartTime);
+                        Log.d(
+                                "ProfileConnectionBroadcastReceiver",
+                                PBAP_CLIENT + " added to mDisconnectedProfiles");
                     }
                 }
                 case BLUETOOTH_PAN_ACTION_CONNECTION_STATE_CHANGED -> {
@@ -356,10 +441,16 @@ public class BluetoothAdapterSnippet implements Snippet {
                             "ProfileConnectionBroadcastReceiver",
                             " Action " + action + ", new PAN State :" + newState);
                     if (newState == BluetoothProfile.STATE_CONNECTED) {
-                        mConnectedProfiles.add(PAN);
+                        mConnectedProfiles.put(PAN, SystemClock.elapsedRealtime() - mStartTime);
                         Log.d(
                                 "ProfileConnectionBroadcastReceiver",
                                 PAN + " added to mConnectedProfiles");
+                    }
+                    if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                        mDisconnectedProfiles.put(PAN, SystemClock.elapsedRealtime() - mStartTime);
+                        Log.d(
+                                "ProfileConnectionBroadcastReceiver",
+                                PAN + " added to mDisconnectedProfiles");
                     }
                 }
                 default -> {}
