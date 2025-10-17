@@ -32,60 +32,62 @@ from bluetooth_test import bluetooth_base_test
 from utilities import constants
 import logging
 
-class BluetoothDisableEnableMediaTest(bluetooth_base_test.BluetoothBaseTest):
 
+class BluetoothDisableEnableMediaTest(bluetooth_base_test.BluetoothBaseTest):
     NO_MEDIA_TAG = 'no media'
 
     def setup_test(self):
         super().setup_test()
         # Pair the devices
         self.bt_utils.pair_primary_to_secondary()
+        super().enable_recording()
         self.call_utils.wait_with_log(constants.DEVICE_CONNECT_WAIT_TIME)
         self.target_name = self.target.mbs.btGetName()
-        super().enable_recording()
 
-    def test_disable_enable_media(self):
-        # Log BT Connection State after pairing
-        bt_connection_state=self.call_utils.get_bt_connection_status_using_adb_command(self.discoverer)
-        logging.info("BT State after pairing : <%s>", bt_connection_state)
 
-        for i in range(0,2):
-          # Navigate to the bluetooth settings page
-          self.call_utils.open_bluetooth_settings()
-          # Disable media for the listed paired device via the preference button
-          self.call_utils.press_media_toggle_on_device(self.target_name)
-          # Confirm that the media button is unchecked
-          asserts.assert_false(
-              self.discoverer.mbs.isMediaPreferenceChecked(),
-              "Expected media button to be unchecked after pressing it.")
+def test_disable_enable_media(self):
+    # Log BT Connection State after pairing
+    bt_connection_state = self.call_utils.get_bt_connection_status_using_adb_command(
+        self.discoverer)
+    logging.info("BT State after pairing : <%s>", bt_connection_state)
 
-          # Click on device and confirm that the summary says "No media"
-          self.discoverer.mbs.pressDeviceInBluetoothSettings(self.target_name)
-          summary = self.discoverer.mbs.getDeviceSummary()
-          asserts.assert_true(
-              self.NO_MEDIA_TAG in summary,
-              ("Expected device summary (on Level Two page) to include \'%s\'" % self.NO_MEDIA_TAG)
-          )
+    for i in range(0, 2):
+        # Navigate to the bluetooth settings page
+        self.call_utils.open_bluetooth_settings_form_status_bar()
+        # Disable media for the listed paired device via the preference button
+        self.call_utils.press_media_toggle_on_device(self.target_name)
+        # Confirm that the media button is unchecked
+        asserts.assert_false(
+            self.discoverer.mbs.isMediaPreferenceChecked(),
+            "Expected media button to be unchecked after pressing it.")
 
-          # Go back to the bluetooth settings page and enable media via the preference button
-          self.call_utils.press_home()
-          self.call_utils.open_bluetooth_settings()
-          self.call_utils.press_media_toggle_on_device(self.target_name)
-          self.discoverer.mbs.waitUntilConnectionStatus("Connected")
+        # Click on device and confirm that the summary says "No media"
+        self.discoverer.mbs.pressDeviceInBluetoothSettings(self.target_name)
+        summary = self.discoverer.mbs.getDeviceSummary()
+        asserts.assert_true(
+            self.NO_MEDIA_TAG in summary,
+            ("Expected device summary (on Level Two page) to include \'%s\'" % self.NO_MEDIA_TAG)
+        )
 
-          # Confirm that the media button is re-enabled
-          asserts.assert_true(
-              self.discoverer.mbs.isMediaPreferenceChecked(),
-              "Expected media button to be checked after pressing it a second time.")
+        # Go back to the bluetooth settings page and enable media via the preference button
+        self.call_utils.press_home()
+        self.call_utils.open_bluetooth_settings()
+        self.call_utils.press_media_toggle_on_device(self.target_name)
+        self.discoverer.mbs.waitUntilConnectionStatus("Connected")
 
-          # Click on the device and confirm that the summary doesn't include "media"
-          self.call_utils.open_bluetooth_settings()
-          self.discoverer.mbs.pressDeviceInBluetoothSettings(self.target_name)
-          summary = self.discoverer.mbs.getDeviceSummary()
-          asserts.assert_false(
-              self.NO_MEDIA_TAG in summary,
-          "Found unexpected \'%s\' in device summary after re-enabling media." % self.NO_MEDIA_TAG
-          )
+        # Confirm that the media button is re-enabled
+        asserts.assert_true(
+            self.discoverer.mbs.isMediaPreferenceChecked(),
+            "Expected media button to be checked after pressing it a second time.")
+
+        # Click on the device and confirm that the summary doesn't include "media"
+        self.call_utils.open_bluetooth_settings()
+        self.discoverer.mbs.pressDeviceInBluetoothSettings(self.target_name)
+        summary = self.discoverer.mbs.getDeviceSummary()
+        asserts.assert_false(
+            self.NO_MEDIA_TAG in summary,
+            "Found unexpected \'%s\' in device summary after re-enabling media." % self.NO_MEDIA_TAG
+        )
 
 
 if __name__ == '__main__':

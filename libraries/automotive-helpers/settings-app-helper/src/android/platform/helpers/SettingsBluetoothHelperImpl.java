@@ -30,6 +30,7 @@ public class SettingsBluetoothHelperImpl extends AbstractStandardAppHelper
 
     private static final String LOG_TAG = SettingHelperImpl.class.getSimpleName();
     private static final int WAIT_TIME_MAX = 15;
+    private static final int MS_WAIT = 5000;
 
     private final ScrollUtility mScrollUtility;
     private final SeekUtility mSeekUtility;
@@ -120,7 +121,7 @@ public class SettingsBluetoothHelperImpl extends AbstractStandardAppHelper
 
         getSpectatioUiUtil()
                 .validateUiObject(toggleButton, AutomotiveConfigConstants.TOGGLE_DEVICE_BLUETOOTH);
-        getSpectatioUiUtil().clickAndWait(toggleButton);
+        getSpectatioUiUtil().clickAndWait(toggleButton, MS_WAIT);
     }
 
     /** {@inheritDoc} */
@@ -136,7 +137,7 @@ public class SettingsBluetoothHelperImpl extends AbstractStandardAppHelper
 
         getSpectatioUiUtil()
                 .validateUiObject(toggleButton, AutomotiveConfigConstants.TOGGLE_DEVICE_BLUETOOTH);
-        getSpectatioUiUtil().clickAndWait(toggleButton);
+        getSpectatioUiUtil().clickAndWait(toggleButton, MS_WAIT);
     }
 
     /** {@inheritDoc} */
@@ -152,7 +153,7 @@ public class SettingsBluetoothHelperImpl extends AbstractStandardAppHelper
         UiObject2 toggleButton = getSpectatioUiUtil().findUiObject(toggleSelector);
 
         getSpectatioUiUtil().validateUiObject(toggleButton, AutomotiveConfigConstants.PHONE_BUTTON);
-        getSpectatioUiUtil().clickAndWait(toggleButton);
+        getSpectatioUiUtil().clickAndWait(toggleButton, MS_WAIT);
     }
 
     /** {@inheritDoc} */
@@ -180,8 +181,7 @@ public class SettingsBluetoothHelperImpl extends AbstractStandardAppHelper
 
         BySelector statusSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.DEVICE_HEADER_SUMMARY);
-        getSpectatioUiUtil().waitForUiObject(statusSelector);
-        UiObject2 statusField = getSpectatioUiUtil().findUiObject(statusSelector);
+        UiObject2 statusField = getSpectatioUiUtil().waitForUiObject(statusSelector);
         getSpectatioUiUtil()
                 .validateUiObject(statusField, AutomotiveConfigConstants.DEVICE_HEADER_SUMMARY);
         return statusField.getText();
