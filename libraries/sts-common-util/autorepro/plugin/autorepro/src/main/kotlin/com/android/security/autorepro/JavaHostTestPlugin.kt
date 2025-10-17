@@ -82,6 +82,14 @@ class JavaHostTestPlugin : Plugin<Project> {
             resourceArtifacts = copyTestcasesResourcesTasks,
         )
 
+        // Fix "Property '$1' specifies file 'autorepro-manifest.json' which doesn't exist."
+        // Add a dependency on `writeManifestTask` to the `assemble` task.
+        // This ensures that the `autorepro-manifest.json` file is generated before
+        // the `assemble` task completes, making it available for downstream tasks
+        // like `mergeManifests`. This is necessary for Gradle 9.1+ which has
+        // stricter validation of task inputs and outputs.
+        project.tasks.named("assemble").configure { it.dependsOn(writeManifestTask) }
+
         val verifyPackageNamesTask =
             project.tasks.register("verifyPackageNames") { task ->
                 task.doLast {
