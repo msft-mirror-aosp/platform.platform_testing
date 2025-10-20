@@ -292,7 +292,7 @@ object ConditionsFactory {
             containsActivity(componentMatcher),
             containsWindow(componentMatcher),
             isActivityVisible(componentMatcher),
-            isWindowSurfaceShown(componentMatcher),
+            isWindowSurfaceShown(componentMatcher, displayId),
             isAppTransitionIdle(displayId),
         )
 
