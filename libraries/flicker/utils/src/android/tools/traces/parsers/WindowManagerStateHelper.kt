@@ -61,9 +61,13 @@ constructor(
     /** Instrumentation to run the tests */
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation(),
     private val clearCacheAfterParsing: Boolean = true,
+    private val ignoreLayersInVirtualDisplay: Boolean = true,
     /** Predicate to supply a new UI information */
     private val deviceDumpSupplier: Supplier<DeviceStateDump> = Supplier {
-        getCurrentStateDump(clearCacheAfterParsing = clearCacheAfterParsing)
+        getCurrentStateDump(
+            clearCacheAfterParsing = clearCacheAfterParsing,
+            ignoreLayersInVirtualDisplay = ignoreLayersInVirtualDisplay,
+        )
     },
     /** Number of attempts to satisfy a wait condition */
     private val numRetries: Int = DEFAULT_RETRY_LIMIT,

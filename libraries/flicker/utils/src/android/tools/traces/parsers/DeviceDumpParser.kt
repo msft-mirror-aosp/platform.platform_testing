@@ -48,16 +48,16 @@ class DeviceDumpParser {
          * @param wmTraceData [WindowManagerTrace] content
          * @param layersTraceData [LayersTrace] content
          * @param clearCacheAfterParsing If the caching used while parsing the proto should be
-         *
-         * ```
-         *                               cleared or remain in memory
-         * ```
+         *   cleared or remain in memory
+         * @param ignoreLayersInVirtualDisplay If true the layers associated with virtual displays
+         *   will not be stored in the LayerTraceEntry
          */
         @JvmStatic
         fun fromNullableDump(
             perfettoTrace: ByteArray,
             dumpTypes: Array<DumpType>,
             clearCacheAfterParsing: Boolean,
+            ignoreLayersInVirtualDisplay: Boolean,
         ): NullableDeviceStateDump {
             return withTracing("fromNullableDump") {
                     val hasSfDump = dumpTypes.contains(DumpType.SF)
@@ -70,7 +70,10 @@ class DeviceDumpParser {
                         TraceProcessorSession.loadPerfettoTrace(perfettoTrace) { session ->
                             if (hasSfDump) {
                                 layerState =
-                                    LayersTraceParser()
+                                    LayersTraceParser(
+                                            ignoreLayersInVirtualDisplay =
+                                                ignoreLayersInVirtualDisplay
+                                        )
                                         .parse(session, clearCache = clearCacheAfterParsing)
                                         .entries
                                         .first()
@@ -97,10 +100,16 @@ class DeviceDumpParser {
             perfettoTrace: ByteArray,
             dumpTypes: Array<DumpType>,
             clearCacheAfterParsing: Boolean,
+            ignoreLayersInVirtualDisplay: Boolean,
         ): DeviceStateDump {
             return withTracing("fromDump") {
                 val nullableDump =
-                    fromNullableDump(perfettoTrace, dumpTypes, clearCacheAfterParsing)
+                    fromNullableDump(
+                        perfettoTrace,
+                        dumpTypes,
+                        clearCacheAfterParsing,
+                        ignoreLayersInVirtualDisplay,
+                    )
                 DeviceStateDump(
                     nullableDump.wmState ?: error("WMState dump missing"),
                     nullableDump.layerState ?: error("Layer State dump missing"),
