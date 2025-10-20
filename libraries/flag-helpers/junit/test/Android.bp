@@ -25,7 +25,7 @@ android_test {
     srcs: ["src/**/*.java"],
     exclude_srcs: ["src/**/host/*.java"],
     sdk_version: "test_current",
-    min_sdk_version : "29",
+    min_sdk_version: "29",
     static_libs: [
         "androidx.test.rules",
         "auto_value_annotations",
@@ -51,8 +51,6 @@ java_test_host {
         "mockito-host",
         "objenesis",
         "platform-test-annotations",
-    ],
-    libs: [
         "tradefed",
     ],
     test_options: {

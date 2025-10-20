@@ -16,33 +16,25 @@
 
 package platform.test.motion.golden
 
-/**
- * Captures a time-series feature of an observed [T].
- *
- * A [DataPoint] of type [V] is recorded at each frame.
- */
-class FeatureCapture<T, V : Any>(val name: String, private val captureFn: (T) -> DataPoint<V>) {
-    fun capture(observed: T) = captureFn(observed)
-}
-
 class TimeSeriesCaptureScope<T>(
     private val observing: T?,
     private val valueCollector: MutableMap<String, MutableList<DataPoint<*>>>,
 ) {
 
     /**
-     * Records a [DataPoint] from [observing], extracted [using] the specified [FeatureCapture] and
-     * stored in the time-series as [name].
+     * Records a [DataPoint] from [observing], extracted [capture] and stored in the time-series as
+     * [name].
      *
      * If the backing [observing] object cannot be resolved during an animation frame,
      * `DataPoint.notFound` is recorded in the time-series.
      *
-     * @param using extracts a [DataPoint] from [observing]
      * @param name unique, human-readable label under which the feature is stored in the time-series
+     * @param capture lambda function that extracts a [DataPoint] from the [observing] object. This
+     *   is only invoked if [observing] is not null.
      */
-    fun feature(using: FeatureCapture<in T, *>, name: String = using.name) {
-        val dataPoint = if (observing != null) using.capture(observing) else DataPoint.notFound()
-        valueCollector.computeIfAbsent(name) { mutableListOf() }.add(dataPoint)
+    fun feature(name: String, capture: (T) -> DataPoint<*>) {
+        val dataPoint = if (observing != null) capture(observing) else DataPoint.notFound<Any>()
+        valueCollector.getOrPut(name) { mutableListOf() }.add(dataPoint)
     }
 
     /**
@@ -61,4 +53,32 @@ class TimeSeriesCaptureScope<T>(
             nestedTimeSeriesCapture()
         }
     }
+}
+
+/**
+ * Captures a time-series feature of an observed [T].
+ *
+ * A [DataPoint] of type [V] is recorded at each frame.
+ */
+class FeatureCapture<T, V : Any>(val name: String, val capture: (T) -> DataPoint<V>)
+
+/**
+ * Records a [DataPoint], extracted [capture] the specified [FeatureCapture] and stored in the
+ * time-series as [name].
+ *
+ * @param name unique, human-readable label under which the feature is stored in the time-series
+ * @param capture [FeatureCapture] that extracts a [DataPoint]
+ */
+fun <T> TimeSeriesCaptureScope<T>.feature(name: String, capture: FeatureCapture<in T, *>) {
+    feature(name) { capture.capture(it) }
+}
+
+/**
+ * Records a [DataPoint], extracted [capture] the specified [FeatureCapture] and stored in the
+ * time-series as [FeatureCapture.name] .
+ *
+ * @param capture [FeatureCapture] that extracts a [DataPoint]
+ */
+fun <T> TimeSeriesCaptureScope<T>.feature(capture: FeatureCapture<in T, *>) {
+    feature(capture.name, capture)
 }

@@ -116,6 +116,9 @@ public class AutomotiveConfigConstants {
     public static final String HOME_ASSISTANT_CARD = "HOME_ASSISTANT_CARD";
     public static final String HOME_PHONE_CARD = "HOME_PHONE_CARD";
     public static final String HOME_TEMPERATURE_BUTTON = "HOME_TEMPERATURE_BUTTON";
+    public static final String DRIVER_SEAT_TEMPERATURE_BUTTON = "DRIVER_SEAT_TEMPERATURE_BUTTON";
+    public static final String PASSENGER_SEAT_TEMPERATURE_BUTTON =
+            "PASSENGER_SEAT_TEMPERATURE_BUTTON";
     public static final String OPEN_SYSTEM_UI = "OPEN_SYSTEM_UI";
     public static final String OPEN_CAR_UI = "OPEN_CAR_UI";
     public static final String HOME_MAPS_WIDGET = "HOME_MAPS_WIDGET";
@@ -245,6 +248,9 @@ public class AutomotiveConfigConstants {
     public static final String SYSTEM_SETTINGS_SCROLL_MARGIN = "SYSTEM_SETTINGS_SCROLL_MARGIN";
     public static final String SYSTEM_SETTINGS_SCROLL_WAIT_TIME =
             "SYSTEM_SETTINGS_SCROLL_WAIT_TIME";
+
+    public static final String MEDIA_SOUND_SEEKBAR = "MEDIA_SOUND_SEEKBAR";
+    public static final String SOUND_SEEKBAR = "SOUND_SEEKBAR";
     public static final String RECENT_NOTIFICATIONS = "RECENT_NOTIFICATIONS";
     public static final String OLDER_NOTIFICATIONS = "OLDER_NOTIFICATIONS";
     public static final String TEST_NOTIFICATION = "TEST_NOTIFICATION";
@@ -330,10 +336,19 @@ public class AutomotiveConfigConstants {
     public static final String MEDIA_SONG_IN_PLAYLIST = "MEDIA_SONG_IN_PLAYLIST";
     public static final String ARTIST_TITLE = "ARTIST_TITLE";
     public static final String ALBUM_TITLE = "ALBUM_TITLE";
+    public static final String ALBUM_THUMBNAIL = "ALBUM_THUMBNAIL";
+    public static final String RADIO_STATION_NAME = "RADIO_STATION_NAME";
+    public static final String BROWSE_RADIO_CATEGORY = "BROWSE_RADIO_CATEGORY";
+    public static final String BASIC_SONGS_CATEGORY = "BASIC_SONGS_CATEGORY";
+    public static final String ADVANCED_CATEGORY = "ADVANCED_CATEGORY";
+    public static final String RABBIT_HOLE_CATEGORY = "RABBIT_HOLE_CATEGORY";
+    public static final String EMPTY_CATEGORY = "EMPTY_CATEGORY";
     public static final String CURRENT_SONG_TIME = "CURRENT_SONG_TIME";
     public static final String MAX_SONG_TIME = "MAX_SONG_TIME";
     public static final String RADIO_APP_TITLE = "RADIO_APP_TITLE";
-
+    public static final String MEDIA_CARD_PLAY_LIST_BUTTON = "MEDIA_CARD_PLAY_LIST_BUTTON";
+    public static final String MEDIA_CARD_QUEUE_LIST = "MEDIA_CARD_QUEUE_LIST";
+    public static final String MEDIA_CARD_SONG = "MEDIA_CARD_SONG";
     // NEXT_BUTTON from Account Settings
     public static final String PREVIOUS_BUTTON = "PREVIOUS_BUTTON";
     public static final String SHUFFLE_BUTTON = "SHUFFLE_BUTTON";
@@ -349,12 +364,30 @@ public class AutomotiveConfigConstants {
     public static final String PREVIOUS_BUTTON_HOME_SCREEN = "PREVIOUS_BUTTON_HOME_SCREEN";
     public static final String NEXT_BUTTON_HOME_SCREEN = "NEXT_BUTTON_HOME_SCREEN";
     public static final String TRACK_NAME_HOME_SCREEN = "TRACK_NAME_HOME_SCREEN";
+    public static final String MEDIA_SOURCE_BUTTON = "MEDIA_SOURCE_BUTTON";
+    public static final String MEDIA_SOURCE_NEWS_BUTTON = "MEDIA_SOURCE_NEWS_BUTTON";
+    public static final String MEDIA_SOURCE_HISTORY_NEWS = "MEDIA_SOURCE_HISTORY_NEWS";
+    public static final String MEDIA_SOURCE_HISTORY_ACTIVE_TITTLE =
+            "MEDIA_SOURCE_HISTORY_ACTIVE_TITTLE";
+    public static final String MEDIA_SOURCE_HISTORY_CARD = "MEDIA_SOURCE_HISTORY_CARD";
+    public static final String MEDIA_SOURCE_TEST_MEDIA_BUTTON = "MEDIA_SOURCE_TEST_MEDIA_BUTTON";
+    public static final String MEDIA_SOURCE_NEWS_CHANNEL = "MEDIA_SOURCE_NEWS_CHANNEL";
+    public static final String MEDIA_SOURCE_HISTORY_TEST_MEDIA_APP =
+            "MEDIA_SOURCE_HISTORY_TEST_MEDIA_APP";
+    public static final String MEDIA_CARD_SONG_TITLE = "MEDIA_CARD_SONG_TITLE";
     // Media Apps Grid
     public static final String MEDIA_APPS_GRID_TITLE = "MEDIA_APPS_GRID_TITLE";
+    public static final String MEDIA_TEST_APP_THUMBNAIL = "MEDIA_TEST_APP_THUMBNAIL";
     // Media App UI View
     public static final String MEDIA_APP_TITLE = "MEDIA_APP_TITLE";
     public static final String MEDIA_APP_DROP_DOWN_MENU = "MEDIA_APP_DROP_DOWN_MENU";
+    public static final String MEDIA_APP_QUEUE_MENU = "MEDIA_APP_QUEUE_MENU";
+    public static final String MEDIA_APP_QUEUE_SCROLL = "MEDIA_APP_QUEUE_SCROLL";
+    public static final String MEDIA_APP_QUEUE_SCROLL_UP = "MEDIA_APP_QUEUE_SCROLL_UP";
+    public static final String MEDIA_APP_QUEUE_SCROLL_DOWN = "MEDIA_APP_QUEUE_SCROLL_DOWN";
     public static final String MEDIA_APP_SETTINGS = "MEDIA_APP_SETTINGS";
+    public static final String MEDIA_APP_SEARCH = "MEDIA_APP_SEARCH";
+    public static final String MEDIA_SEARCH_RESTRICTED_MESSAGE = "MEDIA_SEARCH_RESTRICTED_MESSAGE";
     public static final String MEDIA_APP_NAVIGATION_ICON = "MEDIA_APP_NAVIGATION_ICON";
     public static final String MEDIA_APP_NO_LOGIN_MSG = "MEDIA_APP_NO_LOGIN_MSG";
     public static final String MOW_PLAYING_LABEL = "MOW_PLAYING_LABEL";
@@ -377,6 +410,11 @@ public class AutomotiveConfigConstants {
     public static final String MEDIA_APP_SCROLL_ELEMENT = "MEDIA_APP_SCROLL_ELEMENT";
     public static final String BLUETOOTH_DISCONNECTED_LABEL = "BLUETOOTH_DISCONNECTED_LABEL";
     public static final String MEDIA_PLAYLIST_ICON = "MEDIA_PLAYLIST_ICON";
+    public static final String MEDIA_CARD_SONG_AUTHOR_NAME = "MEDIA_CARD_SONG_AUTHOR_NAME";
+    public static final String MEDIA_CARD_PREVIOUS_BUTTON = "MEDIA_CARD_PREVIOUS_BUTTON";
+    public static final String MEDIA_CARD_PAUSE_BUTTON = "MEDIA_CARD_PAUSE_BUTTON";
+    public static final String MEDIA_CARD_NEXT_BUTTON = "MEDIA_CARD_NEXT_BUTTON";
+    public static final String PLAYS_LIST_SLIDER = "PLAYS_LIST_SLIDER";
 
     // SETTINGS CONSTANTS
     public static final String OPEN_SETTINGS_COMMAND = "OPEN_SETTINGS_COMMAND";
@@ -489,6 +527,7 @@ public class AutomotiveConfigConstants {
     // Settings User Constants
     public static final String USER_SETTINGS_PACKAGE = "USER_SETTINGS_PACKAGE";
     public static final String USER_SETTINGS_SCROLL_ACTION = "USER_SETTINGS_SCROLL_ACTION";
+    public static final String USER_SETTINGS_TOGGLE_BUTTON = "USER_SETTINGS_TOGGLE_BUTTON";
     public static final String USER_SETTINGS_SCROLL_DIRECTION = "USER_SETTINGS_SCROLL_DIRECTION";
     public static final String USER_SETTINGS_ADD_PROFILE = "USER_SETTINGS_ADD_PROFILE";
     public static final String USER_SETTINGS_RENAME = "USER_SETTINGS_RENAME";
@@ -612,6 +651,7 @@ public class AutomotiveConfigConstants {
     public static final String HOME_BLUETOOTH_BUTTON = "HOME_BLUETOOTH_BUTTON";
     public static final String HOME_NETWORK_BUTTON = "HOME_NETWORK_BUTTON";
     public static final String HOME_DISPLAY_BRIGHTNESS_BUTTON = "HOME_DISPLAY_BRIGHTNESS_BUTTON";
+    public static final String HOME_PROFILE_NAMES = "HOME_PROFILE_NAMES";
 
     // status bar constants
     public static final String STATUS_BAR_BLUETOOTH_TOGGLE_ON = "STATUS_BAR_BLUETOOTH_TOGGLE_ON";

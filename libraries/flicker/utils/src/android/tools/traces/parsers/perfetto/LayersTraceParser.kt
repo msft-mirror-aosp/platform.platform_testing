@@ -26,6 +26,7 @@ import android.tools.datatypes.Matrix33
 import android.tools.datatypes.Size
 import android.tools.datatypes.emptyColor
 import android.tools.parsers.AbstractTraceParser
+import android.tools.traces.surfaceflinger.CornerRadii
 import android.tools.traces.surfaceflinger.Display
 import android.tools.traces.surfaceflinger.HwcCompositionType
 import android.tools.traces.surfaceflinger.Layer
@@ -58,9 +59,6 @@ class LayersTraceParser(
     override fun shouldParseEntry(entry: LayerTraceEntry) = true
 
     override fun getEntries(input: TraceProcessorSession): List<LayerTraceEntry> {
-        val realToMonotonicTimeOffsetNs =
-            queryRealToMonotonicTimeOffsetNs(input, "surfaceflinger_layers_snapshot")
-
         return input.query(getSqlQuerySnapshots()) { snapshotsRows ->
             val traceEntries = mutableListOf<LayerTraceEntry>()
             val snapshotGroups = snapshotsRows.groupBy { it["snapshot_id"] }
@@ -73,8 +71,7 @@ class LayersTraceParser(
                         }
                     withTracing("build entry") {
                         val snapshotRows = snapshotGroups[snapshotId]!!
-                        val entry =
-                            buildTraceEntry(snapshotRows, layerRows, realToMonotonicTimeOffsetNs)
+                        val entry = buildTraceEntry(snapshotRows, layerRows)
                         traceEntries.add(entry)
                     }
                 }
@@ -90,30 +87,32 @@ class LayersTraceParser(
 
     override fun doParseEntry(entry: LayerTraceEntry) = entry
 
-    private fun buildTraceEntry(
-        snapshotRows: List<Row>,
-        layersRows: List<Row>,
-        realToMonotonicTimeOffsetNs: Long,
-    ): LayerTraceEntry {
+    private fun buildTraceEntry(snapshotRows: List<Row>, layersRows: List<Row>): LayerTraceEntry {
         val snapshotArgs = Args.build(snapshotRows)
         val displays = snapshotArgs.getChildren("displays")?.map { newDisplay(it) } ?: emptyList()
-        val excludesCompositionState =
-            snapshotArgs.getChild("excludes_composition_state")?.getBoolean() ?: false
 
         val idAndLayers =
             layersRows
-                .groupBy { it["layer_id"].toString() }
-                .map { (layerId, layerRows) ->
-                    Pair(layerId, newLayer(Args.build(layerRows), excludesCompositionState))
+                .groupBy { it["layer_row_id"].toString() }
+                .map { (rowId, layerRows) ->
+                    val args = Args.build(layerRows)
+                    val isVisible = layerRows[0]["is_visible"] == 1L
+                    Pair(rowId, newLayer(args, isVisible))
                 }
                 .toMutableList()
         idAndLayers.sortBy { it.first.toLong() }
 
         val layers = idAndLayers.map { it.second }
 
+        val firstRow = snapshotRows.first()
+        val bootTime = firstRow["boot_ts"].toString().toLong()
+        val monotonicTime = firstRow["monotonic_ts"].toString().toLong()
+        val realtimeTime = firstRow["realtime_ts"].toString().toLong()
+
         return LayerTraceEntryBuilder()
-            .setElapsedTimestamp(snapshotArgs.getChild("elapsed_realtime_nanos")?.getLong() ?: 0L)
-            .setRealToElapsedTimeOffsetNs(realToMonotonicTimeOffsetNs)
+            .setBootTimestamp(bootTime)
+            .setMonotonicTimestamp(monotonicTime)
+            .setRealTimestamp(realtimeTime)
             .setLayers(layers)
             .setDisplays(displays)
             .setVSyncId(snapshotArgs.getChild("vsync_id")?.getLong() ?: 0L)
@@ -128,79 +127,101 @@ class LayersTraceParser(
     companion object {
         private fun getSqlQuerySnapshots(): String {
             return """
-                SELECT
-                    sfs.id AS snapshot_id,
-                    sfs.ts as ts,
-                    args.key as key,
-                    args.display_value as value,
-                    args.value_type as value_type
-                FROM surfaceflinger_layers_snapshot AS sfs
-                INNER JOIN args ON sfs.arg_set_id = args.arg_set_id;
-            """
-                .trimIndent()
+                       SELECT
+                           sfs.id AS snapshot_id,
+                           sfs.ts as boot_ts,
+                           TO_MONOTONIC(sfs.ts) as monotonic_ts,
+                           TO_REALTIME(sfs.ts) as realtime_ts,
+                           args.key as key,
+                           args.display_value as value,
+                           args.value_type as value_type
+                       FROM surfaceflinger_layers_snapshot AS sfs
+                       INNER JOIN args ON sfs.arg_set_id = args.arg_set_id;
+                   """
+                       .trimIndent()
         }
 
         private fun getSqlQueryLayers(snapshotId: Long): String {
             return """
-                SELECT
-                    sfl.snapshot_id,
-                    sfl.id as layer_id,
-                    args.key as key,
-                    args.display_value as value,
-                    args.value_type
-                FROM
-                    surfaceflinger_layer as sfl
-                INNER JOIN args ON sfl.arg_set_id = args.arg_set_id
-                WHERE snapshot_id = $snapshotId;
-            """
+                       SELECT
+                           sfl.snapshot_id,
+                           sfl.id as layer_row_id,
+                           sfl.is_visible,
+                           args.key as key,
+                           args.display_value as value,
+                           args.value_type
+                       FROM
+                           surfaceflinger_layer as sfl
+                       INNER JOIN args ON sfl.arg_set_id = args.arg_set_id
+                       WHERE snapshot_id = $snapshotId;
+                   """
                 .trimIndent()
         }
 
-        private fun newLayer(layer: Args, excludesCompositionState: Boolean): Layer {
+        private fun newLayer(layer: Args, isVisible: Boolean): Layer {
             // Differentiate between the cases when there's no HWC data on
             // the trace, and when the visible region is actually empty
             val activeBuffer = newActiveBuffer(layer.getChild("active_buffer"))
             val visibleRegion = newRegion(layer.getChild("visible_region")) ?: Region()
             val crop = newCropRect(layer.getChild("crop"))
+
+            val visibilityReason =
+                (layer.getChildren("visibility_reason")?.map { it -> it.getString() })
+                    ?: emptyList<String>() as List<String>
+            val occludedBy =
+                (layer.getChildren("occluded_by")?.map { it -> it.getInt() })
+                    ?: emptyList<Int>() as List<Int>
+
+            val cornerRadii =
+                newCornerRadii(
+                    layer.getChild("corner_radius")?.getFloat() ?: 0f,
+                    layer.getChild("corner_radii"),
+                )
+
             return Layer.from(
-                layer.getChild("name")?.getString() ?: "",
-                layer.getChild("id")?.getInt() ?: 0,
-                layer.getChild("parent")?.getInt() ?: 0,
-                layer.getChild("z")?.getInt() ?: 0,
-                visibleRegion,
-                activeBuffer,
-                layer.getChild("flags")?.getInt() ?: 0,
-                newRectF(layer.getChild("bounds")),
-                newColor(layer.getChild("color")),
-                layer.getChild("is_opaque")?.getBoolean() ?: false,
-                layer.getChild("shadow_radius")?.getFloat() ?: 0f,
-                layer.getChild("corner_radius")?.getFloat() ?: 0f,
-                newRectF(layer.getChild("screen_bounds")),
-                newTransform(layer.getChild("transform"), position = layer.getChild("position")),
-                layer.getChild("curr_frame")?.getLong() ?: -1,
-                layer.getChild("effective_scaling_mode")?.getInt() ?: 0,
-                newTransform(layer.getChild("buffer_transform"), position = null),
-                newHwcCompositionType(layer.getChild("hwc_composition_type")),
-                layer.getChild("background_blur_radius")?.getInt() ?: 0,
-                crop,
-                layer.getChild("is_relative_of")?.getBoolean() ?: false,
-                layer.getChild("z_order_relative_of")?.getInt() ?: 0,
-                layer.getChild("layer_stack")?.getInt() ?: 0,
-                excludesCompositionState,
+                name = layer.getChild("name")?.getString() ?: "",
+                id = layer.getChild("id")?.getInt() ?: 0,
+                parentId = layer.getChild("parent")?.getInt() ?: 0,
+                z = layer.getChild("z")?.getInt() ?: 0,
+                visibleRegion = visibleRegion,
+                activeBuffer = activeBuffer,
+                flags = layer.getChild("flags")?.getInt() ?: 0,
+                bounds = newRectF(layer.getChild("bounds")),
+                color = newColor(layer.getChild("color")),
+                shadowRadius = layer.getChild("shadow_radius")?.getFloat() ?: 0f,
+                cornerRadii = cornerRadii,
+                screenBounds = newRectF(layer.getChild("screen_bounds")),
+                transform =
+                    newTransform(
+                        layer.getChild("transform"),
+                        position = layer.getChild("position"),
+                    ),
+                currFrame = layer.getChild("curr_frame")?.getLong() ?: -1,
+                effectiveScalingMode = layer.getChild("effective_scaling_mode")?.getInt() ?: 0,
+                bufferTransform = newTransform(layer.getChild("buffer_transform"), position = null),
+                hwcCompositionType = newHwcCompositionType(layer.getChild("hwc_composition_type")),
+                backgroundBlurRadius = layer.getChild("background_blur_radius")?.getInt() ?: 0,
+                crop = crop,
+                isRelativeOf = layer.getChild("is_relative_of")?.getBoolean() ?: false,
+                zOrderRelativeOfId = layer.getChild("z_order_relative_of")?.getInt() ?: 0,
+                stackId = layer.getChild("layer_stack")?.getInt() ?: 0,
+                isVisible = isVisible,
+                visibilityReason = visibilityReason,
+                occludedBy = occludedBy,
             )
         }
 
         private fun newDisplay(display: Args): Display {
             return Display.from(
-                display.getChild("id")?.getLong() ?: 0L,
-                display.getChild("name")?.getString() ?: "",
-                display.getChild("layer_stack")?.getInt() ?: 0,
-                newSize(display.getChild("size")),
-                newRect(display.getChild("layer_stack_space_rect")),
-                newTransform(display.getChild("transform"), position = null),
-                display.getChild("is_virtual")?.getBoolean() ?: false,
-                display.getChild("dpi_x")?.getFloat()?.toDouble() ?: 0.0,
-                display.getChild("dpi_y")?.getFloat()?.toDouble() ?: 0.0,
+                id = display.getChild("id")?.getLong() ?: 0L,
+                name = display.getChild("name")?.getString() ?: "",
+                layerStackId = display.getChild("layer_stack")?.getInt() ?: 0,
+                size = newSize(display.getChild("size")),
+                layerStackSpace = newRect(display.getChild("layer_stack_space_rect")),
+                transform = newTransform(display.getChild("transform"), position = null),
+                isVirtual = display.getChild("is_virtual")?.getBoolean() ?: false,
+                dpiX = display.getChild("dpi_x")?.getFloat()?.toDouble() ?: 0.0,
+                dpiY = display.getChild("dpi_y")?.getFloat()?.toDouble() ?: 0.0,
             )
         }
 
@@ -294,6 +315,23 @@ class LayersTraceParser(
                 rect?.getChild("right")?.getInt() ?: 0,
                 rect?.getChild("bottom")?.getInt() ?: 0,
             )
+
+        private fun newCornerRadii(cornerRadius: Float, cornerRadiiArgs: Args?): CornerRadii {
+            if (cornerRadiiArgs != null) {
+                val cornerRadii = withCache {
+                    CornerRadii(
+                        cornerRadiiArgs.getChild("tl")?.getFloat() ?: 0f,
+                        cornerRadiiArgs.getChild("tr")?.getFloat() ?: 0f,
+                        cornerRadiiArgs.getChild("bl")?.getFloat() ?: 0f,
+                        cornerRadiiArgs.getChild("br")?.getFloat() ?: 0f,
+                    )
+                }
+                if (!cornerRadii.isEmpty()) {
+                    return cornerRadii
+                }
+            }
+            return withCache { CornerRadii.from(cornerRadius) }
+        }
 
         private fun newTransform(transform: Args?, position: Args?) =
             Transform.from(transform?.getChild("type")?.getInt(), getMatrix(transform, position))

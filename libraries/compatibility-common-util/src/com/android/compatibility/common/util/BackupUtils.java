@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -42,6 +43,8 @@ import java.util.regex.Pattern;
  * Utility class for backup and restore.
  */
 public abstract class BackupUtils {
+    private static final String LOCAL_TRANSPORT_SERVICE_NAME =
+            "com.android.localtransport/.LocalTransportService";
     private static final String LOCAL_TRANSPORT_NAME =
             "com.android.localtransport/.LocalTransport";
     private static final String LOCAL_TRANSPORT_NAME_PRE_Q =
@@ -112,6 +115,23 @@ public abstract class BackupUtils {
     /** Executes shell command "bmgr backupnow <package>" and waits for completion. */
     public void backupNowSync(String packageName) throws IOException {
         StreamUtil.drainAndClose(new InputStreamReader(backupNow(packageName)));
+    }
+
+    /**
+     * Returns the current backup transport.
+     *
+     * <p>Executes "bmgr list transports" and returns the name of the currently selected transport.
+     */
+    public Optional<String> getCurrentBackupTransport() throws IOException {
+        String[] transports = getShellCommandOutput("bmgr list transports")
+                        .split(System.lineSeparator());
+        for (String transport : transports) {
+            transport = transport.trim();
+            if (transport.startsWith("* ")) {
+                return Optional.of(transport.substring(2));
+            }
+        }
+        return Optional.empty();
     }
 
     public String getBackupNowOutput(String packageName) throws IOException {
@@ -505,6 +525,13 @@ public abstract class BackupUtils {
     }
 
     /**
+     * Sets the local transport component for the current user.
+     */
+    public void setLocalTransportComponentForUser(int userId) throws IOException {
+        setBackupTransportComponentForUser(LOCAL_TRANSPORT_SERVICE_NAME, userId);
+    }
+
+    /**
      * Sets the backup transport for the current user and returns the previously selected transport.
      */
     public String setBackupTransport(String transport) throws IOException {
@@ -525,6 +552,24 @@ public abstract class BackupUtils {
             return matcher.group(1);
         } else {
             throw new RuntimeException("Non-parsable output setting bmgr transport: " + output);
+        }
+    }
+
+    /**
+     * Executes shell command "bmgr --user <id> transport -c <transport>".
+     *
+     * @throws IOException if the output of the command does not match expected success pattern.
+     */
+    public void setBackupTransportComponentForUser(String transportComponent, int userId) throws IOException {
+        String command = String.format(
+            "bmgr --user %d transport -c %s",
+            userId,
+            transportComponent);
+        String output = executeShellCommandAndReturnOutput(command);
+        Pattern pattern = Pattern.compile("Selected transport: (.*)$");
+        Matcher matcher = pattern.matcher(output);
+        if (!matcher.find()) {
+            throw new RuntimeException("Unexpected output setting bmgr transport -c: " + output);
         }
     }
 }

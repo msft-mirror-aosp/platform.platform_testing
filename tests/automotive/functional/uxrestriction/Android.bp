@@ -35,6 +35,7 @@ android_test {
         "automotive-dial-app-helper",
         "automotive-app-grid-helper",
         "automotive-facet-bar-helper",
+        "automotive-media-center-app-helper",
     ],
     srcs: ["src/**/*.java"],
     test_suites: ["catbox"],

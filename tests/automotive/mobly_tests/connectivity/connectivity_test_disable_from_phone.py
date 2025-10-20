@@ -34,6 +34,7 @@ from bluetooth_test import bluetooth_base_test
 from mobly.controllers import android_device
 from utilities import constants
 
+
 class BluetoothDisableFromPhone(bluetooth_base_test.BluetoothBaseTest):
 
     def setup_test(self):
@@ -44,21 +45,22 @@ class BluetoothDisableFromPhone(bluetooth_base_test.BluetoothBaseTest):
     def test_disable_from_phone(self):
         self.discoverer = android_device.get_device(self.ads, label='auto')
         self.target = android_device.get_device(self.ads, label='phone')
-        self.call_utils.open_bluetooth_settings()
+        self.call_utils.open_bluetooth_settings_form_status_bar()
 
-        #Disconnect seahawk device from mobile phone and verify it is reflected in seahawk device
+        # Disconnect seahawk device from mobile phone and verify it is reflected in seahawk device
         self.target.mbs.btDisable()
         self.discoverer.mbs.waitUntilConnectionStatus(constants.DISCONNECTED_SUMMARY_STATUS)
         asserts.assert_true(
             self.discoverer.mbs.hasUIElementWithText(constants.DISCONNECTED_SUMMARY_STATUS),
             'Failed to disconnect from mobile device')
 
-        #Connect seahawk device from mobile phone and verify it is reflected in seahawk device
+        # Connect seahawk device from mobile phone and verify it is reflected in seahawk device
         self.target.mbs.btEnableWithLongerWait()
         self.discoverer.mbs.waitUntilConnectionStatus(constants.CONNECTED_SUMMARY_STATUS)
         asserts.assert_true(
             self.discoverer.mbs.hasUIElementWithText(constants.CONNECTED_SUMMARY_STATUS),
             'Failed to connect from mobile device')
+
 
 if __name__ == '__main__':
     # Take test args

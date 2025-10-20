@@ -18,11 +18,8 @@ package android.tools.traces.surfaceflinger
 
 import android.graphics.Rect
 import android.graphics.RectF
-import android.graphics.Region
 import android.tools.Timestamps
-import android.tools.datatypes.ActiveBuffer
 import android.tools.datatypes.Size
-import android.tools.datatypes.emptyColor
 import android.tools.testutils.CleanFlickerEnvironmentRule
 import android.tools.traces.surfaceflinger.Display.Companion.BLANK_LAYER_STACK
 import com.google.common.truth.Truth
@@ -42,16 +39,18 @@ class LayerTraceEntryBuilderTest {
     fun createsEntryWithCorrectClockTime() {
         val builder =
             LayerTraceEntryBuilder()
-                .setElapsedTimestamp(100)
+                .setBootTimestamp(110)
+                .setMonotonicTimestamp(100)
+                .setRealTimestamp(600)
                 .setLayers(emptyList())
                 .setDisplays(emptyList())
                 .setVSyncId(123)
-                .setRealToElapsedTimeOffsetNs(500)
         val entry = builder.build()
-        Truth.assertThat(entry.elapsedTimestamp).isEqualTo(100)
+        Truth.assertThat(entry.bootTimestamp).isEqualTo(110)
+        Truth.assertThat(entry.monotonicTimestamp).isEqualTo(100)
         Truth.assertThat(entry.clockTimestamp).isEqualTo(600)
 
-        Truth.assertThat(entry.timestamp.elapsedNanos).isEqualTo(Timestamps.empty().elapsedNanos)
+        Truth.assertThat(entry.timestamp.elapsedNanos).isEqualTo(110)
         Truth.assertThat(entry.timestamp.systemUptimeNanos).isEqualTo(100)
         Truth.assertThat(entry.timestamp.unixNanos).isEqualTo(600)
     }
@@ -60,15 +59,17 @@ class LayerTraceEntryBuilderTest {
     fun supportsMissingRealToElapsedTimeOffsetNs() {
         val builder =
             LayerTraceEntryBuilder()
-                .setElapsedTimestamp(100)
+                .setBootTimestamp(110)
+                .setMonotonicTimestamp(100)
                 .setLayers(emptyList())
                 .setDisplays(emptyList())
                 .setVSyncId(123)
         val entry = builder.build()
-        Truth.assertThat(entry.elapsedTimestamp).isEqualTo(100)
+        Truth.assertThat(entry.bootTimestamp).isEqualTo(110)
+        Truth.assertThat(entry.monotonicTimestamp).isEqualTo(100)
         Truth.assertThat(entry.clockTimestamp).isEqualTo(null)
 
-        Truth.assertThat(entry.timestamp.elapsedNanos).isEqualTo(Timestamps.empty().elapsedNanos)
+        Truth.assertThat(entry.timestamp.elapsedNanos).isEqualTo(110)
         Truth.assertThat(entry.timestamp.systemUptimeNanos).isEqualTo(100)
         Truth.assertThat(entry.timestamp.unixNanos).isEqualTo(Timestamps.empty().unixNanos)
     }
@@ -83,27 +84,9 @@ class LayerTraceEntryBuilderTest {
                     name = "layer",
                     id = 1,
                     parentId = -1,
-                    z = 1,
-                    visibleRegion = Region(),
-                    activeBuffer = ActiveBuffer.EMPTY,
-                    flags = 0,
                     bounds = RectF(),
-                    color = emptyColor(),
-                    isOpaque = true,
-                    shadowRadius = 0f,
-                    cornerRadius = 0f,
                     screenBounds = RectF(),
-                    transform = Transform.EMPTY,
-                    currFrame = 0,
-                    effectiveScalingMode = 0,
-                    bufferTransform = Transform.EMPTY,
-                    hwcCompositionType = HwcCompositionType.HWC_TYPE_UNSPECIFIED,
-                    backgroundBlurRadius = 0,
-                    crop = null,
-                    isRelativeOf = false,
-                    zOrderRelativeOfId = 0,
                     stackId = offDisplayStackId,
-                    excludesCompositionState = true,
                 )
             )
 
@@ -124,7 +107,8 @@ class LayerTraceEntryBuilderTest {
 
         val builder =
             LayerTraceEntryBuilder()
-                .setElapsedTimestamp(100)
+                .setBootTimestamp(100)
+                .setMonotonicTimestamp(100)
                 .setLayers(layers)
                 .setDisplays(displays)
                 .setVSyncId(123)

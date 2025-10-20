@@ -18,7 +18,6 @@ package android.tools
 
 import android.tools.traces.formatRealTimestamp
 
-const val FLICKER_TAG = "FLICKER"
 const val MILLISECOND_AS_NANOSECONDS: Long = 1000000
 const val SECOND_AS_NANOSECONDS: Long = 1000000000
 const val MINUTE_AS_NANOSECONDS: Long = 60000000000

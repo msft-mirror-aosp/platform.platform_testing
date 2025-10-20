@@ -29,6 +29,8 @@ import android.tools.traces.component.IComponentMatcher
 import android.tools.traces.component.IComponentNameMatcher
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.tools.withTracing
+import android.view.Display.DEFAULT_DISPLAY
+import android.view.Display.INVALID_DISPLAY
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.UiDevice
@@ -67,9 +69,9 @@ open class StandardAppHelper(
 
     protected val uiDevice: UiDevice = UiDevice.getInstance(instrumentation)
 
-    private fun getAppSelector(expectedPackageName: String): BySelector {
+    private fun getAppSelector(expectedPackageName: String, displayId: Int): BySelector {
         val expected = expectedPackageName.ifEmpty { packageName }
-        return By.pkg(expected).depth(0)
+        return By.displayId(displayId).pkg(expected).depth(0)
     }
 
     override fun open() {
@@ -142,7 +144,7 @@ open class StandardAppHelper(
         options: ActivityOptions?,
     ) {
         launchAppViaIntent(action, stringExtras, options)
-        val appSelector = getAppSelector(expectedPackageName)
+        val appSelector = getAppSelector(expectedPackageName, extractDisplayIdFromOptions(options))
         uiDevice.wait(Until.hasObject(appSelector), APP_LAUNCH_WAIT_TIME_MS)
     }
 
@@ -156,7 +158,11 @@ open class StandardAppHelper(
         options: ActivityOptions?,
     ) {
         launchAppViaIntent(action, stringExtras, options)
-        doWaitShown(launchedAppComponentMatcherOverride, waitConditionsBuilder)
+        doWaitShown(
+            launchedAppComponentMatcherOverride,
+            waitConditionsBuilder,
+            extractDisplayIdFromOptions(options),
+        )
     }
 
     /** {@inheritDoc} */
@@ -169,27 +175,32 @@ open class StandardAppHelper(
     ) {
         withTracing("${this::class.simpleName}#launchViaIntent") {
             context.startActivity(intent, if (options != null) options.toBundle() else null)
-            doWaitShown(launchedAppComponentMatcherOverride, waitConditionsBuilder)
+            doWaitShown(
+                launchedAppComponentMatcherOverride,
+                waitConditionsBuilder,
+                extractDisplayIdFromOptions(options),
+            )
         }
     }
 
     private fun doWaitShown(
         launchedAppComponentMatcherOverride: IComponentMatcher? = null,
         waitConditionsBuilder: WindowManagerStateHelper.StateSyncBuilder,
+        displayId: Int,
     ) {
         withTracing("${this::class.simpleName}#doWaitShown") {
             val expectedWindow = launchedAppComponentMatcherOverride ?: componentMatcher
-            doWaitShownLight(expectedWindow)
-            doWaitShownHeavy(expectedWindow, waitConditionsBuilder)
+            doWaitShownLight(expectedWindow, displayId)
+            doWaitShownHeavy(expectedWindow, waitConditionsBuilder, displayId)
         }
     }
 
-    private fun doWaitShownLight(expectedWindow: IComponentMatcher) {
+    private fun doWaitShownLight(expectedWindow: IComponentMatcher, displayId: Int) {
         try {
             val expectedPackageName =
                 ComponentNameMatcher.unflattenFromString(expectedWindow.toWindowIdentifier())
                     .packageName
-            val appSelector = getAppSelector(expectedPackageName)
+            val appSelector = getAppSelector(expectedPackageName, displayId)
             uiDevice.wait(Until.hasObject(appSelector), APP_LAUNCH_WAIT_TIME_MS)
         } catch (e: Exception) {
             // IComponentMatcher#toWindowIdentifier() might not be implemented.
@@ -200,9 +211,18 @@ open class StandardAppHelper(
     private fun doWaitShownHeavy(
         expectedWindow: IComponentMatcher,
         waitConditionsBuilder: WindowManagerStateHelper.StateSyncBuilder,
+        displayId: Int,
     ) {
-        val builder = waitConditionsBuilder.withWindowSurfaceAppeared(expectedWindow)
+        val builder = waitConditionsBuilder.withWindowSurfaceAppeared(expectedWindow, displayId)
         builder.waitForAndVerify()
+    }
+
+    private fun extractDisplayIdFromOptions(options: ActivityOptions?): Int {
+        val displayId = options?.launchDisplayId
+        if (displayId == null || displayId == INVALID_DISPLAY) {
+            return DEFAULT_DISPLAY
+        }
+        return displayId
     }
 
     override fun isAvailable(): Boolean {

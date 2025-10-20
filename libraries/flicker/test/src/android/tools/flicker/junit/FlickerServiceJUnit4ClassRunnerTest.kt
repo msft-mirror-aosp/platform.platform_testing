@@ -292,7 +292,7 @@ class FlickerServiceJUnit4ClassRunnerTest {
                                             // the debug trace
                                             flicker.assertLayersStart {
                                                 Truth.assertThat(this.timestamp.unixNanos)
-                                                    .isEqualTo(1743439123983024119)
+                                                    .isEqualTo(1743439123983024118)
                                             }
                                         }
                                     } to AssertionInvocationGroup.BLOCKING

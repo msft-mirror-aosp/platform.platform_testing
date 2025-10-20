@@ -19,6 +19,7 @@ package android.tools.traces.parsers.perfetto
 import android.tools.Timestamp
 import android.tools.Timestamps
 import android.tools.parsers.AbstractTraceParser
+import android.tools.traces.toTimestamp
 import android.tools.traces.wm.ShellTransitionData
 import android.tools.traces.wm.Transition
 import android.tools.traces.wm.TransitionChange
@@ -157,24 +158,6 @@ open class TransitionsTraceParser :
                         mergeTarget = args.getChild("merge_target")?.getInt(),
                     ),
             )
-        }
-
-        private fun Long.toTimestamp(input: TraceProcessorSession): Timestamp? {
-            if (this == 0L) {
-                return null
-            }
-
-            val ts = this
-            return input.query(
-                "SELECT TO_REALTIME($ts) as real_ts, TO_MONOTONIC($ts) as monotonic_ts"
-            ) {
-                require(it.size == 1)
-                Timestamps.from(
-                    unixNanos = it[0]["real_ts"] as Long,
-                    systemUptimeNanos = it[0]["monotonic_ts"] as Long,
-                    elapsedNanos = this,
-                )
-            }
         }
 
         private fun Int.toTransitionType() = TransitionType.fromInt(this)

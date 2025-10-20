@@ -163,6 +163,24 @@ public class SettingsSnippet implements Snippet {
         mDateTimeSettingsHelper.get().setTimeZone(timezone);
     }
 
+    /** Set Sound level from Sound Palette */
+    @Rpc(description = "Set Sound level Low from status bar")
+    public int setMediaSoundLevelLow() {
+        return mSettingsHelper.get().setMediaSoundLevelLow();
+    }
+
+    /** Set Sound level from Sound Palette */
+    @Rpc(description = "Set Sound level High from status bar")
+    public int setMediaSoundLevelHigh() {
+        return mSettingsHelper.get().setMediaSoundLevelLow();
+    }
+
+    /** Set Sound level from Sound Palette */
+    @Rpc(description = "Set Sound level from sound palette")
+    public int setSoundLevel(double level) {
+        return mSettingsHelper.get().setSoundLevel(level);
+    }
+
     @Override
     public void shutdown() {}
 }

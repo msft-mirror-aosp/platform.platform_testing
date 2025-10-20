@@ -516,7 +516,7 @@
     },
     "HOME_MAPS_WIDGET": {
       "TYPE": "TEXT",
-      "VALUE": "Open Maps"
+      "VALUE": "Welcome to Google Maps"
     },
     "HOME_PROFILE_ICON_BUTTON": {
       "TYPE": "RESOURCE_ID",
@@ -548,6 +548,11 @@
       "VALUE": "connectivity_panel_button",
       "PACKAGE": "com.android.systemui"
     },
+    "HOME_PROFILE_NAMES": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "qc_title",
+      "PACKAGE": "com.android.systemui"
+    },
     "HOME_PROFILE_GUEST_ICON": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "user_name_text",
@@ -567,6 +572,14 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "hvac_temperature_text",
       "PACKAGE": "com.android.systemui"
+    },
+    "DRIVER_SEAT_TEMPERATURE_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "seat_heat_level_button_left"
+    },
+    "PASSENGER_SEAT_TEMPERATURE_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "seat_heat_level_button_right"
     },
     "PHONE_FACET_BUTTON": {
       "TYPE": "RESOURCE_ID",
@@ -1152,7 +1165,7 @@
     },
     "SYSTEM_SETTINGS_SCROLL_ELEMENT": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "fragment_container",
+      "VALUE": "car_ui_recycler_view",
       "PACKAGE": "com.android.car.settings"
     },
     "RECENT_NOTIFICATIONS": {
@@ -1206,6 +1219,26 @@
       "TYPE": "DESCRIPTION",
       "VALUE": "Save"
     },
+    "SOUND_SEEKBAR": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.SeekBar"
+        },
+        {
+          "TYPE": "HAS_ANCESTOR",
+          "MAX_DEPTH": 2,
+          "ANCESTOR": {
+            "TYPE": "HAS_DESCENDANT",
+            "DESCENDANT": {
+              "TYPE": "TEXT",
+              "VALUE": "In-call volume"
+            }
+          }
+        }
+      ]
+    },
     "BRIGHTNESS_SEEKBAR": {
       "TYPE": "MULTIPLE",
       "SPECIFIERS": [
@@ -1221,6 +1254,26 @@
             "DESCENDANT": {
               "TYPE": "TEXT",
               "VALUE": "Brightness level"
+            }
+          }
+        }
+      ]
+    },
+    "MEDIA_SOUND_SEEKBAR": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.SeekBar"
+        },
+        {
+          "TYPE": "HAS_ANCESTOR",
+          "MAX_DEPTH": 2,
+          "ANCESTOR": {
+            "TYPE": "HAS_DESCENDANT",
+            "DESCENDANT": {
+              "TYPE": "TEXT",
+              "VALUE": "Media volume"
             }
           }
         }
@@ -1538,6 +1591,26 @@
       "VALUE": "minimized_control_bar_layout",
       "PACKAGE": "com.android.car.media"
     },
+    "MEDIA_CARD_SONG_AUTHOR_NAME": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "subtitle"
+    },
+    "MEDIA_CARD_PREVIOUS_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "playback_action_id1"
+    },
+    "MEDIA_CARD_PAUSE_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "play_pause_button"
+    },
+    "MEDIA_CARD_NEXT_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "playback_action_id2"
+    },
+    "PLAYS_LIST_SLIDER": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "media_card_panel_handlebar"
+    },
     "ARTIST_TITLE": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "subtitle",
@@ -1547,6 +1620,86 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "album_title",
       "PACKAGE": "com.android.car.media"
+    },
+    "RADIO_STATION_NAME": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "station_name",
+      "PACKAGE": "com.android.car.radio"
+    },
+    "BROWSE_RADIO_CATEGORY": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "TEXT",
+          "VALUE": "Browse"
+        },
+        {
+          "TYPE": "RESOURCE_ID",
+          "VALUE": "car_ui_toolbar_tab_item_text",
+          "PACKAGE": "com.android.car.radio"
+        }
+      ]
+    },
+    "ALBUM_THUMBNAIL": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "album_art",
+      "PACKAGE": "com.android.car.media"
+    },
+    "BASIC_SONGS_CATEGORY": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "TEXT",
+          "VALUE": "Basic songs"
+        },
+        {
+          "TYPE": "RESOURCE_ID",
+          "VALUE": "car_ui_toolbar_tab_item_text",
+          "PACKAGE": "com.android.car.media"
+        }
+      ]
+    },
+    "ADVANCED_CATEGORY": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "TEXT",
+          "VALUE": "Advanced"
+        },
+        {
+          "TYPE": "RESOURCE_ID",
+          "VALUE": "car_ui_toolbar_tab_item_text",
+          "PACKAGE": "com.android.car.media"
+        }
+      ]
+    },
+    "RABBIT_HOLE_CATEGORY": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "TEXT",
+          "VALUE": "Rabbit hole 2"
+        },
+        {
+          "TYPE": "RESOURCE_ID",
+          "VALUE": "car_ui_toolbar_tab_item_text",
+          "PACKAGE": "com.android.car.media"
+        }
+      ]
+    },
+    "EMPTY_CATEGORY": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "TEXT",
+          "VALUE": "Empty"
+        },
+        {
+          "TYPE": "RESOURCE_ID",
+          "VALUE": "car_ui_toolbar_tab_item_text",
+          "PACKAGE": "com.android.car.media"
+        }
+      ]
     },
     "CURRENT_SONG_TIME": {
       "TYPE": "RESOURCE_ID",
@@ -1581,6 +1734,18 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_toolbar_logo"
     },
+    "MEDIA_CARD_PLAY_LIST_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "queue_button"
+    },
+    "MEDIA_CARD_QUEUE_LIST": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "queue_list"
+    },
+    "MEDIA_CARD_SONG": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "queue_list_item_title"
+    },
     "MOW_PLAYING_LABEL": {
       "TYPE": "TEXT",
       "VALUE": "Now Playing"
@@ -1589,9 +1754,33 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_toolbar_menu_item_icon"
     },
+    "MEDIA_APP_QUEUE_MENU": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_toolbar_menu_item_icon"
+    },
+    "MEDIA_APP_QUEUE_SCROLL": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_track"
+    },
+    "MEDIA_APP_QUEUE_SCROLL_UP": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_page_up"
+    },
+    "MEDIA_APP_QUEUE_SCROLL_DOWN": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "car_ui_scrollbar_page_down"
+    },
     "MEDIA_APP_SETTINGS": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "menu_item_setting"
+    },
+    "MEDIA_APP_SEARCH": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "menu_item_search"
+    },
+    "MEDIA_SEARCH_RESTRICTED_MESSAGE": {
+      "TYPE": "TEXT",
+      "VALUE": "Feature not available while driving"
     },
     "MEDIA_APP_NO_LOGIN_MSG": {
       "TYPE": "RESOURCE_ID",
@@ -1601,6 +1790,10 @@
     "MEDIA_APP_NAVIGATION_ICON": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "car_ui_toolbar_nav_icon_container"
+    },
+    "MEDIA_TEST_APP_THUMBNAIL": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "media_widget_app_icon"
     },
     "MEDIA_APPS_GRID_TITLE": {
       "TYPE": "RESOURCE_ID",
@@ -1624,8 +1817,7 @@
     },
     "MEDIA_PLAYLIST_ICON": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_toolbar_menu_item_icon",
-      "PACKAGE": "com.chassis.car.ui.plugin"
+      "VALUE": "car_ui_toolbar_menu_item_icon"
     },
     "PREVIOUS_BUTTON_HOME_SCREEN": {
       "TYPE": "RESOURCE_ID",
@@ -1657,8 +1849,7 @@
     },
     "MEDIA_APP_SCROLL_ELEMENT": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_internal_recycler_view",
-      "PACKAGE": "com.android.car.ui.sharedlibrary"
+      "VALUE": "car_ui_internal_recycler_view"
     },
     "ACCOUNT_SETTINGS_GOOGLE_SIGN_IN_SCREEN": {
       "TYPE": "TEXT",
@@ -1872,6 +2063,99 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "close_target",
       "PACKAGE": "com.android.car.media.testmediaapp"
+    },
+    "MEDIA_SOURCE_BUTTON": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.ImageButton"
+        },
+        {
+          "TYPE": "RESOURCE_ID",
+          "VALUE": "history_button",
+          "PACKAGE": "com.android.car.carlauncher"
+        }
+      ]
+    },
+    "MEDIA_SOURCE_NEWS_BUTTON": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "TEXT_CONTAINS",
+          "VALUE": "News"
+        },
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.TextView"
+        }
+      ]
+    },
+    "MEDIA_SOURCE_TEST_MEDIA_BUTTON": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "TEXT_CONTAINS",
+          "VALUE": "Test Media App"
+        },
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.TextView"
+        }
+      ]
+    },
+    "MEDIA_CARD_SONG_TITLE": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "RESOURCE_ID",
+          "VALUE": "title",
+          "PACKAGE": "com.android.car.carlauncher"
+        },
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.TextView"
+        }
+      ]
+    },
+    "MEDIA_SOURCE_HISTORY_NEWS": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.view.ViewGroup"
+        },
+        {
+          "TYPE": "HAS_DESCENDANT",
+          "DESCENDANT": {
+            "TYPE": "TEXT",
+            "VALUE": "News"
+          }
+        }]
+    },
+    "MEDIA_SOURCE_HISTORY_TEST_MEDIA_APP": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.view.ViewGroup"
+        },
+        {
+          "TYPE": "HAS_DESCENDANT",
+          "DESCENDANT": {
+            "TYPE": "TEXT",
+            "VALUE": "Test Media App"
+          }
+        }]
+    },
+    "MEDIA_SOURCE_HISTORY_ACTIVE_TITTLE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "history_card_title_active",
+      "PACKAGE": "com.android.car.carlauncher"
+    },
+    "MEDIA_SOURCE_HISTORY_CARD": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "history_card_container_active"
     },
     "CONTACTS_DIALOG_BOX": {
       "TYPE": "RESOURCE_ID",

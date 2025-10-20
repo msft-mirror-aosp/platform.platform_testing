@@ -27,7 +27,9 @@ java_library_static {
         "error_prone_annotations",
         "guava",
         "junit",
+        "auto_value_annotations",
     ],
+    plugins: ["auto_value_plugin"],
 }
 
 java_library {
@@ -36,6 +38,7 @@ java_library {
         "//test/suite_harness/common/util",
         "//platform_testing/libraries/compatibility-common-util/tests",
         "//platform_testing/libraries/sts-common-util/util",
+        "//cts/common/device-side/nativetesthelper",
     ],
     srcs: ["src/**/*.java"],
     host_supported: true,
@@ -46,7 +49,9 @@ java_library {
         "json-prebuilt",
         "platform-test-annotations",
         "kxml2-2.3.0",
+        "auto_value_annotations",
     ],
+    plugins: ["auto_value_plugin"],
     // b/267831518: Pin tradefed and dependencies to Java 11.
     java_version: "11",
 }

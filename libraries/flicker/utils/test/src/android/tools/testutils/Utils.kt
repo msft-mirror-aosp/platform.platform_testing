@@ -31,11 +31,9 @@ import android.tools.traces.io.ResultWriter
 import android.tools.traces.parsers.perfetto.LayersTraceParser
 import android.tools.traces.parsers.perfetto.TraceProcessorSession
 import android.tools.traces.parsers.perfetto.WindowManagerTraceParser
-import android.tools.traces.parsers.wm.LegacyWindowManagerTraceParser
 import android.tools.traces.wm.ConfigurationContainerImpl
 import android.tools.traces.wm.RootWindowContainer
 import android.tools.traces.wm.WindowContainerImpl
-import android.tools.traces.wm.WindowManagerTrace
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.google.common.io.ByteStreams
@@ -136,12 +134,10 @@ fun getWmTraceReaderFromAsset(
     relativePathWithoutExtension: String,
     from: Long = Long.MIN_VALUE,
     to: Long = Long.MAX_VALUE,
-    addInitialEntry: Boolean = true,
-    legacyTrace: Boolean = false,
 ): Reader {
-    fun parseTrace(): WindowManagerTrace {
-        val traceData = readAsset("$relativePathWithoutExtension.perfetto-trace")
-        return TraceProcessorSession.loadPerfettoTrace(traceData) { session ->
+    val traceData = readAsset("$relativePathWithoutExtension.perfetto-trace")
+    val trace =
+        TraceProcessorSession.loadPerfettoTrace(traceData) { session ->
             WindowManagerTraceParser()
                 .parse(
                     session,
@@ -149,31 +145,6 @@ fun getWmTraceReaderFromAsset(
                     Timestamps.from(elapsedNanos = to),
                 )
         }
-    }
-
-    fun parseLegacyTrace(): WindowManagerTrace {
-        val traceData =
-            runCatching { readAsset("$relativePathWithoutExtension.pb") }.getOrNull()
-                ?: runCatching { readAsset("$relativePathWithoutExtension.winscope") }.getOrNull()
-                ?: error("Can't find legacy trace file $relativePathWithoutExtension")
-
-        return LegacyWindowManagerTraceParser(legacyTrace)
-            .parse(
-                traceData,
-                Timestamps.from(elapsedNanos = from),
-                Timestamps.from(elapsedNanos = to),
-                addInitialEntry,
-                clearCache = false,
-            )
-    }
-
-    val trace =
-        if (android.tracing.Flags.perfettoWmTracing()) {
-            parseTrace()
-        } else {
-            parseLegacyTrace()
-        }
-
     return ParsedTracesReader(
         artifacts = arrayOf(TestArtifact(relativePathWithoutExtension)),
         wmTrace = trace,

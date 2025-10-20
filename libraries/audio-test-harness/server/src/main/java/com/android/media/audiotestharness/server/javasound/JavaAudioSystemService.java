@@ -179,8 +179,7 @@ public class JavaAudioSystemService implements AudioSystemService {
                         // Filter by AudioDevice name either exactly or partially.
                         .filter(
                                 (info) -> {
-                                    if (audioDevice.getName() != null
-                                            && !audioDevice.getName().isEmpty()) {
+                                    if (!audioDevice.getName().isEmpty()) {
                                         if (exactName) {
                                             return info.getName().equals(audioDevice.getName());
                                         } else {

@@ -70,6 +70,10 @@ constructor(val trace: LayersTrace, override val reader: Reader? = null) :
     /** {@inheritDoc} */
     override fun then(): LayersTraceSubject = apply { super.then() }
 
+    override fun skipUntilFirstAssertion(): LayersTraceSubject = apply {
+        super.skipUntilFirstAssertion()
+    }
+
     /** {@inheritDoc} */
     override fun isEmpty(): LayersTraceSubject = apply {
         check { "Trace is empty" }.that(trace.entries.isEmpty()).isEqual(true)
@@ -172,6 +176,19 @@ constructor(val trace: LayersTrace, override val reader: Reader? = null) :
             it.isInvisible(componentMatcher, mustExist)
         }
     }
+
+    /** {@inheritDoc} */
+    override fun isOccluded(componentMatcher: IComponentMatcher): LayersTraceSubject = apply {
+        isOccluded(componentMatcher, isOptional = false)
+    }
+
+    /** See [isOccluded] */
+    fun isOccluded(componentMatcher: IComponentMatcher, isOptional: Boolean): LayersTraceSubject =
+        apply {
+            addAssertion("isOccluded(${componentMatcher.toLayerIdentifier()})", isOptional) {
+                it.isOccluded(componentMatcher)
+            }
+        }
 
     /** {@inheritDoc} */
     override fun isSplashScreenVisibleFor(
@@ -329,10 +346,10 @@ constructor(val trace: LayersTrace, override val reader: Reader? = null) :
     @JvmOverloads
     fun getEntryBySystemUpTime(
         timestamp: Long,
-        byElapsedTimestamp: Boolean = false,
+        byMonotonicTimestamp: Boolean = false,
     ): LayerTraceEntrySubject {
-        return if (byElapsedTimestamp) {
-            subjects.first { it.entry.elapsedTimestamp == timestamp }
+        return if (byMonotonicTimestamp) {
+            subjects.first { it.entry.monotonicTimestamp == timestamp }
         } else {
             subjects.first { it.entry.timestamp.systemUptimeNanos == timestamp }
         }

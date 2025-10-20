@@ -16,8 +16,12 @@
 
 package com.android.compatibility.common.util;
 
+import com.google.auto.value.AutoValue;
+
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.annotation.Nullable;
 
 /**
  * Utility class for collecting device information. This is used to enforce
@@ -27,132 +31,117 @@ import java.util.Map;
  * properties sometimes deviate from the read-only properties that they're based
  * on.
  */
-public final class DevicePropertyInfo {
+@AutoValue
+public abstract class DevicePropertyInfo {
 
-    private final String mAbi;
-    private final String mAbi2;
-    private final String mAbis;
-    private final String mAbis32;
-    private final String mAbis64;
-    private final String mBoard;
-    private final String mBrand;
-    private final String mDevice;
-    private final String mFingerprint;
-    private final String mId;
-    private final String mManufacturer;
-    private final String mModel;
-    private final String mProduct;
-    private final String mReferenceFingerprint;
-    private final String mVendorFingerprint;
-    private final String mSerial;
-    private final String mTags;
-    private final String mType;
-    private final String mVersionBaseOs;
-    private final String mVersionRelease;
-    private final String mVersionSdk;
-    private final String mVersionSecurityPatch;
-    private final String mVersionIncremental;
-    private final String mBootimageFingerprint;
+    @Nullable
+    abstract String abi();
 
-    public DevicePropertyInfo(
-            String abi,
-            String abi2,
-            String abis,
-            String abis32,
-            String abis64,
-            String board,
-            String brand,
-            String device,
-            String fingerprint,
-            String vendorFingerprint,
-            String id,
-            String manufacturer,
-            String model,
-            String product,
-            String referenceFingerprint,
-            String serial,
-            String tags,
-            String type,
-            String versionBaseOs,
-            String versionRelease,
-            String versionSdk,
-            String versionSecurityPatch,
-            String versionIncremental) {
-        mAbi = abi;
-        mAbi2 = abi2;
-        mAbis = abis;
-        mAbis32 = abis32;
-        mAbis64 = abis64;
-        mBoard = board;
-        mBrand = brand;
-        mDevice = device;
-        mFingerprint = fingerprint;
-        mVendorFingerprint = vendorFingerprint;
-        mId = id;
-        mManufacturer = manufacturer;
-        mModel = model;
-        mProduct = product;
-        mReferenceFingerprint = referenceFingerprint;
-        mSerial = serial;
-        mTags = tags;
-        mType = type;
-        mVersionBaseOs = versionBaseOs;
-        mVersionRelease = versionRelease;
-        mVersionSdk = versionSdk;
-        mVersionSecurityPatch = versionSecurityPatch;
-        mVersionIncremental = versionIncremental;
-        mBootimageFingerprint = "unknown";
+    @Nullable
+    abstract String abi2();
+
+    @Nullable
+    abstract String abis();
+
+    @Nullable
+    abstract String abis32();
+
+    @Nullable
+    abstract String abis64();
+
+    @Nullable
+    abstract String board();
+
+    @Nullable
+    abstract String brand();
+
+    @Nullable
+    abstract String device();
+
+    @Nullable
+    abstract String fingerprint();
+
+    @Nullable
+    abstract String vendorFingerprint();
+
+    @Nullable
+    abstract String bootimageFingerprint();
+
+    @Nullable
+    abstract String id();
+
+    @Nullable
+    abstract String manufacturer();
+
+    @Nullable
+    abstract String model();
+
+    @Nullable
+    abstract String product();
+
+    @Nullable
+    abstract String referenceFingerprint();
+
+    @Nullable
+    abstract String serial();
+
+    @Nullable
+    abstract String tags();
+
+    @Nullable
+    abstract String type();
+
+    @Nullable
+    abstract String versionBaseOs();
+
+    @Nullable
+    abstract String versionRelease();
+
+    @Nullable
+    abstract String versionSdk();
+
+    @Nullable
+    abstract String versionSecurityPatch();
+
+    @Nullable
+    abstract String versionIncremental();
+
+    @Nullable
+    abstract String versionSdkFull();
+
+    @AutoValue.Builder
+    public abstract static class Builder {
+        public abstract Builder abi(@Nullable String abi);
+        public abstract Builder abi2(@Nullable String abi2);
+        public abstract Builder abis(@Nullable String abis);
+        public abstract Builder abis32(@Nullable String abis32);
+        public abstract Builder abis64(@Nullable String abis64);
+        public abstract Builder board(@Nullable String board);
+        public abstract Builder brand(@Nullable String brand);
+        public abstract Builder device(@Nullable String device);
+        public abstract Builder fingerprint(@Nullable String fingerprint);
+        public abstract Builder vendorFingerprint(@Nullable String vendorFingerprint);
+        public abstract Builder id(@Nullable String id);
+        public abstract Builder manufacturer(@Nullable String manufacturer);
+        public abstract Builder model(@Nullable String model);
+        public abstract Builder product(@Nullable String product);
+        public abstract Builder referenceFingerprint(@Nullable String referenceFingerprint);
+        public abstract Builder serial(@Nullable String serial);
+        public abstract Builder tags(@Nullable String tags);
+        public abstract Builder type(@Nullable String type);
+        public abstract Builder versionBaseOs(@Nullable String versionBaseOs);
+        public abstract Builder versionRelease(@Nullable String versionRelease);
+        public abstract Builder versionSdk(@Nullable String versionSdk);
+        public abstract Builder versionSecurityPatch(@Nullable String versionSecurityPatch);
+        public abstract Builder versionIncremental(@Nullable String versionIncremental);
+        public abstract Builder bootimageFingerprint(@Nullable String bootimageFingerprint);
+        public abstract Builder versionSdkFull(@Nullable String versionSdkFull);
+        public abstract DevicePropertyInfo build();
     }
 
-    public DevicePropertyInfo(
-            String abi,
-            String abi2,
-            String abis,
-            String abis32,
-            String abis64,
-            String board,
-            String brand,
-            String device,
-            String fingerprint,
-            String vendorFingerprint,
-            String id,
-            String manufacturer,
-            String model,
-            String product,
-            String referenceFingerprint,
-            String serial,
-            String tags,
-            String type,
-            String versionBaseOs,
-            String versionRelease,
-            String versionSdk,
-            String versionSecurityPatch,
-            String versionIncremental,
-            String bootimageFingerprint) {
-        mAbi = abi;
-        mAbi2 = abi2;
-        mAbis = abis;
-        mAbis32 = abis32;
-        mAbis64 = abis64;
-        mBoard = board;
-        mBrand = brand;
-        mDevice = device;
-        mFingerprint = fingerprint;
-        mVendorFingerprint = vendorFingerprint;
-        mId = id;
-        mManufacturer = manufacturer;
-        mModel = model;
-        mProduct = product;
-        mReferenceFingerprint = referenceFingerprint;
-        mSerial = serial;
-        mTags = tags;
-        mType = type;
-        mVersionBaseOs = versionBaseOs;
-        mVersionRelease = versionRelease;
-        mVersionSdk = versionSdk;
-        mVersionSecurityPatch = versionSecurityPatch;
-        mVersionIncremental = versionIncremental;
-        mBootimageFingerprint = bootimageFingerprint;
+    public static Builder newBuilder() {
+        return new AutoValue_DevicePropertyInfo.Builder()
+                .bootimageFingerprint("unknown");
     }
 
     /**
@@ -163,30 +152,31 @@ public final class DevicePropertyInfo {
     public Map<String, String> getPropertytMapWithPrefix(String prefix) {
         Map<String, String> propertyMap = new HashMap<>();
 
-        propertyMap.put(prefix + "abi", mAbi);
-        propertyMap.put(prefix + "abi2", mAbi2);
-        propertyMap.put(prefix + "abis", mAbis);
-        propertyMap.put(prefix + "abis_32", mAbis32);
-        propertyMap.put(prefix + "abis_64", mAbis64);
-        propertyMap.put(prefix + "board", mBoard);
-        propertyMap.put(prefix + "brand", mBrand);
-        propertyMap.put(prefix + "device", mDevice);
-        propertyMap.put(prefix + "fingerprint", mFingerprint);
-        propertyMap.put(prefix + "vendor_fingerprint", mVendorFingerprint);
-        propertyMap.put(prefix + "bootimage_fingerprint", mBootimageFingerprint);
-        propertyMap.put(prefix + "id", mId);
-        propertyMap.put(prefix + "manufacturer", mManufacturer);
-        propertyMap.put(prefix + "model", mModel);
-        propertyMap.put(prefix + "product", mProduct);
-        propertyMap.put(prefix + "reference_fingerprint", mReferenceFingerprint);
-        propertyMap.put(prefix + "serial", mSerial);
-        propertyMap.put(prefix + "tags", mTags);
-        propertyMap.put(prefix + "type", mType);
-        propertyMap.put(prefix + "version_base_os", mVersionBaseOs);
-        propertyMap.put(prefix + "version_release", mVersionRelease);
-        propertyMap.put(prefix + "version_sdk", mVersionSdk);
-        propertyMap.put(prefix + "version_security_patch", mVersionSecurityPatch);
-        propertyMap.put(prefix + "version_incremental", mVersionIncremental);
+        propertyMap.put(prefix + "abi", abi());
+        propertyMap.put(prefix + "abi2", abi2());
+        propertyMap.put(prefix + "abis", abis());
+        propertyMap.put(prefix + "abis_32", abis32());
+        propertyMap.put(prefix + "abis_64", abis64());
+        propertyMap.put(prefix + "board", board());
+        propertyMap.put(prefix + "brand", brand());
+        propertyMap.put(prefix + "device", device());
+        propertyMap.put(prefix + "fingerprint", fingerprint());
+        propertyMap.put(prefix + "vendor_fingerprint", vendorFingerprint());
+        propertyMap.put(prefix + "bootimage_fingerprint", bootimageFingerprint());
+        propertyMap.put(prefix + "id", id());
+        propertyMap.put(prefix + "manufacturer", manufacturer());
+        propertyMap.put(prefix + "model", model());
+        propertyMap.put(prefix + "product", product());
+        propertyMap.put(prefix + "reference_fingerprint", referenceFingerprint());
+        propertyMap.put(prefix + "serial", serial());
+        propertyMap.put(prefix + "tags", tags());
+        propertyMap.put(prefix + "type", type());
+        propertyMap.put(prefix + "version_base_os", versionBaseOs());
+        propertyMap.put(prefix + "version_release", versionRelease());
+        propertyMap.put(prefix + "version_sdk", versionSdk());
+        propertyMap.put(prefix + "version_security_patch", versionSecurityPatch());
+        propertyMap.put(prefix + "version_incremental", versionIncremental());
+        propertyMap.put(prefix + "version_sdk_full", versionSdkFull());
 
         return propertyMap;
     }

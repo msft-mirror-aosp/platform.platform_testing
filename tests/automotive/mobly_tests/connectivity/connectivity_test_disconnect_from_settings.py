@@ -36,43 +36,47 @@ class BluetoothDisconnectFromSettingsTest(bluetooth_base_test.BluetoothBaseTest)
 
     def setup_test(self):
         super().setup_test()
-        # Pair the devices
+
+    # Pair the devices
         self.bt_utils.pair_primary_to_secondary()
         super().enable_recording()
 
-    def test_disconnect_from_settings(self):
-        for _ in range(2):
-            # Log BT Connection State after pairing
-            bt_connection_state=self.call_utils.get_bt_connection_status_using_adb_command(self.discoverer)
-            logging.info("BT State after pairing : <%s>", bt_connection_state)
 
-            # Allow time for connection to fully sync.
-            self.call_utils.wait_with_log(constants.WAIT_THIRTY_SECONDS)
+def test_disconnect_from_settings(self):
+    for _ in range(2):
+        # Log BT Connection State after pairing
+        bt_connection_state = self.call_utils.get_bt_connection_status_using_adb_command(
+            self.discoverer)
+        logging.info("BT State after pairing : <%s>", bt_connection_state)
 
-            bt_connection_state=self.call_utils.get_bt_connection_status_using_adb_command(self.discoverer)
-            logging.info("BT Connection State after wait time : <%s>", bt_connection_state)
+        # Allow time for connection to fully sync.
+        self.call_utils.wait_with_log(constants.WAIT_THIRTY_SECONDS)
 
-            # Navigate to Bluetooth Settings
-            self.call_utils.open_bluetooth_settings_form_status_bar()
-            self.call_utils.wait_with_log(constants.WAIT_TWO_SECONDS)
-            # Press the Bluetooth toggle button to disconnect
-            # (Recall that the toggle is the leftmost of the three buttons listed with the name)
-            self.call_utils.press_bluetooth_toggle_on_device(self.target.mbs.btGetName())
-            self.call_utils.wait_with_log(constants.WAIT_TWO_SECONDS)
+        bt_connection_state = self.call_utils.get_bt_connection_status_using_adb_command(
+            self.discoverer)
+        logging.info("BT Connection State after wait time : <%s>", bt_connection_state)
 
-            # Confirm that Bluetooth, Media, and Audio are disabled
-            asserts.assert_true(
-                self.call_utils.validate_three_preference_buttons(False),
-                "Expected bluetooth, media, and phone buttons to be disabled after disconnection.")
+        # Navigate to Bluetooth Settings
+        self.call_utils.open_bluetooth_settings_form_status_bar()
+        self.call_utils.wait_with_log(constants.WAIT_TWO_SECONDS)
+        # Press the Bluetooth toggle button to disconnect
+        # (Recall that the toggle is the leftmost of the three buttons listed with the name)
+        self.call_utils.press_bluetooth_toggle_on_device(self.target.mbs.btGetName())
+        self.call_utils.wait_with_log(constants.WAIT_TWO_SECONDS)
 
-            # Press the Bluetooth button to reconnect
-            self.call_utils.press_bluetooth_toggle_on_device(self.target.mbs.btGetName())
-            self.call_utils.wait_with_log(constants.SYNC_WAIT_TIME)
+        # Confirm that Bluetooth, Media, and Audio are disabled
+        asserts.assert_true(
+            self.call_utils.validate_three_preference_buttons(False),
+            "Expected bluetooth, media, and phone buttons to be disabled after disconnection.")
 
-            # Confirm that Bluetooth, Media, and Audio are enabled
-            asserts.assert_true(
-                self.call_utils.validate_three_preference_buttons(True),
-                "Expected bluetooth, media, and phone buttons to be enabled after reconnection.")
+        # Press the Bluetooth button to reconnect
+        self.call_utils.press_bluetooth_toggle_on_device(self.target.mbs.btGetName())
+        self.call_utils.wait_with_log(constants.SYNC_WAIT_TIME)
+
+        # Confirm that Bluetooth, Media, and Audio are enabled
+        asserts.assert_true(
+            self.call_utils.validate_three_preference_buttons(True),
+            "Expected bluetooth, media, and phone buttons to be enabled after reconnection.")
 
 
 if __name__ == '__main__':

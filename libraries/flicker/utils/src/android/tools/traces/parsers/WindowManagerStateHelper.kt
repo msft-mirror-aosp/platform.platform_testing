@@ -26,6 +26,7 @@ import android.graphics.Region
 import android.os.SystemClock
 import android.os.Trace
 import android.tools.Rotation
+import android.tools.io.WINSCOPE_EXT
 import android.tools.traces.Condition
 import android.tools.traces.ConditionsFactory
 import android.tools.traces.DeviceStateDump
@@ -34,6 +35,7 @@ import android.tools.traces.WaitCondition
 import android.tools.traces.component.ComponentNameMatcher.Companion.BUBBLE
 import android.tools.traces.component.ComponentNameMatcher.Companion.IME
 import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
+import android.tools.traces.component.ComponentNameMatcher.Companion.POPUP_WINDOW
 import android.tools.traces.component.ComponentNameMatcher.Companion.SNAPSHOT
 import android.tools.traces.component.ComponentNameMatcher.Companion.SPLASH_SCREEN
 import android.tools.traces.component.ComponentNameMatcher.Companion.SPLIT_DIVIDER
@@ -49,6 +51,7 @@ import android.tools.traces.wm.WindowState
 import android.util.Log
 import android.view.Display
 import androidx.test.platform.app.InstrumentationRegistry
+import java.io.File
 import java.util.function.Predicate
 import java.util.function.Supplier
 
@@ -113,13 +116,29 @@ constructor(
     inner class StateSyncBuilder(private val deviceDumpSupplier: Supplier<DeviceStateDump>) {
         private val conditionBuilder = createConditionBuilder()
         private var lastMessage = ""
+        private val failureDumpFiles = mutableListOf<String>()
 
         private fun createConditionBuilder(): WaitCondition.Builder<DeviceStateDump> =
             WaitCondition.Builder(numRetries) { deviceDumpSupplier.get() }
                 .onStart { Trace.beginSection(it) }
                 .onEnd { Trace.endSection() }
                 .onSuccess { updateCurrState(it) }
-                .onFailure { updateCurrState(it) }
+                .onFailure {
+                    updateCurrState(it)
+                    val perfettoDump = DeviceDumpParser.lastPerfettoTraceData
+
+                    if (perfettoDump.isNotEmpty()) {
+                        val file =
+                            File(
+                                instrumentation.context.filesDir,
+                                "wait_condition_failure_${System.currentTimeMillis()}.$WINSCOPE_EXT",
+                            )
+                        file.writeBytes(perfettoDump)
+                        DeviceDumpParser.retainedDumpFiles.add(file)
+                        failureDumpFiles.add(file.name)
+                        Log.e(LOG_TAG, "Saved perfetto dump on failure to ${file.absolutePath}")
+                    }
+                }
                 .onLog { msg, isError ->
                     lastMessage = msg
                     if (isError) {
@@ -182,6 +201,12 @@ constructor(
                     }
                     if (layerState != null) {
                         appendLine("Last checked layer state at ${layerState.timestamp}.")
+                    }
+                    if (failureDumpFiles.isNotEmpty()) {
+                        appendLine(
+                            "See failure dumps in test artifacts: " +
+                                failureDumpFiles.joinToString()
+                        )
                     }
                 }
             }
@@ -362,7 +387,7 @@ constructor(
             displayId: Int = Display.DEFAULT_DISPLAY,
         ) =
             withAppTransitionIdle(displayId)
-                .add(ConditionsFactory.isWindowSurfaceShown(componentMatcher).negate())
+                .add(ConditionsFactory.isWindowSurfaceShown(componentMatcher, displayId).negate())
                 .add(ConditionsFactory.isLayerVisible(componentMatcher).negate())
                 .add(ConditionsFactory.isAppTransitionIdle(displayId))
 
@@ -377,10 +402,16 @@ constructor(
         fun withWindowSurfaceAppeared(
             componentMatcher: IComponentMatcher,
             displayId: Int = Display.DEFAULT_DISPLAY,
-        ) =
-            withAppTransitionIdle(displayId)
-                .add(ConditionsFactory.isWindowSurfaceShown(componentMatcher))
-                .add(ConditionsFactory.isLayerVisible(componentMatcher))
+        ): StateSyncBuilder {
+            val stateSyncBuilder =
+                withAppTransitionIdle(displayId)
+                    .add(ConditionsFactory.isWindowSurfaceShown(componentMatcher, displayId))
+            // TODO(b/450119880): Layer verification on another display is not yet supported
+            if (displayId == Display.DEFAULT_DISPLAY) {
+                stateSyncBuilder.add(ConditionsFactory.isLayerVisible(componentMatcher))
+            }
+            return stateSyncBuilder
+        }
 
         /**
          * Wait until least one [LayerState] matching [componentMatcher] is visible
@@ -515,7 +546,12 @@ constructor(
          */
         fun withTopVisibleApps(vararg matchers: IComponentMatcher): StateSyncBuilder {
             return add("withTopVisibleApps") {
-                val visibleApps = it.wmState.visibleAppWindows
+                val visibleApps =
+                    it.wmState.visibleAppWindows.filter { appWindow ->
+                        TOP_APPS_IGNORE_MATCHERS.none { matcher ->
+                            matcher.windowMatchesAnyOf(appWindow)
+                        }
+                    }
 
                 if (visibleApps.size < matchers.size || visibleApps !is List) {
                     // Not enough windows in the visible list or visibleApps collection is not List
@@ -581,6 +617,8 @@ constructor(
         // uses it, and some tests might be sensitive to the waiting interval.
         private const val DEFAULT_RETRY_LIMIT = 20
         private const val DEFAULT_RETRY_INTERVAL_MS = 300L
+
+        private val TOP_APPS_IGNORE_MATCHERS = listOf(POPUP_WINDOW)
 
         /** @return true if it should wait for some activities to become visible. */
         private fun shouldWaitForActivities(

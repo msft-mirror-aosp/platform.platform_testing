@@ -17,8 +17,10 @@
 package platform.test.screenshot.utils.compose
 
 import android.app.Activity
+import android.app.ActivityOptions
 import android.app.Dialog
 import android.content.res.Configuration
+import android.graphics.Rect
 import android.os.Build
 import android.os.LocaleList
 import android.view.ContextThemeWrapper
@@ -32,15 +34,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalCursorBlinkEnabled
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.ViewRootForTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsNodeInteraction
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.AndroidComposeTestRule
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.core.text.TextUtilsCompat
+import androidx.test.ext.junit.rules.ActivityScenarioRule
 import com.android.compose.theme.PlatformTheme
 import java.util.Locale
 import java.util.concurrent.TimeUnit
@@ -77,8 +81,29 @@ class ComposeScreenshotTestRule(
     private val fontsRule = FontsRule()
     private val hardwareRenderingRule = HardwareRenderingRule()
     private val deviceEmulationRule = DeviceEmulationRule(emulationSpec)
+    private val activityRule =
+        ActivityScenarioRule(
+            ScreenshotActivity::class.java,
+            ActivityOptions.makeBasic()
+                .setLaunchBounds(
+                    Rect(0, 0, emulationSpec.display.width, emulationSpec.display.height)
+                )
+                .toBundle(),
+        )
+
     @OptIn(ExperimentalTestApi::class)
-    val composeRule = createAndroidComposeRule<ScreenshotActivity>(effectContext)
+    val composeRule = AndroidComposeTestRule(
+        activityRule = activityRule,
+        effectContext = effectContext,
+        activityProvider = {
+            var activity: ScreenshotActivity? = null
+            activityRule.scenario.onActivity { activity = it }
+            if (activity == null) {
+                throw IllegalStateException("Activity was not set in the ActivityScenarioRule!")
+            }
+            return@AndroidComposeTestRule activity
+        }
+    )
 
     private val commonRule =
         RuleChain.outerRule(deviceEmulationRule).around(screenshotRule).around(composeRule)
@@ -138,16 +163,20 @@ class ComposeScreenshotTestRule(
                 CustomLocale(locale = emulationSpec.locale) {
                     PlatformTheme {
                         Surface(color = MaterialTheme.colorScheme.background) {
-                            content()
+                            // Turn off text input caret blinking - caret will always be visible.
+                            // Blinking would lead to flakiness if a text input field has focus.
+                            CompositionLocalProvider(LocalCursorBlinkEnabled provides false) {
+                                content()
 
-                            // Clear the focus early. This disposable effect will run after any
-                            // DisposableEffect in content() but will run before layout/drawing, so
-                            // clearing focus early here will make sure we never draw a focused
-                            // effect.
-                            if (clearFocus) {
-                                DisposableEffect(Unit) {
-                                    focusManager.clearFocus()
-                                    onDispose {}
+                                // Clear the focus early. This disposable effect will run after any
+                                // DisposableEffect in content() but will run before layout/drawing,
+                                // so clearing focus early here will make sure we never draw a
+                                // focused effect.
+                                if (clearFocus) {
+                                    DisposableEffect(Unit) {
+                                        focusManager.clearFocus()
+                                        onDispose {}
+                                    }
                                 }
                             }
                         }

@@ -242,17 +242,22 @@ public class Functional extends BlockJUnit4ClassRunner {
                     }
 
                     for (FrameworkMethod testMethod : children) {
-                        final Description description = describeChild(testMethod);
-                        notifier.fireTestStarted(description);
-                        if (e instanceof AssumptionViolatedException) {
-                            notifier.fireTestAssumptionFailed(new Failure(description, e));
-                        } else {
-                            notifier.fireTestFailure(new Failure(description, e));
-                        }
-                        notifier.fireTestFinished(description);
+                        notifyTestStartFailFinish(notifier, describeChild(testMethod), e);
                     }
                 }
             }
         };
+    }
+
+    /** Reports a test start, fail, and finish. */
+    public static void notifyTestStartFailFinish(
+            RunNotifier notifier, Description description, Throwable e) {
+        notifier.fireTestStarted(description);
+        if (e instanceof AssumptionViolatedException) {
+            notifier.fireTestAssumptionFailed(new Failure(description, e));
+        } else {
+            notifier.fireTestFailure(new Failure(description, e));
+        }
+        notifier.fireTestFinished(description);
     }
 }

@@ -209,8 +209,8 @@ public class UserController {
         return shell(getUiDevice(), USER_SWITCHER_VISIBLE_FLAG_CMD).trim().endsWith("true");
     }
 
-    /** Return the maximum number of users that are allowed in the current device. */
-    public int getMaxUsers() {
-        return getUserManager().getMaxSupportedUsers();
+    /** Return the maximum number of switchable users that are allowed on the device. */
+    public int getMaxSwitchableUsers() {
+        return getUserManager().getMaxSwitchableUsers();
     }
 }

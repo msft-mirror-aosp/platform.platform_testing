@@ -1,0 +1,12 @@
+# Copyright 2025 Google LLC
+
+TestBeds:
+  - Name: TwoDevicesTestBed
+    Controllers:
+      AndroidDevice:
+        - serial: serial_number
+          label: device1
+        - serial: serial_number
+          label: device2
+    TestParams:
+      number_of_devices: 2

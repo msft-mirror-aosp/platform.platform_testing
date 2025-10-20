@@ -1,0 +1,25 @@
+// Copyright 2025 Google LLC
+
+package {
+    default_team: "trendy_team_auto_engprod",
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+// Device configuration files
+filegroup {
+    name: "spectatio_host_device_configs",
+    srcs: [
+        "test_bed/*",
+    ],
+}
+
+// Test config base templates
+filegroup {
+    name: "spectatio_host_test_config_one_device",
+    srcs: ["test_config/automotive-one-device.xml"],
+}
+
+filegroup {
+    name: "spectatio_host_test_config_two_devices",
+    srcs: ["test_config/automotive-two-devices.xml"],
+}

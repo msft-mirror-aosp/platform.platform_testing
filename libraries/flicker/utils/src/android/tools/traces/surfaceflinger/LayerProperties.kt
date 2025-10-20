@@ -20,149 +20,83 @@ import android.graphics.Color
 import android.graphics.RectF
 import android.graphics.Region
 import android.tools.datatypes.ActiveBuffer
-import android.tools.datatypes.emptyColor
-import android.tools.withCache
 
-/** {@inheritDoc} */
-class LayerProperties
-private constructor(
-    override val visibleRegion: Region = Region(),
-    override val activeBuffer: ActiveBuffer = ActiveBuffer.EMPTY,
-    override val flags: Int = 0,
-    override val bounds: RectF = RectF(),
-    override val color: Color = emptyColor(),
-    private val _isOpaque: Boolean = false,
-    override val shadowRadius: Float = 0f,
-    override val cornerRadius: Float = 0f,
-    override val screenBounds: RectF = RectF(),
-    override val transform: Transform = Transform.EMPTY,
-    override val effectiveScalingMode: Int = 0,
-    override val bufferTransform: Transform = Transform.EMPTY,
-    override val hwcCompositionType: HwcCompositionType = HwcCompositionType.HWC_TYPE_UNSPECIFIED,
-    override val backgroundBlurRadius: Int = 0,
-    override val crop: RectF = RectF(),
-    override val isRelativeOf: Boolean = false,
-    override val zOrderRelativeOfId: Int = 0,
-    override val stackId: Int = 0,
-    override val excludesCompositionState: Boolean = false,
-) : ILayerProperties {
-    override val isOpaque: Boolean = if (color.alpha() != 1.0f) false else _isOpaque
+/**
+ * Common properties of a layer that are not related to their position in the hierarchy
+ *
+ * These properties are frequently stable throughout the trace and can be more efficiently cached
+ * than the full layers
+ */
+interface LayerProperties {
+    val visibleRegion: Region
+    val activeBuffer: ActiveBuffer
+    val flags: Int
+    val bounds: RectF
+    val color: Color
+    val shadowRadius: Float
+    val cornerRadii: CornerRadii
+    val screenBounds: RectF
+    val transform: Transform
+    val effectiveScalingMode: Int
+    val bufferTransform: Transform
+    val hwcCompositionType: HwcCompositionType
+    val backgroundBlurRadius: Int
+    val crop: RectF
+    val isRelativeOf: Boolean
+    val zOrderRelativeOfId: Int
+    val stackId: Int
 
-    override fun hashCode(): Int {
-        var result = visibleRegion.hashCode()
-        result = 31 * result + activeBuffer.hashCode()
-        result = 31 * result + flags
-        result = 31 * result + bounds.hashCode()
-        result = 31 * result + color.hashCode()
-        result = 31 * result + _isOpaque.hashCode()
-        result = 31 * result + shadowRadius.hashCode()
-        result = 31 * result + cornerRadius.hashCode()
-        result = 31 * result + screenBounds.hashCode()
-        result = 31 * result + transform.hashCode()
-        result = 31 * result + effectiveScalingMode
-        result = 31 * result + bufferTransform.hashCode()
-        result = 31 * result + hwcCompositionType.hashCode()
-        result = 31 * result + backgroundBlurRadius
-        result = 31 * result + crop.hashCode()
-        result = 31 * result + isRelativeOf.hashCode()
-        result = 31 * result + zOrderRelativeOfId
-        result = 31 * result + stackId
-        result = 31 * result + screenBounds.hashCode()
-        result = 31 * result + isOpaque.hashCode()
-        result = 31 * result + excludesCompositionState.hashCode()
-        return result
-    }
+    /**
+     * Checks if the layer's active buffer is empty
+     *
+     * An active buffer is empty if it is not in the proto or if its height or width are 0
+     *
+     * @return
+     */
+    val isActiveBufferEmpty: Boolean
+        get() = activeBuffer.isEmpty
 
-    override fun toString(): String {
-        return "LayerProperties(visibleRegion=$visibleRegion, activeBuffer=$activeBuffer, " +
-            "flags=$flags, bounds=$bounds, color=$color, _isOpaque=$_isOpaque, " +
-            "shadowRadius=$shadowRadius, cornerRadius=$cornerRadius, " +
-            "screenBounds=$screenBounds, transform=$transform, " +
-            "effectiveScalingMode=$effectiveScalingMode, bufferTransform=$bufferTransform, " +
-            "hwcCompositionType=$hwcCompositionType, " +
-            "backgroundBlurRadius=$backgroundBlurRadius, crop=$crop, isRelativeOf=$isRelativeOf, " +
-            "zOrderRelativeOfId=$zOrderRelativeOfId, stackId=$stackId, " +
-            "screenBounds=$screenBounds, isOpaque=$isOpaque, " +
-            "excludesCompositionState=$excludesCompositionState)"
-    }
+    /**
+     * Converts flags to human readable tokens.
+     *
+     * @return
+     */
+    val verboseFlags: String
+        get() {
+            val tokens = Flag.entries.filter { (it.value and flags) != 0 }.map { it.name }
 
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is LayerProperties) return false
-
-        if (visibleRegion != other.visibleRegion) return false
-        if (activeBuffer != other.activeBuffer) return false
-        if (flags != other.flags) return false
-        if (bounds != other.bounds) return false
-        if (color != other.color) return false
-        if (_isOpaque != other._isOpaque) return false
-        if (shadowRadius != other.shadowRadius) return false
-        if (cornerRadius != other.cornerRadius) return false
-        if (screenBounds != other.screenBounds) return false
-        if (transform != other.transform) return false
-        if (effectiveScalingMode != other.effectiveScalingMode) return false
-        if (bufferTransform != other.bufferTransform) return false
-        if (hwcCompositionType != other.hwcCompositionType) return false
-        if (backgroundBlurRadius != other.backgroundBlurRadius) return false
-        if (crop != other.crop) return false
-        if (isRelativeOf != other.isRelativeOf) return false
-        if (zOrderRelativeOfId != other.zOrderRelativeOfId) return false
-        if (stackId != other.stackId) return false
-        if (screenBounds != other.screenBounds) return false
-        if (isOpaque != other.isOpaque) return false
-        if (excludesCompositionState != other.excludesCompositionState) return false
-
-        return true
-    }
-
-    companion object {
-        val EMPTY: LayerProperties
-            get() = withCache { LayerProperties() }
-
-        fun from(
-            visibleRegion: Region,
-            activeBuffer: ActiveBuffer,
-            flags: Int,
-            bounds: RectF,
-            color: Color,
-            isOpaque: Boolean,
-            shadowRadius: Float,
-            cornerRadius: Float,
-            screenBounds: RectF,
-            transform: Transform,
-            effectiveScalingMode: Int,
-            bufferTransform: Transform,
-            hwcCompositionType: HwcCompositionType,
-            backgroundBlurRadius: Int,
-            crop: RectF?,
-            isRelativeOf: Boolean,
-            zOrderRelativeOfId: Int,
-            stackId: Int,
-            excludesCompositionState: Boolean,
-        ): ILayerProperties {
-            return withCache {
-                LayerProperties(
-                    visibleRegion,
-                    activeBuffer,
-                    flags,
-                    bounds,
-                    color,
-                    isOpaque,
-                    shadowRadius,
-                    cornerRadius,
-                    screenBounds,
-                    transform,
-                    effectiveScalingMode,
-                    bufferTransform,
-                    hwcCompositionType,
-                    backgroundBlurRadius,
-                    crop ?: RectF(),
-                    isRelativeOf,
-                    zOrderRelativeOfId,
-                    stackId,
-                    excludesCompositionState,
-                )
+            return if (tokens.isEmpty()) {
+                ""
+            } else {
+                "${tokens.joinToString("|")} (0x${flags.toString(16)})"
             }
         }
-    }
+
+    /**
+     * Checks if the [Layer] has rounded corners
+     *
+     * @return
+     */
+    val hasRoundedCorners: Boolean
+        get() = !cornerRadii.isEmpty()
+
+    /**
+     * Checks if the [Layer] has zero requested or inherited alpha
+     *
+     * @return
+     */
+    val hasZeroAlpha: Boolean
+        get() {
+            return color.alpha() == 0f
+        }
+
+    fun isAnimating(prevLayerState: LayerProperties?): Boolean =
+        when (prevLayerState) {
+            // when there's no previous state, use a heuristic based on the transform
+            null -> !transform.isSimpleRotation
+            else ->
+                visibleRegion != prevLayerState.visibleRegion ||
+                    transform != prevLayerState.transform ||
+                    color != prevLayerState.color
+        }
 }

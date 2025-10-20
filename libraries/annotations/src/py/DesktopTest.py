@@ -23,14 +23,35 @@ class DesktopTest(object):
   Args:
       requirements: the list of Desktop requirements.
       cujs: the list of Desktop cujs.
+      manual: The list of manual tests that this test case provides full or
+        partial coverage for. This is used to track the automation progress of
+        manual tests.
+      alpeid: The list of alpe (context: b/447658460) ids that this test case provides coverage for.
+        To override the test count, an entry of the form "test_count:N" can be
+        added, where N is the number of tests. This is intended for generator
+        functions that generate multiple tests but are counted as one.
 
-  Example:
+  Example with requirements and cujs:
       @DesktopTest(requirements=['D-0-1', 'D-0-2'], cujs=['cuj-1', 'cuj-2'])
+
+  Example with alpeid and test_count override:
+      @DesktopTest(alpeid=['gpu-1', 'gpu-2', 'test_count:5'])
+
+  Example with alpeid without test_count override:
+      @DesktopTest(alpeid=['gpu-1', 'gpu-2'])
   """
 
-  def __init__(self, requirements: List[str] = [], cujs: List[str] = []):
+  def __init__(
+      self,
+      requirements: List[str] = [],
+      cujs: List[str] = [],
+      manual: List[str] = [],
+      alpeid: List[str] = [],
+  ):
     self._requirements = requirements
     self._cujs = cujs
+    self._manual = manual
+    self._alpeid = alpeid
 
   def __call__(self, func):
     return func

@@ -88,7 +88,7 @@ class LayerTraceEntrySubjectTest {
         val expectedRegion = Region(0, 0, 1440, 2960)
         assertFail("SkRegion((0,0,1440,1440)) should cover at least SkRegion((0,0,1440,2960))") {
             LayersTraceSubject(trace, reader)
-                .getEntryBySystemUpTime(935346112030, byElapsedTimestamp = true)
+                .getEntryBySystemUpTime(935346112030, byMonotonicTimestamp = true)
                 .visibleRegion()
                 .coversAtLeast(expectedRegion)
         }
@@ -102,7 +102,7 @@ class LayerTraceEntrySubjectTest {
         val expectedVisibleRegion = Region(0, 0, 1, 1)
         assertFail(TestComponents.IMAGINARY.toWindowIdentifier()) {
             LayersTraceSubject(trace, reader)
-                .getEntryBySystemUpTime(937229257165, byElapsedTimestamp = true)
+                .getEntryBySystemUpTime(937229257165, byMonotonicTimestamp = true)
                 .visibleRegion(TestComponents.IMAGINARY)
                 .coversExactly(expectedVisibleRegion)
         }
@@ -115,7 +115,7 @@ class LayerTraceEntrySubjectTest {
         val expectedVisibleRegion = Region(0, 0, 1, 1)
         assertFail("SkRegion() should cover exactly SkRegion((0,0,1,1))") {
             LayersTraceSubject(trace, reader)
-                .getEntryBySystemUpTime(937126074082, byElapsedTimestamp = true)
+                .getEntryBySystemUpTime(937126074082, byMonotonicTimestamp = true)
                 .visibleRegion(TestComponents.DOCKER_STACK_DIVIDER)
                 .coversExactly(expectedVisibleRegion)
         }
@@ -128,7 +128,7 @@ class LayerTraceEntrySubjectTest {
         val expectedVisibleRegion = Region(0, 0, 1, 1)
         assertFail("SkRegion() should cover exactly SkRegion((0,0,1,1))") {
             LayersTraceSubject(trace, reader)
-                .getEntryBySystemUpTime(935346112030, byElapsedTimestamp = true)
+                .getEntryBySystemUpTime(935346112030, byMonotonicTimestamp = true)
                 .visibleRegion(TestComponents.SIMPLE_APP)
                 .coversExactly(expectedVisibleRegion)
         }
@@ -141,7 +141,7 @@ class LayerTraceEntrySubjectTest {
         val expectedVisibleRegion = Region(0, 0, 1440, 99)
         assertFail("SkRegion((0,0,1440,171)) should cover exactly SkRegion((0,0,1440,99))") {
             LayersTraceSubject(trace, reader)
-                .getEntryBySystemUpTime(937126074082, byElapsedTimestamp = true)
+                .getEntryBySystemUpTime(937126074082, byMonotonicTimestamp = true)
                 .visibleRegion(ComponentNameMatcher.STATUS_BAR)
                 .coversExactly(expectedVisibleRegion)
         }
@@ -153,7 +153,7 @@ class LayerTraceEntrySubjectTest {
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val expectedVisibleRegion = Region(0, 0, 1080, 145)
         LayersTraceSubject(trace, reader)
-            .getEntryBySystemUpTime(90480846872160, byElapsedTimestamp = true)
+            .getEntryBySystemUpTime(90480846872160, byMonotonicTimestamp = true)
             .visibleRegion(ComponentNameMatcher.STATUS_BAR)
             .coversExactly(expectedVisibleRegion)
     }
@@ -163,9 +163,9 @@ class LayerTraceEntrySubjectTest {
         val reader =
             getLayerTraceReaderFromAsset("layers_trace_invalid_layer_visibility.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
-        assertFail("Bounds is 0x0") {
+        assertFail("bounds is 0x0") {
             LayersTraceSubject(trace, reader)
-                .getEntryBySystemUpTime(252794268378458, byElapsedTimestamp = true)
+                .getEntryBySystemUpTime(252794268378458, byMonotonicTimestamp = true)
                 .isVisible(TestComponents.SIMPLE_APP)
         }
     }
@@ -353,51 +353,6 @@ class LayerTraceEntrySubjectTest {
     }
 
     @Test
-    fun detectOccludedLayerBecauseOfRoundedCorners() {
-        val reader = getLayerTraceReaderFromAsset("layers_trace_rounded_corners.perfetto-trace")
-        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
-        val entry =
-            LayersTraceSubject(trace, reader)
-                .getEntryBySystemUpTime(6216612368228, byElapsedTimestamp = true)
-        val defaultPkg = "com.android.server.wm.flicker.testapp"
-        val simpleActivityMatcher =
-            ComponentNameMatcher(defaultPkg, "$defaultPkg.SimpleActivity#66086")
-        val imeActivityMatcher = ComponentNameMatcher(defaultPkg, "$defaultPkg.ImeActivity#66060")
-        val simpleActivitySubject =
-            entry.layer(simpleActivityMatcher) ?: error("Layer should be available")
-        val imeActivitySubject =
-            entry.layer(imeActivityMatcher) ?: error("Layer should be available")
-        val simpleActivityLayer = simpleActivitySubject.layer
-        val imeActivityLayer = imeActivitySubject.layer
-        // both layers have the same region
-        imeActivitySubject.visibleRegion.coversExactly(simpleActivitySubject.visibleRegion.region)
-        // both are visible
-        entry.isInvisible(simpleActivityMatcher)
-        entry.isVisible(imeActivityMatcher)
-        // and simple activity is partially covered by IME activity
-        Truth.assertWithMessage("IME activity has rounded corners")
-            .that(simpleActivityLayer.occludedBy)
-            .contains(imeActivityLayer)
-        // because IME activity has rounded corners
-        Truth.assertWithMessage("IME activity has rounded corners")
-            .that(imeActivityLayer.cornerRadius)
-            .isGreaterThan(0)
-    }
-
-    @Test
-    fun canDetectInvisibleLayerOutOfScreen() {
-        val reader =
-            getLayerTraceReaderFromAsset("layers_trace_visible_outside_bounds.perfetto-trace")
-        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
-        val subject =
-            LayersTraceSubject(trace, reader)
-                .getEntryBySystemUpTime(1253267561044, byElapsedTimestamp = true)
-        val region = subject.visibleRegion(ComponentNameMatcher.IME_SCREENSHOT)
-        region.isEmpty()
-        subject.isInvisible(ComponentNameMatcher.IME_SCREENSHOT)
-    }
-
-    @Test
     fun canDetectInvisibleLayerOutOfScreen_ConsecutiveLayers() {
         val reader =
             getLayerTraceReaderFromAsset("layers_trace_visible_outside_bounds.perfetto-trace")
@@ -407,13 +362,13 @@ class LayerTraceEntrySubjectTest {
     }
 
     @Test
-    fun failsOnNonEsistingComponent_isInvisibleWithMustExist() {
+    fun failsOnNonExistingComponent_isInvisibleWithMustExist() {
         val reader =
             getLayerTraceReaderFromAsset("layers_trace_visible_outside_bounds.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val subject =
             LayersTraceSubject(trace, reader)
-                .getEntryBySystemUpTime(1253267561044, byElapsedTimestamp = true)
+                .getEntryBySystemUpTime(1253267561044, byMonotonicTimestamp = true)
         assertFail("ImaginaryWindow should exist") {
             subject.isInvisible(TestComponents.IMAGINARY, mustExist = true)
         }

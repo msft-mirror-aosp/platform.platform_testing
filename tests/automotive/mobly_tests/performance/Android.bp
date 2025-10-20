@@ -13,7 +13,30 @@
 // limitations under the License.
 
 package {
+    default_team: "trendy_team_aaos_framework",
     default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+python_library_host {
+    name: "bluetooth_performance_test",
+    pkg_path: "bluetooth_performance_test",
+    srcs: ["bluetooth_performance_base_test.py"],
+    libs: [
+        "mobly",
+        "utilities",
+        "bluetooth_test",
+        "statsd_collector",
+        "libprotobuf-python",
+    ],
+    data: [
+        "bluetooth_event_metrics.pb",
+        "bt_connection_time.pb",
+    ],
+    device_common_data: [
+        // Package the snippet with the mobly test
+        ":AutomotiveSnippet",
+        ":PhoneSnippet",
+    ],
 }
 
 python_test_host {
@@ -24,8 +47,27 @@ python_test_host {
         "mobly",
         "utilities",
         "bluetooth_test",
-        "statsd_collector",
-        "libprotobuf-python",
+    ],
+    test_suites: [
+        "catbox",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    device_common_data: [
+        // Package the snippet with the mobly test
+        ":AutomotiveSnippet",
+        ":PhoneSnippet",
+        "bt_performance_10_iterations.yaml",
+    ],
+}
+
+python_test_host {
+    name: "BTConnectionPerformanceTest",
+    main: "connection_test.py",
+    srcs: ["connection_test.py"],
+    libs: [
+        "bluetooth_performance_test",
     ],
     test_suites: [
         "catbox",

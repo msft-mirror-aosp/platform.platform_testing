@@ -16,6 +16,7 @@
 
 package android.tools.traces.surfaceflinger
 
+import android.graphics.Color
 import android.graphics.RectF
 import android.graphics.Region
 import android.tools.Cache
@@ -26,6 +27,7 @@ import org.junit.Before
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runners.MethodSorters
+import org.mockito.MockitoAnnotations
 
 /** Contains [Layer] tests. To run this test: `atest FlickerLibTest:LayerTest` */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -33,119 +35,93 @@ class LayerTest {
     @Before
     fun before() {
         Cache.clear()
+        MockitoAnnotations.openMocks(this)
     }
 
     @Test
     fun hasVerboseFlagsProperty() {
-        assertThat(makeLayerWithDefaults(0x0).verboseFlags).isEqualTo("")
+        assertThat(makeLayerWithDefaults(flags = 0x0).verboseFlags).isEqualTo("")
 
-        assertThat(makeLayerWithDefaults(0x1).verboseFlags).isEqualTo("HIDDEN (0x1)")
+        assertThat(makeLayerWithDefaults(flags = 0x1).verboseFlags).isEqualTo("HIDDEN (0x1)")
 
-        assertThat(makeLayerWithDefaults(0x2).verboseFlags).isEqualTo("OPAQUE (0x2)")
+        assertThat(makeLayerWithDefaults(flags = 0x2).verboseFlags).isEqualTo("OPAQUE (0x2)")
 
-        assertThat(makeLayerWithDefaults(0x40).verboseFlags).isEqualTo("SKIP_SCREENSHOT (0x40)")
+        assertThat(makeLayerWithDefaults(flags = 0x40).verboseFlags)
+            .isEqualTo("SKIP_SCREENSHOT (0x40)")
 
-        assertThat(makeLayerWithDefaults(0x80).verboseFlags).isEqualTo("SECURE (0x80)")
+        assertThat(makeLayerWithDefaults(flags = 0x80).verboseFlags).isEqualTo("SECURE (0x80)")
 
-        assertThat(makeLayerWithDefaults(0x100).verboseFlags)
+        assertThat(makeLayerWithDefaults(flags = 0x100).verboseFlags)
             .isEqualTo("ENABLE_BACKPRESSURE (0x100)")
 
-        assertThat(makeLayerWithDefaults(0x200).verboseFlags)
+        assertThat(makeLayerWithDefaults(flags = 0x200).verboseFlags)
             .isEqualTo("DISPLAY_DECORATION (0x200)")
 
-        assertThat(makeLayerWithDefaults(0x400).verboseFlags)
+        assertThat(makeLayerWithDefaults(flags = 0x400).verboseFlags)
             .isEqualTo("IGNORE_DESTINATION_FRAME (0x400)")
 
-        assertThat(makeLayerWithDefaults(0xc3).verboseFlags)
+        assertThat(makeLayerWithDefaults(flags = 0xc3).verboseFlags)
             .isEqualTo("HIDDEN|OPAQUE|SKIP_SCREENSHOT|SECURE (0xc3)")
     }
 
     @Test
-    fun useVisibleRegionIfCompositionStateIsAvailableForVisibility() {
-        assertThat(
-                makeLayerWithDefaults(
-                        excludeCompositionState = false,
-                        visibleRegion = Region(),
-                        activeBuffer = ActiveBuffer.from(100, 100, 1, 0),
-                    )
-                    .isVisible
-            )
-            .isFalse()
-        assertThat(
-                makeLayerWithDefaults(
-                        excludeCompositionState = false,
-                        visibleRegion = Region(0, 0, 100, 100),
-                        activeBuffer = ActiveBuffer.from(100, 100, 1, 0),
-                    )
-                    .isVisible
-            )
-            .isTrue()
+    fun isRootLayer() {
+        val layer = makeLayerWithDefaults()
+        assertThat(layer.isRootLayer).isTrue()
     }
 
     @Test
-    fun fallbackOnLayerBoundsIfCompositionStateIsNotAvailableForVisibility() {
-        assertThat(
-                makeLayerWithDefaults(
-                        excludeCompositionState = true,
-                        bounds = RectF(),
-                        activeBuffer = ActiveBuffer.from(100, 100, 1, 0),
-                    )
-                    .isVisible
-            )
-            .isFalse()
-        assertThat(
-                makeLayerWithDefaults(
-                        excludeCompositionState = true,
-                        bounds = RectF(0f, 0f, 100f, 100f),
-                        activeBuffer = ActiveBuffer.from(100, 100, 1, 0),
-                    )
-                    .isVisible
-            )
-            .isTrue()
-        assertThat(
-                makeLayerWithDefaults(
-                        excludeCompositionState = true,
-                        visibleRegion = Region(0, 0, 100, 100),
-                        bounds = RectF(),
-                        activeBuffer = ActiveBuffer.from(100, 100, 1, 0),
-                    )
-                    .isVisible
-            )
-            .isFalse()
+    fun isNotRootLayer() {
+        val layer = makeLayerWithDefaults()
+        layer.parent = makeLayerWithDefaults()
+        assertThat(layer.isRootLayer).isFalse()
+    }
+
+    @Test
+    fun isTaskLayer() {
+        val layer = makeLayerWithDefaults(name = "Task=1")
+        assertThat(layer.isTask).isTrue()
+    }
+
+    @Test
+    fun isNotTaskLayer() {
+        val layer = makeLayerWithDefaults(name = "NotATask=1")
+        assertThat(layer.isTask).isFalse()
     }
 
     private fun makeLayerWithDefaults(
+        name: String = "",
         flags: Int = 0x0,
-        excludeCompositionState: Boolean = false,
         visibleRegion: Region = Region(),
         bounds: RectF = RectF(),
         activeBuffer: ActiveBuffer = ActiveBuffer.EMPTY,
+        screenBounds: RectF = RectF(),
+        transform: Transform = Transform.EMPTY,
+        color: Color = defaultColor(),
     ): Layer {
         return Layer.from(
-            "",
-            0,
-            0,
-            0,
-            visibleRegion,
-            activeBuffer,
-            flags,
-            bounds,
-            defaultColor(),
-            false,
-            -1f,
-            -1f,
-            RectF(),
-            Transform.EMPTY,
-            -1,
-            -1,
-            Transform.EMPTY,
-            HwcCompositionType.HWC_TYPE_UNSPECIFIED,
-            -1,
-            null,
-            false,
-            -1,
-            -1,
-            excludeCompositionState,
+            name = name,
+            id = 0,
+            parentId = 0,
+            z = 0,
+            visibleRegion = visibleRegion,
+            activeBuffer = activeBuffer,
+            flags = flags,
+            bounds = bounds,
+            color = color,
+            shadowRadius = -1f,
+            cornerRadii = CornerRadii.EMPTY,
+            screenBounds = screenBounds,
+            transform = transform,
+            currFrame = -1,
+            effectiveScalingMode = -1,
+            bufferTransform = Transform.EMPTY,
+            hwcCompositionType = HwcCompositionType.HWC_TYPE_UNSPECIFIED,
+            backgroundBlurRadius = -1,
+            crop = null,
+            isRelativeOf = false,
+            zOrderRelativeOfId = -1,
+            stackId = -1,
         )
     }
 }

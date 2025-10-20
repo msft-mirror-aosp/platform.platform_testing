@@ -18,8 +18,7 @@ package android.system.helpers;
 
 import static android.content.Context.CONTEXT_IGNORE_SECURITY;
 
-import static com.android.systemui.Flags.qsUiRefactorComposeFragment;
-import static com.android.systemui.Flags.sceneContainer;
+import static com.android.systemui.Flags.qsSplitInternetTile;
 
 import android.app.Instrumentation;
 import android.content.Context;
@@ -54,10 +53,7 @@ public class QuickSettingsHelper {
     private static final int LONG_TIMEOUT = 2000;
     private static final int SHORT_TIMEOUT = 500;
     private static final String SYSTEMUI_PACKAGE = "com.android.systemui";
-    private static final String QS_DEFAULT_TILES_RES =
-            (qsUiRefactorComposeFragment() || sceneContainer())
-                    ? "quick_settings_tiles_new_default"
-                    : "quick_settings_tiles_default";
+    private static final String QS_DEFAULT_TILES_RES = "quick_settings_tiles_default";
     private static final BySelector FOOTER_SELECTOR = By.res(SYSTEMUI_PACKAGE, "qs_footer");
     private static final String SYSUI_QS_TILES_SETTING = "sysui_qs_tiles";
     private static final String SET_QS_TILES_COMMAND = "cmd statusbar set-tiles ";
@@ -89,9 +85,21 @@ public class QuickSettingsHelper {
                         .getResources()
                         .getIdentifier(QS_DEFAULT_TILES_RES, "string", SYSTEMUI_PACKAGE);
         final String defaultQSTiles = sysUIContext.getString(qsTileListResId);
-        mDefaultQSTileList = Arrays.asList(defaultQSTiles.split(","));
+        final String[] splitList = defaultQSTiles.split(",");
+        // Migration from internet to wifi tile and viceversa
+        for (int i = 0; i < splitList.length; i++) {
+            String tile = splitList[i];
+            if ("internet".equals(tile) && qsSplitInternetTile()) {
+                splitList[i] = "wifi";
+            } else if ("wifi".equals(tile) && !qsSplitInternetTile()) {
+                splitList[i] = "internet";
+            }
+        }
+        mDefaultQSTileList = Arrays.asList(splitList);
     }
 
+    /** Deprecated. Use classes in systemui-tapl and tiles in QSBase */
+    @Deprecated
     public enum QuickSettingDefaultTiles {
         WIFI("Wi-Fi"),
         SIM("Mobile data"),

@@ -26,6 +26,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import platform.test.motion.MotionTestRule
+import platform.test.motion.golden.feature
 import platform.test.motion.testing.SampleScene
 import platform.test.motion.testing.createGoldenPathManager
 import platform.test.motion.tests.R
@@ -65,7 +66,7 @@ class ViewToolkitTest {
             motionRule.record(
                 animator,
                 sceneRoot.capture(evenlySampled(10)) {
-                    onViewWithId(R.id.test_box) { feature(ViewFeatureCaptures.x, "box_x") }
+                    onViewWithId(R.id.test_box) { feature("box_x", ViewFeatureCaptures.x) }
                 },
             )
 
@@ -81,7 +82,7 @@ class ViewToolkitTest {
             motionRule.record(
                 animator,
                 sceneRoot.captureWithoutScreenshot(evenlySampled(10)) {
-                    onViewWithId(R.id.test_box) { feature(ViewFeatureCaptures.x, "box_x") }
+                    onViewWithId(R.id.test_box) { feature("box_x", ViewFeatureCaptures.x) }
                 },
             )
 

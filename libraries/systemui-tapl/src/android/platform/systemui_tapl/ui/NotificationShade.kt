@@ -19,6 +19,8 @@ package android.platform.systemui_tapl.ui
 import android.hardware.display.DisplayManager
 import android.os.SystemClock
 import android.platform.helpers.ShadeUtils
+import android.platform.systemui_tapl.ui.quicksettings.QuickQuickSettings
+import android.platform.systemui_tapl.ui.quicksettings.QuickSettings
 import android.platform.systemui_tapl.utils.DeviceUtils.LONG_WAIT
 import android.platform.systemui_tapl.utils.DeviceUtils.settingsResSelector
 import android.platform.systemui_tapl.utils.DeviceUtils.sysuiResSelector
@@ -33,6 +35,7 @@ import android.platform.uiautomatorhelpers.DeviceHelpers.uiDevice
 import android.platform.uiautomatorhelpers.DeviceHelpers.waitForObj
 import android.platform.uiautomatorhelpers.FLING_GESTURE_INTERPOLATOR
 import android.view.Display.DEFAULT_DISPLAY
+import android.view.KeyEvent
 import android.view.WindowManager
 import android.view.WindowManager.LayoutParams.TYPE_APPLICATION
 import android.view.WindowMetrics
@@ -121,12 +124,9 @@ class NotificationShade internal constructor(val displayId: Int = DEFAULT_DISPLA
 
     /** Click Manage button to open notification settings page. */
     fun openNotificationSettingsFromButton() {
-        val manageBtn =
-            if (Flags.notificationsRedesignFooterView())
-                scrollAndFindButton("Notification settings")
-            else scrollAndFindButton("Manage")
-        assertThat(manageBtn).isNotNull()
-        Gestures.click(manageBtn!!, "Settings button")
+        val settingsBtn = scrollAndFindButton("Notification settings")
+        assertThat(settingsBtn).isNotNull()
+        Gestures.click(settingsBtn!!, "Settings button")
 
         settingsResSelector("app_bar").assertVisible()
     }
@@ -240,6 +240,12 @@ class NotificationShade internal constructor(val displayId: Int = DEFAULT_DISPLA
         waitForShadeToClose(displayId)
     }
 
+    /** Closes the shade with keyboard shortcut (Meta + N). */
+    fun closeWithKeyboardShortcut() {
+        uiDevice.pressKeyCode(KeyEvent.KEYCODE_N, KeyEvent.META_META_ON)
+        waitForShadeToClose()
+    }
+
     private val quickSettingsContainer: UiObject2
         get() =
             waitForObj(
@@ -349,8 +355,7 @@ class NotificationShade internal constructor(val displayId: Int = DEFAULT_DISPLA
     companion object {
         private const val WAIT_TIME = 10_000L
         private const val UI_EMPTY_SHADE_VIEW_ID = "no_notifications"
-        private val UI_SETTINGS_BUTTON_ID =
-            if (Flags.notificationsRedesignFooterView()) "settings_button" else "manage_text"
+        private const val UI_SETTINGS_BUTTON_ID = "settings_button"
         private const val UI_QS_CONTAINER_ID = "quick_settings_container"
         private const val UI_RESPONSE_TIMEOUT_MSECS: Long = 3000
         private const val UI_CLEAR_ALL_BUTTON_ID = "dismiss_text"

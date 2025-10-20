@@ -67,7 +67,13 @@ class EventLogParser : AbstractParser<Collection<String>, EventLog>() {
     ): Event {
         return when (tag) {
             INPUT_FOCUS_TAG -> {
-                FocusEvent.from(timestamp, pid, uid, tid, parseData(eventData))
+                // Only parse focus events with the expected format (enclosed in '[]').
+                // Otherwise, parse as a generic event to avoid crashing on new formats.
+                if (FOCUS_EVENT_REGEX.matches(eventData)) {
+                    FocusEvent.from(timestamp, pid, uid, tid, parseData(eventData))
+                } else {
+                    Event(timestamp, pid, uid, tid, tag)
+                }
             }
             JANK_CUJ_BEGIN_TAG -> {
                 CujEvent.fromData(pid, uid, tid, tag, eventData)
@@ -118,5 +124,8 @@ class EventLogParser : AbstractParser<Collection<String>, EventLog>() {
         const val JANK_CUJ_BEGIN_TAG = "jank_cuj_events_begin_request"
         const val JANK_CUJ_END_TAG = "jank_cuj_events_end_request"
         const val JANK_CUJ_CANCEL_TAG = "jank_cuj_events_cancel_request"
+
+        private val FOCUS_EVENT_REGEX =
+            Regex("""^\[Focus .*,reason=.*]$""")
     }
 }

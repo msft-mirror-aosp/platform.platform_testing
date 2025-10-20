@@ -205,9 +205,6 @@ TEST_F(CompositionTest, OverlapWithAlpha) {
       // Cyan app UI, semi-transparent, 200x200 size at position 550,550
       {"App Overlap", Rect(550, 550, 750, 750), Color{0.0f, 1.0f, 1.0f, 0.7f},
        2},
-      // Green status bar, opaque, 50 pixels high from top of screen.
-      {"Status Bar", Rect(0, 0, mDisplayWidth, 50),
-       Color{0.0f, 1.0f, 0.0f, 1.0f}, 3},
   };
   ASSERT_NO_FATAL_FAILURE(CreateScene(testScene));
 

@@ -174,6 +174,27 @@ public interface IAutoMediaHelper extends IAppHelper, Scrollable {
     void openTestMediaAppSettings();
 
     /**
+     * Setup expectations: Media app is open.
+     *
+     * <p>Opens Test Meida Search
+     */
+    void openTestMediaAppSearch();
+
+    /**
+     * Setup expectations: Media app search is open.
+     *
+     * <p>Validates Media apps search restricted message is displayed
+     */
+    boolean isMediaSearchRestrictedMessagedDisplayed();
+
+    /**
+     * Setup expectations: Media app search is open.
+     *
+     * <p>Validates Test Media App search is taking input
+     */
+    boolean isSearchBarTakingInput();
+
+    /**
      * Setup expectations: Media app is open. Account not logged in.
      *
      * @return Error message for no user login
@@ -277,6 +298,41 @@ public interface IAutoMediaHelper extends IAppHelper, Scrollable {
     void clickOnSongFromPlaylist();
 
     /**
+     * Setup expectations: Media card is open and playing any song.
+     *
+     * @return get current playing song author name
+     */
+    String getMediaCardSongAuthorName();
+
+    /**
+     * Setup expectations: Media card is open and playing any song.
+     *
+     * <p>This method validates media card previous button is displaying
+     */
+    boolean isMediaCardPreviousButtonDisplaying();
+
+    /**
+     * Setup expectations: Media card is open and playing any song.
+     *
+     * <p>This method validates media card pause button is displaying
+     */
+    boolean isMediaCardPauseButtonDisplaying();
+
+    /**
+     * Setup expectations: Media card is open and playing any song.
+     *
+     * <p>This method validates media card next button is displaying
+     */
+    boolean isMediaCardNextButtonDisplaying();
+
+    /**
+     * Setup expectations: Media card is open and playing any song.
+     *
+     * <p>This method closes media card play list
+     */
+    void closeMediaCardPlayList();
+
+    /**
      * Setup expectations: Media app is open and maximized now playing.
      *
      * @return get current artist tile
@@ -289,6 +345,13 @@ public interface IAutoMediaHelper extends IAppHelper, Scrollable {
      * @return get current album tile
      */
     String getAlbumTitle();
+
+    /**
+     * Setup expectations: Media app is open and maximized now playing.
+     *
+     * <p>validates album thumbnail is displaying or not
+     */
+    boolean isAlbumThumbnailDisplaying();
 
     /**
      * Setup expectations: Media app is open and maximized now playing.
@@ -338,4 +401,155 @@ public interface IAutoMediaHelper extends IAppHelper, Scrollable {
      * <p>This method verifies if the Radio app is Open
      */
     boolean isRadioAppLaunched();
+
+    /**
+     * Setup expectations: Radio is open
+     *
+     * <p>This method returns the Radio station name
+     */
+    String getRadioStationName();
+
+    /**
+     * Setup expectations: Media app is open
+     *
+     * <p>This method is used to navigate through different media categories
+     */
+    void navigateMediaAppCategories(String automotiveconfig);
+
+    /**
+     * Setup expectations: Media app is open
+     *
+     * <p>This method is used to navigate through different media categories and play song
+     */
+    boolean checkPlayingTrackFromMediaAppCategories(String automotiveconfig, String track);
+
+    /**
+     * Setup expectations: Media card is open
+     *
+     * <p>This method is used to click Media card thumbnail
+     */
+    void clickMediaCardThumbnail();
+
+    /**
+     * Setup expectations: Media card is present
+     *
+     * <p>This method checks Media App opens after Media card thumbnail is clicked
+     */
+    boolean isMediaAppOpenAndTrackPlaying(String track);
+
+    /**
+     * Setup expectations: on home screen.
+     *
+     * <p>This method opens Radio app and play a Radio station
+     */
+    void openRadioAppAndPlayGivenStation(String media);
+
+    /**
+     * Setup expectations: Media app is open
+     *
+     * <p>This method verifies if the Scroll up option is visible
+     */
+    boolean isPlaylistScrollUpVisible();
+
+    /**
+     * Setup expectations: Media app is open
+     *
+     * <p>This method verifies if the Scroll Down option is visible
+     */
+    boolean isPlaylistScrollDownVisible();
+
+    /**
+     * Setup expectations: Media card is playing any media
+     *
+     * <p>This method click on play list button from media button
+     */
+    void openMediaCardPlayList();
+
+    /**
+     * Setup expectations: Media card queue list is opened
+     *
+     * <p>This method validates queue list on media is opened
+     */
+    boolean isQueueListDisplayed();
+
+    /**
+     * Setup expectations: Media card queue list is opened
+     *
+     * <p>This method plays a song from playlist in media card and returns selected song
+     */
+    String getPlayingSongInMediaCard();
+
+    /**
+     * Setup expectations: News test app is open.
+     *
+     * <p>This method is used to menuOptions click the track.
+     *
+     * <p>openMenuWith(Folder,mediafilename,trackName);
+     *
+     * @param menuOptions used to pass multiple level of menu options in one go.
+     */
+    void selectNewsTrack(String... menuOptions);
+
+    /**
+     * Setup expectations: on home screen.
+     *
+     * <p>This method is used to open Media Source on Media Card Widget.
+     */
+    void openMediaSource();
+
+    /**
+     * Setup expectations: on Media card
+     *
+     * <p>This method is used to open News from Media Source/ History folder on Media Card Widget.
+     */
+    void openNewsAppFromMediaSource();
+
+    /**
+     * Setup expectations: on Media card
+     *
+     * <p>This method is used to verify News displayed in Media Source history folder on Media Card
+     * Widget.
+     */
+    boolean isNewsDisplayedInMediaSourceHistory();
+
+    /**
+     * Setup expectations: on Media card
+     *
+     * <p>This method is used to get the text of News channel displayed in Media Source history
+     * folder on Media Card Widget.
+     */
+    String getNewsChannelNameFromMediaSourceHistory();
+
+    /**
+     * Setup expectations: on Media card
+     *
+     * <p>This method is used to verify Test Media app displayed in Media Source history folder on
+     * Media Card Widget.
+     */
+    boolean isTestMediaAppDisplayedInMediaSourceHistory();
+
+    /**
+     * Setup expectations: on Media card
+     *
+     * <p>This method is used to get the text of song displayed in Media Source history folder on
+     * Media Card Widget.
+     */
+    String getTestMediaAppSongNameFromMediaSourceHistory();
+
+    /**
+     * Setup expectations: on Media card
+     *
+     * <p>This method is used to click on Song from Media Source/ History folder on Media Card
+     * Widget.
+     */
+    void clickOnTestMediaAppSongFromMediaSource();
+
+    /**
+     * Setup expectations: on Media card
+     *
+     * <p>This method is used to verify the Song playing on Media Card Widget.
+     *
+     * @param defaultSongName is a song name played in Media Player App
+     */
+    boolean isTestMediaAppSongNameDisplayedOnMediaCard(String defaultSongName);
 }

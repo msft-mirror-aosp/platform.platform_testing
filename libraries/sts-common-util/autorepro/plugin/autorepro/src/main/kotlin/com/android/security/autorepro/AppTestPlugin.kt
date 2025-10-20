@@ -96,12 +96,12 @@ class AppTestPlugin : Plugin<Project> {
             listOf(
                     "androidx.appcompat:appcompat:1.7.1",
                     "androidx.core:core:1.13.1",
-                    "com.google.android.material:material:1.12.0",
+                    "com.google.android.material:material:1.13.0",
                     "junit:junit:4.13.2",
-                    "androidx.test.ext:junit:1.2.1",
-                    "androidx.test.espresso:espresso-core:3.6.1",
+                    "androidx.test.ext:junit:1.3.0",
+                    "androidx.test.espresso:espresso-core:3.7.0",
                     "androidx.test.uiautomator:uiautomator:2.3.0",
-                    "org.jetbrains.kotlin:kotlin-stdlib:2.2.0",
+                    "org.jetbrains.kotlin:kotlin-stdlib:2.2.20",
                 )
                 .forEach { dependencyString ->
                     implementationConfiguration.dependencies.add(
@@ -155,6 +155,14 @@ class AppTestPlugin : Plugin<Project> {
                     )
                 }
             }
+
+            // Fix "Property '$1' specifies file 'autorepro-manifest.json' which doesn't exist."
+            // Add a dependency on `writeManifestTask` to the `assemble` task.
+            // This ensures that the `autorepro-manifest.json` file is generated before
+            // the `assemble` task completes, making it available for downstream tasks
+            // like `mergeManifests`. This is necessary for Gradle 9.1+ which has
+            // stricter validation of task inputs and outputs.
+            project.tasks.named("assemble").configure { it.dependsOn(writeManifestTask) }
         }
     }
 }

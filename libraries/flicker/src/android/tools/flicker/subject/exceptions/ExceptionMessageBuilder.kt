@@ -47,6 +47,10 @@ class ExceptionMessageBuilder {
         setMessage("$elementName should ${if (expectElementVisible) "" else "not "}be visible")
             .setExpected(elementName)
 
+    fun forIncorrectOcclusion(elementName: String, expectElementOccluded: Boolean) =
+        setMessage("$elementName should ${if (expectElementOccluded) "" else "not "}be occluded")
+            .setExpected(elementName)
+
     fun forInvalidProperty(propertyName: String) = setMessage("Incorrect value for $propertyName")
 
     fun forIncorrectRegion(propertyName: String) = setMessage("Incorrect $propertyName")

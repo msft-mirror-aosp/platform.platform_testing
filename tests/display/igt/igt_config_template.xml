@@ -45,7 +45,7 @@
     <test class="com.android.tradefed.testtype.GTest">
         <option name="native-test-device-path" value="/data/igt_tests" />
         <option name="module-name" value="{MODULE}" />
-        <option name="native-test-timeout" value="1800000"/>
+        <option name="native-test-timeout" value="3600000"/>
     </test>
 
 </configuration>

@@ -20,10 +20,8 @@ import android.graphics.Color
 import android.graphics.RectF
 import android.graphics.Region
 import android.tools.datatypes.ActiveBuffer
-import android.tools.datatypes.containsWithThreshold
-import android.tools.datatypes.crop
+import android.tools.datatypes.emptyColor
 import android.tools.traces.component.ComponentName
-import androidx.core.graphics.toRect
 import com.android.internal.annotations.VisibleForTesting
 
 /**
@@ -40,8 +38,11 @@ public constructor(
     val parentId: Int,
     val z: Int,
     val currFrame: Long,
-    properties: ILayerProperties,
-) : ILayerProperties by properties {
+    val isVisible: Boolean,
+    val visibilityReason: Collection<String>,
+    val occludedBy: Collection<Int>,
+    properties: LayerProperties,
+) : LayerProperties by properties {
     val stableId: String = "$id $name"
     var parent: Layer? = null
     var zOrderRelativeOf: Layer? = null
@@ -57,175 +58,14 @@ public constructor(
         get() = parent == null
 
     private val _children = mutableListOf<Layer>()
-    private val _occludedBy = mutableListOf<Layer>()
-    private val _partiallyOccludedBy = mutableListOf<Layer>()
-    private val _coveredBy = mutableListOf<Layer>()
     val children: Collection<Layer>
         get() = _children
-
-    val occludedBy: Collection<Layer>
-        get() = _occludedBy
-
-    val partiallyOccludedBy: Collection<Layer>
-        get() = _partiallyOccludedBy
-
-    val coveredBy: Collection<Layer>
-        get() = _coveredBy
-
-    var isMissing: Boolean = false
-        internal set
-
-    /**
-     * Checks if the layer is hidden, that is, if its flags contain Flag.HIDDEN
-     *
-     * @return
-     */
-    val isHiddenByPolicy: Boolean
-        get() {
-            return (flags and Flag.HIDDEN.value) != 0x0 ||
-                // offscreen layer root has a unique layer id
-                id == 0x7FFFFFFD
-        }
-
-    /**
-     * Checks if the layer is visible.
-     *
-     * A layer is visible if:
-     * - it has an active buffer or has effects
-     * - is not hidden
-     * - is not transparent
-     * - not occluded by other layers
-     *
-     * @return
-     */
-    val isVisible: Boolean
-        get() {
-            val visibleRegion =
-                if (excludesCompositionState) {
-                    // Doesn't include state sent during composition like visible region and
-                    // composition type, so we fall back on the bounds as the visible region
-                    Region(this.bounds.toRect())
-                } else {
-                    this.visibleRegion ?: Region()
-                }
-            return when {
-                isHiddenByParent -> false
-                isHiddenByPolicy -> false
-                hasZeroAlpha -> false
-                isActiveBufferEmpty && !hasEffects -> false
-                occludedBy.isNotEmpty() -> false
-                else -> !visibleRegion.isEmpty
-            }
-        }
-
-    /**
-     * Checks if the [Layer] is hidden by its parent
-     *
-     * @return
-     */
-    val isHiddenByParent: Boolean
-        get() =
-            !isRootLayer && (parent?.isHiddenByPolicy == true || parent?.isHiddenByParent == true)
-
-    /**
-     * Gets a description of why the layer is (in)visible
-     *
-     * @return
-     */
-    val visibilityReason: Collection<String>
-        get() {
-            if (isVisible) {
-                return emptyList()
-            }
-            val reasons = mutableListOf<String>()
-            if (isHiddenByPolicy) reasons.add("Flag is hidden")
-            if (isHiddenByParent) reasons.add("Hidden by parent ${parent?.name}")
-            if (isActiveBufferEmpty) reasons.add("Buffer is empty")
-            if (color.alpha() == 0.0f) reasons.add("Alpha is 0")
-            if (bounds.isEmpty) reasons.add("Bounds is 0x0")
-            if (bounds.isEmpty && crop.isEmpty) reasons.add("Crop is 0x0")
-            if (!transform.isValid) reasons.add("Transform is invalid")
-            if (isRelativeOf && zOrderRelativeOf == null) {
-                reasons.add("RelativeOf layer has been removed")
-            }
-            if (isActiveBufferEmpty && !fillsColor && !drawsShadows && !hasBlur) {
-                reasons.add("does not have color fill, shadow or blur")
-            }
-            if (_occludedBy.isNotEmpty()) {
-                val occludedByLayers = _occludedBy.joinToString(", ") { "${it.name} (${it.id})" }
-                reasons.add("Layer is occluded by: $occludedByLayers")
-            }
-            if (visibleRegion?.isEmpty == true) {
-                reasons.add("Visible region calculated by Composition Engine is empty")
-            }
-            if (reasons.isEmpty()) reasons.add("Unknown")
-            return reasons
-        }
-
-    val zOrderPath: Collection<Int>
-        get() {
-            val zOrderRelativeOf = zOrderRelativeOf
-            val zOrderPath =
-                when {
-                    zOrderRelativeOf != null -> zOrderRelativeOf.zOrderPath.toMutableList()
-                    parent != null -> parent?.zOrderPath?.toMutableList() ?: mutableListOf()
-                    else -> mutableListOf()
-                }
-            zOrderPath.add(z)
-            return zOrderPath
-        }
 
     val isTask: Boolean
         get() = name.startsWith("Task=")
 
-    /**
-     * Returns true iff the [innerLayer] screen bounds are inside or equal to this layer's
-     * [screenBounds] and neither layers are rotating.
-     */
-    fun contains(innerLayer: Layer, crop: RectF = RectF()): Boolean {
-        return if (!this.transform.isSimpleRotation || !innerLayer.transform.isSimpleRotation) {
-            false
-        } else {
-            val thisBounds: RectF
-            val innerLayerBounds: RectF
-            if (!crop.isEmpty) {
-                thisBounds = this.screenBounds.crop(crop)
-                innerLayerBounds = innerLayer.screenBounds.crop(crop)
-            } else {
-                thisBounds = this.screenBounds
-                innerLayerBounds = innerLayer.screenBounds
-            }
-            thisBounds.containsWithThreshold(innerLayerBounds)
-        }
-    }
-
     fun addChild(childLayer: Layer) {
         _children.add(childLayer)
-    }
-
-    fun addOccludedBy(layers: Collection<Layer>) {
-        _occludedBy.addAll(layers)
-    }
-
-    fun addPartiallyOccludedBy(layers: Collection<Layer>) {
-        _partiallyOccludedBy.addAll(layers)
-    }
-
-    fun addCoveredBy(layers: Collection<Layer>) {
-        _coveredBy.addAll(layers)
-    }
-
-    fun overlaps(other: Layer, crop: RectF = RectF()): Boolean {
-        val thisBounds: RectF
-        val otherBounds: RectF
-        if (!crop.isEmpty) {
-            thisBounds = this.screenBounds.crop(crop)
-            otherBounds = other.screenBounds.crop(crop)
-        } else {
-            thisBounds = this.screenBounds
-            otherBounds = other.screenBounds
-        }
-        return thisBounds.intersect(otherBounds)
     }
 
     override fun toString(): String {
@@ -255,17 +95,13 @@ public constructor(
         if (stableId != other.stableId) return false
         if (zOrderRelativeOf != other.zOrderRelativeOf) return false
         if (zOrderRelativeParentOf != other.zOrderRelativeParentOf) return false
-        if (_occludedBy != other._occludedBy) return false
-        if (_partiallyOccludedBy != other._partiallyOccludedBy) return false
-        if (_coveredBy != other._coveredBy) return false
-        if (isMissing != other.isMissing) return false
         if (visibleRegion != other.visibleRegion) return false
         if (activeBuffer != other.activeBuffer) return false
         if (flags != other.flags) return false
         if (bounds != other.bounds) return false
         if (color != other.color) return false
         if (shadowRadius != other.shadowRadius) return false
-        if (cornerRadius != other.cornerRadius) return false
+        if (cornerRadii != other.cornerRadii) return false
         if (transform != other.transform) return false
         if (effectiveScalingMode != other.effectiveScalingMode) return false
         if (bufferTransform != other.bufferTransform) return false
@@ -276,8 +112,9 @@ public constructor(
         if (zOrderRelativeOfId != other.zOrderRelativeOfId) return false
         if (stackId != other.stackId) return false
         if (screenBounds != other.screenBounds) return false
-        if (isOpaque != other.isOpaque) return false
-        if (excludesCompositionState != other.excludesCompositionState) return false
+        if (isVisible != other.isVisible) return false
+        if (visibilityReason != other.visibilityReason) return false
+        if (occludedBy != other.occludedBy) return false
 
         return true
     }
@@ -289,7 +126,7 @@ public constructor(
         result = 31 * result + bounds.hashCode()
         result = 31 * result + color.hashCode()
         result = 31 * result + shadowRadius.hashCode()
-        result = 31 * result + cornerRadius.hashCode()
+        result = 31 * result + cornerRadii.hashCode()
         result = 31 * result + transform.hashCode()
         result = 31 * result + effectiveScalingMode
         result = 31 * result + bufferTransform.hashCode()
@@ -300,7 +137,6 @@ public constructor(
         result = 31 * result + zOrderRelativeOfId
         result = 31 * result + stackId
         result = 31 * result + screenBounds.hashCode()
-        result = 31 * result + isOpaque.hashCode()
         result = 31 * result + name.hashCode()
         result = 31 * result + id
         result = 31 * result + parentId
@@ -310,65 +146,73 @@ public constructor(
         result = 31 * result + (zOrderRelativeOf?.hashCode() ?: 0)
         result = 31 * result + zOrderRelativeParentOf
         result = 31 * result + _children.hashCode()
-        result = 31 * result + _occludedBy.hashCode()
-        result = 31 * result + _partiallyOccludedBy.hashCode()
-        result = 31 * result + _coveredBy.hashCode()
-        result = 31 * result + isMissing.hashCode()
-        result = 31 * result + excludesCompositionState.hashCode()
+        result = 31 * result + isVisible.hashCode()
+        result = 31 * result + visibilityReason.hashCode()
+        result = 31 * result + occludedBy.hashCode()
         return result
     }
 
     companion object {
         @JvmStatic
+        @JvmOverloads
         fun from(
             name: String,
             id: Int,
             parentId: Int,
-            z: Int,
-            visibleRegion: Region,
-            activeBuffer: ActiveBuffer,
-            flags: Int,
-            bounds: RectF,
-            color: Color,
-            isOpaque: Boolean,
-            shadowRadius: Float,
-            cornerRadius: Float,
-            screenBounds: RectF,
-            transform: Transform,
-            currFrame: Long,
-            effectiveScalingMode: Int,
-            bufferTransform: Transform,
-            hwcCompositionType: HwcCompositionType,
-            backgroundBlurRadius: Int,
-            crop: RectF?,
-            isRelativeOf: Boolean,
-            zOrderRelativeOfId: Int,
-            stackId: Int,
-            excludesCompositionState: Boolean,
+            z: Int = 0,
+            visibleRegion: Region = Region(),
+            activeBuffer: ActiveBuffer = ActiveBuffer.EMPTY,
+            flags: Int = 0,
+            bounds: RectF = RectF(),
+            color: Color = emptyColor(),
+            shadowRadius: Float = 0.0f,
+            cornerRadii: CornerRadii = CornerRadii.EMPTY,
+            screenBounds: RectF = RectF(),
+            transform: Transform = Transform.EMPTY,
+            currFrame: Long = 0,
+            effectiveScalingMode: Int = 0,
+            bufferTransform: Transform = Transform.EMPTY,
+            hwcCompositionType: HwcCompositionType = HwcCompositionType.HWC_TYPE_UNSPECIFIED,
+            backgroundBlurRadius: Int = 0,
+            crop: RectF? = RectF(),
+            isRelativeOf: Boolean = false,
+            zOrderRelativeOfId: Int = 0,
+            stackId: Int = 0,
+            isVisible: Boolean = false,
+            visibilityReason: Collection<String> = emptyList<String>(),
+            occludedBy: Collection<Int> = emptyList<Int>(),
         ): Layer {
             val properties =
-                LayerProperties.from(
+                LayerPropertiesImpl.from(
                     visibleRegion,
                     activeBuffer,
                     flags,
                     bounds,
                     color,
-                    isOpaque,
                     shadowRadius,
-                    cornerRadius,
+                    cornerRadii,
                     screenBounds,
                     transform,
                     effectiveScalingMode,
                     bufferTransform,
                     hwcCompositionType,
                     backgroundBlurRadius,
-                    crop,
+                    crop ?: RectF(),
                     isRelativeOf,
                     zOrderRelativeOfId,
                     stackId,
-                    excludesCompositionState,
                 )
-            return Layer(name, id, parentId, z, currFrame, properties)
+            return Layer(
+                name,
+                id,
+                parentId,
+                z,
+                currFrame,
+                isVisible,
+                visibilityReason,
+                occludedBy,
+                properties,
+            )
         }
     }
 }

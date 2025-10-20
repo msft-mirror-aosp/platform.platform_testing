@@ -69,7 +69,7 @@ class CujTraceParser : AbstractTraceParser<TraceProcessorSession, Cuj, Cuj, CujT
     companion object {
         private fun getSqlQueryCuj() =
             """
-            SELECT RUN_METRIC('android/android_jank_cuj.sql');
+            SELECT RUN_METRIC('android/jank/cujs.sql');
 
             SELECT
               cuj.cuj_id,

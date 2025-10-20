@@ -25,7 +25,10 @@
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
   <uses-permission android:name="android.car.permission.CAR_CONTROL_AUDIO_VOLUME"/>
   <uses-permission android:name="android.car.permission.CAR_CONTROL_AUDIO_SETTINGS"/>
+  <uses-permission android:name="android.car.permission.CONTROL_CAR_CLIMATE"/>
   <uses-permission android:name="android.car.permission.CAR_DRIVING_STATE"/>
+  <uses-permission android:name="android.car.permission.INJECT_VEHICLE_PROPERTIES"/>
+  <uses-permission android:name="android.car.permission.PERMISSION_POWERTRAIN"/>
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
   <application android:allowBackup="false">
     <meta-data
@@ -39,10 +42,12 @@
                        com.google.android.mobly.snippet.bundled.BluetoothAdapterSnippet,
                        com.google.android.mobly.snippet.bundled.BluetoothLeAdvertiserSnippet,
                        com.google.android.mobly.snippet.bundled.BluetoothLeScannerSnippet,
+                       com.google.android.mobly.snippet.bundled.CarPropertySnippet,
                        com.google.android.mobly.snippet.bundled.CarSmsMessengerSnippet,
                        com.google.android.mobly.snippet.bundled.ContactDetailsSnippet,
                        com.google.android.mobly.snippet.bundled.DialerSnippet,
                        com.google.android.mobly.snippet.bundled.FileSnippet,
+                       com.google.android.mobly.snippet.bundled.HvacSnippet,
                        com.google.android.mobly.snippet.bundled.LogSnippet,
                        com.google.android.mobly.snippet.bundled.MediaSnippet,
                        com.google.android.mobly.snippet.bundled.NetworkingSnippet,

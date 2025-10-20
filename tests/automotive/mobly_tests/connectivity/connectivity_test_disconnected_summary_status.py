@@ -46,14 +46,14 @@ class BluetoothConnectionStatusOnLevelTwo(bluetooth_base_test.BluetoothBaseTest)
         super().setup_test()
         # Set Bluetooth name on target device.
         self.target.mbs.btSetName(MOBILE_DEVICE_NAME)
-
         self.bt_utils.pair_primary_to_secondary()
-        self.call_utils.wait_with_log(constants.DEVICE_CONNECT_WAIT_TIME)
         super().enable_recording()
+        self.call_utils.wait_with_log(constants.DEVICE_CONNECT_WAIT_TIME)
 
     def test_connection_status_displayed_on_device_screen(self):
         # Log BT Connection State after pairing
-        bt_connection_state=self.call_utils.get_bt_connection_status_using_adb_command(self.discoverer)
+        bt_connection_state = self.call_utils.get_bt_connection_status_using_adb_command(
+            self.discoverer)
         logging.info("BT State after pairing : <%s>", bt_connection_state)
 
         # Open bluetooth settings.

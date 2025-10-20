@@ -18,6 +18,7 @@ package {
 
 java_test_host {
     name: "BootTimeTest",
+    team: "trendy_team_aaos_performance_triage",
     srcs: ["src/**/*.java"],
     libs: [
         "tradefed",

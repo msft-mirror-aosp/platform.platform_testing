@@ -21,6 +21,7 @@ package {
 java_library {
     name: "desktop-test-lib",
     static_libs: [
+        "Interactive",
         "androidx.core_core-ktx",
         "androidx.test.runner",
         "androidx.test.rules",
@@ -29,6 +30,8 @@ java_library {
         "mockito-target-minus-junit4",
         "uiautomator-helpers",
         "truth",
+        "servicestests-utils",
+        "kotlin-test",
     ],
     srcs: [
         "src/**/*.kt",

@@ -16,6 +16,16 @@
 
 package platform.test.desktop
 
+import android.provider.Settings
+import android.util.Log
+import android.view.Display
+import androidx.test.platform.app.InstrumentationRegistry
+import com.android.bedstead.nene.TestApis
+import com.android.interactive.Step
+import com.google.common.truth.Truth.assertWithMessage
+import java.util.Optional
+import kotlin.time.Duration.Companion.seconds
+
 /**
  * A physical display device returned by a [PhysicalDeviceController].
  *
@@ -23,10 +33,224 @@ package platform.test.desktop
  */
 data class PhysicalDisplayDevice(val d: DisplayDevice) : DisplayDevice by d
 
-/** A controller for physical peripherals. */
+/**
+ * A controller for physical peripherals.
+ *
+ * This controller supports several scenarios for interacting with physical displays:
+ * - **Manual Mode:** Enabled by passing the instrumentation argument `ENABLE_MANUAL:=true`. In this
+ *   mode, the test will use [HumanDialog] to prompt the user to manually connect or disconnect
+ *   physical displays to match the [PeripheralsRequest]. This is useful for testing with actual
+ *   physical hardware.
+ * - **Automated with VKMS:** This mode is currently not implemented, as `checkVkms()` always
+ *   returns `false`. The intention is to use a Virtual Kernel Mode Setting (VKMS) driver to
+ *   automate the simulation of physical displays.
+ * - **Handling `PeripheralType.PHYSICAL_OR_SIMULATED`:** When a [PeripheralsRequest] includes
+ *   peripherals of type `PHYSICAL_OR_SIMULATED`, this controller will attempt to find and match
+ *   actual physical displays. If a `PeripheralType.PHYSICAL` is also requested, and no matching
+ *   physical devices are found, the test will fail. If only `PHYSICAL_OR_SIMULATED` is requested,
+ *   the test may proceed even without finding physical devices, allowing other controllers to
+ *   potentially provide simulated alternatives.
+ */
 class PhysicalDeviceController : PeripheralsController {
+    private val context = InstrumentationRegistry.getInstrumentation().targetContext
+    private val isManual = TestApis.instrumentation().arguments().getBoolean("ENABLE_MANUAL", false)
+    private val allowDisablingDisplays =
+        TestApis.instrumentation().arguments().getBoolean("ALLOW_DISABLING_DISPLAYS", false)
+    private val displayMonitor = DisplayMonitor(TAG, allowDisablingDisplays)
+    private val isAutomatedWithVkms = checkVkms()
+    private var currentDisplaysPeripherals: List<Pair<DisplayPeripheral, Display>>? = null
+
+    fun close() = displayMonitor.close()
+
+    fun startMonitoring() = displayMonitor.waitForCondition(TIMEOUT)
+
+    fun stopMonitoring() = displayMonitor.stopMonitoring()
+
     override fun requestPeripherals(request: PeripheralsRequest): PeripheralsResponse {
-        // TODO: b/351118894 - Implement this.
-        return PeripheralsResponse()
+        request.validate(PeripheralType.PHYSICAL, PeripheralType.PHYSICAL_OR_SIMULATED)
+
+        val displayPeripherals = request.peripherals.filterIsInstance<DisplayPeripheral>()
+
+        val mustRunTest = peripheralsSetup(displayPeripherals)
+
+        val removedDisplays = currentDisplaysPeripherals?.filter { it.first !in displayPeripherals }
+        currentDisplaysPeripherals =
+            displayMonitor.matchPeripherals(
+                /*isWaitingForCondition=*/ false,
+                displayPeripherals,
+                Display.TYPE_EXTERNAL,
+            )
+
+        if (mustRunTest) {
+            assertWithMessage("Could not match all peripherals")
+                .that(currentDisplaysPeripherals)
+                .isNotNull()
+        } else if (currentDisplaysPeripherals == null) {
+            // Expectations are not matched, nothing to monitor.
+            displayMonitor.close()
+        }
+
+        val addedResponse =
+            PeripheralsResponse(
+                currentDisplaysPeripherals?.map { (peripheral, display) ->
+                    PhysicalDisplayDevice(
+                        AnyDisplayDevice(peripheral, connected = true, display.displayId, display)
+                    )
+                } ?: emptyList()
+            )
+
+        val removedResponse =
+            PeripheralsResponse(
+                removedDisplays?.map { (peripheral, display) ->
+                    PhysicalDisplayDevice(
+                        AnyDisplayDevice(
+                            peripheral,
+                            connected = false,
+                            display.displayId,
+                            display = display,
+                        )
+                    )
+                } ?: emptyList()
+            )
+
+        return addedResponse + removedResponse
+    }
+
+    /**
+     * @param peripherals required
+     * @return true if the test must run. false if there is no way to run the test e.g. due to lack
+     *   of infrastructure support, but the test still may run if it can.
+     */
+    private fun peripheralsSetup(displayPeripherals: List<DisplayPeripheral>): Boolean {
+        if (!isManual && !isAutomatedWithVkms) {
+            if (!displayPeripherals.isEmpty()) {
+                Log.i(
+                    TAG,
+                    "Physical devices support is not enabled. To run it manually" +
+                        " e.g. for DesktopTestLibTests module add atest arg:  -- --module-arg" +
+                        " DesktopTestLibTests:instrumentation-arg:ENABLE_MANUAL:=true",
+                )
+            }
+            // not required to run the test, but it still may with simulated peripherals.
+            return false
+        }
+        HumanDialog.init(displayPeripherals)
+        // We must run the test if there is a PHYSICAL only peripheral required.
+        val mustRunTest = displayPeripherals.any { it.type == PeripheralType.PHYSICAL }
+        if (!displayMonitor.startMonitoring(createDisplayExpectation(displayPeripherals))) {
+            sendPeripheralsRequest(displayPeripherals)
+
+            val isConditionSatisfied =
+                try {
+                    // Ask human to connect/disconnect peripherals and wait
+                    if (!HumanDialog.show()) {
+                        // not required to run the test, but it still may with simulated
+                        // peripherals.
+                        return false
+                    }
+                    // Don't wait anymore as user either confirmed the connection, or condition is
+                    // satisfied, or timeout is reached
+                    displayMonitor.waitForCondition(0.seconds)
+                } catch (e: NoClassDefFoundError) {
+                    // In case HumanDialog fails to show up due to resources missing
+                    // just wait for the peripherals
+                    Log.w(
+                        TAG,
+                        "Can't show human dialog due to missing resources. Is " +
+                            "'Interactive' library missing in Android.bp static_libs?",
+                        e,
+                    )
+                    displayMonitor.waitForCondition(TIMEOUT)
+                }
+
+            assertWithMessage("waitForExpectation failed")
+                .that(isConditionSatisfied || !mustRunTest)
+                .isTrue()
+        }
+        return mustRunTest
+    }
+
+    private fun sendPeripheralsRequest(displayPeripherals: List<DisplayPeripheral>) {
+        if (isAutomatedWithVkms) {
+            // TODO(449940785)
+        } else {
+            val displaySettings =
+                displayPeripherals.joinToString(separator = ";") {
+                    "${it.size.width}x${it.size.height}"
+                }
+            Settings.Global.putString(
+                context.contentResolver,
+                "peripheral_devices",
+                displaySettings,
+            )
+        }
+    }
+
+    private fun createDisplayExpectation(peripherals: List<DisplayPeripheral>): Condition =
+        Condition { isWaitingForCondition ->
+            val result: Boolean =
+                displayMonitor.matchPeripherals(
+                    isWaitingForCondition,
+                    peripherals,
+                    Display.TYPE_EXTERNAL,
+                ) != null
+            if (result) {
+                // If condition is satisfied - unblock the dialog
+                HumanDialog.unblockDialog = Optional.of(true)
+            }
+            result
+        }
+
+    // TODO(449940785)
+    private fun checkVkms() = false
+
+    object HumanDialog {
+        var textToShow = ""
+
+        @Volatile var unblockDialog: Optional<Boolean> = Optional.empty()
+
+        fun init(displayPeripherals: List<DisplayPeripheral>) {
+            textToShow =
+                if (displayPeripherals.isEmpty()) {
+                    "Disconnect peripherals"
+                } else {
+                    "Connect: ${displayPeripherals.map { "${it::class.simpleName}:${it.size}" }}"
+                }
+            unblockDialog = Optional.empty()
+        }
+
+        fun show(): Boolean {
+            // Show dialog, blocking execution until user confirmation or condition satisfaction
+            // or timeout
+            return Step.execute(AskHumanConnectDevices::class.java) ?: false
+        }
+
+        class AskHumanConnectDevices : Step<Boolean>() {
+            private val deadline = System.currentTimeMillis() + TIMEOUT.inWholeMilliseconds
+
+            override fun interact() {
+                show(textToShow)
+                // Return true, so the test must continue to run
+                addButton("Continue", { pass(true) })
+                // Return false, so the test is not required to run.
+                addButton("Skip", { pass(false) })
+            }
+
+            override fun getValue(): Optional<Boolean> {
+                // If timeout exceeded - unblock the dialog
+                if (System.currentTimeMillis() > deadline) {
+                    // Return true, so the test must attempt continue to run
+                    // isConditionSatisfied in [peripheralsSetup] may be set false,
+                    // but test may still continue if mustRunTest is false
+                    return Optional.of(true)
+                }
+                return super.value.or { unblockDialog }
+            }
+        }
+    }
+
+    companion object {
+        private const val TAG = "Physical"
+        private val TIMEOUT = 30.seconds
     }
 }

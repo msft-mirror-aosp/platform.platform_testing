@@ -20,6 +20,7 @@ import static android.platform.uiautomatorhelpers.DeviceHelpers.assertVisibility
 
 import static org.junit.Assert.assertNotNull;
 
+import android.R;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -126,7 +127,13 @@ public final class MediaInstrumentation {
         mManager.cancel(mNotificationId);
     }
 
-    UiObject2 scrollToMediaNotification(MediaMetadata meta) {
+    /**
+     * Scrolls the QS container to find the media notification.
+     *
+     * @return UiObject2 of the media notification.
+     */
+    public UiObject2 scrollToMediaNotification() {
+        MediaMetadata meta = mMediaSources.stream().findFirst().orElseThrow();
         final BySelector qsScrollViewSelector = By.res(PKG, "expanded_qs_scroll_view");
         final BySelector mediaTitleSelector = By.res(PKG, "header_title")
                 .text(meta.getString(MediaMetadata.METADATA_KEY_TITLE));
@@ -139,7 +146,7 @@ public final class MediaInstrumentation {
                 UiObject2 qsScrollView =
                         mDevice.wait(Until.findObject(qsScrollViewSelector), WAIT_TIME_MILLIS);
                 assertNotNull("Unable to scroll the QS container.", qsScrollView);
-                qsScrollView.scroll(Direction.DOWN, .75f, 100);
+                qsScrollView.scroll(Direction.DOWN, .50f, 100);
                 InstrumentationRegistry.getInstrumentation().getUiAutomation().clearCache();
                 notification = mDevice.wait(Until.findObject(umoSelector), WAIT_TIME_MILLIS);
             }
@@ -179,8 +186,7 @@ public final class MediaInstrumentation {
      * @return MediaController
      */
     public MediaController getMediaNotification() {
-        MediaMetadata source = mMediaSources.stream().findFirst().orElseThrow();
-        UiObject2 notification = scrollToMediaNotification(source);
+        UiObject2 notification = scrollToMediaNotification();
         return new MediaController(this, notification);
     }
 
@@ -221,12 +227,12 @@ public final class MediaInstrumentation {
     }
 
     /** Assert that the media notification is visible with a 10 second timeout. */
-    public void assertMediaNotificationVisible() {
+    public void assertMediaNotificationVisible(String location) {
         assertVisibility(
                 By.res(PKG, MEDIA_CONTROLLER_RES_ID),
                 true,
                 Duration.ofSeconds(10),
-                () -> "UMO should be visible on lockscreen.");
+                () -> "UMO should be visible on" + location);
     }
 
     public void addMediaSessionStateChangedListeners(Consumer<Integer> listener) {
@@ -287,6 +293,17 @@ public final class MediaInstrumentation {
     public void setCurrentMediaState(int state) {
         mCurrentMediaState = state;
         updatePlaybackState();
+    }
+
+    /** Adds custom actions to the MediaSession. */
+    public void addCustomActions() {
+        mMediaSession.setPlaybackState(
+                new PlaybackState.Builder()
+                        .setActions(getAvailableActions(mCurrentMediaState))
+                        .addCustomAction("action.rew", "Rewind", R.drawable.ic_media_rew)
+                        .addCustomAction("action.ff", "Fast Forward", R.drawable.ic_media_ff)
+                        .setState(mCurrentMediaState, mPlayer.getCurrentPosition(), 1.0f)
+                        .build());
     }
 
     private Long getAvailableActions(int state) {

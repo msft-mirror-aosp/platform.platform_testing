@@ -22,6 +22,7 @@ import android.tools.datatypes.ActiveBuffer
 import android.tools.datatypes.Matrix33
 import android.tools.datatypes.defaultColor
 import android.tools.datatypes.intersection
+import android.tools.traces.surfaceflinger.CornerRadii
 import android.tools.traces.surfaceflinger.Flag
 import android.tools.traces.surfaceflinger.HwcCompositionType
 import android.tools.traces.surfaceflinger.Layer
@@ -40,13 +41,11 @@ class MockLayerBuilder(private val name: String) {
     private var isVisible = true
     private var absoluteBounds: Rect? = null
     private var zIndex = 0
-    private var isOpaque = true
 
     fun addChild(layer: MockLayerBuilder): MockLayerBuilder = apply { this.children.add(layer) }
 
     fun setContainerLayer(): MockLayerBuilder = apply {
         this.type = "ContainerLayer"
-        this.isOpaque = false
         this.isVisible = false
     }
 
@@ -78,21 +77,22 @@ class MockLayerBuilder(private val name: String) {
                 flags = if (isVisible) 0 else Flag.HIDDEN.value,
                 bounds = absoluteBounds.toRectF(),
                 color = defaultColor(),
-                isOpaque = isVisible && isOpaque,
                 shadowRadius = 0f,
-                cornerRadius = 0f,
+                cornerRadii = CornerRadii.EMPTY,
                 screenBounds = absoluteBounds.toRectF(),
                 transform = transform,
                 currFrame = 0,
                 effectiveScalingMode = 0,
                 bufferTransform = transform,
                 hwcCompositionType = HwcCompositionType.HWC_TYPE_UNSPECIFIED,
-                crop = absoluteBounds.toRectF(),
                 backgroundBlurRadius = 0,
+                crop = absoluteBounds.toRectF(),
                 isRelativeOf = false,
                 zOrderRelativeOfId = -1,
                 stackId = 0,
-                excludesCompositionState = false,
+                isVisible = isVisible,
+                visibilityReason = emptyList<String>(),
+                occludedBy = emptyList<Int>(),
             )
 
         val layers = mutableListOf<Layer>()

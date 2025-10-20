@@ -16,6 +16,7 @@
 
 package android.tools.helpers
 
+import android.app.Instrumentation
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Point
@@ -34,10 +35,13 @@ import android.util.Rational
 import android.view.View
 import android.view.ViewConfiguration
 import androidx.annotation.VisibleForTesting
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.Configurator
+import androidx.test.uiautomator.StaleObjectException
 import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
 import org.junit.Assert
 import org.junit.Assert.assertNotNull
@@ -49,6 +53,8 @@ const val IME_PACKAGE = "com.google.android.inputmethod.latin"
 
 @VisibleForTesting const val SYSTEMUI_PACKAGE = "com.android.systemui"
 private val LONG_PRESS_TIMEOUT = ViewConfiguration.getLongPressTimeout() * 2L
+private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
+private val device = UiDevice.getInstance(instrumentation)
 private const val TAG = "FLICKER"
 
 /**
@@ -137,6 +143,20 @@ fun UiDevice.openQuickstep(wmHelper: WindowManagerStateHelper) {
         .withStatusBarVisible()
         .withAppTransitionIdle()
         .waitForAndVerify()
+}
+
+fun <T> retryIfStaleObject(times: Int = 3, block: () -> T): T {
+    var lastException: StaleObjectException? = null
+    repeat(times) { attempt ->
+        try {
+            return block()
+        } catch (e: StaleObjectException) {
+            Log.w("RetryHelper", "Caught StaleObjectException on attempt ${attempt + 1}")
+            lastException = e
+            Thread.sleep(500)
+        }
+    }
+    throw lastException ?: IllegalStateException("Retry failed but no exception was caught.")
 }
 
 private fun getLauncherOverviewSelector(device: UiDevice): BySelector {
@@ -360,3 +380,6 @@ fun UiDevice.wakeUpAndGoToHomeScreen() {
     }
     this.pressHome()
 }
+
+fun findObject(selector: BySelector): UiObject2 =
+    device.wait(Until.findObject(selector), FIND_TIMEOUT) ?: error("Can't find object $selector")

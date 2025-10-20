@@ -74,7 +74,7 @@ class ShellTransitionScenarioExtractorTest {
         Truth.assertThat(slices.first().startTimestamp)
             .isEqualTo(
                 Timestamps.from(
-                    unixNanos = 1682433275377527157,
+                    unixNanos = 1682433275377688307,
                     systemUptimeNanos = 2766599071189,
                     elapsedNanos = 2766217681356,
                 )

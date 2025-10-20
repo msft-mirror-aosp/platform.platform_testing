@@ -57,7 +57,7 @@ public class HostFlagsValueProviderTest {
                                     .setNamespace("cts")
                                     .setDescription("A sample flag")
                                     .addBug("12345678")
-                                    .setState(Aconfig.flag_state.DISABLED)
+                                    .setState(Aconfig.flag_state.ENABLED)
                                     .setPermission(Aconfig.flag_permission.READ_WRITE))
                     .build();
 
@@ -77,6 +77,8 @@ public class HostFlagsValueProviderTest {
         parsed_flags.getDefaultInstance().writeTo(new FileOutputStream(aconfigFlagsEmptyPbFile));
         when(mTestDevice.executeShellCommand(eq("device_config list")))
                 .thenReturn(DEVICE_CONFIG_LIST);
+        when(mTestDevice.getApiLevel()).thenReturn(35);
+        when(mTestDevice.getProperty("ro.build.type")).thenReturn("userdebug");
         when(mTestDevice.getSerialNumber()).thenReturn("123456");
         when(mTestDevice.doesFileExist("/system/etc/aconfig_flags.pb")).thenReturn(true);
         when(mTestDevice.doesFileExist("/product/etc/aconfig_flags.pb")).thenReturn(true);
@@ -85,19 +87,15 @@ public class HostFlagsValueProviderTest {
         when(mTestDevice.pullFile("/system/etc/aconfig_flags.pb")).thenReturn(aconfigFlagsPbFile);
         when(mTestDevice.pullFile("/product/etc/aconfig_flags.pb"))
                 .thenReturn(aconfigFlagsEmptyPbFile);
-        mHostFlagsValueProvider =
-                new HostFlagsValueProvider(
-                        () -> {
-                            return mTestDevice;
-                        });
+        mHostFlagsValueProvider = new HostFlagsValueProvider(() -> mTestDevice);
         mHostFlagsValueProvider.setUp();
+        // Always refresh class-level cache before test
+        HostFlagsValueProvider.refreshFlagsCache("123456");
     }
 
     @Test
-    public void getBoolean_flagNotExist_throwException() throws Exception {
-        assertThrows(
-                FlagReadException.class,
-                () -> mHostFlagsValueProvider.getBoolean("flag_not_exist"));
+    public void getBoolean_flagNotExist_returnFalse() throws Exception {
+        assertFalse(mHostFlagsValueProvider.getBoolean("flag_not_exist"));
     }
 
     @Test
@@ -111,7 +109,7 @@ public class HostFlagsValueProviderTest {
     public void getBoolean_verify() throws Exception {
         assertTrue(mHostFlagsValueProvider.getBoolean("namespace1/flag1"));
         assertFalse(mHostFlagsValueProvider.getBoolean("namespace1/flag2"));
-        assertFalse(mHostFlagsValueProvider.getBoolean("cts/com.android.flags.my_flag"));
+        assertTrue(mHostFlagsValueProvider.getBoolean("cts/com.android.flags.my_flag"));
     }
 
     @Test
@@ -121,6 +119,15 @@ public class HostFlagsValueProviderTest {
         HostFlagsValueProvider.refreshFlagsCache("123456");
 
         assertFalse(mHostFlagsValueProvider.getBoolean("namespace1/flag1"));
+    }
+
+    @Test
+    public void getBoolean_lowApiLevel_returnFalse() throws Exception {
+        when(mTestDevice.getApiLevel()).thenReturn(34);
+        HostFlagsValueProvider.refreshFlagsCache("123456");
+
+        assertTrue(mHostFlagsValueProvider.getBoolean("namespace1/flag1"));
+        assertFalse(mHostFlagsValueProvider.getBoolean("cts/com.android.flags.my_flag"));
     }
 
     @Test

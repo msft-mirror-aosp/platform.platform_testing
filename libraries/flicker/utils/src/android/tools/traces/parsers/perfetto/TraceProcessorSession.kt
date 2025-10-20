@@ -21,9 +21,10 @@
 
 package android.tools.traces.parsers.perfetto
 
+import android.tools.FLICKER_TAG
 import android.tools.io.TraceType
 import android.tools.withTracing
-import androidx.benchmark.macro.runServer
+import android.util.Log
 import androidx.benchmark.traceprocessor.PerfettoTrace
 import androidx.benchmark.traceprocessor.TraceProcessor
 import java.io.File
@@ -41,7 +42,20 @@ interface TraceProcessorSession {
                 val traceFile = File.createTempFile(TraceType.PERFETTO.fileName, "")
                 FileOutputStream(traceFile).use { it.write(trace) }
                 val result =
-                    TraceProcessor.runServer {
+                    TraceProcessor.runServer(
+                        serverLifecycleManager = ShellServerLifecycleManager(),
+                        eventCallback =
+                            object : TraceProcessor.EventCallback {
+                                override fun onLoadTraceFailure(
+                                    trace: PerfettoTrace,
+                                    throwable: Throwable,
+                                ) {
+                                    Log.e(FLICKER_TAG, "Unable to load trace", throwable)
+                                    throw throwable
+                                }
+                            },
+                        tracer = TraceProcessor.Tracer(),
+                    ) {
                         loadTrace(PerfettoTrace(traceFile.absolutePath)) {
                             predicate(TraceProcessorSessionImpl(this))
                         }

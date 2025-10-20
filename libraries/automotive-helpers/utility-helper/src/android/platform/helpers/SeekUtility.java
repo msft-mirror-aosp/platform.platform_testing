@@ -97,7 +97,7 @@ public class SeekUtility {
      * @param targetPercentage Where to tap
      * @return The resulting service value
      */
-    public int seek(String id, float targetPercentage) {
+    public int seek(String id, double targetPercentage) {
         if ((targetPercentage < 0) || (targetPercentage > 1)) {
             throw new IllegalArgumentException(
                     "Seekbar target percentage %f is not between 0 and 1"

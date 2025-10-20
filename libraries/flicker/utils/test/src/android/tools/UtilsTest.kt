@@ -32,28 +32,26 @@ import org.junit.runners.MethodSorters
 class UtilsTest {
     private fun getCurrState(
         vararg dumpTypes: DumpType = arrayOf(DumpType.SF, DumpType.WM)
-    ): Pair<ByteArray, ByteArray> {
+    ): ByteArray {
         return getCurrentState(*dumpTypes)
     }
 
     private fun getCurrStateDump(
         vararg dumpTypes: DumpType = arrayOf(DumpType.SF, DumpType.WM)
     ): NullableDeviceStateDump {
-        return getCurrentStateDumpNullable(*dumpTypes, clearCacheAfterParsing = false)
+        return getCurrentStateDumpNullable(arrayOf(*dumpTypes), clearCacheAfterParsing = false)
     }
 
     @Test
     fun canFetchCurrentDeviceState() {
         val currState = this.getCurrState()
-        Truth.assertThat(currState.first).isNotEmpty()
-        Truth.assertThat(currState.second).isNotEmpty()
+        Truth.assertThat(currState).isNotEmpty()
     }
 
     @Test
     fun canFetchCurrentDeviceStateOnlyWm() {
         val currStateDump = this.getCurrState(DumpType.WM)
-        Truth.assertThat(currStateDump.first).isNotEmpty()
-        Truth.assertThat(currStateDump.second).isEmpty()
+        Truth.assertThat(currStateDump).isNotEmpty()
         val currState = this.getCurrStateDump(DumpType.WM)
         Truth.assertThat(currState.wmState).isNotNull()
         Truth.assertThat(currState.layerState).isNull()
@@ -62,8 +60,7 @@ class UtilsTest {
     @Test
     fun canFetchCurrentDeviceStateOnlyLayers() {
         val currStateDump = this.getCurrState(DumpType.SF)
-        Truth.assertThat(currStateDump.first).isEmpty()
-        Truth.assertThat(currStateDump.second).isNotEmpty()
+        Truth.assertThat(currStateDump).isNotEmpty()
         val currState = this.getCurrStateDump(DumpType.SF)
         Truth.assertThat(currState.wmState).isNull()
         Truth.assertThat(currState.layerState).isNotNull()

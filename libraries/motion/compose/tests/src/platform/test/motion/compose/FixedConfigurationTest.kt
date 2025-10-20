@@ -43,7 +43,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import platform.test.motion.golden.DataPoint
-import platform.test.motion.golden.FeatureCapture
 import platform.test.motion.golden.ValueDataPoint
 import platform.test.motion.golden.asDataPoint
 import platform.test.motion.testing.createGoldenPathManager
@@ -171,7 +170,7 @@ class FixedConfigurationTest {
                         recordBefore = false,
                         recordAfter = false,
                     ) {
-                        feature(FeatureCapture("yDragDistance") { yDragDistance.asDataPoint() })
+                        feature("yDragDistance") { yDragDistance.asDataPoint() }
                     },
                 )
 

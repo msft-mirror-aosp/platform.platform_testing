@@ -32,7 +32,7 @@ data class LayersTrace(override val entries: Collection<LayerTraceEntry>) : Trac
         return "LayersTrace(Start: ${entries.firstOrNull()}, " + "End: ${entries.lastOrNull()})"
     }
 
-    fun vSyncSlice(from: Int, to: Int): LayersTrace {
+    fun vSyncSlice(from: Long, to: Long): LayersTrace {
         return LayersTrace(
             this.entries.dropWhile { it.vSyncId < from }.dropLastWhile { it.vSyncId > to }
         )

@@ -146,7 +146,7 @@ object ConditionsFactory {
         displayId: Int = PlatformConsts.DEFAULT_DISPLAY
     ): Condition<DeviceStateDump> =
         Condition("isTaskBarWindowVisible[$displayId]") {
-            it.wmState.isWindowSurfaceShown( ComponentNameMatcher.TASK_BAR, displayId)
+            it.wmState.isWindowSurfaceShown(ComponentNameMatcher.TASK_BAR, displayId)
         }
 
     /** Condition to check if the [ComponentNameMatcher.TASK_BAR] layer is visible */
@@ -252,9 +252,12 @@ object ConditionsFactory {
             it.wmState.containsWindow(componentMatcher)
         }
 
-    fun isWindowSurfaceShown(componentMatcher: IComponentMatcher): Condition<DeviceStateDump> =
+    fun isWindowSurfaceShown(
+        componentMatcher: IComponentMatcher,
+        displayId: Int = PlatformConsts.DEFAULT_DISPLAY,
+    ): Condition<DeviceStateDump> =
         Condition("isWindowSurfaceShown[${componentMatcher.toWindowIdentifier()}]") {
-            it.wmState.isWindowSurfaceShown(componentMatcher)
+            it.wmState.isWindowSurfaceShown(componentMatcher, displayId)
         }
 
     fun isActivityVisible(componentMatcher: IComponentMatcher): Condition<DeviceStateDump> =
