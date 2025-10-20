@@ -20,6 +20,8 @@ import android.view.Display
 import com.android.server.testutils.TestUtils
 import com.google.common.truth.Truth.assertWithMessage
 import kotlin.test.assertEquals
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import org.junit.Assume.assumeTrue
 import org.junit.rules.TestRule
 import org.junit.runner.Description
@@ -88,13 +90,13 @@ enum class DisplaySize(val width: Int, val height: Int) {
 data class DisplayPeripheral(override val type: PeripheralType, val size: DisplaySize) : Peripheral
 
 /** A request to connect [peripherals]. */
-class PeripheralsRequest(val peripherals: List<Peripheral> = emptyList()) {
+class PeripheralsRequest(val peripherals: List<Peripheral>, val timeout: Duration) {
 
     /** Returns a new [PeripheralsRequest] with all peripherals of the specified [type]. */
     fun getByType(type: PeripheralType): PeripheralsRequest =
-        PeripheralsRequest(peripherals.filter { it.type == type })
+        PeripheralsRequest(peripherals.filter { it.type == type }, timeout)
 
-    /** Validates that all peripherals are of the [supportedTypes]. */
+    /** Validates that all peripherals are of the [types]. */
     fun validate(vararg types: PeripheralType) {
         val supportedTypes = types.toList()
 
@@ -104,13 +106,14 @@ class PeripheralsRequest(val peripherals: List<Peripheral> = emptyList()) {
     }
 
     operator fun plus(other: PeripheralsRequest): PeripheralsRequest =
-        PeripheralsRequest(peripherals + other.peripherals)
+        PeripheralsRequest(peripherals + other.peripherals, timeout)
 
     /** Returns a new [PeripheralsRequest] with all peripherals that are not connected. */
     fun notConnected(response: PeripheralsResponse): PeripheralsRequest {
         val connectedPeripherals = response.devices.filter { it.connected }.map { it.peripheral }
         return PeripheralsRequest(
-            peripherals.filter { p -> connectedPeripherals.none { it === p } }
+            peripherals.filter { p -> connectedPeripherals.none { it === p } },
+            timeout,
         )
     }
 
@@ -138,16 +141,30 @@ class PeripheralDeviceTestRule : TestRule, PeripheralsController {
                 // try-with-resources, ensuring cleanup steps are executed during
                 // CleanupExecutor#close(). If the close() method also throws an exception(s),
                 // the exception(s) from close() are suppressed and added to the primary exception.
-                TestUtils.CleanupExecutor(TAG).use {
+                TestUtils.CleanupExecutor(TAG).use { cl ->
                     // Last cleanup steps: release all resources
-                    it.addCleanup(simulatedController::close)
-                    it.addCleanup(physicalController::close)
+                    cl.addCleanup(simulatedController::close)
+                    cl.addCleanup(physicalController::close)
 
-                    // Ensure no peripherals connected before the test
-                    disconnectAll()
-
+                    // Don't implicitly cleanup peripherals before the test, e.g. in case of
+                    // after-reboot tests, if these tests need to cleanup peripherals, they need
+                    // to do it explicitly, or don't pass
+                    // [DesktopTestOptions.KEEP_PERIPHERALS_BEFORE_TEST] option
+                    if (!DesktopTestOptions.keepPeripheralsBeforeTest) {
+                        // Ensure no peripherals connected before the test
+                        disconnectAll()
+                    }
                     // First cleanup step: disconnect all peripherals
-                    it.addCleanup(::disconnectAll)
+                    cl.addCleanup {
+                        // Don't implicitly cleanup peripherals after the test, e.g. in case of
+                        // before-reboot tests, if these tests need to cleanup peripherals, tests
+                        // need to do it explicitly, or simply don't pass
+                        // [DesktopTestOptions.KEEP_PERIPHERALS_AFTER_TEST] option.
+                        // If test evaluation has an exception - cleanup must be done in any case.
+                        if (cl.hasException() || !DesktopTestOptions.keepPeripheralsAfterTest) {
+                            disconnectAll()
+                        }
+                    }
                     // Run the test
                     base.evaluate()
                 }
@@ -155,8 +172,8 @@ class PeripheralDeviceTestRule : TestRule, PeripheralsController {
         }
 
     fun startMonitoring(): Boolean {
-        val sim = simulatedController.startMonitoring()
-        val phys = physicalController.startMonitoring()
+        val sim = simulatedController.startMonitoring(TIMEOUT)
+        val phys = physicalController.startMonitoring(TIMEOUT)
         return sim && phys
     }
 
@@ -165,10 +182,13 @@ class PeripheralDeviceTestRule : TestRule, PeripheralsController {
         physicalController.stopMonitoring()
     }
 
-    fun disconnectAll() = requestPeripherals(PeripheralsRequest())
+    fun disconnectAll() = requestPeripherals(PeripheralsRequest(emptyList(), TIMEOUT))
 
     fun requestPeripherals(vararg peripherals: Peripheral): PeripheralsResponse =
-        requestPeripherals(PeripheralsRequest(peripherals.toList()))
+        requestPeripherals(PeripheralsRequest(peripherals.toList(), TIMEOUT))
+
+    fun getPeripherals(vararg peripherals: Peripheral): PeripheralsResponse =
+        requestPeripherals(PeripheralsRequest(peripherals.toList(), 0.seconds))
 
     /**
      * Tries to connect all peripherals specified in the [request]. If some peripherals are no
@@ -228,6 +248,7 @@ class PeripheralDeviceTestRule : TestRule, PeripheralsController {
     }
 
     private companion object {
-        const val TAG = "PeripheralDeviceTestRule"
+        const val TAG = "PeripheralDeviceTestR"
+        private val TIMEOUT = 30.seconds
     }
 }

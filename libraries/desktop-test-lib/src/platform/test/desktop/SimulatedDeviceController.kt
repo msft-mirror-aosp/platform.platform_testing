@@ -21,7 +21,7 @@ import android.view.Display
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Duration
 
 /**
  * A simulated display device returned by a [SimulatedDeviceController].
@@ -47,16 +47,22 @@ class SimulatedDeviceController : PeripheralsController {
         displayMonitor.close()
     }
 
-    fun startMonitoring() = displayMonitor.waitForCondition(TIMEOUT)
+    fun startMonitoring(timeout: Duration) = displayMonitor.waitForCondition(timeout)
 
     fun stopMonitoring() = displayMonitor.stopMonitoring()
 
     override fun requestPeripherals(request: PeripheralsRequest): PeripheralsResponse {
         request.validate(PeripheralType.SIMULATED, PeripheralType.PHYSICAL_OR_SIMULATED)
-        return setupSimulatedDisplays(request.peripherals.filterIsInstance<DisplayPeripheral>())
+        return setupSimulatedDisplays(
+            request.peripherals.filterIsInstance<DisplayPeripheral>(),
+            request.timeout,
+        )
     }
 
-    private fun setupSimulatedDisplays(peripherals: List<DisplayPeripheral>): PeripheralsResponse {
+    private fun setupSimulatedDisplays(
+        peripherals: List<DisplayPeripheral>,
+        timeout: Duration,
+    ): PeripheralsResponse {
         // If we need some displays created
         assertTrue(
             currentDisplaysPeripherals.isNullOrEmpty() || peripherals.isEmpty(),
@@ -72,12 +78,14 @@ class SimulatedDeviceController : PeripheralsController {
                 peripherals.joinToString(separator = ";") {
                     "${it.size.width}x${it.size.height}/$DEFAULT_DENSITY,disable_window_interaction"
                 }
-            Settings.Global.putString(
-                context.contentResolver,
-                Settings.Global.OVERLAY_DISPLAY_DEVICES,
-                displaySettings,
-            )
-            assertTrue(displayMonitor.waitForCondition(TIMEOUT), "waitForExpectation failed")
+            if (timeout.isPositive()) {
+                Settings.Global.putString(
+                    context.contentResolver,
+                    Settings.Global.OVERLAY_DISPLAY_DEVICES,
+                    displaySettings,
+                )
+            }
+            assertTrue(displayMonitor.waitForCondition(timeout), "waitForExpectation failed")
         }
 
         val removedDisplays =
@@ -121,7 +129,6 @@ class SimulatedDeviceController : PeripheralsController {
 
     private companion object {
         const val TAG = "Simulated"
-        val TIMEOUT = 10.seconds
         const val DEFAULT_DENSITY = 160
     }
 }
