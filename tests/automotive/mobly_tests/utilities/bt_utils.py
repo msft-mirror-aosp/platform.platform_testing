@@ -75,6 +75,13 @@ class BTUtils:
             'Failed to discover the target device %s over Bluetooth.' %
             target_name)
 
+    def find_device_by_address(self, devices, address):
+        """Finds the device in a list with a matching 'Address'."""
+        for device in devices:
+            if device['Address'] == address:
+                return device  # Found the device, return immediately.
+        return None
+
     def pair_primary_to_secondary(self):
         """Enable discovery on the target so the discoverer can find it."""
         self.check_device_pairing_state()
@@ -88,6 +95,7 @@ class BTUtils:
         self.disable_android_auto_popup_on_hu()
         logging.info('Setting devices to be discoverable')
         self.target.mbs.btBecomeDiscoverableWithLongerWait(DISCOVERABLE_TIME)
+        self.discoverer.mbs.btBecomeDiscoverableWithLongerWait(DISCOVERABLE_TIME)
         self.target.mbs.btStartAutoAcceptIncomingPairRequest()
         self.discoverer.mbs.btStartAutoAcceptIncomingPairRequest()
         target_address = self.target.mbs.btGetAddress()
@@ -97,20 +105,25 @@ class BTUtils:
         for attempt in range(5):
             logging.info('Attempt %d', attempt)
             discovered_devices = self.discoverer.mbs.btDiscoverAndGetResults()
-            for device in discovered_devices:
-                if device['Address'] == target_address:
-                    logging.info('Device \'%s\' found. Pairing.' % target_address)
-                    self.discoverer.mbs.btPairDevice(target_address)
-                    self.target.mbs.btGrantPermissions(discoverer_address)
-                    self.allow_permissions_after_pairing()
-                    paired_devices = self.discoverer.mbs.btGetPairedDevices()
-                    _, paired_addresses = self.get_info_from_devices(paired_devices)
-                    asserts.assert_true(
-                        target_address in paired_addresses,
-                        'Failed to pair the target device %s over Bluetooth.' %
-                        target_address)
-                    logging.info("BT pairing completed.")
-                    return
+            if not self.find_device_by_address(discovered_devices, target_address):
+                logging.info("Target device '%s' not found in discoverer's initial scan.", target_address)
+                continue # next attempt
+            target_discovered_devices = self.target.mbs.btDiscoverAndGetResults()
+            if not self.find_device_by_address(target_discovered_devices, discoverer_address):
+                logging.info("Discoverer device '%s' not found in target's scan after finding target.", discoverer_address)
+                continue # next attempt
+            logging.info('Device \'%s\' found. Pairing.' % target_address)
+            self.discoverer.mbs.btPairDevice(target_address)
+            self.target.mbs.btGrantPermissions(discoverer_address)
+            self.allow_permissions_after_pairing()
+            paired_devices = self.discoverer.mbs.btGetPairedDevices()
+            _, paired_addresses = self.get_info_from_devices(paired_devices)
+            asserts.assert_true(
+                target_address in paired_addresses,
+                'Failed to pair the target device %s over Bluetooth.' %
+                target_address)
+            logging.info("BT pairing completed.")
+            return
         raise Exception(f'BT pairing failed due to target device not discovered.')
 
     def allow_permissions_after_pairing(self):
