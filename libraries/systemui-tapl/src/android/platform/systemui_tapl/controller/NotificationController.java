@@ -31,7 +31,6 @@ import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentat
 
 import android.R;
 import android.annotation.FlaggedApi;
-import android.app.Flags;
 import android.app.Notification;
 import android.app.Notification.Builder;
 import android.app.Notification.MessagingStyle;
@@ -394,11 +393,7 @@ public class NotificationController {
     @NonNull
     private Builder makePromotedOngoing(@NonNull Builder builder) {
         builder.setOngoing(true);
-        if (Flags.uiRichOngoing()) {
-            builder.setRequestPromotedOngoing(true);
-        } else {
-            builder.setColorized(true).setColor(Color.GREEN);
-        }
+        builder.setRequestPromotedOngoing(true);
         return builder;
     }
 
