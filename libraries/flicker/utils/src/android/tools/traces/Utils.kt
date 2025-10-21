@@ -142,22 +142,23 @@ fun getCurrentState(vararg dumpTypes: DumpType = arrayOf(DumpType.SF, DumpType.W
  * [LayerTraceEntry] (optional) parsed
  *
  * @param dumpTypes Flags determining which types of traces should be included in the dump
- * @param clearCacheAfterParsing If the caching used while parsing the proto should be
- *
- * ```
- *                               cleared or remain in memory
- * ```
+ * @param clearCacheAfterParsing If the caching used while parsing the proto should be cleared or
+ *   remain in memory
+ * @param ignoreLayersInVirtualDisplay If true the layers associated with virtual displays will not
+ *   be stored in the LayerTraceEntry
  */
 @JvmOverloads
 fun getCurrentStateDumpNullable(
     dumpTypes: Array<DumpType> = arrayOf(DumpType.SF, DumpType.WM),
     clearCacheAfterParsing: Boolean = true,
+    ignoreLayersInVirtualDisplay: Boolean = true,
 ): NullableDeviceStateDump {
     val trace = getCurrentState(*dumpTypes)
     return DeviceDumpParser.fromNullableDump(
         trace,
         dumpTypes,
         clearCacheAfterParsing = clearCacheAfterParsing,
+        ignoreLayersInVirtualDisplay = ignoreLayersInVirtualDisplay,
     )
 }
 
@@ -165,12 +166,14 @@ fun getCurrentStateDumpNullable(
 fun getCurrentStateDump(
     dumpTypes: Array<DumpType> = arrayOf(DumpType.SF, DumpType.WM),
     clearCacheAfterParsing: Boolean = true,
+    ignoreLayersInVirtualDisplay: Boolean = true,
 ): DeviceStateDump {
     val trace = getCurrentState(*dumpTypes)
     return DeviceDumpParser.fromDump(
         trace,
         dumpTypes,
         clearCacheAfterParsing = clearCacheAfterParsing,
+        ignoreLayersInVirtualDisplay = ignoreLayersInVirtualDisplay,
     )
 }
 
