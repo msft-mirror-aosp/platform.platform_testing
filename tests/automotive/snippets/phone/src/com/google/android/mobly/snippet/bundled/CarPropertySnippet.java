@@ -20,6 +20,7 @@ import static com.google.common.util.concurrent.MoreExecutors.newDirectExecutorS
 
 import android.app.UiAutomation;
 import android.car.VehicleGear;
+import android.car.VehicleUnit;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -29,6 +30,7 @@ import com.google.android.libraries.automotive.val.api.SetResult;
 import com.google.android.libraries.automotive.val.api.Temperature;
 import com.google.android.libraries.automotive.val.api.UpdateTargetTemperatureRequest;
 import com.google.android.libraries.automotive.val.api.VehicleActions;
+import com.google.android.libraries.automotive.val.api.WindowActions;
 import com.google.android.mobly.snippet.Snippet;
 import com.google.android.mobly.snippet.rpc.Rpc;
 import com.google.common.collect.ImmutableSet;
@@ -40,6 +42,9 @@ public class CarPropertySnippet implements Snippet {
     private final VehicleActions mActions;
 
     private static UiAutomation mUiAutomation;
+
+    private static final String DRIVER_SEAT = SeatActions.SEAT_ROW_1_LEFT;
+    private static final ImmutableSet<String> DRIVER_SEAT_SET = ImmutableSet.of(DRIVER_SEAT);
 
     public CarPropertySnippet() {
         mActions = new VehicleActions(
@@ -57,9 +62,19 @@ public class CarPropertySnippet implements Snippet {
         mUiAutomation.dropShellPermissionIdentity();
     }
 
+    @Rpc(description = "Display cabin temperatures in celsius")
+    public void setHvacDisplayCelsius() {
+        set("HVAC_TEMPERATURE_DISPLAY_UNITS").value(VehicleUnit.CELSIUS).execute(mUiAutomation);
+    }
+
+    @Rpc(description = "Display cabin temperatures in fahrenheit")
+    public void setHvacDisplayFahrenheit() {
+        set("HVAC_TEMPERATURE_DISPLAY_UNITS").value(VehicleUnit.FAHRENHEIT).execute(mUiAutomation);
+    }
+
     @Rpc(description = "Set the cabin temperature for the driver side")
     public void setDriverHvacTemperature(String fahrenheit) {
-        setHvacTemperature(fahrenheit, SeatActions.SEAT_ROW_1_LEFT);
+        setHvacTemperature(fahrenheit, DRIVER_SEAT);
     }
 
     @Rpc(description = "Set the cabin temperature for the passenger side")
@@ -81,7 +96,7 @@ public class CarPropertySnippet implements Snippet {
 
     @Rpc(description = "Get the desired cabin temperature for the driver side")
     public float getDriverHvacTemperature() {
-        return getHvacTemperature(SeatActions.SEAT_ROW_1_LEFT);
+        return getHvacTemperature(DRIVER_SEAT);
     }
 
     @Rpc(description = "Get the desired cabin temperature for the passenger side")
@@ -101,9 +116,127 @@ public class CarPropertySnippet implements Snippet {
         }
     }
 
+    @Rpc(description = "Turn the AC on")
+    public void turnOnAc() {
+        mActions.getSeatActions().enableAc(DRIVER_SEAT_SET);
+    }
+
+    @Rpc(description = "Turn the AC off")
+    public void turnOffAc() {
+        mActions.getSeatActions().disableAc(DRIVER_SEAT_SET);
+    }
+
+    @Rpc(description = "Report whether AC is on")
+    public boolean getAcState() {
+        try {
+            return mActions.getSeatActions().isAcEnabled(DRIVER_SEAT_SET).get().value()
+                    .elementToValue().get(DRIVER_SEAT).value();
+        } catch (ExecutionException e) {
+            throw new RuntimeException("Interrupted while retrieving AC value", e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException("AC value retrieval threw an exception", e);
+        }
+    }
+
+    @Rpc(description = "Enable air recirculation")
+    public void enableAirRecirculation() {
+        mActions.getSeatActions().enableHvacRecirculation(DRIVER_SEAT_SET);
+    }
+
+    @Rpc(description = "Disable air recirculation")
+    public void disableAirRecirculation() {
+        mActions.getSeatActions().disableHvacRecirculation(DRIVER_SEAT_SET);
+    }
+
+    @Rpc(description = "Get the value of the air recirculation toggle")
+    public boolean getAirRecirculation() {
+        try {
+            return mActions.getSeatActions().isHvacRecirculationEnabled(DRIVER_SEAT_SET).get()
+                    .value().elementToValue().get(DRIVER_SEAT).value();
+        } catch (ExecutionException e) {
+            throw new RuntimeException("Interrupted while retrieving recirculation value", e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException("Recirculation value retrieval threw an exception", e);
+        }
+    }
+
+    @Rpc(description = "Enable front defroster")
+    public void enableFrontDefrost() {
+        enableDefrost(WindowActions.WINDOW_FRONT_WINDSHIELD);
+    }
+
+    @Rpc(description = "Enable rear defroster")
+    public void enableRearDefrost() {
+        enableDefrost(WindowActions.WINDOW_REAR_WINDSHIELD);
+    }
+
+    private void enableDefrost(String windshield) {
+        mActions.getWindowActions()
+                .enableHvacDefroster(ImmutableSet.of(windshield));
+    }
+
+    @Rpc(description = "Enable front defroster")
+    public void disableFrontDefrost() {
+        disableDefrost(WindowActions.WINDOW_FRONT_WINDSHIELD);
+    }
+
+    @Rpc(description = "Enable rear defroster")
+    public void disableRearDefrost() {
+        disableDefrost(WindowActions.WINDOW_REAR_WINDSHIELD);
+    }
+
+    private void disableDefrost(String windshield) {
+        mActions.getWindowActions()
+                .disableHvacDefroster(ImmutableSet.of(windshield));
+    }
+
+    @Rpc(description = "Get front defroster state")
+    public boolean getFrontDefrost() {
+        return getDefrost(WindowActions.WINDOW_FRONT_WINDSHIELD);
+    }
+
+    @Rpc(description = "Get rear defroster state")
+    public boolean getRearDefrost() {
+        return getDefrost(WindowActions.WINDOW_REAR_WINDSHIELD);
+    }
+
+    private boolean getDefrost(String windshield) {
+        try {
+            return mActions.getWindowActions().isHvacDefrosterEnabled(ImmutableSet.of(windshield))
+                    .get().value().elementToValue().get(windshield).value();
+        } catch (ExecutionException e) {
+            throw new RuntimeException("Interrupted while retrieving defroster value", e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException("Defroster value retrieval threw an exception", e);
+        }
+    }
+
+
+    @Rpc(description = "Disable HVAC auto mode")
+    public void disableHvacAutoMode() {
+        mActions.getSeatActions().disableHvacAutoMode(DRIVER_SEAT_SET);
+    }
+
+    @Rpc(description = "Enable HVAC auto mode")
+    public void enableHvacAutoMode() {
+        mActions.getSeatActions().enableHvacAutoMode(DRIVER_SEAT_SET);
+    }
+
+    @Rpc(description = "Get the value of the HVAC auto mode toggle")
+    public boolean getHvacAutoMode() {
+        try {
+            return mActions.getSeatActions().isHvacAutoModeEnabled(DRIVER_SEAT_SET).get().value()
+                    .elementToValue().get(DRIVER_SEAT).value();
+        } catch (ExecutionException e) {
+            throw new RuntimeException("Interrupted while retrieving auto mode value", e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException("Auto mode value retrieval threw an exception", e);
+        }
+    }
+
     @Rpc(description = "Get the desired seat temperature for the driver side")
     public int getDriverSeatTemperature() {
-        return getSeatTemperature(SeatActions.SEAT_ROW_1_LEFT);
+        return getSeatTemperature(DRIVER_SEAT);
     }
 
     @Rpc(description = "Get the desired seat temperature for the passenger side")
@@ -113,9 +246,8 @@ public class CarPropertySnippet implements Snippet {
 
     private int getSeatTemperature(String seat) {
         try {
-            return mActions.getSeatActions().getSeatHeatingLevel(
-                    ImmutableSet.of(seat)
-            ).get().value().elementToValue().get(seat).value();
+            return mActions.getSeatActions().getSeatHeatingLevel(ImmutableSet.of(seat)).get()
+                    .value().elementToValue().get(seat).value();
         } catch (InterruptedException e) {
             throw new RuntimeException("Interrupted while retrieving seat temperature", e);
         } catch (ExecutionException e) {
@@ -160,6 +292,11 @@ public class CarPropertySnippet implements Snippet {
     @Rpc(description = "Get the state of the parking brake")
     public boolean getParkingBrake() {
         return get("PARKING_BRAKE_ON").booleanValue(mUiAutomation);
+    }
+
+    @Rpc(description = "Enable/disable night mode")
+    public void setNightMode(String enabled) {
+        set("NIGHT_MODE").value(Boolean.parseBoolean(enabled)).execute(mUiAutomation);
     }
 
     private static SetProp set(String name) {

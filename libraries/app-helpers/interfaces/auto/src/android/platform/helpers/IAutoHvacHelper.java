@@ -19,5 +19,24 @@ package android.platform.helpers;
 public interface IAutoHvacHelper extends IAppHelper {
     void showHideHvac();
 
+    boolean checkAcToggle();
+    void clickAcToggle();
+
+    boolean checkAutoModeToggle();
+    void clickAutoModeToggle();
+
+    boolean checkRecirculationToggle();
+    void clickRecirculationToggle();
+
+    boolean checkFrontDefrostToggle();
+    void clickFrontDefrostToggle();
+    boolean checkRearDefrostToggle();
+    void clickRearDefrostToggle();
+
     void clickDriverSeatTemperature();
+
+    void driverIncreaseTemperature();
+    void driverDecreaseTemperature();
+    void passengerIncreaseTemperature();
+    void passengerDecreaseTemperature();
 }
