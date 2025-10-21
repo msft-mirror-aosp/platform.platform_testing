@@ -170,12 +170,11 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
      */
     public void playPauseMediaFromHomeScreen() {
         BySelector playButtonSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.PLAY_PAUSE_BUTTON_HOME_SCREEN);
-        UiObject2 playButtonHomeScreen = getSpectatioUiUtil().findUiObject(playButtonSelector);
+                getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_CARD_PAUSE_BUTTON);
+        UiObject2 playButtonHomeScreen = getSpectatioUiUtil().waitForUiObject(playButtonSelector);
         getSpectatioUiUtil()
                 .validateUiObject(
-                        playButtonHomeScreen,
-                        AutomotiveConfigConstants.PLAY_PAUSE_BUTTON_HOME_SCREEN);
+                        playButtonHomeScreen, AutomotiveConfigConstants.MEDIA_CARD_PAUSE_BUTTON);
         getSpectatioUiUtil().clickAndWait(playButtonHomeScreen);
         getSpectatioUiUtil().waitForIdle();
     }
@@ -215,13 +214,13 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
      */
     public void clickNextTrackFromHomeScreen() {
         BySelector nextTrackButtonSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.NEXT_BUTTON_HOME_SCREEN);
+                getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_CARD_NEXT_BUTTON);
         UiObject2 nextTrackHomeScreenButton =
                 getSpectatioUiUtil().findUiObject(nextTrackButtonSelector);
         getSpectatioUiUtil()
                 .validateUiObject(
                         nextTrackHomeScreenButton,
-                        AutomotiveConfigConstants.NEXT_BUTTON_HOME_SCREEN);
+                        AutomotiveConfigConstants.MEDIA_CARD_NEXT_BUTTON);
         getSpectatioUiUtil().clickAndWait(nextTrackHomeScreenButton);
         getSpectatioUiUtil().waitForIdle();
     }
@@ -247,12 +246,13 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
      */
     public void clickPreviousTrackFromHomeScreen() {
         BySelector previousTrackButtonSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.PREVIOUS_BUTTON_HOME_SCREEN);
+                getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_CARD_PREVIOUS_BUTTON);
         UiObject2 previousTrackHomeScreenButton =
-                getSpectatioUiUtil().findUiObject(previousTrackButtonSelector);
+                getSpectatioUiUtil().waitForUiObject(previousTrackButtonSelector);
         getSpectatioUiUtil()
                 .validateUiObject(
-                        previousTrackHomeScreenButton, AutomotiveConfigConstants.PREVIOUS_BUTTON);
+                        previousTrackHomeScreenButton,
+                        AutomotiveConfigConstants.MEDIA_CARD_PREVIOUS_BUTTON);
         getSpectatioUiUtil().clickAndWait(previousTrackHomeScreenButton);
         getSpectatioUiUtil().wait5Seconds();
     }
@@ -334,7 +334,7 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
         getSpectatioUiUtil()
                 .validateUiObject(
                         trackNamexTextHomeScreen, AutomotiveConfigConstants.TRACK_NAME_HOME_SCREEN);
-        trackName = trackNamexTextHomeScreen.getText();
+        trackName = getSpectatioUiUtil().getTextForUiElement(trackNamexTextHomeScreen);
         return trackName;
     }
 
