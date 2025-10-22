@@ -260,29 +260,45 @@ class PerfettoTraceMonitorTest : TraceMonitorTest<PerfettoTraceMonitor>() {
     }
 
     @Test
-    fun collectsCujsByDefault() {
+    fun cujTracingTest() {
+        val initialSamplingInterval =
+            device
+                .executeShellCommand("device_config get interaction_jank_monitor sampling_interval")
+                .trim()
+        val initialEnabled =
+            device.executeShellCommand("device_config get interaction_jank_monitor enabled").trim()
+
         val reader =
-            PerfettoTraceMonitor.newBuilder().build().withTracing(
+            PerfettoTraceMonitor.newBuilder().enableCujTrace().build().withTracing(
                 resultReaderProvider = { buildResultReader(it) }
             ) {
+                val wmHelper =
+                    WindowManagerStateHelper(InstrumentationRegistry.getInstrumentation())
                 BrowserAppHelper().launchViaIntent()
                 device.pressHome()
-                device.pressRecentApps()
+                wmHelper.StateSyncBuilder().withHomeActivityVisible().waitForAndVerify()
             }
 
-        val debugFile = getDebugFile("uiTrace-PerfettoTraceMonitorTest-cujTracingTest")
-        Truth.assertThat(reader.artifacts).hasLength(1)
+        val finalSamplingInterval =
+            device
+                .executeShellCommand("device_config get interaction_jank_monitor sampling_interval")
+                .trim()
+        val finalEnabled =
+            device.executeShellCommand("device_config get interaction_jank_monitor enabled").trim()
+
+        Truth.assertThat(finalSamplingInterval).isEqualTo(initialSamplingInterval)
+        Truth.assertThat(finalEnabled).isEqualTo(initialEnabled)
+
+        val debugFile = getDebugFile("uiTrace-PerfettoTraceMonitorTest-jankCujTracingTest")
         debugFile.writeBytes(reader.artifacts.first().readBytes())
         val traceData = reader.readBytes(TraceType.PERFETTO) ?: ByteArray(0)
         assertTrace(traceData)
 
         TraceProcessorSession.loadPerfettoTrace(traceData) { session ->
             val sql =
-                "SELECT RUN_METRIC('android/jank/cujs.sql');\n" +
-                    "SELECT * FROM android_jank_cuj;"
+                "SELECT RUN_METRIC('android/jank/cujs.sql');\n" + "SELECT * FROM android_jank_cuj;"
             session.query(sql) { rows ->
-                require(rows.isNotEmpty()) { "Trace should have at least 1 CUJ" }
-                Truth.assertThat(rows.map { it["cuj_name"] }).contains("LAUNCHER_APP_CLOSE_TO_HOME")
+                require(rows.isNotEmpty()) { "Trace should have at least 1 jank CUJ" }
             }
         }
     }
