@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.4.0-alpha08" type="baseline" client="" dependencies="true" name="" variant="all" version="8.4.0-alpha08">
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 36.1 (current min is 36): `android.hardware.display.DisplayManager#getDisplayTopology`"
+        errorLine1='                "Starting with a DisplayTopology state of\n${displayManager.displayTopology}",'
+        errorLine2="                                                                            ~~~~~~~~~~~~~~~">
+        <location
+            file="platform_testing/libraries/desktop-test-lib/src/platform/test/desktop/DesktopMouseTestRule.kt"
+            line="148"
+            column="77"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 36.1 (current min is 36): `android.hardware.display.DisplayManager#getDisplayTopology`"
+        errorLine1="            val idBoundsMap = displayManager.displayTopology?.absoluteBounds"
+        errorLine2="                                             ~~~~~~~~~~~~~~~">
+        <location
+            file="platform_testing/libraries/desktop-test-lib/src/platform/test/desktop/DesktopMouseTestRule.kt"
+            line="206"
+            column="46"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 36.1 (current min is 36): `android.hardware.display.DisplayTopology#getAbsoluteBounds`"
+        errorLine1="            val idBoundsMap = displayManager.displayTopology?.absoluteBounds"
+        errorLine2="                                                              ~~~~~~~~~~~~~~">
+        <location
+            file="platform_testing/libraries/desktop-test-lib/src/platform/test/desktop/DesktopMouseTestRule.kt"
+            line="206"
+            column="63"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 36.1 (current min is 36): `android.hardware.display.DisplayManager#getDisplayTopology`"
+        errorLine1='            checkNotNull(displayManager.displayTopology) { "DisplayTopology must be available." }'
+        errorLine2="                                        ~~~~~~~~~~~~~~~">
+        <location
+            file="platform_testing/libraries/desktop-test-lib/src/platform/test/desktop/DesktopMouseTestRule.kt"
+            line="391"
+            column="41"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 36.1 (current min is 36): `android.hardware.display.DisplayTopology#getAbsoluteBounds`"
+        errorLine1="        val displayAbsoluteBounds = topology.absoluteBounds"
+        errorLine2="                                             ~~~~~~~~~~~~~~">
+        <location
+            file="platform_testing/libraries/desktop-test-lib/src/platform/test/desktop/DesktopMouseTestRule.kt"
+            line="392"
+            column="46"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 36.1 (current min is 36): `android.hardware.display.DisplayTopology#getGraph`"
+        errorLine1="        val topologyGraph = topology.graph"
+        errorLine2="                                     ~~~~~">
+        <location
+            file="platform_testing/libraries/desktop-test-lib/src/platform/test/desktop/DesktopMouseTestRule.kt"
+            line="393"
+            column="38"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 36.1 (current min is 36): `android.hardware.display.DisplayTopology#dpToPx`"
+        errorLine1="                    dpToPx(crossingDetail.targetPointDp.x - currentBounds.left, dpi),"
+        errorLine2="                    ~~~~~~">
+        <location
+            file="platform_testing/libraries/desktop-test-lib/src/platform/test/desktop/DesktopMouseTestRule.kt"
+            line="411"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 36.1 (current min is 36): `android.hardware.display.DisplayTopology#dpToPx`"
+        errorLine1="                    dpToPx(crossingDetail.targetPointDp.y - currentBounds.top, dpi),"
+        errorLine2="                    ~~~~~~">
+        <location
+            file="platform_testing/libraries/desktop-test-lib/src/platform/test/desktop/DesktopMouseTestRule.kt"
+            line="412"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 36.1 (current min is 36): `android.hardware.display.DisplayTopology#dpToPx`"
+        errorLine1="                    dpToPx(crossingDetail.toCrossDxDp, dpi),"
+        errorLine2="                    ~~~~~~">
+        <location
+            file="platform_testing/libraries/desktop-test-lib/src/platform/test/desktop/DesktopMouseTestRule.kt"
+            line="416"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 36.1 (current min is 36): `android.hardware.display.DisplayTopology#dpToPx`"
+        errorLine1="                    dpToPx(crossingDetail.toCrossDyDp, dpi),"
+        errorLine2="                    ~~~~~~">
+        <location
+            file="platform_testing/libraries/desktop-test-lib/src/platform/test/desktop/DesktopMouseTestRule.kt"
+            line="417"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 36.1 (current min is 36): `android.hardware.display.DisplayManager#getDisplayTopology`"
+        errorLine1="            topology = displayManager.displayTopology"
+        errorLine2="                                      ~~~~~~~~~~~~~~~">
+        <location
+            file="platform_testing/libraries/desktop-test-lib/src/platform/test/desktop/DisplayMonitor.kt"
+            line="103"
+            column="39"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 36.1 (current min is 36): `android.hardware.display.DisplayManager#unregisterTopologyListener`"
+        errorLine1="        displayManager.unregisterTopologyListener(topologyListener)"
+        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="platform_testing/libraries/desktop-test-lib/src/platform/test/desktop/DisplayMonitor.kt"
+            line="122"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 36.1 (current min is 36): `android.hardware.display.DisplayManager#getDisplayTopology`"
+        errorLine1="        topology = displayManager.displayTopology"
+        errorLine2="                                  ~~~~~~~~~~~~~~~">
+        <location
+            file="platform_testing/libraries/desktop-test-lib/src/platform/test/desktop/DisplayMonitor.kt"
+            line="317"
+            column="35"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 36.1 (current min is 36): `android.hardware.display.DisplayTopology#getAbsoluteBounds`"
+        errorLine1="        val idsInTopology = topology?.getAbsoluteBounds()?.getKeys()"
+        errorLine2="                                      ~~~~~~~~~~~~~~~~~">
+        <location
+            file="platform_testing/libraries/desktop-test-lib/src/platform/test/desktop/DisplayMonitor.kt"
+            line="335"
+            column="39"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 36.1 (current min is 36): `android.hardware.display.DisplayManager#registerTopologyListener`"
+        errorLine1="        displayManager.registerTopologyListener(handler::post, topologyListener)"
+        errorLine2="                       ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="platform_testing/libraries/desktop-test-lib/src/platform/test/desktop/DisplayMonitor.kt"
+            line="417"
+            column="24"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 36.1 (current min is 36): `android.hardware.display.DisplayManager#getDisplayTopology`"
+        errorLine1="                displayManager.displayTopology?.absoluteBounds?.keyIterator()?.asSequence()?.toSet()"
+        errorLine2="                               ~~~~~~~~~~~~~~~">
+        <location
+            file="platform_testing/libraries/desktop-test-lib/src/platform/test/desktop/SimulatedConnectedDisplayTestRule.kt"
+            line="221"
+            column="32"/>
+    </issue>
+
+    <issue
+        id="NewApi"
+        message="Call requires API level 36.1 (current min is 36): `android.hardware.display.DisplayTopology#getAbsoluteBounds`"
+        errorLine1="                displayManager.displayTopology?.absoluteBounds?.keyIterator()?.asSequence()?.toSet()"
+        errorLine2="                                                ~~~~~~~~~~~~~~">
+        <location
+            file="platform_testing/libraries/desktop-test-lib/src/platform/test/desktop/SimulatedConnectedDisplayTestRule.kt"
+            line="221"
+            column="49"/>
+    </issue>
+
+</issues>
