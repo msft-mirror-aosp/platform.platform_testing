@@ -25,7 +25,6 @@ import static android.platform.uiautomatorhelpers.DeviceHelpers.getUiDevice;
 import static android.platform.uiautomatorhelpers.WaitUtils.ensureThat;
 
 import static com.android.settingslib.flags.Flags.newStatusBarIcons;
-import static com.android.systemui.Flags.statusBarChipsModernization;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
@@ -69,7 +68,6 @@ public class StatusBar {
     static final String DOCK_DEFEND_ICON_SUFFIX_STRING = "charging paused for battery protection";
     static final String DND_ICON_DESC = "Do Not Disturb is on";
     private static final String WIFI_ICON_ID = "wifi_combo";
-    private static final String ONGOING_ACTIVITY_CHIP_ICON_ID = "ongoing_activity_chip_primary";
     // Corresponds with OngoingActivityChip.STATUS_BAR_CHIP_CONTENT_ID
     private static final String STATUS_BAR_CHIP_CONTENT_ID = "ongoing_activity_chip_content";
     // Corresponds to ScreenRecordChipViewModel.KEY
@@ -372,14 +370,8 @@ public class StatusBar {
 
     /** Assert that the screen record chip is visible. */
     public void verifyScreenRecordChipIsVisible() {
-        String resSelector;
-        if (statusBarChipsModernization()) {
-            resSelector = SCREEN_RECORDING_CHIP_ID;
-        } else {
-            resSelector = ONGOING_ACTIVITY_CHIP_ICON_ID;
-        }
         DeviceHelpers.INSTANCE.assertVisible(
-                statusBarSelector(resSelector)
+                statusBarSelector(SCREEN_RECORDING_CHIP_ID)
                         .hasDescendant(statusBarDescContainsSelector(SCREEN_RECORD_DESC_STRING)),
                 LONG_WAIT,
                 () -> "Recording chip should be visible in status bar.");
