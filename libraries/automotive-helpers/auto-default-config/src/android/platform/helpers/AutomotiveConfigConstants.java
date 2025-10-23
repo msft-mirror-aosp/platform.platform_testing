@@ -414,6 +414,10 @@ public class AutomotiveConfigConstants {
     public static final String MEDIA_CARD_PREVIOUS_BUTTON = "MEDIA_CARD_PREVIOUS_BUTTON";
     public static final String MEDIA_CARD_PAUSE_BUTTON = "MEDIA_CARD_PAUSE_BUTTON";
     public static final String MEDIA_CARD_NEXT_BUTTON = "MEDIA_CARD_NEXT_BUTTON";
+    public static final String MEDIA_CARD_THREE_DOT_BUTTON = "MEDIA_CARD_THREE_DOT_BUTTON";
+    public static final String MEDIA_CARD_EXTENDED_MENU = "MEDIA_CARD_EXTENDED_MENU";
+    public static final String MEDIA_CARD_EXTENDED_MENU_CLOSE_BUTTON =
+            "MEDIA_CARD_EXTENDED_MENU_CLOSE_BUTTON";
     public static final String PLAYS_LIST_SLIDER = "PLAYS_LIST_SLIDER";
 
     // SETTINGS CONSTANTS

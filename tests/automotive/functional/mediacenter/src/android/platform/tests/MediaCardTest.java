@@ -50,6 +50,7 @@ public class MediaCardTest {
     private static final String DEFAULT_SONG_NAME = "NPV links";
 
     private static final String RADIO_STATION = "99.7 Now!";
+    private static final String CUSTOM_SONG_NAME = "Custom Actions overflow";
     private static final String LOG_TAG = MediaCardTest.class.getSimpleName();
 
     @ClassRule
@@ -177,6 +178,45 @@ public class MediaCardTest {
 
         Log.i(LOG_TAG, "Act: Exit Appgrid");
         mAppGridHelper.get().goToHomePage();
+    }
+
+    @Test
+    public void testThreeDotButtonOnMediaCard() {
+        Log.i(LOG_TAG, "Act: Open Appgrid");
+        mAppGridHelper.get().open();
+
+        Log.i(LOG_TAG, "Act: Open Test Media App");
+        mAppGridHelper.get().openApp(TEST_MEDIA_APP);
+
+        Log.i(LOG_TAG, "Act: Go to Advance category");
+        mMediaCenterHelper
+                .get()
+                .navigateMediaAppCategories(AutomotiveConfigConstants.ADVANCED_CATEGORY);
+
+        Log.i(LOG_TAG, "Act: Play custom song");
+        mMediaCenterHelper.get().selectMediaTrack(CUSTOM_SONG_NAME);
+
+        Log.i(LOG_TAG, "Act: Minimize playing track");
+        mMediaCenterHelper.get().minimizeNowPlaying();
+
+        Log.i(LOG_TAG, "Act: Exit Appgrid");
+        mAppGridHelper.get().goToHomePage();
+
+        Log.i(LOG_TAG, "Act: Click on Three dot button");
+        mMediaCenterHelper.get().clickOnThreeDotButtonMediaCard();
+
+        Log.i(LOG_TAG, "Assert: Extended Menu is opened");
+        assertTrue(
+                "Extended Menu is not opened",
+                mMediaCenterHelper.get().isExtendedMenuDisplayedOnMediaCard());
+
+        Log.i(LOG_TAG, "Act: Close Extended Menu");
+        mMediaCenterHelper.get().closeExtendedMenu();
+
+        Log.i(LOG_TAG, "Assert: Extended Menu is closed and album thumbnail is displayed");
+        assertTrue(
+                "Extended Menu is not closed",
+                mMediaCenterHelper.get().isAlbumThumbnailDisplaying());
     }
 
     @Test
