@@ -55,6 +55,14 @@ class VhalGears(base_test.BaseTestClass):
         self.main_device.mbs.setVehicleSpeed("60")
         # todo - cuttlefish speed display doesn't update in response to this.  bug?
 
+    def test_parking_brake(self):
+        # cuttlefish's cluster display doesn't have a parking brake indicator anywhere, so we
+        # are just testing the property persistence for now
+        self.main_device.mbs.setParkingBrake("true")
+        asserts.assert_true(self.main_device.mbs.getParkingBrake(), 'Parking brake engaged')
+        self.main_device.mbs.setParkingBrake("false")
+        asserts.assert_false(self.main_device.mbs.getParkingBrake(), 'Parking brake disengaged')
+
 
 if __name__ == '__main__':
     common_main()
