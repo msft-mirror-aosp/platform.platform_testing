@@ -30,7 +30,11 @@ namespace igt {
 namespace {
 enum class TestResult { kPass, kFail, kSkip, kUnknown };
 
-std::optional<std::string> runCommand(const std::string &cmd) {
+std::optional<std::string> runCommand(std::string cmd,
+                                      bool add_vkms_env = false) {
+  if (add_vkms_env)
+    cmd = "IGT_FORCE_DRIVER=vkms " + cmd;
+
   // Gtest runs from root /, so the command should start from there.
   std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"),
                                                 pclose);
@@ -123,6 +127,13 @@ void presentTestResult(TestResult result, const std::string &log,
 }
 } // namespace
 
+IgtTestHelper::IgtTestHelper(const std::string test_name)
+    : test_name_("/data/igt_tests/" + test_name + "64") {
+  DCHECK(test_name.length());
+  auto product_name = runCommand("getprop ro.product.name");
+  is_avd_ = (product_name && product_name->find("cf_") != std::string::npos);
+}
+
 // static
 std::string IgtTestHelper::generateGTestName(
     const ::testing::TestParamInfo<IgtSubtestParams> &info) {
@@ -153,7 +164,7 @@ std::string IgtTestHelper::generateGTestName(
 void IgtTestHelper::runSubTest(const IgtSubtestParams &subtest) {
   CHECK(test_name_.size());
   std::optional<std::string> log =
-      runCommand(test_name_ + " --run-subtest " + subtest.name);
+      runCommand(test_name_ + " --run-subtest " + subtest.name, is_avd_);
   if (!log.has_value())
     return;
 
@@ -165,7 +176,7 @@ void IgtTestHelper::runTest(const std::string &desc,
                             const std::string &rationale) {
   CHECK(test_name_.size());
 
-  std::optional<std::string> log = runCommand(test_name_);
+  std::optional<std::string> log = runCommand(test_name_, is_avd_);
   if (!log.has_value())
     return;
 
