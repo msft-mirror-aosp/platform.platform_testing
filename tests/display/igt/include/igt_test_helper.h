@@ -40,16 +40,14 @@ public:
   generateGTestName(const ::testing::TestParamInfo<IgtSubtestParams> &info);
 
 protected:
-  IgtTestHelper(const std::string test_name)
-      : test_name_("/data/igt_tests/" + test_name + "64") {
-    DCHECK(test_name.length());
-  }
+  IgtTestHelper(const std::string test_name);
 
   void runSubTest(const IgtSubtestParams &subtest);
   void runTest(const std::string &desc, const std::string &rationale);
 
 private:
   const std::string test_name_ = "";
+  bool is_avd_ = false;
 };
 
 } // namespace igt
