@@ -32,7 +32,10 @@ import perfetto.protos.PerfettoConfig.TraceConfig
 import perfetto.protos.PerfettoConfig.WindowManagerConfig
 
 /* Captures traces from Perfetto. */
-open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
+open class PerfettoTraceMonitor(
+    val config: TraceConfig,
+    private val jankCujEnabled: Boolean = false,
+) : TraceMonitor() {
     override val traceType = TraceType.PERFETTO
     override val isEnabled
         get() = perfettoPid != null
@@ -40,6 +43,8 @@ open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
     private var perfettoPid: Int? = null
     private var traceFile: File? = null
     private val PERFETTO_TRACES_DIR = File("/data/misc/perfetto-traces")
+    private var originalJankSamplingInterval: String? = null
+    private var originalJankMonitorEnabled: String? = null
 
     fun captureDump(): File {
         doStart()
@@ -47,6 +52,21 @@ open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
     }
 
     override fun doStart() {
+        if (jankCujEnabled) {
+            originalJankSamplingInterval =
+                String(
+                        executeShellCommand(
+                            "device_config get interaction_jank_monitor sampling_interval"
+                        )
+                    )
+                    .trim()
+            originalJankMonitorEnabled =
+                String(executeShellCommand("device_config get interaction_jank_monitor enabled"))
+                    .trim()
+
+            executeShellCommand("device_config put interaction_jank_monitor sampling_interval 1")
+            executeShellCommand("device_config put interaction_jank_monitor enabled true")
+        }
         val fileName = File.createTempFile(traceType.fileName, "").name
         traceFile = PERFETTO_TRACES_DIR.resolve(fileName)
 
@@ -80,6 +100,17 @@ open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
         killPerfettoProcess(requireNotNull(perfettoPid))
         waitPerfettoProcessExits(requireNotNull(perfettoPid))
         perfettoPid = null
+        if (jankCujEnabled) {
+            originalJankSamplingInterval?.let {
+                executeShellCommand(
+                    "device_config put interaction_jank_monitor sampling_interval $it"
+                )
+            }
+            originalJankMonitorEnabled?.let {
+                executeShellCommand("device_config put interaction_jank_monitor enabled $it")
+            }
+        }
+
         return requireNotNull(traceFile)
     }
 
@@ -94,8 +125,11 @@ open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
         private val dataSourceConfigs = mutableSetOf<DataSourceConfig>()
         private var incrementalTimeoutMs: Int? = null
         private var uniqueSessionName: String? = null
+        private var jankCujEnabled = false
 
         fun enableImeTrace(): Builder = apply { enableCustomTrace(createImeDataSourceConfig()) }
+
+        fun enableCujTrace(): Builder = apply { jankCujEnabled = true }
 
         fun enableLayersTrace(flags: List<SurfaceFlingerLayersConfig.TraceFlag>? = null): Builder =
             apply {
@@ -241,7 +275,10 @@ open class PerfettoTraceMonitor(val config: TraceConfig) : TraceMonitor() {
                 )
             }
 
-            return PerfettoTraceMonitor(config = configBuilder.build())
+            return PerfettoTraceMonitor(
+                config = configBuilder.build(),
+                jankCujEnabled = jankCujEnabled,
+            )
         }
 
         private fun createImeDataSourceConfig(): DataSourceConfig {

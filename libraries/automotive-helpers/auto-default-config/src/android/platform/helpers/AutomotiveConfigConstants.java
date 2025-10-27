@@ -116,6 +116,15 @@ public class AutomotiveConfigConstants {
     public static final String HOME_ASSISTANT_CARD = "HOME_ASSISTANT_CARD";
     public static final String HOME_PHONE_CARD = "HOME_PHONE_CARD";
     public static final String HOME_TEMPERATURE_BUTTON = "HOME_TEMPERATURE_BUTTON";
+    public static final String HVAC_AC_TOGGLE = "HVAC_AC_TOGGLE";
+    public static final String HVAC_AUTO_MODE_TOGGLE = "HVAC_AUTO_MODE_TOGGLE";
+    public static final String HVAC_RECIRCULATION_TOGGLE = "HVAC_RECIRCULATION_TOGGLE";
+    public static final String HVAC_FRONT_DEFROST_TOGGLE = "HVAC_FRONT_DEFROST_TOGGLE";
+    public static final String HVAC_REAR_DEFROST_TOGGLE = "HVAC_REAR_DEFROST_TOGGLE";
+    public static final String DRIVER_HVAC_INCREASE_BUTTON = "DRIVER_HVAC_INCREASE_BUTTON";
+    public static final String DRIVER_HVAC_DECREASE_BUTTON = "DRIVER_HVAC_DECREASE_BUTTON";
+    public static final String PASSENGER_HVAC_INCREASE_BUTTON = "PASSENGER_HVAC_INCREASE_BUTTON";
+    public static final String PASSENGER_HVAC_DECREASE_BUTTON = "PASSENGER_HVAC_DECREASE_BUTTON";
     public static final String DRIVER_SEAT_TEMPERATURE_BUTTON = "DRIVER_SEAT_TEMPERATURE_BUTTON";
     public static final String PASSENGER_SEAT_TEMPERATURE_BUTTON =
             "PASSENGER_SEAT_TEMPERATURE_BUTTON";
@@ -414,6 +423,10 @@ public class AutomotiveConfigConstants {
     public static final String MEDIA_CARD_PREVIOUS_BUTTON = "MEDIA_CARD_PREVIOUS_BUTTON";
     public static final String MEDIA_CARD_PAUSE_BUTTON = "MEDIA_CARD_PAUSE_BUTTON";
     public static final String MEDIA_CARD_NEXT_BUTTON = "MEDIA_CARD_NEXT_BUTTON";
+    public static final String MEDIA_CARD_THREE_DOT_BUTTON = "MEDIA_CARD_THREE_DOT_BUTTON";
+    public static final String MEDIA_CARD_EXTENDED_MENU = "MEDIA_CARD_EXTENDED_MENU";
+    public static final String MEDIA_CARD_EXTENDED_MENU_CLOSE_BUTTON =
+            "MEDIA_CARD_EXTENDED_MENU_CLOSE_BUTTON";
     public static final String PLAYS_LIST_SLIDER = "PLAYS_LIST_SLIDER";
 
     // SETTINGS CONSTANTS

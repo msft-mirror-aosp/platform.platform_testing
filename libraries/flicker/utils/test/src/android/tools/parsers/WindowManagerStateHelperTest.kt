@@ -67,9 +67,10 @@ class WindowManagerStateHelperTest {
         WindowManagerStateHelper(
             InstrumentationRegistry.getInstrumentation(),
             clearCacheAfterParsing = false,
-            deviceDumpSupplier,
-            numRetries,
-            retryIntervalMs,
+            ignoreLayersInVirtualDisplay = true,
+            deviceDumpSupplier = deviceDumpSupplier,
+            numRetries = numRetries,
+            retryIntervalMs = retryIntervalMs,
         ) {
         var wmState: WindowManagerState = _wmState
             private set

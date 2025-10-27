@@ -31,14 +31,88 @@ public class HvacHelperImpl extends AbstractStandardAppHelper implements IAutoHv
     }
 
     @Override
+    public boolean checkAcToggle() {
+        return checkSelected(AutomotiveConfigConstants.HVAC_AC_TOGGLE);
+    }
+
+    @Override
+    public void clickAcToggle() {
+        clickConfigObject(AutomotiveConfigConstants.HVAC_AC_TOGGLE);
+    }
+
+    @Override
+    public boolean checkAutoModeToggle() {
+        return checkSelected(AutomotiveConfigConstants.HVAC_AUTO_MODE_TOGGLE);
+    }
+
+    @Override
+    public void clickAutoModeToggle() {
+        clickConfigObject(AutomotiveConfigConstants.HVAC_AUTO_MODE_TOGGLE);
+    }
+
+    @Override
+    public boolean checkRecirculationToggle() {
+        return checkSelected(AutomotiveConfigConstants.HVAC_RECIRCULATION_TOGGLE);
+    }
+
+    @Override
+    public void clickRecirculationToggle() {
+        clickConfigObject(AutomotiveConfigConstants.HVAC_RECIRCULATION_TOGGLE);
+    }
+
+    @Override
+    public boolean checkFrontDefrostToggle() {
+        return checkSelected(AutomotiveConfigConstants.HVAC_FRONT_DEFROST_TOGGLE);
+    }
+
+    @Override
+    public void clickFrontDefrostToggle() {
+        clickConfigObject(AutomotiveConfigConstants.HVAC_FRONT_DEFROST_TOGGLE);
+    }
+
+    @Override
+    public boolean checkRearDefrostToggle() {
+        return checkSelected(AutomotiveConfigConstants.HVAC_REAR_DEFROST_TOGGLE);
+    }
+
+    @Override
+    public void clickRearDefrostToggle() {
+        clickConfigObject(AutomotiveConfigConstants.HVAC_REAR_DEFROST_TOGGLE);
+    }
+
+    @Override
     public void clickDriverSeatTemperature() {
         clickConfigObject(AutomotiveConfigConstants.DRIVER_SEAT_TEMPERATURE_BUTTON);
+    }
+
+    @Override
+    public void driverIncreaseTemperature() {
+        clickConfigObject(AutomotiveConfigConstants.DRIVER_HVAC_INCREASE_BUTTON);
+    }
+
+    @Override
+    public void driverDecreaseTemperature() {
+        clickConfigObject(AutomotiveConfigConstants.DRIVER_HVAC_DECREASE_BUTTON);
+    }
+
+    @Override
+    public void passengerIncreaseTemperature() {
+        clickConfigObject(AutomotiveConfigConstants.PASSENGER_HVAC_INCREASE_BUTTON);
+    }
+
+    @Override
+    public void passengerDecreaseTemperature() {
+        clickConfigObject(AutomotiveConfigConstants.PASSENGER_HVAC_DECREASE_BUTTON);
     }
 
     private void clickConfigObject(String key) {
         // this really should be more globally available.
         getSpectatioUiUtil()
                 .clickAndWait(getSpectatioUiUtil().findUiObject(getUiElementFromConfig(key)));
+    }
+
+    private boolean checkSelected(String key) {
+        return getSpectatioUiUtil().findUiObject(getUiElementFromConfig(key)).isSelected();
     }
 
     @Override

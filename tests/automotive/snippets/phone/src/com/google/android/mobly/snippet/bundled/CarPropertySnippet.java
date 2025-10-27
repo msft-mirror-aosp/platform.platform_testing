@@ -20,7 +20,7 @@ import static com.google.common.util.concurrent.MoreExecutors.newDirectExecutorS
 
 import android.app.UiAutomation;
 import android.car.VehicleGear;
-import android.os.ParcelFileDescriptor;
+import android.car.VehicleUnit;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -30,18 +30,21 @@ import com.google.android.libraries.automotive.val.api.SetResult;
 import com.google.android.libraries.automotive.val.api.Temperature;
 import com.google.android.libraries.automotive.val.api.UpdateTargetTemperatureRequest;
 import com.google.android.libraries.automotive.val.api.VehicleActions;
+import com.google.android.libraries.automotive.val.api.WindowActions;
 import com.google.android.mobly.snippet.Snippet;
 import com.google.android.mobly.snippet.rpc.Rpc;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ListenableFuture;
 
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 public class CarPropertySnippet implements Snippet {
     private final VehicleActions mActions;
 
     private static UiAutomation mUiAutomation;
+
+    private static final String DRIVER_SEAT = SeatActions.SEAT_ROW_1_LEFT;
+    private static final ImmutableSet<String> DRIVER_SEAT_SET = ImmutableSet.of(DRIVER_SEAT);
 
     public CarPropertySnippet() {
         mActions = new VehicleActions(
@@ -59,9 +62,19 @@ public class CarPropertySnippet implements Snippet {
         mUiAutomation.dropShellPermissionIdentity();
     }
 
+    @Rpc(description = "Display cabin temperatures in celsius")
+    public void setHvacDisplayCelsius() {
+        set("HVAC_TEMPERATURE_DISPLAY_UNITS").value(VehicleUnit.CELSIUS).execute(mUiAutomation);
+    }
+
+    @Rpc(description = "Display cabin temperatures in fahrenheit")
+    public void setHvacDisplayFahrenheit() {
+        set("HVAC_TEMPERATURE_DISPLAY_UNITS").value(VehicleUnit.FAHRENHEIT).execute(mUiAutomation);
+    }
+
     @Rpc(description = "Set the cabin temperature for the driver side")
     public void setDriverHvacTemperature(String fahrenheit) {
-        setHvacTemperature(fahrenheit, SeatActions.SEAT_ROW_1_LEFT);
+        setHvacTemperature(fahrenheit, DRIVER_SEAT);
     }
 
     @Rpc(description = "Set the cabin temperature for the passenger side")
@@ -83,7 +96,7 @@ public class CarPropertySnippet implements Snippet {
 
     @Rpc(description = "Get the desired cabin temperature for the driver side")
     public float getDriverHvacTemperature() {
-        return getHvacTemperature(SeatActions.SEAT_ROW_1_LEFT);
+        return getHvacTemperature(DRIVER_SEAT);
     }
 
     @Rpc(description = "Get the desired cabin temperature for the passenger side")
@@ -103,9 +116,127 @@ public class CarPropertySnippet implements Snippet {
         }
     }
 
+    @Rpc(description = "Turn the AC on")
+    public void turnOnAc() {
+        mActions.getSeatActions().enableAc(DRIVER_SEAT_SET);
+    }
+
+    @Rpc(description = "Turn the AC off")
+    public void turnOffAc() {
+        mActions.getSeatActions().disableAc(DRIVER_SEAT_SET);
+    }
+
+    @Rpc(description = "Report whether AC is on")
+    public boolean getAcState() {
+        try {
+            return mActions.getSeatActions().isAcEnabled(DRIVER_SEAT_SET).get().value()
+                    .elementToValue().get(DRIVER_SEAT).value();
+        } catch (ExecutionException e) {
+            throw new RuntimeException("Interrupted while retrieving AC value", e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException("AC value retrieval threw an exception", e);
+        }
+    }
+
+    @Rpc(description = "Enable air recirculation")
+    public void enableAirRecirculation() {
+        mActions.getSeatActions().enableHvacRecirculation(DRIVER_SEAT_SET);
+    }
+
+    @Rpc(description = "Disable air recirculation")
+    public void disableAirRecirculation() {
+        mActions.getSeatActions().disableHvacRecirculation(DRIVER_SEAT_SET);
+    }
+
+    @Rpc(description = "Get the value of the air recirculation toggle")
+    public boolean getAirRecirculation() {
+        try {
+            return mActions.getSeatActions().isHvacRecirculationEnabled(DRIVER_SEAT_SET).get()
+                    .value().elementToValue().get(DRIVER_SEAT).value();
+        } catch (ExecutionException e) {
+            throw new RuntimeException("Interrupted while retrieving recirculation value", e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException("Recirculation value retrieval threw an exception", e);
+        }
+    }
+
+    @Rpc(description = "Enable front defroster")
+    public void enableFrontDefrost() {
+        enableDefrost(WindowActions.WINDOW_FRONT_WINDSHIELD);
+    }
+
+    @Rpc(description = "Enable rear defroster")
+    public void enableRearDefrost() {
+        enableDefrost(WindowActions.WINDOW_REAR_WINDSHIELD);
+    }
+
+    private void enableDefrost(String windshield) {
+        mActions.getWindowActions()
+                .enableHvacDefroster(ImmutableSet.of(windshield));
+    }
+
+    @Rpc(description = "Enable front defroster")
+    public void disableFrontDefrost() {
+        disableDefrost(WindowActions.WINDOW_FRONT_WINDSHIELD);
+    }
+
+    @Rpc(description = "Enable rear defroster")
+    public void disableRearDefrost() {
+        disableDefrost(WindowActions.WINDOW_REAR_WINDSHIELD);
+    }
+
+    private void disableDefrost(String windshield) {
+        mActions.getWindowActions()
+                .disableHvacDefroster(ImmutableSet.of(windshield));
+    }
+
+    @Rpc(description = "Get front defroster state")
+    public boolean getFrontDefrost() {
+        return getDefrost(WindowActions.WINDOW_FRONT_WINDSHIELD);
+    }
+
+    @Rpc(description = "Get rear defroster state")
+    public boolean getRearDefrost() {
+        return getDefrost(WindowActions.WINDOW_REAR_WINDSHIELD);
+    }
+
+    private boolean getDefrost(String windshield) {
+        try {
+            return mActions.getWindowActions().isHvacDefrosterEnabled(ImmutableSet.of(windshield))
+                    .get().value().elementToValue().get(windshield).value();
+        } catch (ExecutionException e) {
+            throw new RuntimeException("Interrupted while retrieving defroster value", e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException("Defroster value retrieval threw an exception", e);
+        }
+    }
+
+
+    @Rpc(description = "Disable HVAC auto mode")
+    public void disableHvacAutoMode() {
+        mActions.getSeatActions().disableHvacAutoMode(DRIVER_SEAT_SET);
+    }
+
+    @Rpc(description = "Enable HVAC auto mode")
+    public void enableHvacAutoMode() {
+        mActions.getSeatActions().enableHvacAutoMode(DRIVER_SEAT_SET);
+    }
+
+    @Rpc(description = "Get the value of the HVAC auto mode toggle")
+    public boolean getHvacAutoMode() {
+        try {
+            return mActions.getSeatActions().isHvacAutoModeEnabled(DRIVER_SEAT_SET).get().value()
+                    .elementToValue().get(DRIVER_SEAT).value();
+        } catch (ExecutionException e) {
+            throw new RuntimeException("Interrupted while retrieving auto mode value", e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException("Auto mode value retrieval threw an exception", e);
+        }
+    }
+
     @Rpc(description = "Get the desired seat temperature for the driver side")
     public int getDriverSeatTemperature() {
-        return getSeatTemperature(SeatActions.SEAT_ROW_1_LEFT);
+        return getSeatTemperature(DRIVER_SEAT);
     }
 
     @Rpc(description = "Get the desired seat temperature for the passenger side")
@@ -115,9 +246,8 @@ public class CarPropertySnippet implements Snippet {
 
     private int getSeatTemperature(String seat) {
         try {
-            return mActions.getSeatActions().getSeatHeatingLevel(
-                    ImmutableSet.of(seat)
-            ).get().value().elementToValue().get(seat).value();
+            return mActions.getSeatActions().getSeatHeatingLevel(ImmutableSet.of(seat)).get()
+                    .value().elementToValue().get(seat).value();
         } catch (InterruptedException e) {
             throw new RuntimeException("Interrupted while retrieving seat temperature", e);
         } catch (ExecutionException e) {
@@ -126,129 +256,123 @@ public class CarPropertySnippet implements Snippet {
     }
     @Rpc(description = "Select drive on the vehicle's transmission")
     public void shiftToDrive() {
-        PropertyCommand.start()
-                .set()
-                .propertyName("GEAR_SELECTION")
-                .intValue(VehicleGear.GEAR_DRIVE)
-                .execute(this);
+        set("GEAR_SELECTION").value(VehicleGear.GEAR_DRIVE).execute(mUiAutomation);
     }
 
     @Rpc(description = "Select reverse on the vehicle's transmission")
     public void shiftToReverse() {
-        PropertyCommand.start()
-                .set()
-                .propertyName("GEAR_SELECTION")
-                .intValue(VehicleGear.GEAR_REVERSE)
-                .execute(this);
+        set("GEAR_SELECTION").value(VehicleGear.GEAR_REVERSE).execute(mUiAutomation);
     }
 
     @Rpc(description = "Select neutral on the vehicle's transmission")
     public void shiftToNeutral() {
-        PropertyCommand.start()
-                .set()
-                .propertyName("GEAR_SELECTION")
-                .intValue(VehicleGear.GEAR_NEUTRAL)
-                .execute(this);
+        set("GEAR_SELECTION").value(VehicleGear.GEAR_NEUTRAL).execute(mUiAutomation);
     }
 
     @Rpc(description = "Select park on the vehicle's transmission")
     public void shiftToPark() {
-        PropertyCommand.start()
-                .set()
-                .propertyName("GEAR_SELECTION")
-                .intValue(VehicleGear.GEAR_PARK)
-                .execute(this);
+        set("GEAR_SELECTION").value(VehicleGear.GEAR_PARK).execute(mUiAutomation);
     }
 
     @Rpc(description = "Set the engine's rpm")
     public void setEngineRpm(String rpm) {
-        PropertyCommand.start()
-                .set()
-                .propertyName("ENGINE_RPM")
-                .floatValue(Float.parseFloat(rpm))
-                .execute(this);
+        set("ENGINE_RPM").value(Float.parseFloat(rpm)).execute(mUiAutomation);
     }
 
     @Rpc(description = "Set the vehicle's speed in meters per second")
     public void setVehicleSpeed(String metersPerSecond) {
-        PropertyCommand.start()
-                .set()
-                .propertyName("PERF_VEHICLE_SPEED")
-                .floatValue(Float.parseFloat(metersPerSecond))
-                .execute(this);
+        set("PERF_VEHICLE_SPEED").value(Float.parseFloat(metersPerSecond)).execute(mUiAutomation);
     }
 
-    private interface CommandStart {
-        GetSet get();
-        GetSet set();
+    @Rpc(description = "Engage or disengage the parking brake (pass 'true' or 'false')")
+    public void setParkingBrake(String engage) {
+        set("PARKING_BRAKE_ON").value(Boolean.parseBoolean(engage)).execute(mUiAutomation);
     }
 
-    private interface GetSet {
-        PropertyName propertyName(String propertyName);
+    @Rpc(description = "Get the state of the parking brake")
+    public boolean getParkingBrake() {
+        return get("PARKING_BRAKE_ON").booleanValue(mUiAutomation);
     }
 
-    private interface PropertyName {
-        PropertyValue floatValue(float value);
-        PropertyValue intValue(int value);
+    @Rpc(description = "Enable/disable night mode")
+    public void setNightMode(String enabled) {
+        set("NIGHT_MODE").value(Boolean.parseBoolean(enabled)).execute(mUiAutomation);
     }
 
-    private interface PropertyValue {
-        void execute(CarPropertySnippet s);
+    private static SetProp set(String name) {
+        return new SetProp(name);
     }
 
-    private static class PropertyCommand
-        implements CommandStart, GetSet, PropertyName, PropertyValue
-    {
-        private final StringBuilder command =
-                new StringBuilder("dumpsys android.hardware.automotive.vehicle.IVehicle/default ");
-
-        private PropertyCommand() {
-
+    private static class SetProp {
+        private final ExecutableCommand mCommand;
+        public SetProp(String name) {
+            String command =
+                    "dumpsys android.hardware.automotive.vehicle.IVehicle/default --set "
+                            + name + " ";
+            mCommand = new ExecutableCommand(command);
         }
 
-        public static CommandStart start() {
-            return new PropertyCommand();
+        public ExecuteSet value(boolean value) {
+            return new ExecuteSet(mCommand.append("-i ").append(value ? "1" : "0"));
         }
 
-        public GetSet get() {
-            command.append("--get ");
-            return this;
+        public ExecuteSet value(float value) {
+            return new ExecuteSet(mCommand.append("-f ").append("" + value));
         }
 
-        public GetSet set() {
-            command.append("--set ");
-            return this;
-        }
-
-        public PropertyName propertyName(String propertyName) {
-            command.append(propertyName);
-            command.append(" ");
-            return this;
-        }
-
-        public PropertyValue floatValue(float value) {
-            command.append("-f ");
-            command.append(value);
-            return this;
-        }
-
-        public PropertyValue intValue(int value) {
-            command.append("-i ");
-            command.append(value);
-            return this;
-        }
-
-        public void execute(CarPropertySnippet s) {
-            s.executeShellCommand(command.toString());
+        public ExecuteSet value(int value) {
+            return new ExecuteSet(mCommand.append("-i ").append("" + value));
         }
     }
 
-    private void executeShellCommand(String command) {
-        //noinspection EmptyTryBlock
-        try (ParcelFileDescriptor ignored = mUiAutomation.executeShellCommand(command)) {
+    private static class ExecuteSet {
+        private final ExecutableCommand mCommand;
+        public ExecuteSet(ExecutableCommand command) {
+            mCommand = command;
+        }
 
-        } catch (IOException e) {
-            throw new RuntimeException("IOException while executing command: " + command, e);
+        public void execute(UiAutomation uiAutomation) {
+            mCommand.execute(uiAutomation);
+        }
+    }
+
+    private static GetProp get(String name) {
+        return new GetProp(name);
+    }
+
+    private static class GetProp {
+        private final ExecutableCommand mCommand;
+        public GetProp(String name) {
+            String command =
+                    "dumpsys android.hardware.automotive.vehicle.IVehicle/default --get " + name;
+            mCommand = new ExecutableCommand(command);
+        }
+
+        public boolean booleanValue(UiAutomation uiAutomation) {
+            return intValue(uiAutomation) != 0;
+        }
+
+        public float floatValue(UiAutomation uiAutomation) {
+            return Float.parseFloat(execute(uiAutomation, "float"));
+        }
+
+        public int intValue(UiAutomation uiAutomation) {
+            return Integer.parseInt(execute(uiAutomation, "int32"));
+        }
+
+        private String execute(UiAutomation uiAutomation, String typeName) {
+            String VALUE_OBJECT_HEADER = "RawPropValues{";
+            String output = mCommand.executeWithOutput(uiAutomation);
+            int valuesObjectStart = output.indexOf(VALUE_OBJECT_HEADER);
+            int valuesStart = valuesObjectStart + VALUE_OBJECT_HEADER.length();
+            int valuesObjectEnd = output.indexOf("}", valuesStart);
+            String values = output.substring(valuesStart, valuesObjectEnd);
+
+            String typeHeader = typeName + "Values: [";
+            int valueListStart = values.indexOf(typeHeader);
+            int valueStart = valueListStart + typeHeader.length();
+            int valueEnd = values.indexOf("]", valueStart);
+            return values.substring(valueStart, valueEnd);
         }
     }
 }

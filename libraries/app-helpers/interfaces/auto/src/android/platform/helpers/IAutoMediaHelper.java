@@ -552,4 +552,39 @@ public interface IAutoMediaHelper extends IAppHelper, Scrollable {
      * @param defaultSongName is a song name played in Media Player App
      */
     boolean isTestMediaAppSongNameDisplayedOnMediaCard(String defaultSongName);
+
+    /**
+     * Setup expectations: Media app is open
+     *
+     * <p>This method is used to play song from media app
+     */
+    void openMediaAppAndPlayGivenSong(String appName, String media);
+
+    /**
+     * Setup expectations: News app is open
+     *
+     * <p>This method is used to play a news channel
+     */
+    void openNewsAppAndPlayGivenChannel(String media);
+
+    /**
+     * Setup expectations: on Media card
+     *
+     * <p>This method is used to click on overflow/three dot button on Media Card Widget.
+     */
+    void clickOnThreeDotButtonMediaCard();
+
+    /**
+     * Setup expectations: on Media card
+     *
+     * <p>This method is used to click on extended menu close button on Media Card Widget.
+     */
+    void closeExtendedMenu();
+
+    /**
+     * Setup expectations: on Media card
+     *
+     * <p>This method is used to verify the extended menu is opened on Media Card Widget.
+     */
+    boolean isExtendedMenuDisplayedOnMediaCard();
 }

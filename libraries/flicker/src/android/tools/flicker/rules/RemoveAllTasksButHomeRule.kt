@@ -18,6 +18,7 @@ package android.tools.flicker.rules
 
 import android.app.Instrumentation
 import android.tools.FLICKER_TAG
+import android.tools.helpers.DesktopUtils
 import android.tools.helpers.RecentTasksUtils
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.tools.withTracing
@@ -30,6 +31,8 @@ import org.junit.runner.Description
 class RemoveAllTasksButHomeRule() : TestWatcher() {
     override fun starting(description: Description?) {
         withTracing("$RemoveAllTasksButHomeRule:starting") {
+            Log.v(FLICKER_TAG, "Removing all desks")
+            removeAllDesks()
             Log.v(FLICKER_TAG, "Removing all tasks (except home)")
             removeAllTasksButHome()
             WindowManagerStateHelper()
@@ -47,6 +50,13 @@ class RemoveAllTasksButHomeRule() : TestWatcher() {
             instr: Instrumentation = InstrumentationRegistry.getInstrumentation()
         ) {
             RecentTasksUtils.clearAllVisibleRecentTasks(instr)
+        }
+
+        /** Removes all the desks from the device. */
+        @JvmStatic
+        @JvmOverloads
+        fun removeAllDesks(instr: Instrumentation = InstrumentationRegistry.getInstrumentation()) {
+            DesktopUtils.clearAllDesks(instr)
         }
     }
 }

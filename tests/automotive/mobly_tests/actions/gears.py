@@ -13,6 +13,7 @@
 #  limitations under the License.
 
 
+from actions_common import actions_setup
 from mobly import asserts, base_test
 from mobly.controllers import android_device
 from mobly.controllers.android_device_lib.snippet_client_v2 import Config
@@ -21,14 +22,7 @@ from utilities.main_utils import common_main, get_test_args
 
 class VhalGears(base_test.BaseTestClass):
     def setup_class(self):
-        self.ads = self.register_controller(android_device)
-        self.main_device = android_device.get_device(self.ads, label='auto')
-
-        test_args = get_test_args(shell_escape=True)
-        snippet_config = Config(am_instrument_options=test_args)
-        self.main_device.load_snippet('mbs', android_device.MBS_PACKAGE, config=snippet_config)
-        if not self.main_device.is_adb_root:
-            self.main_device.root_adb()
+        actions_setup(self)
 
     def setup_test(self):
         pass
@@ -54,6 +48,14 @@ class VhalGears(base_test.BaseTestClass):
         self.main_device.mbs.setVehicleSpeed("30")
         self.main_device.mbs.setVehicleSpeed("60")
         # todo - cuttlefish speed display doesn't update in response to this.  bug?
+
+    def test_parking_brake(self):
+        # cuttlefish's cluster display doesn't have a parking brake indicator anywhere, so we
+        # are just testing the property persistence for now
+        self.main_device.mbs.setParkingBrake("true")
+        asserts.assert_true(self.main_device.mbs.getParkingBrake(), 'Parking brake engaged')
+        self.main_device.mbs.setParkingBrake("false")
+        asserts.assert_false(self.main_device.mbs.getParkingBrake(), 'Parking brake disengaged')
 
 
 if __name__ == '__main__':

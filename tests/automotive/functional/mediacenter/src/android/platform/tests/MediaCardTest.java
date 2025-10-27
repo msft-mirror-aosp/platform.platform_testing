@@ -17,6 +17,7 @@
 package android.platform.tests;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 
@@ -49,6 +50,7 @@ public class MediaCardTest {
     private static final String DEFAULT_SONG_NAME = "NPV links";
 
     private static final String RADIO_STATION = "99.7 Now!";
+    private static final String CUSTOM_SONG_NAME = "Custom Actions overflow";
     private static final String LOG_TAG = MediaCardTest.class.getSimpleName();
 
     @ClassRule
@@ -131,7 +133,6 @@ public class MediaCardTest {
                 "Media card pause button is not displaying",
                 mMediaCenterHelper.get().isMediaCardNextButtonDisplaying());
     }
-
     private void openMediaAppFromGrid() {
         Log.i(LOG_TAG, "Act: Open Appgrid");
         mAppGridHelper.get().open();
@@ -141,12 +142,12 @@ public class MediaCardTest {
 
         Log.i(LOG_TAG, "Assert: Media App is Open");
         assertTrue(
-                "News app is not opened",
+                "Media app is not opened",
                 mAppGridHelper
                         .get()
                         .checkPackageInForeground(AutomotiveConfigConstants.MEDIA_CENTER_PACKAGE));
 
-        Log.i(LOG_TAG, "Act: Select Normal 1H track song");
+        Log.i(LOG_TAG, "Act: Select any track song");
         mMediaCenterHelper.get().selectMediaTrack(mDefaultSongName);
 
         Log.i(LOG_TAG, "Act: Minimize playing song");
@@ -155,7 +156,6 @@ public class MediaCardTest {
         Log.i(LOG_TAG, "Act: Exit Appgrid");
         mAppGridHelper.get().goToHomePage();
     }
-
     private void openNewsFromGrid() {
         Log.i(LOG_TAG, "Act: Open Appgrid");
         mAppGridHelper.get().open();
@@ -178,6 +178,45 @@ public class MediaCardTest {
 
         Log.i(LOG_TAG, "Act: Exit Appgrid");
         mAppGridHelper.get().goToHomePage();
+    }
+
+    @Test
+    public void testThreeDotButtonOnMediaCard() {
+        Log.i(LOG_TAG, "Act: Open Appgrid");
+        mAppGridHelper.get().open();
+
+        Log.i(LOG_TAG, "Act: Open Test Media App");
+        mAppGridHelper.get().openApp(TEST_MEDIA_APP);
+
+        Log.i(LOG_TAG, "Act: Go to Advance category");
+        mMediaCenterHelper
+                .get()
+                .navigateMediaAppCategories(AutomotiveConfigConstants.ADVANCED_CATEGORY);
+
+        Log.i(LOG_TAG, "Act: Play custom song");
+        mMediaCenterHelper.get().selectMediaTrack(CUSTOM_SONG_NAME);
+
+        Log.i(LOG_TAG, "Act: Minimize playing track");
+        mMediaCenterHelper.get().minimizeNowPlaying();
+
+        Log.i(LOG_TAG, "Act: Exit Appgrid");
+        mAppGridHelper.get().goToHomePage();
+
+        Log.i(LOG_TAG, "Act: Click on Three dot button");
+        mMediaCenterHelper.get().clickOnThreeDotButtonMediaCard();
+
+        Log.i(LOG_TAG, "Assert: Extended Menu is opened");
+        assertTrue(
+                "Extended Menu is not opened",
+                mMediaCenterHelper.get().isExtendedMenuDisplayedOnMediaCard());
+
+        Log.i(LOG_TAG, "Act: Close Extended Menu");
+        mMediaCenterHelper.get().closeExtendedMenu();
+
+        Log.i(LOG_TAG, "Assert: Extended Menu is closed and album thumbnail is displayed");
+        assertTrue(
+                "Extended Menu is not closed",
+                mMediaCenterHelper.get().isAlbumThumbnailDisplaying());
     }
 
     @Test
@@ -228,5 +267,37 @@ public class MediaCardTest {
                 mMediaCenterHelper
                         .get()
                         .isTestMediaAppSongNameDisplayedOnMediaCard(mDefaultSongName));
+    }
+
+    @Test
+    public void testMediaCardPlayNextPreviousButton() {
+        openMediaAppFromGrid();
+
+        Log.i(LOG_TAG, "Assert: Song track is playing on Media Card");
+        assertTrue("Song is Paused", mMediaCenterHelper.get().isPlaying());
+
+        Log.i(LOG_TAG, "Act: Song track is paused on Media Card");
+        mMediaCenterHelper.get().playPauseMediaFromHomeScreen();
+
+        Log.i(LOG_TAG, "Assert: Song track is paused on Media Card");
+        assertTrue("Song is Playing", mMediaCenterHelper.get().isPaused());
+
+        Log.i(LOG_TAG, "Act: Click on Next track on Media Card");
+        mMediaCenterHelper.get().clickNextTrackFromHomeScreen();
+
+        Log.i(LOG_TAG, "Assert: Next Song track is playing on Media Card");
+        assertFalse(
+                "Next Track is not Playing",
+                mDefaultSongName.equals(
+                        mMediaCenterHelper.get().getMediaTrackNameFromHomeScreen()));
+
+        Log.i(LOG_TAG, "Act: Click on Previous track on Media Card");
+        mMediaCenterHelper.get().clickPreviousTrackFromHomeScreen();
+
+        Log.i(LOG_TAG, "Assert: Previous Song track is playing on Media Card");
+        assertEquals(
+                "Previous Track is not Playing",
+                mDefaultSongName,
+                mMediaCenterHelper.get().getMediaTrackNameFromHomeScreen());
     }
 }

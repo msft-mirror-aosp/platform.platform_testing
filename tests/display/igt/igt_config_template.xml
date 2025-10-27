@@ -36,6 +36,7 @@
         <option name="run-command" value="stop"/>
         <option name="run-command" value="stop vendor.hwcomposer-3" />
         <!-- If we're running on an AVD (product name includes "cf_"), setup VKMS with an eDP + 1DP + 1HDMI -->
+        <!-- This needs to be done here because it needs to be root -->
         <option name="run-command" value="getprop ro.product.name | grep -q 'cf_' &amp;&amp; /data/local/tmp/setup_vkms_connectors_for_atest --config eDP,0,REDRIX DP,1,HP_Spectre32_4K_DP HDMIA,2,ACI_9155_ASUS_VH238_HDMI" />
         <option name="teardown-command" value="getprop ro.product.name | grep -q 'cf_' &amp;&amp; /data/local/tmp/teardown_vkms"/>
         <option name="teardown-command" value="start vendor.hwcomposer-3" />

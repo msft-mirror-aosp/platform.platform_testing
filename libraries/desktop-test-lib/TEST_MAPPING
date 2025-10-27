@@ -3,5 +3,10 @@
     {
       "name": "DesktopTestLibTests"
     }
+  ],
+  "postsubmit": [
+    {
+      "name": "DesktopTestLibTestsMobly"
+    }
   ]
 }

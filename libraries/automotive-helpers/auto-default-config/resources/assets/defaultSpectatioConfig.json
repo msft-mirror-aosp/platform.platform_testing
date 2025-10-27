@@ -573,6 +573,94 @@
       "VALUE": "hvac_temperature_text",
       "PACKAGE": "com.android.systemui"
     },
+    "HVAC_AC_TOGGLE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "ac_button"
+    },
+    "HVAC_AUTO_MODE_TOGGLE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "auto_button"
+    },
+    "HVAC_RECIRCULATION_TOGGLE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "recycle_air_button"
+    },
+    "HVAC_FRONT_DEFROST_TOGGLE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "defroster_button"
+    },
+    "HVAC_REAR_DEFROST_TOGGLE": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "rear_defroster_button"
+    },
+    "DRIVER_HVAC_INCREASE_BUTTON": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "RESOURCE_ID",
+          "VALUE": "hvac_increase_button"
+        },
+        {
+          "TYPE": "HAS_ANCESTOR",
+          "MAX_DEPTH": 2,
+          "ANCESTOR": {
+            "TYPE": "RESOURCE_ID",
+            "VALUE": "driver_hvac"
+          }
+        }
+      ]
+    },
+    "DRIVER_HVAC_DECREASE_BUTTON": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "RESOURCE_ID",
+          "VALUE": "hvac_decrease_button"
+        },
+        {
+          "TYPE": "HAS_ANCESTOR",
+          "MAX_DEPTH": 2,
+          "ANCESTOR": {
+            "TYPE": "RESOURCE_ID",
+            "VALUE": "driver_hvac"
+          }
+        }
+      ]
+    },
+    "PASSENGER_HVAC_INCREASE_BUTTON": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "RESOURCE_ID",
+          "VALUE": "hvac_increase_button"
+        },
+        {
+          "TYPE": "HAS_ANCESTOR",
+          "MAX_DEPTH": 2,
+          "ANCESTOR": {
+            "TYPE": "RESOURCE_ID",
+            "VALUE": "passenger_hvac"
+          }
+        }
+      ]
+    },
+    "PASSENGER_HVAC_DECREASE_BUTTON": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "RESOURCE_ID",
+          "VALUE": "hvac_decrease_button"
+        },
+        {
+          "TYPE": "HAS_ANCESTOR",
+          "MAX_DEPTH": 2,
+          "ANCESTOR": {
+            "TYPE": "RESOURCE_ID",
+            "VALUE": "passenger_hvac"
+          }
+        }
+      ]
+    },
     "DRIVER_SEAT_TEMPERATURE_BUTTON": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "seat_heat_level_button_left"
@@ -1607,6 +1695,18 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "playback_action_id2"
     },
+    "MEDIA_CARD_THREE_DOT_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "overflow_button"
+    },
+    "MEDIA_CARD_EXTENDED_MENU": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "view_pager"
+    },
+    "MEDIA_CARD_EXTENDED_MENU_CLOSE_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "media_card_panel_handlebar"
+    },
     "PLAYS_LIST_SLIDER": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "media_card_panel_handlebar"
@@ -1642,8 +1742,7 @@
     },
     "ALBUM_THUMBNAIL": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "album_art",
-      "PACKAGE": "com.android.car.media"
+      "VALUE": "album_art"
     },
     "BASIC_SONGS_CATEGORY": {
       "TYPE": "MULTIPLE",
