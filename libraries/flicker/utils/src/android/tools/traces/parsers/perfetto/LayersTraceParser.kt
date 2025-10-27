@@ -178,6 +178,8 @@ class LayersTraceParser(
                     layer.getChild("corner_radii"),
                 )
 
+            val effectiveCornerRadii = newCornerRadii(0f, layer.getChild("effective_corner_radii"))
+
             return Layer.from(
                 name = layer.getChild("name")?.getString() ?: "",
                 id = layer.getChild("id")?.getInt() ?: 0,
@@ -190,6 +192,7 @@ class LayersTraceParser(
                 color = newColor(layer.getChild("color")),
                 shadowRadius = layer.getChild("shadow_radius")?.getFloat() ?: 0f,
                 cornerRadii = cornerRadii,
+                effectiveCornerRadii = effectiveCornerRadii,
                 screenBounds = newRectF(layer.getChild("screen_bounds")),
                 transform =
                     newTransform(
