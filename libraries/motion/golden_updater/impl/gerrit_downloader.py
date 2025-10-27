@@ -55,12 +55,12 @@ class GerritDownloader:
         if left_data:
             try:
                 left_json_obj = json.loads(left_data)
-            except json.JSONDecodeError as e:
+            except (json.JSONDecodeError,UnicodeDecodeError) as e:
                 print(f"Warning: Could not parse left_data string as JSON. Error: {e}")
         if right_data:
             try:
                 right_json_obj = json.loads(right_data)
-            except json.JSONDecodeError as e:
+            except (json.JSONDecodeError,UnicodeDecodeError) as e:
                 print(f"Warning: Could not parse right_data string as JSON. Error: {e}")
         return left_json_obj, right_json_obj
 
