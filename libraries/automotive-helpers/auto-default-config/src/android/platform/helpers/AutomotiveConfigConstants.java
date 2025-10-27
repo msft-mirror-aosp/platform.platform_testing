@@ -236,6 +236,7 @@ public class AutomotiveConfigConstants {
     public static final String SYSTEM_SETTINGS_SCROLL_BACKWARD_BUTTON =
             "SYSTEM_SETTINGS_SCROLL_BACKWARD_BUTTON";
     public static final String SYSTEM_SETTINGS_SCROLL_ELEMENT = "SYSTEM_SETTINGS_SCROLL_ELEMENT";
+    public static final String CONTACTS_ALLOW_CONTINUE_BUTTON = "CONTACTS_ALLOW_CONTINUE_BUTTON";
     public static final String ABOUT_MENU = "ABOUT_MENU";
     public static final String DEVELOPER_OPTIONS = "DEVELOPER_OPTIONS";
     public static final String DEVELOPER_OPTIONS_SWITCH = "DEVELOPER_OPTIONS_SWITCH";

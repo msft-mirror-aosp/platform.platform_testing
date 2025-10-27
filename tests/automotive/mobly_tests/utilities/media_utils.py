@@ -145,6 +145,12 @@ class MediaUtils:
         logging.info("Actual song title on HU: %s", actual_song_title)
         return actual_song_title
 
+    # click continue button on Allow contacts
+    def click_continue_on_allow_contacts_hu(self):
+        logging.info("Click on Continue on HU")
+        self.discoverer.mbs.clickContactsContinueButton()
+        time.sleep(constants.WAIT_FOR_LOAD)
+
     # Click on NEXT track on HU
     def click_next_track_on_hu(self):
         logging.info("Click on NEXT track on HU")
@@ -295,6 +301,11 @@ class MediaUtils:
     def open_youtube_music_app_on_hu(self):
         logging.info("Open <%s> app on HU", constants.YOUTUBE_MUSIC_APP)
         self.common_utils.click_on_ui_element_with_text(constants.YOUTUBE_MUSIC_APP)
+
+    # Open Test Media app on HU
+    def open_test_media_music_app_on_hu(self):
+        logging.info("Open <%s> app on HU", constants.TEST_MEDIA_APP)
+        self.common_utils.click_on_ui_element_with_text(constants.TEST_MEDIA_APP)
 
     # Open Bluetooth Audio app on HU
     def open_bluetooth_audio_app_on_hu(self):

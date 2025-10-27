@@ -1,4 +1,4 @@
-#  Copyright (C) 2023 The Android Open Source Project
+# Copyright (C) 2023 The Android Open Source Project
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ class IsAbleToSwitchAppTest(bluetooth_base_test.BluetoothBaseTest):
         self.media_utils.open_media_app_on_hu()
         self.call_utils.handle_bluetooth_audio_pop_up()
         self.media_utils.open_youtube_music_app()
+        self.media_utils.click_continue_on_allow_contacts_hu()
         current_phone_song_title = self.media_utils.get_song_title_from_phone()
         current_hu_song_title = self.media_utils.get_song_title_from_hu()
         asserts.assert_true(current_phone_song_title == current_hu_song_title,
@@ -50,17 +51,24 @@ class IsAbleToSwitchAppTest(bluetooth_base_test.BluetoothBaseTest):
         # Open Media apps menu
         self.media_utils.open_media_apps_menu()
 
-        # Assert Bluetooth Audio app is present
+        # Assert YouTube Music and Bluetooth Audio apps are present
         asserts.assert_true(
             self.common_utils.has_ui_element_with_text(constants.BLUETOOTH_AUDIO_APP),
             '<' + constants.BLUETOOTH_AUDIO_APP + '> app should be present on Media app page')
+        asserts.assert_true(
+            self.common_utils.has_ui_element_with_text(constants.TEST_MEDIA_APP),
+            '<' + constants.TEST_MEDIA_APP + '> app should be present on Media app page')
 
-        self.media_utils.open_bluetooth_audio_app_on_hu()
-        current_phone_bt_audio_song_title = self.media_utils.get_song_title_from_phone()
-        current_hu_bt_audio_song_title = self.media_utils.get_song_title_from_hu()
-        asserts.assert_true(current_phone_bt_audio_song_title == current_hu_bt_audio_song_title,
+#         # Open Test Media Music app on HU
+        self.media_utils.open_test_media_music_app_on_hu()
+        current_hu_next_song_title = self.media_utils.get_song_title_from_hu()
+        asserts.assert_is_not_none(current_hu_next_song_title,
                             'Invalid song titles. '
-                            'Song title on phone device and HU should be the same')
+                            'Song title on HU should not be empty')
+
+        # Open Media apps menu
+        self.media_utils.open_media_apps_menu()
+        self.media_utils.open_bluetooth_audio_app_on_hu()
 
 
     def teardown_test(self):
