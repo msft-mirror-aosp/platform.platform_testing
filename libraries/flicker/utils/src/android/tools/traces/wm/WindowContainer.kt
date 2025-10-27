@@ -31,8 +31,6 @@ interface WindowContainer : ConfigurationContainer {
 
     val children: Collection<WindowContainer>
 
-    val computedZ: Int
-
     val isVisible: Boolean
 
     val name: String
@@ -43,5 +41,9 @@ interface WindowContainer : ConfigurationContainer {
 
     val bounds: Rect
 
+    val parentToken: Int?
+
     var parent: WindowContainer?
+
+    fun addChild(value: WindowContainer)
 }

@@ -26,8 +26,8 @@ import android.tools.traces.wm.Utils.collectDescendants
 /**
  * Represents a single WindowManager trace entry.
  *
- * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
- * Java/Android functionality
+ * This is a generic object that is used by Flicker and cannot access internal Java/Android
+ * functionality
  *
  * The timestamp constructor must be a string due to lack of Kotlin/KotlinJS Long compatibility
  */

@@ -49,7 +49,7 @@ class WindowManagerTraceParserTest {
         val firstEntry = trace.entries.first()
         Truth.assertThat(firstEntry.timestamp.elapsedNanos).isEqualTo(9213763541297L)
         Truth.assertThat(firstEntry.windowStates.size).isEqualTo(10)
-        Truth.assertThat(firstEntry.visibleWindows.size).isEqualTo(5)
+        Truth.assertThat(firstEntry.visibleWindows.size).isEqualTo(6)
         Truth.assertThat(trace.entries.last().timestamp.elapsedNanos).isEqualTo(9216093628925L)
     }
 

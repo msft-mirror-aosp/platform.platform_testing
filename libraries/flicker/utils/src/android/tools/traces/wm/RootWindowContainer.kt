@@ -22,8 +22,11 @@ package android.tools.traces.wm
  * This is a generic object that is reused by both Flicker and Winscope and cannot access internal
  * Java/Android functionality
  */
-class RootWindowContainer(private val windowContainer: WindowContainer) :
-    WindowContainer by windowContainer {
+class RootWindowContainer(
+    val isHomeRecentsComponent: Boolean,
+    val pendingActivities: Collection<String>,
+    private val windowContainer: WindowContainer,
+) : WindowContainer by windowContainer {
     override fun toString(): String {
         return "${this::class.simpleName}: {$token $title}"
     }

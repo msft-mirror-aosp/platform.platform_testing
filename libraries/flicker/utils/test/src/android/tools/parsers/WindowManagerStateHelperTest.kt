@@ -104,9 +104,9 @@ class WindowManagerStateHelperTest {
                 /* bottom */ index.toFloat() + 1,
             )
         return Layer.from(
-            name,
-            id,
-            parentId,
+            name = name,
+            id = id,
+            parentId = parentId,
             z = 0,
             visibleRegion = Region(rect.toRect()),
             activeBuffer = ActiveBuffer.from(1, 1, 1, 1),
@@ -131,14 +131,14 @@ class WindowManagerStateHelperTest {
     }
 
     private fun createImaginaryVisibleLayers(names: List<IComponentName>): Collection<Layer> {
-        val root = createImaginaryLayer("root", -1, id = "root".hashCode(), parentId = -1)
+        val root = createImaginaryLayer("root", -1, "root".hashCode(), parentId = -1)
         val layers = mutableListOf(root)
         names.forEachIndexed { index, name ->
             layers.add(
                 createImaginaryLayer(
-                    name.toLayerName(),
-                    index,
-                    id = name.hashCode(),
+                    name = name.toLayerName(),
+                    index = index,
+                    id = index + 1,
                     parentId = root.id,
                 )
             )
@@ -153,7 +153,7 @@ class WindowManagerStateHelperTest {
     /**
      * Creates a device state dump provider based on the WM trace
      *
-     * Alongside the SF trac,e this function creates an imaginary SF trace with visible Status and
+     * Alongside the SF trace, this function creates an imaginary SF trace with visible Status and
      * NavBar, as well as all visible non-system windows (those with name containing /)
      */
     private fun WindowManagerTrace.asSupplier(startingTimestamp: Long = 0): () -> DeviceStateDump {
