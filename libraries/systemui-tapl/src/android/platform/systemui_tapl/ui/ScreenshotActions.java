@@ -28,7 +28,7 @@ import androidx.test.uiautomator.BySelector;
  * screenshot.
  */
 public class ScreenshotActions {
-    private static final BySelector SHARE_BUTTON = sysuiDescSelector("Share screenshot");
+    private static final BySelector SHARE_BUTTON = sysuiDescSelector("Share screenshot button");
 
     ScreenshotActions() {}
 
