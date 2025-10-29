@@ -72,7 +72,7 @@ class TaggedCujTransitionMatcher(
                         transform(transitions, cujEntry, reader)
                     } catch (e: Exception) {
                         throw RuntimeException(
-                            "Failed to apply ${transformsToNames[transform]} on " +
+                            "Failed to apply \"${transformsToNames[transform]}\" on " +
                                 "the following transitions (CUJ=${cujEntry.cuj.name}" +
                                 "[${cujEntry.startTimestamp},${cujEntry.endTimestamp}]):\n " +
                                 formattedTransitions(transitions),
