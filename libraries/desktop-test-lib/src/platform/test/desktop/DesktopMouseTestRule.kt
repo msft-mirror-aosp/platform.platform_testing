@@ -199,7 +199,7 @@ class DesktopMouseTestRule(private val deferSetup: Boolean = false) : TestRule {
         private fun ensureCursorStartsInDisplayTopology(displayId: Int) {
             val display = displayManager.getDisplay(displayId)
             Log.i(TAG, "Ensuring cursor starts on center of display#$displayId")
-            move(display.displayId, display.width / 2, display.height / 2)
+            move(LogicalDisplayPointPx(display.displayId, display.width / 2, display.height / 2))
         }
 
         private fun getDisplayIdIncludedInDisplayTopology(): Int {
@@ -272,9 +272,8 @@ class DesktopMouseTestRule(private val deferSetup: Boolean = false) : TestRule {
     }
 
     /**
-     * Moves the mouse cursor to the `(targetXPx, targetYPx)` on target display. If the target
-     * display is different from the current display, it finds a path and moves the cursor across
-     * display(s).
+     * Moves the mouse cursor to [target]. If the target display is different from the current
+     * display, it finds a path and moves the cursor across display(s).
      *
      * NOTE: While InputManager APIs are using PointF for both get/set, the underlying
      * implementation is actually using Int. For example, evdev injection only supports Int.
@@ -283,16 +282,8 @@ class DesktopMouseTestRule(private val deferSetup: Boolean = false) : TestRule {
      * NOTE: This method blocks the thread to wait for the cursor position to be expected. Do not
      * call this in the main thread.
      *
-     * @param targetDisplayId The ID of the destination display.
-     * @param targetXPx The target X (PX) coordinate relative to the target display.
-     * @param targetYPx The target Y (PX) coordinate relative to the target display.
+     * @param target The destination point, which includes the target display ID and coordinates.
      */
-    fun move(targetDisplayId: Int, targetXPx: Int, targetYPx: Int) {
-        // TODO(b/448243090): Update all callers to directly use LogicalDisplayPointPx and remove
-        //  this function
-        move(LogicalDisplayPointPx(targetDisplayId, targetXPx, targetYPx))
-    }
-
     fun move(target: LogicalDisplayPointPx) {
         Log.i(TAG, "Try moving to $target")
         check(Looper.myLooper() != Looper.getMainLooper()) {
