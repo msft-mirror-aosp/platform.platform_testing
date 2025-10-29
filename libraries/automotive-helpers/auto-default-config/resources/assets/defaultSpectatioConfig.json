@@ -1804,8 +1804,7 @@
     },
     "CURRENT_SONG_TIME": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "current_time",
-      "PACKAGE": "com.android.car.media"
+      "VALUE": "current_time"
     },
     "MAX_SONG_TIME": {
       "TYPE": "RESOURCE_ID",
