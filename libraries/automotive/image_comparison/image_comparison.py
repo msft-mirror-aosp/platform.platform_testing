@@ -220,10 +220,12 @@ class CompareImagesUsingPIL(ImageComparator):
     # Highlight the difference image in red before saving
     # Convert the difference image to grayscale for thresholding
     diff_gray = self._diff_image.convert('L')
-    # Create a binary mask where differences are white and no differences are black
+    # Create a binary mask where differences are white and
+    # no differences are black
     mask = diff_gray.point(lambda p: 255 if p > 0 else 0)
     highlight_color = Image.new('RGB', self._golden_image.size, (255, 0, 0))
-    highlighted_diff_image = Image.composite(highlight_color, self._golden_image, mask)
+    highlighted_diff_image = Image.composite(
+        highlight_color, self._golden_image, mask)
 
     # Save the highlighted difference image
-    self._diff_image.save(highlighted_diff_image)
+    highlighted_diff_image.save(diff_image_path)
