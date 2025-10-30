@@ -1717,13 +1717,11 @@
     },
     "ARTIST_TITLE": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "subtitle",
-      "PACKAGE": "com.android.car.media"
+      "VALUE": "subtitle"
     },
     "ALBUM_TITLE": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "album_title",
-      "PACKAGE": "com.android.car.media"
+      "VALUE": "album_title"
     },
     "RADIO_STATION_NAME": {
       "TYPE": "RESOURCE_ID",
@@ -1811,13 +1809,11 @@
     },
     "MAX_SONG_TIME": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "max_time",
-      "PACKAGE": "com.android.car.media"
+      "VALUE": "max_time"
     },
     "TRACK_NAME": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "title",
-      "PACKAGE": "com.android.car.media"
+      "VALUE": "title"
     },
     "TRACK_NAME_MINIMIZED_CONTROL": {
       "TYPE": "RESOURCE_ID",
@@ -1905,13 +1901,11 @@
     },
     "MEDIA_SCROLL_DOWN_BUTTON": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_scrollbar_page_down",
-      "PACKAGE": "com.chassis.car.ui.plugin"
+      "VALUE": "car_ui_scrollbar_page_down"
     },
     "MEDIA_SCROLL_UP_BUTTON": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "car_ui_scrollbar_page_up",
-      "PACKAGE": "com.android.car.media"
+      "VALUE": "car_ui_scrollbar_page_up"
     },
     "MEDIA_SONG_IN_PLAYLIST": {
       "TYPE": "RESOURCE_ID",

@@ -125,8 +125,8 @@ public class MediaPlayerSnippet implements Snippet {
     }
 
     @Rpc(description = "Select song from playlist")
-    public void clickOnSongFromPlaylist() {
-        mAutoMediaHelper.get().clickOnSongFromPlaylist();
+    public void clickOnSongFromPlaylist(int index) {
+        mAutoMediaHelper.get().clickOnSongFromPlaylist(index);
     }
 
     @Rpc(description = "Get Artist tile")
@@ -172,5 +172,11 @@ public class MediaPlayerSnippet implements Snippet {
     @Rpc(description = "Grant restricted parmissions")
     public void grantRestrictedPermissionsForBTMedia(String permission) {
         mAutoMediaHelper.get().grantRestrictedPermissionsForBTMedia(permission);
+    }
+
+    /** Scroll Down one page */
+    @Rpc(description = "ScrollUp One Page")
+    public boolean scrollUpOnePage() {
+        return mAutoMediaHelper.get().scrollUpOnePage();
     }
 }
