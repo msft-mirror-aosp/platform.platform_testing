@@ -43,4 +43,7 @@ java_library {
         "src/**/*.kt",
         "src/**/*.java",
     ],
+    lint: {
+        baseline_filename: "lint-baseline.xml",
+    },
 }
