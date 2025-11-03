@@ -216,14 +216,25 @@ class CompareImagesUsingPIL(ImageComparator):
 
   def save_diff_image(self, diff_image_path: str) -> None:
     logging.info(f'{_LOG_TAG}: Saving diff image to {diff_image_path}')
+    self._diff_image.save(diff_image_path)
 
-    # Highlight the difference image in red before saving
+    # Highlight the difference image in violet color (138,43,226)
     # Convert the difference image to grayscale for thresholding
     diff_gray = self._diff_image.convert('L')
-    # Create a binary mask where differences are white and no differences are black
+    # Create a binary mask where differences are white and
+    # no differences are black
     mask = diff_gray.point(lambda p: 255 if p > 0 else 0)
-    highlight_color = Image.new('RGB', self._golden_image.size, (255, 0, 0))
-    highlighted_diff_image = Image.composite(highlight_color, self._golden_image, mask)
+    highlight_color = Image.new('RGB', self._golden_image.size, (138,43,226))
+    highlighted_diff_image = Image.composite(
+        highlight_color, self._golden_image, mask)
 
     # Save the highlighted difference image
-    self._diff_image.save(highlighted_diff_image)
+    diff_image_path_parts = diff_image_path.rsplit('.', 1)
+    highlighted_diff_image_path = (
+        f'{diff_image_path_parts[0]}_highlighted.{diff_image_path_parts[1]}'
+    )
+    logging.info(
+        f'{_LOG_TAG}: Saving highlighted diff image to'
+        f' {highlighted_diff_image_path}'
+    )
+    highlighted_diff_image.save(highlighted_diff_image_path)

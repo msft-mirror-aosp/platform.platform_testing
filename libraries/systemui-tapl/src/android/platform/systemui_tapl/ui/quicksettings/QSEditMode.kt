@@ -70,10 +70,12 @@ class QSEditMode(val displayId: Int = DEFAULT_DISPLAY) {
      * This will throw an error if [source] or [target] isn't found.
      */
     fun longPressAndDrag(source: QSEditTile, target: QSEditTile) {
-        val endTarget = waitForObj(target.selector).visibleCenter
         BetterSwipe.swipe(source.getClickTarget()) {
             // Pause before the swipe to simulate a long press
             pause()
+
+            // Get the target's visibleCenter after the long press to ensure it's not stale.
+            val endTarget = waitForObj(target.selector).visibleCenter
 
             // Drag to the target's center
             to(

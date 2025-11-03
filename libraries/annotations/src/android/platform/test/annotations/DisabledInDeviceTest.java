@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,36 +14,16 @@
  * limitations under the License.
  */
 
-package android.tools.traces.wm
+package android.platform.test.annotations;
 
-import android.graphics.Rect
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-interface WindowContainer : ConfigurationContainer {
-    val title: String
-
-    val id: Int
-
-    val token: String
-
-    val orientation: Int
-
-    val layerId: Int
-
-    val children: Collection<WindowContainer>
-
-    val isVisible: Boolean
-
-    val name: String
-
-    val stableId: String
-
-    val isFullscreen: Boolean
-
-    val bounds: Rect
-
-    val parentToken: Int?
-
-    var parent: WindowContainer?
-
-    fun addChild(value: WindowContainer)
-}
+/** Marks a test that runs only on Robolectric. */
+@Inherited
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD, ElementType.TYPE})
+public @interface DisabledInDeviceTest {}

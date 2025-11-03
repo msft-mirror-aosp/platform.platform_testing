@@ -38,6 +38,7 @@ class ParsedTracesReader(
     private val transactionsTrace: TransactionsTrace? = null,
     private val eventLog: EventLog? = null,
     private val protoLogTrace: ProtoLogTrace? = null,
+    private val cujTrace: CujTrace? = null,
     private val layerDumps: Map<String, LayersTrace> = emptyMap(),
     private val wmDumps: Map<String, WindowManagerTrace> = emptyMap(),
 ) : Reader {
@@ -56,7 +57,7 @@ class ParsedTracesReader(
 
     override fun readEventLogTrace(): EventLog? = eventLog
 
-    override fun readCujTrace(): CujTrace? = eventLog?.cujTrace
+    override fun readCujTrace(): CujTrace? = cujTrace
 
     override fun readProtoLogTrace(): ProtoLogTrace? = protoLogTrace
 
@@ -69,6 +70,7 @@ class ParsedTracesReader(
             transactionsTrace?.slice(startTimestamp, endTimestamp),
             eventLog?.slice(startTimestamp, endTimestamp),
             protoLogTrace?.slice(startTimestamp, endTimestamp),
+            cujTrace?.slice(startTimestamp, endTimestamp),
             layerDumps,
             wmDumps,
         )

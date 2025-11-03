@@ -35,6 +35,7 @@ interface LayerProperties {
     val color: Color
     val shadowRadius: Float
     val cornerRadii: CornerRadii
+    val effectiveCornerRadii: CornerRadii
     val screenBounds: RectF
     val transform: Transform
     val effectiveScalingMode: Int
@@ -78,7 +79,7 @@ interface LayerProperties {
      * @return
      */
     val hasRoundedCorners: Boolean
-        get() = !cornerRadii.isEmpty()
+        get() = !effectiveCornerRadii.isEmpty() || !cornerRadii.isEmpty()
 
     /**
      * Checks if the [Layer] has zero requested or inherited alpha

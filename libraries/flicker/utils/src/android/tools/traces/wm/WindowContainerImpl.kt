@@ -28,25 +28,25 @@ import android.graphics.Rect
  */
 class WindowContainerImpl(
     override val title: String,
-    final override val token: String,
+    override val token: String,
     override val orientation: Int,
     override val layerId: Int,
-    _isVisible: Boolean,
+    override val isVisible: Boolean,
+    override val parentToken: Int?,
     private val configurationContainer: ConfigurationContainer,
-    _children: Collection<WindowContainer>,
-    override val computedZ: Int,
 ) : ConfigurationContainer by configurationContainer, WindowContainer {
     override val id: Int = if (token.isEmpty()) -1 else token.toInt(16)
 
-    override val children: Collection<WindowContainer> = _children
-
     override var parent: WindowContainer? = null
+    override val children: Collection<WindowContainer>
+        get() = _children
 
-    init {
-        _children.forEach { it.parent = this }
+    private val _children = mutableListOf<WindowContainer>()
+
+    override fun addChild(value: WindowContainer) {
+        this._children.add(value)
     }
 
-    override val isVisible: Boolean = _isVisible
     override val name: String
         get() = title
 

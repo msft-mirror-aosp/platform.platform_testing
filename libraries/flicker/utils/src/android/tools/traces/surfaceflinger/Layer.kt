@@ -102,6 +102,7 @@ public constructor(
         if (color != other.color) return false
         if (shadowRadius != other.shadowRadius) return false
         if (cornerRadii != other.cornerRadii) return false
+        if (effectiveCornerRadii != other.effectiveCornerRadii) return false
         if (transform != other.transform) return false
         if (effectiveScalingMode != other.effectiveScalingMode) return false
         if (bufferTransform != other.bufferTransform) return false
@@ -127,6 +128,7 @@ public constructor(
         result = 31 * result + color.hashCode()
         result = 31 * result + shadowRadius.hashCode()
         result = 31 * result + cornerRadii.hashCode()
+        result = 31 * result + effectiveCornerRadii.hashCode()
         result = 31 * result + transform.hashCode()
         result = 31 * result + effectiveScalingMode
         result = 31 * result + bufferTransform.hashCode()
@@ -167,6 +169,7 @@ public constructor(
             color: Color = emptyColor(),
             shadowRadius: Float = 0.0f,
             cornerRadii: CornerRadii = CornerRadii.EMPTY,
+            effectiveCornerRadii: CornerRadii = CornerRadii.EMPTY,
             screenBounds: RectF = RectF(),
             transform: Transform = Transform.EMPTY,
             currFrame: Long = 0,
@@ -191,6 +194,7 @@ public constructor(
                     color,
                     shadowRadius,
                     cornerRadii,
+                    effectiveCornerRadii,
                     screenBounds,
                     transform,
                     effectiveScalingMode,
