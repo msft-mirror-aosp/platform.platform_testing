@@ -120,6 +120,7 @@ public class BaseMetricListener extends InstrumentationRunListener {
     private int mCollectIterationInterval = 1;
     private int mSkipMetricUntilIteration = 0;
     private boolean mUseTemporaryStorage = false;
+    private boolean mIsTestIgnored = false;
 
     // Whether to report the results as instrumentation results. Used by metric collector rules,
     // which do not have the information to invoke InstrumentationRunFinished() to report metrics.
@@ -173,13 +174,38 @@ public class BaseMetricListener extends InstrumentationRunListener {
         Trace.endSection();
     }
 
+    /**
+     * Called when a test fails because of an unsatisfied assumption.
+     * For example, when using {@code org.junit.Assume}. These tests are considered ignored,
+     * so we set {@code mIsTestIgnored} to true to prevent metric collection in {@code testFinished}.
+     *
+     * <p>This method is invoked by the JUnit runner when an assumption failure occurs during a test.
+     * An assumption failure typically means the test environment or preconditions are not met,
+     * and thus the test should be skipped rather than marked as a failure.
+     */
+    @Override
+    public void testAssumptionFailure(Failure failure) {
+        mIsTestIgnored = true;
+    }
+
+    /**
+     * Called when a test is ignored, typically via the {@code @Ignore} annotation.
+     * We set {@code mIsTestIgnored} to true to prevent metric collection in {@code testFinished}.
+     */
+    @Override
+    public void testIgnored(Description description) throws Exception {
+        mIsTestIgnored = true;
+        super.testIgnored(description);
+    }
+
     @Override
     public final void testStarted(Description description) throws Exception {
+        mIsTestIgnored = false;
         Trace.beginSection(this.getClass().getSimpleName() + ":testStarted");
         // Update the current invocation before proceeding with metric collection.
         // mTestIdInvocationCount uses 1 indexing.
-        mTestIdInvocationCount.compute(description.toString(),
-                (key, value) -> (value == null) ? 1 : value + 1);
+        mTestIdInvocationCount.compute(
+                description.toString(), (key, value) -> (value == null) ? 1 : value + 1);
 
         if (shouldRun(description)) {
             try {
@@ -218,14 +244,16 @@ public class BaseMetricListener extends InstrumentationRunListener {
                 // Prevent exception from reporting events.
                 Log.e(getTag(), "Exception during onTestEnd.", e);
             }
-            if (mTestData.hasMetrics()) {
+            // For ignored tests, we still run onTestEnd for clean up, but we do not report
+            // metrics.
+            if (!mIsTestIgnored && mTestData.hasMetrics()) {
                 // Only send the status progress if there are metrics
                 if (mReportAsInstrumentationResults) {
                     getInstrumentation().addResults(mTestData.createBundleFromMetrics());
                 } else {
-                SendToInstrumentation.sendBundle(getInstrumentation(),
-                        mTestData.createBundleFromMetrics());
-            }
+                    SendToInstrumentation.sendBundle(
+                            getInstrumentation(), mTestData.createBundleFromMetrics());
+                }
             }
         }
         super.testFinished(description);
@@ -263,9 +291,7 @@ public class BaseMetricListener extends InstrumentationRunListener {
         onCleanUp();
     }
 
-    /**
-     * Create a {@link DataRecord}. Exposed for testing.
-     */
+    /** Create a {@link DataRecord}. Exposed for testing. */
     @VisibleForTesting
     DataRecord createDataRecord() {
         return new DataRecord();
@@ -350,11 +376,12 @@ public class BaseMetricListener extends InstrumentationRunListener {
      * @return byte array of execution result
      */
     public byte[] executeCommandBlocking(String command) {
-        try (
-                InputStream is = new ParcelFileDescriptor.AutoCloseInputStream(
-                        getInstrumentation().getUiAutomation().executeShellCommand(command));
-                ByteArrayOutputStream out = new ByteArrayOutputStream()
-        ) {
+        try (InputStream is =
+                        new ParcelFileDescriptor.AutoCloseInputStream(
+                                getInstrumentation()
+                                        .getUiAutomation()
+                                        .executeShellCommand(command));
+                ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             byte[] buf = new byte[BUFFER_SIZE];
             int length;
             while ((length = is.read(buf)) >= 0) {
@@ -416,8 +443,9 @@ public class BaseMetricListener extends InstrumentationRunListener {
     /**
      * Get an OutputStream to a file using the shell.
      *
-     * This allows tests to write to files without requiring storage permissions, which is in
+     * <p>This allows tests to write to files without requiring storage permissions, which is in
      * particular useful when testing apps that should not have the permission.
+     *
      * @param file The file where the OutputStream should write to. Will be deleted if existing.
      * @return A stream to write to the file.
      */
@@ -427,8 +455,8 @@ public class BaseMetricListener extends InstrumentationRunListener {
             recursiveDelete(file);
         }
 
-        final ParcelFileDescriptor[] fds = getInstrumentation().getUiAutomation()
-            .executeShellCommandRw("sh");
+        final ParcelFileDescriptor[] fds =
+                getInstrumentation().getUiAutomation().executeShellCommandRw("sh");
 
         fds[0].close();
         final ParcelFileDescriptor stdin = fds[1];
@@ -456,16 +484,12 @@ public class BaseMetricListener extends InstrumentationRunListener {
         mReportAsInstrumentationResults = enabled;
     }
 
-    /**
-     * Returns the name of the current class to be used as a logging tag.
-     */
+    /** Returns the name of the current class to be used as a logging tag. */
     String getTag() {
         return this.getClass().getName();
     }
 
-    /**
-     * Returns the bundle containing the instrumentation arguments.
-     */
+    /** Returns the bundle containing the instrumentation arguments. */
     protected final Bundle getArgsBundle() {
         if (mArgsBundle == null) {
             mArgsBundle = InstrumentationRegistry.getArguments();
@@ -486,14 +510,22 @@ public class BaseMetricListener extends InstrumentationRunListener {
         if (excludeGroup != null) {
             mExcludeFilters.addAll(Arrays.asList(excludeGroup.split(",")));
         }
-        mCollectIterationInterval = Integer.parseInt(args.getString(
-                COLLECT_ITERATION_INTERVAL, String.valueOf(DEFAULT_COLLECT_INTERVAL)));
-        mSkipMetricUntilIteration = Integer.parseInt(args.getString(
-                SKIP_METRIC_UNTIL_ITERATION, String.valueOf(SKIP_UNTIL_DEFAULT_ITERATION)));
+        mCollectIterationInterval =
+                Integer.parseInt(
+                        args.getString(
+                                COLLECT_ITERATION_INTERVAL,
+                                String.valueOf(DEFAULT_COLLECT_INTERVAL)));
+        mSkipMetricUntilIteration =
+                Integer.parseInt(
+                        args.getString(
+                                SKIP_METRIC_UNTIL_ITERATION,
+                                String.valueOf(SKIP_UNTIL_DEFAULT_ITERATION)));
 
         if (mCollectIterationInterval < 1) {
-            Log.i(getTag(), "Metric collection iteration interval cannot be less than 1."
-                    + "Switching to collect for all the iterations.");
+            Log.i(
+                    getTag(),
+                    "Metric collection iteration interval cannot be less than 1."
+                            + "Switching to collect for all the iterations.");
             // Reset to collect for all the iterations.
             mCollectIterationInterval = 1;
         }
@@ -516,8 +548,8 @@ public class BaseMetricListener extends InstrumentationRunListener {
 
     /**
      * Filter the alias-ed options from the bundle, each implementation of BaseMetricListener will
-     * have its own list of arguments.
-     * TODO: Split the filtering logic outside the collector class in a utility/helper.
+     * have its own list of arguments. TODO: Split the filtering logic outside the collector class
+     * in a utility/helper.
      */
     private void filterAlias(Bundle bundle) {
         Set<String> keySet = new HashSet<>(bundle.keySet());
@@ -591,10 +623,13 @@ public class BaseMetricListener extends InstrumentationRunListener {
         // mTestIdInvocationCount uses 1 indexing.
         if (mTestIdInvocationCount.containsKey(desc.toString())
                 && mTestIdInvocationCount.get(desc.toString()) <= mSkipMetricUntilIteration) {
-            Log.i(getTag(), String.format("Skipping metric collection. Current iteration is %d."
-                    + "Requested to skip metric until %d",
-                    mTestIdInvocationCount.get(desc.toString()),
-                    mSkipMetricUntilIteration));
+            Log.i(
+                    getTag(),
+                    String.format(
+                            "Skipping metric collection. Current iteration is %d."
+                                    + "Requested to skip metric until %d",
+                            mTestIdInvocationCount.get(desc.toString()),
+                            mSkipMetricUntilIteration));
             return false;
         }
 
@@ -606,9 +641,7 @@ public class BaseMetricListener extends InstrumentationRunListener {
         return true;
     }
 
-    /**
-     * Returns iteration number for the test or 0 if the test hasn't started executing yet
-     */
+    /** Returns iteration number for the test or 0 if the test hasn't started executing yet */
     protected int getIteration(Description description) {
         for (Annotation annotation : description.getAnnotations()) {
             // If IterationMetadata annotation is present, return the iteration number from it
@@ -621,9 +654,9 @@ public class BaseMetricListener extends InstrumentationRunListener {
     }
 
     /**
-     * Special metadata annotation object that could indicate the original iteration number.
-     * It could be useful to retrieve the iteration number for a test if the test was renamed
-     * to include iteration number in the name.
+     * Special metadata annotation object that could indicate the original iteration number. It
+     * could be useful to retrieve the iteration number for a test if the test was renamed to
+     * include iteration number in the name.
      */
     public static class IterationMetadata implements Annotation {
 
