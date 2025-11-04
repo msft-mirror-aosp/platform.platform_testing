@@ -201,7 +201,7 @@
     },
     "DIALING_NUMBER": {
       "TYPE": "RESOURCE_ID",
-      "VALUE": "user_profile_title",
+      "VALUE": "title",
       "PACKAGE": "com.android.car.dialer"
     },
     "USER_PROFILE_PHONE_NUMBER": {
