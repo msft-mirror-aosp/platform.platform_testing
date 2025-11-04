@@ -11,6 +11,9 @@ python_library_host {
     srcs: [
         "**/*.py",
     ],
+    libs: [
+        "mobly",
+    ],
 }
 
 // Spectatio Host-Side Automotive Test Framework (tf) Defaults

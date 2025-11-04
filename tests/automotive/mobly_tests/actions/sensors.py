@@ -12,17 +12,19 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-
-from actions_common import actions_setup
-from mobly import asserts, base_test
-from mobly.controllers import android_device
-from mobly.controllers.android_device_lib.snippet_client_v2 import Config
-from utilities.main_utils import common_main, get_test_args
+from file_utils_library.file_util import find_resource_path
+from image_comparison_library import image_comparison
+from screenshot_util_library.screenshot_util import ScreenshotUtil
+from spectatio_host_tf.core import test_base, test_runner
 
 
-class VhalSensors(base_test.BaseTestClass):
+class VhalSensors(test_base.SpectatioHostBaseTestClass):
     def setup_class(self):
-        actions_setup(self)
+        super().setup_class()
+        self.mbs = self.device1.load_bundled_snippets()
+        self.device1.adb.root()
+
+        self.register_service_factory('screenshot', ScreenshotUtil)
 
     def setup_test(self):
         pass
@@ -32,12 +34,31 @@ class VhalSensors(base_test.BaseTestClass):
 
     def test_night_mode(self):
         """Turn night mode on and off and check that the HUD responds."""
-        self.main_device.mbs.setNightMode("true")
-        # TODO: check screenshot against night mode golden
+        strategy = ScreenshotUtil.ScreenshotStrategy.DISPLAY_SCREENSHOT_USING_ADB.value
 
-        self.main_device.mbs.setNightMode("false")
+        self.mbs.pressHome()
+        self.mbs.setNightMode("true")
+        night_test_path = 'nightmode.png'
+        night_golden_path = find_resource_path('actions_golden_images', 'golden_images/nightmode_golden.png')
+        self.screenshot.take_screenshot(
+            screenshot_strategy = strategy,
+            device = self.device1,
+            screenshot_path = night_test_path,
+        )
+
+        night_check = image_comparison.CompareImagesUsingPIL(
+            night_test_path,
+            night_golden_path,
+            (0, 0, 1080, 200),  # exclusion rectangle -- left, top, right, bottom
+        )
+        is_similar = night_check.are_images_similar()
+        night_check.save_diff_image('nightmode_diff.png')
+        self.asserts.assert_true(is_similar, "Night mode matches golden")
+
+
+        self.mbs.setNightMode("false")
         # TODO: check screenshot against day mode golden
 
 
 if __name__ == '__main__':
-    common_main()
+    test_runner.run()

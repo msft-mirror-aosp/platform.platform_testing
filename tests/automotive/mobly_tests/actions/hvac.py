@@ -13,14 +13,14 @@
 #  limitations under the License.
 
 
-from actions_common import actions_setup
-from mobly import asserts, base_test
-from utilities.main_utils import common_main
+from spectatio_host_tf.core import test_base, test_runner
 
 
-class VhalHvac(base_test.BaseTestClass):
+class VhalHvac(test_base.SpectatioHostBaseTestClass):
     def setup_class(self):
-        actions_setup(self)
+        super().setup_class()
+        self.mbs = self.device1.load_bundled_snippets()
+        self.device1.adb.root()
 
     def setup_test(self):
         pass
@@ -30,175 +30,176 @@ class VhalHvac(base_test.BaseTestClass):
 
     def test_ac_by_property(self):
         """Set the AC property and check that the HVAC UI reflects the setting."""
-        self.main_device.mbs.showHideHvac()
-        self.main_device.mbs.disableHvacAutoMode()
+        self.mbs.showHideHvac()
+        self.mbs.disableHvacAutoMode()
 
-        self.main_device.mbs.turnOnAc()
-        asserts.assert_true(self.main_device.mbs.checkAcToggle(), 'AC shows on')
-        self.main_device.mbs.turnOffAc()
-        asserts.assert_false(self.main_device.mbs.checkAcToggle(), 'AC shows off')
+        self.mbs.turnOnAc()
+        self.asserts.assert_true(self.mbs.checkAcToggle(), 'AC shows on')
+        self.mbs.turnOffAc()
+        self.asserts.assert_false(self.mbs.checkAcToggle(), 'AC shows off')
 
-        self.main_device.mbs.showHideHvac()
+        self.mbs.showHideHvac()
 
     def test_ac_by_softkey(self):
         """Tap the AC UI element and check that the property reflects the change."""
-        self.main_device.mbs.showHideHvac()
-        self.main_device.mbs.disableHvacAutoMode()
-        self.main_device.mbs.turnOffAc()
+        self.mbs.showHideHvac()
+        self.mbs.disableHvacAutoMode()
+        self.mbs.turnOffAc()
 
-        self.main_device.mbs.clickAcToggle()
-        asserts.assert_true(self.main_device.mbs.getAcState(), 'Auto mode property set')
-        self.main_device.mbs.clickAcToggle()
-        asserts.assert_false(self.main_device.mbs.getAcState(), 'Auto mode property cleared')
+        self.mbs.clickAcToggle()
+        self.asserts.assert_true(self.mbs.getAcState(), 'Auto mode property set')
+        self.mbs.clickAcToggle()
+        self.asserts.assert_false(self.mbs.getAcState(), 'Auto mode property cleared')
 
-        self.main_device.mbs.showHideHvac()
+        self.mbs.showHideHvac()
 
     def test_recirculation_by_property(self):
         """Set the air recirculation property and check that the HVAC UI reflects the setting."""
-        self.main_device.mbs.showHideHvac()
-        self.main_device.mbs.disableHvacAutoMode()
+        self.mbs.showHideHvac()
+        self.mbs.disableHvacAutoMode()
 
-        self.main_device.mbs.enableAirRecirculation()
-        asserts.assert_true(self.main_device.mbs.checkRecirculationToggle(), 'Recirculation set')
-        self.main_device.mbs.disableAirRecirculation()
-        asserts.assert_false(self.main_device.mbs.checkRecirculationToggle(), 'Recirculation unset')
+        self.mbs.enableAirRecirculation()
+        self.asserts.assert_true(self.mbs.checkRecirculationToggle(), 'Recirculation set')
+        self.mbs.disableAirRecirculation()
+        self.asserts.assert_false(self.mbs.checkRecirculationToggle(), 'Recirculation unset')
 
-        self.main_device.mbs.showHideHvac()
+        self.mbs.showHideHvac()
 
     def test_recirculation_by_softkey(self):
         """Tap the air recirculation UI element and check that the property reflects the change."""
-        self.main_device.mbs.showHideHvac()
-        self.main_device.mbs.disableHvacAutoMode()
-        self.main_device.mbs.disableAirRecirculation()
+        self.mbs.showHideHvac()
+        self.mbs.disableHvacAutoMode()
+        self.mbs.disableAirRecirculation()
 
-        self.main_device.mbs.clickRecirculationToggle()
-        asserts.assert_true(self.main_device.mbs.getAirRecirculation(), 'Recirculation set')
-        self.main_device.mbs.clickRecirculationToggle()
-        asserts.assert_false(self.main_device.mbs.getAirRecirculation(), 'Recirculation unset')
+        self.mbs.clickRecirculationToggle()
+        self.asserts.assert_true(self.mbs.getAirRecirculation(), 'Recirculation set')
+        self.mbs.clickRecirculationToggle()
+        self.asserts.assert_false(self.mbs.getAirRecirculation(), 'Recirculation unset')
 
     def test_defrosters_by_property(self):
         """Set the defroster properties and check that the HVAC UI reflects the setting."""
-        self.main_device.mbs.showHideHvac()
+        self.mbs.showHideHvac()
 
-        self.main_device.mbs.enableFrontDefrost()
-        asserts.assert_true(self.main_device.mbs.checkFrontDefrostToggle(), 'Front defrost set')
-        self.main_device.mbs.disableFrontDefrost()
-        asserts.assert_false(self.main_device.mbs.checkFrontDefrostToggle(), 'Front defrost unset')
+        self.mbs.enableFrontDefrost()
+        self.asserts.assert_true(self.mbs.checkFrontDefrostToggle(), 'Front defrost set')
+        self.mbs.disableFrontDefrost()
+        self.asserts.assert_false(self.mbs.checkFrontDefrostToggle(), 'Front defrost unset')
 
-        self.main_device.mbs.enableRearDefrost()
-        asserts.assert_true(self.main_device.mbs.checkRearDefrostToggle(), 'Rear defrost set')
-        self.main_device.mbs.disableRearDefrost()
-        asserts.assert_false(self.main_device.mbs.checkRearDefrostToggle(), 'Rear defrost unset')
+        self.mbs.enableRearDefrost()
+        self.asserts.assert_true(self.mbs.checkRearDefrostToggle(), 'Rear defrost set')
+        self.mbs.disableRearDefrost()
+        self.asserts.assert_false(self.mbs.checkRearDefrostToggle(), 'Rear defrost unset')
 
-        self.main_device.mbs.showHideHvac()
+        self.mbs.showHideHvac()
 
     def test_defrosters_by_softkey(self):
-        self.main_device.mbs.showHideHvac()
-        self.main_device.mbs.disableFrontDefrost()
-        self.main_device.mbs.disableRearDefrost()
+        self.mbs.showHideHvac()
+        self.mbs.disableFrontDefrost()
+        self.mbs.disableRearDefrost()
 
-        self.main_device.mbs.clickFrontDefrostToggle()
-        asserts.assert_true(self.main_device.mbs.getFrontDefrost(), 'Front defrost set')
-        self.main_device.mbs.clickFrontDefrostToggle()
-        asserts.assert_false(self.main_device.mbs.getFrontDefrost(), 'Front defrost unset')
+        self.mbs.clickFrontDefrostToggle()
+        self.asserts.assert_true(self.mbs.getFrontDefrost(), 'Front defrost set')
+        self.mbs.clickFrontDefrostToggle()
+        self.asserts.assert_false(self.mbs.getFrontDefrost(), 'Front defrost unset')
 
-        self.main_device.mbs.clickRearDefrostToggle()
-        asserts.assert_true(self.main_device.mbs.getRearDefrost(), 'Rear defrost set')
-        self.main_device.mbs.clickRearDefrostToggle()
-        asserts.assert_false(self.main_device.mbs.getRearDefrost(), 'Rear defrost unset')
+        self.mbs.clickRearDefrostToggle()
+        self.asserts.assert_true(self.mbs.getRearDefrost(), 'Rear defrost set')
+        self.mbs.clickRearDefrostToggle()
+        self.asserts.assert_false(self.mbs.getRearDefrost(), 'Rear defrost unset')
 
-        self.main_device.mbs.showHideHvac()
+        self.mbs.showHideHvac()
 
     def test_auto_mode_by_property(self):
         """Set the auto mode property and check that the HVAC UI reflects the setting."""
-        self.main_device.mbs.showHideHvac()
+        self.mbs.showHideHvac()
 
-        self.main_device.mbs.enableHvacAutoMode()
-        asserts.assert_true(self.main_device.mbs.checkAutoModeToggle(), 'Auto mode shows on')
-        self.main_device.mbs.disableHvacAutoMode()
-        asserts.assert_false(self.main_device.mbs.checkAutoModeToggle(), 'Auto mode shows off')
+        self.mbs.enableHvacAutoMode()
+        self.asserts.assert_true(self.mbs.checkAutoModeToggle(), 'Auto mode shows on')
+        self.mbs.disableHvacAutoMode()
+        self.asserts.assert_false(self.mbs.checkAutoModeToggle(), 'Auto mode shows off')
 
-        self.main_device.mbs.showHideHvac()
+        self.mbs.showHideHvac()
 
     def test_auto_mode_by_softkey(self):
         """Tap the auto mode UI element and check that the property reflects the change."""
-        self.main_device.mbs.showHideHvac()
-        self.main_device.mbs.disableHvacAutoMode()
+        self.mbs.showHideHvac()
+        self.mbs.disableHvacAutoMode()
 
-        self.main_device.mbs.clickAutoModeToggle()
-        asserts.assert_true(self.main_device.mbs.getHvacAutoMode(), 'Auto mode property set')
-        self.main_device.mbs.clickAutoModeToggle()
-        asserts.assert_false(self.main_device.mbs.getHvacAutoMode(), 'Auto mode property cleared')
+        self.mbs.clickAutoModeToggle()
+        self.asserts.assert_true(self.mbs.getHvacAutoMode(), 'Auto mode property set')
+        self.mbs.clickAutoModeToggle()
+        self.asserts.assert_false(self.mbs.getHvacAutoMode(), 'Auto mode property cleared')
 
-        self.main_device.mbs.showHideHvac()
+        self.mbs.showHideHvac()
 
     def test_set_driver_temp(self):
         """Set the driver temperature and check the UI for the resulting expected temp."""
-        self.main_device.mbs.setDriverHvacTemperature("67")
-        asserts.assert_true(self.main_device.mbs.hasUIElementWithText("67"), 'Temperature set')
-        self.main_device.mbs.setDriverHvacTemperature("65")
-        asserts.assert_true(self.main_device.mbs.hasUIElementWithText("65"), 'Temperature set')
+        self.mbs.setDriverHvacTemperature("67")
+        self.asserts.assert_true(self.mbs.hasUIElementWithText("67"), 'Temperature set')
+        self.mbs.setDriverHvacTemperature("65")
+        self.asserts.assert_true(self.mbs.hasUIElementWithText("65"), 'Temperature set')
 
     def test_set_passenger_temp(self):
         """Set the passenger temperature and check the UI for the resulting expected temp."""
-        self.main_device.mbs.setPassengerHvacTemperature("69")
-        asserts.assert_true(self.main_device.mbs.hasUIElementWithText("69"), 'Temperature set')
-        self.main_device.mbs.setPassengerHvacTemperature("64")
-        asserts.assert_true(self.main_device.mbs.hasUIElementWithText("64"), 'Temperature set')
+        self.mbs.setPassengerHvacTemperature("69")
+        self.asserts.assert_true(self.mbs.hasUIElementWithText("69"), 'Temperature set')
+        self.mbs.setPassengerHvacTemperature("64")
+        self.asserts.assert_true(self.mbs.hasUIElementWithText("64"), 'Temperature set')
 
     def test_set_driver_temp_softkey(self):
         """Click the driver side +/- buttons and check the property for the expected temp."""
-        initial_temp = self.main_device.mbs.getDriverHvacTemperature()
+        initial_temp = self.mbs.getDriverHvacTemperature()
 
-        self.main_device.mbs.driverIncreaseTemperature()
-        asserts.assert_equal(
+        self.mbs.driverIncreaseTemperature()
+        self.asserts.assert_equal(
             initial_temp + 1,
-            self.main_device.mbs.getDriverHvacTemperature(),
+            self.mbs.getDriverHvacTemperature(),
             'Driver temperature increased'
         )
-        self.main_device.mbs.driverDecreaseTemperature()
-        asserts.assert_equal(
+        self.mbs.driverDecreaseTemperature()
+        self.asserts.assert_equal(
             initial_temp,
-            self.main_device.mbs.getDriverHvacTemperature(),
+            self.mbs.getDriverHvacTemperature(),
             'Driver temperature decreased'
         )
 
     def test_set_passenger_temp_softkey(self):
         """Click the passenger side +/- buttons and check the property for the expected temp."""
-        initial_temp = self.main_device.mbs.getPassengerHvacTemperature()
+        initial_temp = self.mbs.getPassengerHvacTemperature()
 
-        self.main_device.mbs.passengerIncreaseTemperature()
-        asserts.assert_equal(
+        self.mbs.passengerIncreaseTemperature()
+        self.asserts.assert_equal(
             initial_temp + 1,
-            self.main_device.mbs.getPassengerHvacTemperature(),
+            self.mbs.getPassengerHvacTemperature(),
             'Passenger temperature increased'
         )
-        self.main_device.mbs.passengerDecreaseTemperature()
-        asserts.assert_equal(
+        self.mbs.passengerDecreaseTemperature()
+        self.asserts.assert_equal(
             initial_temp,
-            self.main_device.mbs.getPassengerHvacTemperature(),
+            self.mbs.getPassengerHvacTemperature(),
             'Passenger temperature decreased'
         )
 
     def test_hvac_display_units(self):
         """Test that the temperature display changes to celsius and back to fahrenheit"""
-        self.main_device.mbs.setDriverHvacTemperature("65")
-        self.main_device.mbs.setHvacDisplayCelsius()
-        asserts.assert_true(self.main_device.mbs.hasUIElementWithText("20.0"), 'Celsius display')
-        self.main_device.mbs.setHvacDisplayFahrenheit()
-        asserts.assert_true(self.main_device.mbs.hasUIElementWithText("65"), 'Fahrenheit display')
+        self.mbs.setHvacDisplayFahrenheit()
+        self.mbs.setDriverHvacTemperature("65")
+        self.mbs.setHvacDisplayCelsius()
+        self.asserts.assert_true(self.mbs.hasUIElementWithText("20.0"), 'Celsius display')
+        self.mbs.setHvacDisplayFahrenheit()
+        self.asserts.assert_true(self.mbs.hasUIElementWithText("65"), 'Fahrenheit display')
 
     def test_set_driver_seat_heater(self):
         """Click the seat heater buttons and check the property value."""
-        self.main_device.mbs.showHideHvac()
+        self.mbs.showHideHvac()
 
-        initial_seat_temp = self.main_device.mbs.getDriverSeatTemperature()
+        initial_seat_temp = self.mbs.getDriverSeatTemperature()
         for i in range(1, 4):
-            self.main_device.mbs.clickDriverSeatTemperature()
-            new_seat_temp = self.main_device.mbs.getDriverSeatTemperature()
-            asserts.assert_equal(new_seat_temp, (initial_seat_temp + i) % 3, 'Seat temp fail')
+            self.mbs.clickDriverSeatTemperature()
+            new_seat_temp = self.mbs.getDriverSeatTemperature()
+            self.asserts.assert_equal(new_seat_temp, (initial_seat_temp + i) % 3, 'Seat temp fail')
 
-        self.main_device.mbs.showHideHvac()
+        self.mbs.showHideHvac()
 
 if __name__ == '__main__':
-    common_main()
+    test_runner.run()
