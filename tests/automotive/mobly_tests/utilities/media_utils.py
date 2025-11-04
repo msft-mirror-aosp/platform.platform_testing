@@ -243,9 +243,9 @@ class MediaUtils:
         self.discoverer.mbs.scrollPlayListDown()
 
     # Select first visible song from playlist
-    def select_song_from_playlist(self):
+    def select_song_from_playlist(self,index):
         logging.info("Select song from playlist on HU")
-        self.discoverer.mbs.clickOnSongFromPlaylist()
+        self.discoverer.mbs.clickOnSongFromPlaylist(index)
 
     # Get playing Album title
     def get_album_title_on_hu(self):

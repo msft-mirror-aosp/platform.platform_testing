@@ -289,13 +289,12 @@ public interface IAutoMediaHelper extends IAppHelper, Scrollable {
      */
     void scrollPlayListDown();
 
-
     /**
      * Setup expectations: Bluetooth Audio page opened.
      *
-     * <p>This method is used to select song from playlist.
+     * <p>This method is used to select song from playlist with index.
      */
-    void clickOnSongFromPlaylist();
+    void clickOnSongFromPlaylist(int index);
 
     /**
      * Setup expectations: Media card is open and playing any song.

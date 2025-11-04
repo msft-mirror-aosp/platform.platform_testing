@@ -46,8 +46,8 @@ class PlaylistRendering(bluetooth_base_test.BluetoothBaseTest):
         asserts.assert_true(self.media_utils.is_playlist_icon_visible(),
                             'Playlist icon should be visible on HU')
         self.media_utils.click_on_playlist_icon()
-        self.media_utils.scroll_playlist_to_the_button()
-        self.media_utils.select_song_from_playlist()
+        self.discoverer.mbs.scrollUpOnePage()
+        self.media_utils.select_song_from_playlist(2)
         self.media_utils.pause_media_on_hu()
         current_phone_song_title = self.media_utils.get_song_title_from_phone()
         current_hu_song_title = self.media_utils.get_song_title_from_hu()
