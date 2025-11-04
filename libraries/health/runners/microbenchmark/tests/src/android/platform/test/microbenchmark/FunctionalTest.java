@@ -71,8 +71,8 @@ public final class FunctionalTest {
                         "@NoMetricBefore",
                         "@Before",
                         "@Test method body",
-                        "@NoMetricAfter",
                         "@After",
+                        "@NoMetricAfter",
                         "@Rule finished",
                         "@NoMetricRule finished")
                 .inOrder();
@@ -90,8 +90,8 @@ public final class FunctionalTest {
                         "@Rule starting",
                         "@NoMetricBefore",
                         "@Before",
-                        "@NoMetricAfter",
                         "@After",
+                        "@NoMetricAfter",
                         "@Rule finished",
                         "@NoMetricRule finished")
                 .inOrder();
@@ -109,8 +109,8 @@ public final class FunctionalTest {
                 .containsExactly(
                         "@NoMetricRule starting",
                         "@Rule starting",
-                        "@NoMetricAfter",
                         "@After",
+                        "@NoMetricAfter",
                         "@Rule finished",
                         "@NoMetricRule finished")
                 .inOrder();
@@ -131,8 +131,8 @@ public final class FunctionalTest {
                         "@NoMetricBefore",
                         "@Before",
                         "@Test method body",
-                        "@NoMetricAfter",
                         "@After",
+                        "@NoMetricAfter",
                         "@Rule finished",
                         "@NoMetricRule finished")
                 .inOrder();
