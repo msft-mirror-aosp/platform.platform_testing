@@ -39,6 +39,9 @@ public final class CoverageSmokeTest extends BaseHostJUnit4Test {
     private static final String COVERAGE_MEASUREMENT_KEY = "coverageFilePath";
     private static final String INNER_JAR_PATH =
             "out/target/common/obj/APPS/CoverageInstrumentationSampleTest_intermediates/jacoco-report-classes.jar";
+    // If you change this, you need to change the ATP config as well:
+    // http://google3/configs/wireless/android/testing/atp/prod/android-code-coverage-team/coverage_smoke_test.gcl;l=42-43;rcl=828097551
+    private static final String METADATA_JAR_NAME = "device-tests_jacoco_report_classes.jar";
 
     @Before
     public void runCoverageDeviceTests() throws DeviceNotAvailableException, TargetSetupError {
@@ -74,8 +77,8 @@ public final class CoverageSmokeTest extends BaseHostJUnit4Test {
         IBuildInfo buildInfo = getBuild();
         File jacocoAllClassesJar =
                 verifyNotNull(
-                        buildInfo.getFile("jacoco-report-classes-all.jar"),
-                        "Could not get jacoco-report-classes-all.jar from the build.");
+                        buildInfo.getFile(METADATA_JAR_NAME),
+                        "Could not get %s from the build.", METADATA_JAR_NAME);
         if (jacocoAllClassesJar.isDirectory()) {
             // If we downloaded directly the subset of files, it will be a directory
             File jacocoReport = FileUtil.findFile(jacocoAllClassesJar, "jacoco-report-classes.jar");
