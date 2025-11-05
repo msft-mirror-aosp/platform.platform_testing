@@ -135,28 +135,37 @@ public class Functional extends BlockJUnit4ClassRunner {
 
     @Override
     protected Statement withBefores(FrameworkMethod method, Object target, Statement s) {
-        s = super.withBefores(method, target, s);
+        // Statements wrap inner to outer, so first add Before, then NoMetricBefore
+        final Statement withStandardBefores = super.withBefores(method, target, s);
 
         // Add @NoMetricBefore's
-        List<FrameworkMethod> befores =
+        List<FrameworkMethod> noMetricBefores =
                 getTestClass().getAnnotatedMethods(Microbenchmark.NoMetricBefore.class);
-        final Statement statement = befores.isEmpty() ? s : new RunBefores(s, befores, target);
+        final Statement withNoMetricBefores =
+                noMetricBefores.isEmpty()
+                        ? withStandardBefores
+                        : new RunBefores(withStandardBefores, noMetricBefores, target);
         // Error artifact saver for exceptions thrown in test-befores and the test method, before
         // test-afters and the exit part of test rules are executed.
-        return withTrace("Befores", artifactSaver(statement, Stream.of(method)));
+        return withTrace("Befores", artifactSaver(withNoMetricBefores, Stream.of(method)));
     }
 
     @Override
     protected Statement withAfters(FrameworkMethod method, Object target, Statement s) {
-        // Add @NoMetricAfter's
-        List<FrameworkMethod> afters =
-                getTestClass().getAnnotatedMethods(Microbenchmark.NoMetricAfter.class);
-        s = afters.isEmpty() ? s : new RunAfters(s, afters, target);
+        // Statements wrap inner to outer, so first add After, then NoMetricAfter
+        final Statement withStandardAfters = super.withAfters(method, target, s);
 
-        final Statement statement = super.withAfters(method, target, s);
+        // Add @NoMetricAfter's
+        List<FrameworkMethod> noMetricAfters =
+                getTestClass().getAnnotatedMethods(Microbenchmark.NoMetricAfter.class);
+        final Statement withNoMetricAfters =
+                noMetricAfters.isEmpty()
+                        ? withStandardAfters
+                        : new RunAfters(withStandardAfters, noMetricAfters, target);
+
         // Error artifact saver for exceptions thrown in "method-afters", i.e. outside the method
         // and method-befores, but before the finalizing the rules.
-        return withTrace("Afters", artifactSaver(statement, Stream.of(method)));
+        return withTrace("Afters", artifactSaver(withNoMetricAfters, Stream.of(method)));
     }
 
     @Override
