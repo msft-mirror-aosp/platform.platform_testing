@@ -20,7 +20,8 @@ public interface IMeetHelper extends IAppHelper {
     /**
      * Setup expectations: N/A.
      *
-     * <p>This method will check if device is currently on the main page of Meet app by looking for the button object for starting a new meeting.
+     * <p>This method will check if device is currently on the main page of Meet app by looking for
+     * the button object for starting a new meeting.
      *
      * @return true if the button is found and clickable, false otherwise
      */
@@ -29,7 +30,8 @@ public interface IMeetHelper extends IAppHelper {
     /**
      * Setup expectations: N/A.
      *
-     * <p>This method will check if device is currently in a meeting of Meet app by looking for the button object for leaving the meeting.
+     * <p>This method will check if device is currently in a meeting of Meet app by looking for the
+     * button object for leaving the meeting.
      *
      * @return true if the button is found and clickable, false otherwise
      */
@@ -49,4 +51,38 @@ public interface IMeetHelper extends IAppHelper {
      */
     public void leaveMeeting();
 
+    /**
+     * Setup expectations: Meet is open and already in a meeting.
+     *
+     * <p>This method will enable the background effect and get back to the meeting.
+     */
+    public void enableBackgroundEffect(String effectDescription);
+
+    /**
+     * Setup expectations: Meet is open and already in a meeting.
+     *
+     * <p>This method will turn on the camera.
+     */
+    public void turnCameraOn();
+
+    /**
+     * Setup expectations: Meet is open and already in a meeting.
+     *
+     * <p>This method will turn off the camera.
+     */
+    public void turnCameraOff();
+
+    /**
+     * Setup expectations: Meet is open and already in a meeting.
+     *
+     * <p>This method will turn on the microphone.
+     */
+    public void turnMicrophoneOn();
+
+    /**
+     * Setup expectations: Meet is open and already in a meeting.
+     *
+     * <p>This method will turn off the microphone.
+     */
+    public void turnMicrophoneOff();
 }
