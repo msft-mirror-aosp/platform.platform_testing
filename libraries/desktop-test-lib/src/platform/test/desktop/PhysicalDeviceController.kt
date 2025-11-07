@@ -20,13 +20,11 @@ import android.provider.Settings
 import android.util.Log
 import android.view.Display
 import androidx.test.platform.app.InstrumentationRegistry
-import com.android.interactive.Step
 import com.google.common.truth.Truth.assertWithMessage
-import java.util.Optional
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
-import platform.test.desktop.DesktopTestOptions.isAutomated
-import platform.test.desktop.DesktopTestOptions.isManual
+import platform.test.desktop.interactive.ConnectDevicesDialogProvider
+import platform.test.desktop.interactive.DesktopTestOptionsProvider
 
 /**
  * A physical display device returned by a [PhysicalDeviceController].
@@ -55,7 +53,8 @@ data class PhysicalDisplayDevice(val d: DisplayDevice) : DisplayDevice by d
  */
 class PhysicalDeviceController : PeripheralsController {
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
-    private val displayMonitor = DisplayMonitor(TAG, DesktopTestOptions.allowDisablingDisplays)
+    private var optionsProvider = DesktopTestOptionsProvider.getInstance()
+    private val displayMonitor = DisplayMonitor(TAG, optionsProvider.allowDisablingDisplays())
     private val isAutomatedWithVkms = checkVkms()
     private var currentDisplaysPeripherals: List<Pair<DisplayPeripheral, Display>>? = null
 
@@ -116,7 +115,8 @@ class PhysicalDeviceController : PeripheralsController {
     }
 
     /**
-     * @param peripherals required
+     * @param displayPeripherals required
+     * @param timeout for how long we should wait for peripherals
      * @return true if the test must run. false if there is no way to run the test e.g. due to lack
      *   of infrastructure support, but the test still may run if it can.
      */
@@ -124,7 +124,7 @@ class PhysicalDeviceController : PeripheralsController {
         displayPeripherals: List<DisplayPeripheral>,
         timeout: Duration,
     ): Boolean {
-        if (!isManual && !isAutomated && !isAutomatedWithVkms) {
+        if (!optionsProvider.isManual() && !optionsProvider.isAutomated() && !isAutomatedWithVkms) {
             if (!displayPeripherals.isEmpty()) {
                 Log.i(
                     TAG,
@@ -136,7 +136,6 @@ class PhysicalDeviceController : PeripheralsController {
             // not required to run the test, but it still may with simulated peripherals.
             return false
         }
-        HumanDialog.init(displayPeripherals)
         // We must run the test if there is a PHYSICAL only peripheral required.
         val mustRunTest = displayPeripherals.any { it.type == PeripheralType.PHYSICAL }
         if (!displayMonitor.startMonitoring(createDisplayExpectation(displayPeripherals))) {
@@ -145,12 +144,15 @@ class PhysicalDeviceController : PeripheralsController {
             }
             val isConditionSatisfied =
                 try {
-                    if (!timeout.isPositive() || (isManual && HumanDialog.show())) {
+                    if (
+                        !timeout.isPositive() ||
+                            (optionsProvider.isManual() && HumanDialog.show(displayPeripherals))
+                    ) {
                         // Don't wait anymore as user either confirmed the connection, or
                         // condition is satisfied, or timeout is reached.
                         // result of waitForCondition is set to isConditionSatisfied
                         displayMonitor.waitForCondition(0.seconds)
-                    } else if (isAutomated || isAutomatedWithVkms) {
+                    } else if (optionsProvider.isAutomated() || isAutomatedWithVkms) {
                         // result of waitForCondition is set to isConditionSatisfied
                         displayMonitor.waitForCondition(timeout)
                     } else {
@@ -159,12 +161,21 @@ class PhysicalDeviceController : PeripheralsController {
                         return false
                     }
                 } catch (e: NoClassDefFoundError) {
-                    // In case HumanDialog fails to show up due to resources missing
-                    // just wait for the peripherals
                     Log.w(
                         TAG,
                         "Can't show human dialog due to missing resources. Is " +
                             "'Interactive' library missing in Android.bp static_libs?",
+                        e,
+                    )
+                    displayMonitor.waitForCondition(timeout)
+                } catch (e: ClassNotFoundException) {
+                    // In case HumanDialog fails to show up due to resources missing
+                    // just wait for the peripherals
+                    Log.w(
+                        TAG,
+                        "Can't show human dialog due to missing resources. is " +
+                            "'desktop-test-lib-interactive' library missing" +
+                            " in Android.bp static_libs?",
                         e,
                     )
                     displayMonitor.waitForCondition(timeout)
@@ -203,7 +214,7 @@ class PhysicalDeviceController : PeripheralsController {
                 ) != null
             if (result) {
                 // If condition is satisfied - unblock the dialog
-                HumanDialog.unblockDialog = Optional.of(true)
+                HumanDialog.unblock()
             }
             result
         }
@@ -212,47 +223,21 @@ class PhysicalDeviceController : PeripheralsController {
     private fun checkVkms() = false
 
     object HumanDialog {
-        var textToShow = ""
+        fun unblock() {
+            ConnectDevicesDialogProvider.instance.unblockDialog()
+        }
 
-        @Volatile var unblockDialog: Optional<Boolean> = Optional.empty()
-
-        fun init(displayPeripherals: List<DisplayPeripheral>) {
-            textToShow =
+        fun show(displayPeripherals: List<DisplayPeripheral>): Boolean {
+            // Show dialog, blocking execution until user confirmation or condition satisfaction
+            // or timeout
+            val textToShow =
                 if (displayPeripherals.isEmpty()) {
                     "Disconnect peripherals"
                 } else {
                     "Connect: ${displayPeripherals.map { "${it::class.simpleName}:${it.size}" }}"
                 }
-            unblockDialog = Optional.empty()
-        }
-
-        fun show(): Boolean {
-            // Show dialog, blocking execution until user confirmation or condition satisfaction
-            // or timeout
-            return Step.execute(AskHumanConnectDevices::class.java) ?: false
-        }
-
-        class AskHumanConnectDevices : Step<Boolean>() {
-            private val deadline = System.currentTimeMillis() + TIMEOUT.inWholeMilliseconds
-
-            override fun interact() {
-                show(textToShow)
-                // Return true, so the test must continue to run
-                addButton("Continue", { pass(true) })
-                // Return false, so the test is not required to run.
-                addButton("Skip", { pass(false) })
-            }
-
-            override fun getValue(): Optional<Boolean> {
-                // If timeout exceeded - unblock the dialog
-                if (System.currentTimeMillis() > deadline) {
-                    // Return true, so the test must attempt continue to run
-                    // isConditionSatisfied in [peripheralsSetup] may be set false,
-                    // but test may still continue if mustRunTest is false
-                    return Optional.of(true)
-                }
-                return super.value.or { unblockDialog }
-            }
+            return ConnectDevicesDialogProvider.instance.showDialog(
+                    textToShow, TIMEOUT.inWholeMilliseconds)
         }
     }
 
