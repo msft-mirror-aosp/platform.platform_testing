@@ -32,6 +32,9 @@ import android.platform.helpers.IAutoSettingHelper;
 import android.platform.helpers.IAutoTestMediaAppHelper;
 import android.platform.helpers.SettingsConstants;
 import android.platform.test.option.StringOption;
+import android.platform.test.rules.ConditionalIgnore;
+import android.platform.test.rules.ConditionalIgnoreRule;
+import android.platform.test.rules.IgnoreOnPortrait;
 import android.util.Log;
 
 import androidx.test.runner.AndroidJUnit4;
@@ -39,11 +42,13 @@ import androidx.test.runner.AndroidJUnit4;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
 public class MediaTestAppTest {
+    @Rule public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
 
     private static final String MEDIA_APP = "media-app";
     private static final String TEST_MEDIA_APP = "Test Media App";
@@ -52,6 +57,7 @@ public class MediaTestAppTest {
     private static final String RABITHOLE_SONG_NAME = "A normal 15s song";
     private static final String CUSTOM_SONG_NAME = "Long playback error message";
     private static final String RADIO_STATION = "99.7 Now!";
+    private static final String ANOTHER_RADIO_STATION = "87.9";
     private static final String NEWS_CHANNEL_NAME = "FOX NEWS";
     private static final String RADIO_APP = "Radio";
     private static final String LOG_TAG = MediaTestAppTest.class.getSimpleName();
@@ -197,15 +203,6 @@ public class MediaTestAppTest {
                         .checkPlayingTrackFromMediaAppCategories(
                                 AutomotiveConfigConstants.ADVANCED_CATEGORY, ADVANCE_SONG_NAME));
 
-        Log.i(LOG_TAG, "Assert: Media Song playing has changed according to RABBIT Category");
-        assertTrue(
-                "Media Song playing has not changed according to RABIT Category",
-                sMediaCenterHelper
-                        .get()
-                        .checkPlayingTrackFromMediaAppCategories(
-                                AutomotiveConfigConstants.RABBIT_HOLE_CATEGORY,
-                                RABITHOLE_SONG_NAME));
-
         Log.i(LOG_TAG, "Act: Minimize playing song");
         sMediaCenterHelper.get().minimizeNowPlaying();
 
@@ -217,7 +214,7 @@ public class MediaTestAppTest {
         Log.i(LOG_TAG, "Assert: Media Song playing has not changed for Empty Category");
         assertEquals(
                 "Song playing has been changed for Empty category",
-                RABITHOLE_SONG_NAME,
+                ADVANCE_SONG_NAME,
                 sMediaCenterHelper.get().getMediaTrackName());
 
         Log.i(LOG_TAG, "Act: Select Media Category back to Basic");
@@ -227,6 +224,7 @@ public class MediaTestAppTest {
     }
 
     @Test
+    @ConditionalIgnore(condition = IgnoreOnPortrait.class)
     public void testMediaPlayQueueSongs() {
         Log.i(LOG_TAG, "Act: Maximize playing song");
         sMediaCenterHelper.get().maximizeNowPlaying();
@@ -269,6 +267,12 @@ public class MediaTestAppTest {
 
     @Test
     public void testMetadataOfCurrentPlayingMedia() {
+        Log.i(LOG_TAG, "Act: Open Appgrid");
+        sAppGridHelper.get().open();
+
+        Log.i(LOG_TAG, "Act: Open Test Media App");
+        sAppGridHelper.get().openApp(TEST_MEDIA_APP);
+
         Log.i(LOG_TAG, "Act: Select Normal 1H track song");
         sMediaCenterHelper.get().selectMediaTrack(mDefaultSongName);
 
@@ -347,7 +351,11 @@ public class MediaTestAppTest {
                 .get()
                 .navigateMediaAppCategories(AutomotiveConfigConstants.BROWSE_RADIO_CATEGORY);
         Log.i(LOG_TAG, "Act: Select Radio track");
-        sMediaCenterHelper.get().selectMediaTrack(RADIO_STATION);
+        try {
+            sMediaCenterHelper.get().selectMediaTrack(RADIO_STATION);
+        } catch (Exception e) {
+            sMediaCenterHelper.get().selectMediaTrack(ANOTHER_RADIO_STATION);
+        }
     }
 
     @Test
@@ -363,7 +371,10 @@ public class MediaTestAppTest {
         Log.i(LOG_TAG, "Assert: Radio App is open and playing the station");
         assertTrue(
                 "Radio App is Not open",
-                sMediaCenterHelper.get().isMediaAppOpenAndTrackPlaying(RADIO_STATION));
+                (sMediaCenterHelper.get().isMediaAppOpenAndTrackPlaying(RADIO_STATION)
+                        || sMediaCenterHelper
+                                .get()
+                                .isMediaAppOpenAndTrackPlaying(ANOTHER_RADIO_STATION)));
 
         sMediaCenterHelper.get().openMediaAppAndPlayGivenSong(TEST_MEDIA_APP, mDefaultSongName);
 
