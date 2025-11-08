@@ -26,7 +26,7 @@ import androidx.test.uiautomator.UiObject2;
 public class UIHelperImpl extends AbstractStandardAppHelper implements IAutoGeneralUIHelper {
 
     private static final String LOG_TAG = UIHelperImpl.class.getSimpleName();
-    private static final int MS_WAIT = 10000;
+    private static final int MS_WAIT = 50000;
 
     private SpectatioUiUtil mSpectatioUiUtil;
 
