@@ -41,6 +41,7 @@ class SelectSongFromPlaylist(bluetooth_base_test.BluetoothBaseTest):
         self.media_utils.open_media_app_on_hu()
         self.call_utils.handle_bluetooth_audio_pop_up()
         self.media_utils.open_youtube_music_app()
+        self.call_utils.wait_with_log(20)
         self.media_utils.click_continue_on_allow_contacts_hu()
         current_phone_song_title = self.media_utils.get_song_title_from_phone()
         current_hu_song_title = self.media_utils.get_song_title_from_hu()
@@ -50,11 +51,16 @@ class SelectSongFromPlaylist(bluetooth_base_test.BluetoothBaseTest):
 
         # Maximize playing song
         self.media_utils.maximize_now_playing()
+        asserts.assert_true(self.media_utils.is_playlist_icon_visible(),
+                            'Playlist icon should be visible on HU')
         # Open play list
-        self.media_utils.open_media_playlist()
+        self.media_utils.click_on_playlist_icon()
         # Scroll play list to the button
         self.discoverer.mbs.scrollUpOnePage()
         self.media_utils.select_song_from_playlist(2)
+        # This step is for RB
+        if self.media_utils.is_playlist_icon_visible():
+           self.media_utils.click_on_playlist_icon()
         self.call_utils.wait_with_log(2)
         current_next_phone_song_title = self.media_utils.get_song_title_from_phone()
         current_next_hu_song_title = self.media_utils.get_song_title_from_hu()

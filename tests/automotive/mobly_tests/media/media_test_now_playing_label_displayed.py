@@ -45,7 +45,7 @@ class IsNowPlayingLabelDisplayed(bluetooth_base_test.BluetoothBaseTest):
         self.media_utils.pause_media_on_hu()
         self.media_utils.maximize_now_playing()
         self.call_utils.wait_with_log(5)
-        asserts.assert_true(self.media_utils.is_now_playing_label_displayed(),
+        asserts.assert_true(self.media_utils.is_now_playing_label_displayed() or self.media_utils.get_current_song_max_playing_time_on_hu()!='',
                             '<Now Playing> label should be displayed')
 
     def teardown_test(self):

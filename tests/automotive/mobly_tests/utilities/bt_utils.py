@@ -128,7 +128,7 @@ class BTUtils:
 
     def allow_permissions_after_pairing(self):
         self.press_allow_on_phone()
-        time.sleep(constants.DEFAULT_WAIT_TIME_FIFTEEN_SECS)
+        time.sleep(10)
         self.handle_assistant_pop_up()
 
     def unpair(self):
