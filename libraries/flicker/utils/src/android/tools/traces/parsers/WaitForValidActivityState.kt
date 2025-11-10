@@ -19,6 +19,7 @@ package android.tools.traces.parsers
 import android.app.ActivityTaskManager
 import android.app.WindowConfiguration
 import android.tools.traces.component.IComponentMatcher
+import android.view.Display
 
 data class WaitForValidActivityState(
     @JvmField val activityMatcher: IComponentMatcher?,
@@ -26,6 +27,7 @@ data class WaitForValidActivityState(
     @JvmField val stackId: Int,
     @JvmField val windowingMode: Int,
     @JvmField val activityType: Int,
+    @JvmField val displayId: Int,
 ) {
     constructor(
         activityName: IComponentMatcher
@@ -35,6 +37,7 @@ data class WaitForValidActivityState(
         stackId = ActivityTaskManager.INVALID_STACK_ID,
         windowingMode = WindowConfiguration.WINDOWING_MODE_UNDEFINED,
         activityType = WindowConfiguration.ACTIVITY_TYPE_UNDEFINED,
+        displayId = Display.DEFAULT_DISPLAY,
     )
 
     private constructor(
@@ -45,6 +48,7 @@ data class WaitForValidActivityState(
         stackId = builder.stackId,
         windowingMode = builder.windowingMode,
         activityType = builder.activityType,
+        displayId = builder.displayId,
     )
 
     override fun toString(): String {
@@ -64,6 +68,9 @@ data class WaitForValidActivityState(
         if (stackId != ActivityTaskManager.INVALID_STACK_ID) {
             sb.append(" stack=").append(stackId)
         }
+        if (displayId != Display.DEFAULT_DISPLAY) {
+            sb.append(" display=").append(displayId)
+        }
         return sb.toString()
     }
 
@@ -72,6 +79,7 @@ data class WaitForValidActivityState(
         internal var stackId = ActivityTaskManager.INVALID_STACK_ID
         internal var windowingMode = WindowConfiguration.WINDOWING_MODE_UNDEFINED
         internal var activityType = WindowConfiguration.ACTIVITY_TYPE_UNDEFINED
+        internal var displayId = Display.DEFAULT_DISPLAY
 
         fun setWindowIdentifier(windowIdentifier: String): Builder {
             this.windowIdentifier = windowIdentifier
@@ -90,6 +98,11 @@ data class WaitForValidActivityState(
 
         fun setActivityType(activityType: Int): Builder {
             this.activityType = activityType
+            return this
+        }
+
+        fun setDisplayId(displayId: Int): Builder {
+            this.displayId = displayId
             return this
         }
 

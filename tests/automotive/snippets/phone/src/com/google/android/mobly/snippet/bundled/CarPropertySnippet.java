@@ -19,7 +19,9 @@ package com.google.android.mobly.snippet.bundled;
 import static com.google.common.util.concurrent.MoreExecutors.newDirectExecutorService;
 
 import android.app.UiAutomation;
+import android.car.VehicleAreaSeat;
 import android.car.VehicleGear;
+import android.car.VehicleSeatOccupancyState;
 import android.car.VehicleUnit;
 
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -299,6 +301,42 @@ public class CarPropertySnippet implements Snippet {
         set("NIGHT_MODE").value(Boolean.parseBoolean(enabled)).execute(mUiAutomation);
     }
 
+    /** Set driver seat occupancy to Occupied */
+    @Rpc(description = "Set driver seat occupancy to Occupied")
+    public void setDriverSeatSetOccupancytoOccupied() {
+        set("SEAT_OCCUPANCY")
+                .areaId(VehicleAreaSeat.SEAT_ROW_1_LEFT)
+                .value(VehicleSeatOccupancyState.OCCUPIED)
+                .execute(mUiAutomation);
+    }
+
+    /** Set driver seat occupancy to Vacant */
+    @Rpc(description = "Set driver seat occupancy to Vacant")
+    public void setDriverSeatSetOccupancytoVacant() {
+        set("SEAT_OCCUPANCY")
+                .areaId(VehicleAreaSeat.SEAT_ROW_1_LEFT)
+                .value(VehicleSeatOccupancyState.VACANT)
+                .execute(mUiAutomation);
+    }
+
+    /** Set passenger seat occupancy to Occupied */
+    @Rpc(description = "Set passenger seat occupancy to Occupied")
+    public void setPassengerSeatSetOccupancytoOccupied() {
+        set("SEAT_OCCUPANCY")
+                .areaId(VehicleAreaSeat.SEAT_ROW_1_RIGHT)
+                .value(VehicleSeatOccupancyState.OCCUPIED)
+                .execute(mUiAutomation);
+    }
+
+    /** Set passenger seat occupancy to Vacant */
+    @Rpc(description = "Set passenger seat occupancy to Vacant")
+    public void setPassengerSeatSetOccupancytoVacant() {
+        set("SEAT_OCCUPANCY")
+                .areaId(VehicleAreaSeat.SEAT_ROW_1_RIGHT)
+                .value(VehicleSeatOccupancyState.VACANT)
+                .execute(mUiAutomation);
+    }
+
     private static SetProp set(String name) {
         return new SetProp(name);
     }
@@ -310,6 +348,11 @@ public class CarPropertySnippet implements Snippet {
                     "dumpsys android.hardware.automotive.vehicle.IVehicle/default --set "
                             + name + " ";
             mCommand = new ExecutableCommand(command);
+        }
+
+        public SetProp areaId(int areaId) {
+            mCommand.append("-a ").append("" + areaId + " ");
+            return this;
         }
 
         public ExecuteSet value(boolean value) {

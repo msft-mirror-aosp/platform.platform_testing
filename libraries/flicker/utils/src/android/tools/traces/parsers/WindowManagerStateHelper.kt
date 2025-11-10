@@ -228,7 +228,7 @@ constructor(
             componentMatcher: IComponentMatcher,
             displayId: Int = Display.DEFAULT_DISPLAY,
         ) =
-            withFullScreenAppCondition(componentMatcher)
+            withFullScreenAppCondition(componentMatcher, displayId)
                 .withAppTransitionIdle(displayId)
                 .add(ConditionsFactory.isLayerVisible(componentMatcher))
 
@@ -244,7 +244,7 @@ constructor(
             componentMatcher: IComponentMatcher,
             displayId: Int = Display.DEFAULT_DISPLAY,
         ) =
-            withFreeformAppCondition(componentMatcher)
+            withFreeformAppCondition(componentMatcher, displayId)
                 .withAppTransitionIdle(displayId)
                 .add(ConditionsFactory.isLayerVisible(componentMatcher))
 
@@ -598,19 +598,21 @@ constructor(
                 }
             }
 
-        fun withFullScreenAppCondition(componentMatcher: IComponentMatcher) =
+        fun withFullScreenAppCondition(componentMatcher: IComponentMatcher, displayId: Int) =
             waitForValidStateCondition(
                 WaitForValidActivityState.Builder(componentMatcher)
                     .setWindowingMode(WindowConfiguration.WINDOWING_MODE_FULLSCREEN)
                     .setActivityType(WindowConfiguration.ACTIVITY_TYPE_STANDARD)
+                    .setDisplayId(displayId)
                     .build()
             )
 
-        fun withFreeformAppCondition(componentMatcher: IComponentMatcher) =
+        fun withFreeformAppCondition(componentMatcher: IComponentMatcher, displayId: Int) =
             waitForValidStateCondition(
                 WaitForValidActivityState.Builder(componentMatcher)
                     .setWindowingMode(WindowConfiguration.WINDOWING_MODE_FREEFORM)
                     .setActivityType(WindowConfiguration.ACTIVITY_TYPE_STANDARD)
+                    .setDisplayId(displayId)
                     .build()
             )
     }
@@ -642,7 +644,7 @@ constructor(
             wmState: WindowManagerState
         ): Boolean {
             val matcher = activityMatcher ?: error("Activity name missing in $this")
-            val matchedWindowStates = wmState.getMatchingVisibleWindowState(matcher)
+            val matchedWindowStates = wmState.getMatchingVisibleWindowState(matcher, displayId)
 
             if (matchedWindowStates.isEmpty()) {
                 Log.i(LOG_TAG, "Activity window not visible: $windowIdentifier")

@@ -1,5 +1,6 @@
 //! Test use of `rdroidtest` attribute macro.
 
+use anyhow::Result;
 use rdroidtest::{ignore_if, rdroidtest};
 
 mod raw;
@@ -11,10 +12,25 @@ fn one_plus_one() {
 }
 
 #[rdroidtest]
+fn one_plus_one_with_result() -> Result<()> {
+    let result = 1 + 1;
+    assert_eq!(result, 2);
+    Ok(())
+}
+
+#[rdroidtest]
 #[ignore_if(feeling_happy())]
 fn grumble() {
     let result = 1 + 1;
     assert_eq!(result, 2);
+}
+
+#[rdroidtest]
+#[ignore_if(feeling_happy())]
+fn grumble_with_result() -> Result<()> {
+    let result = 1 + 1;
+    assert_eq!(result, 2);
+    Ok(())
 }
 
 #[rdroidtest]
@@ -34,9 +50,22 @@ fn is_less_than_five(param: u32) {
 }
 
 #[rdroidtest(my_instances())]
+fn is_less_than_five_with_result(param: u32) -> Result<()> {
+    assert!(param < 5);
+    Ok(())
+}
+
+#[rdroidtest(my_instances())]
 #[ignore_if(feeling_odd)]
 fn is_even(param: u32) {
     assert_eq!(param % 2, 0);
+}
+
+#[rdroidtest(my_instances())]
+#[ignore_if(feeling_odd)]
+fn is_even_with_result(param: u32) -> Result<()> {
+    assert_eq!(param % 2, 0);
+    Ok(())
 }
 
 #[rdroidtest(my_instances())]

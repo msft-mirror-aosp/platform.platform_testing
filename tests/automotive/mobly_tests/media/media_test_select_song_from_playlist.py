@@ -41,6 +41,7 @@ class SelectSongFromPlaylist(bluetooth_base_test.BluetoothBaseTest):
         self.media_utils.open_media_app_on_hu()
         self.call_utils.handle_bluetooth_audio_pop_up()
         self.media_utils.open_youtube_music_app()
+        self.media_utils.click_continue_on_allow_contacts_hu()
         current_phone_song_title = self.media_utils.get_song_title_from_phone()
         current_hu_song_title = self.media_utils.get_song_title_from_hu()
         asserts.assert_true(current_phone_song_title == current_hu_song_title,
@@ -52,8 +53,8 @@ class SelectSongFromPlaylist(bluetooth_base_test.BluetoothBaseTest):
         # Open play list
         self.media_utils.open_media_playlist()
         # Scroll play list to the button
-        self.media_utils.scroll_playlist_to_the_button()
-        self.media_utils.select_song_from_playlist()
+        self.discoverer.mbs.scrollUpOnePage()
+        self.media_utils.select_song_from_playlist(2)
         self.call_utils.wait_with_log(2)
         current_next_phone_song_title = self.media_utils.get_song_title_from_phone()
         current_next_hu_song_title = self.media_utils.get_song_title_from_hu()

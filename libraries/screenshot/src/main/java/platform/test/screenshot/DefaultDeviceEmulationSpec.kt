@@ -79,4 +79,6 @@ object Displays {
     val External4k = DisplaySpec("external4k", width = 3840, height = 2160, densityDpi = 320)
 
     val Desktop = DisplaySpec("desktop", width = 1920, height = 1080, densityDpi = 320)
+
+    val Desktop160dpi = DisplaySpec("desktop160dpi", width = 1920, height = 1080, densityDpi = 160)
 }

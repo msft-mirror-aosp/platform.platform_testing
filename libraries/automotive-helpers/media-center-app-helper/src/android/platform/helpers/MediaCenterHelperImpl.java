@@ -721,20 +721,16 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
-    public void clickOnSongFromPlaylist() {
+    public void clickOnSongFromPlaylist(int index) {
         BySelector songInPlaylist =
                 getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_SONG_IN_PLAYLIST);
-        UiObject2 songInPlaylistObject =
-                getSpectatioUiUtil().findUiObject(songInPlaylist);
+        List<UiObject2> songInPlaylistObject = getSpectatioUiUtil().findUiObjects(songInPlaylist);
         getSpectatioUiUtil()
-                .validateUiObject(
-                        songInPlaylistObject,
-                        AutomotiveConfigConstants.MEDIA_SONG_IN_PLAYLIST);
-        getSpectatioUiUtil().clickAndWait(songInPlaylistObject);
+                .validateUiObjects(
+                        songInPlaylistObject, AutomotiveConfigConstants.MEDIA_SONG_IN_PLAYLIST);
+        getSpectatioUiUtil().clickAndWait(songInPlaylistObject.get(index));
         getSpectatioUiUtil().wait5Seconds();
     }
 

@@ -219,6 +219,9 @@ public class HelperManager {
             } catch (ClassNotFoundException e) {
                 Log.w(LOG_TAG, String.format("Class not found: %s", className));
                 continue;
+            } catch (IllegalAccessError e) {
+                Log.w(LOG_TAG, String.format("Class not usable: %s", className));
+                continue;
             }
             if (base.isAssignableFrom(clazz)
                     && !clazz.equals(base)

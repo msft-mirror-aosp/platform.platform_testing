@@ -5,6 +5,7 @@ use libtest_mimic::{Arguments, Failed, Trial};
 use linkme::distributed_slice;
 use log::LevelFilter;
 use std::env;
+use std::fmt::Debug;
 
 /// Command-line arguments to ignore, because they are not supported by libtest-mimic.
 const IGNORED_ARGS: [&str; 2] = ["-Zunstable-options", "--report-time"];
@@ -37,4 +38,13 @@ pub fn main() {
 pub fn run(test: impl FnOnce()) -> Result<(), Failed> {
     test();
     Ok(())
+}
+
+/// Runs the given test.
+pub fn run_with_result<F, E>(test: F) -> Result<(), Failed>
+where
+    F: FnOnce() -> Result<(), E>,
+    E: Debug + 'static,
+{
+    test().map_err(|e| format!("Test failed: {e:?}").into())
 }

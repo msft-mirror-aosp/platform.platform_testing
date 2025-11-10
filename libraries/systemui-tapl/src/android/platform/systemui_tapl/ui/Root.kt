@@ -39,7 +39,6 @@ import android.platform.uiautomatorhelpers.DeviceHelpers.assertInvisible
 import android.platform.uiautomatorhelpers.DeviceHelpers.assertVisible
 import android.platform.uiautomatorhelpers.DeviceHelpers.betterSwipe
 import android.platform.uiautomatorhelpers.DeviceHelpers.uiDevice
-import android.platform.uiautomatorhelpers.DeviceHelpers.waitForNullableObj
 import android.platform.uiautomatorhelpers.DeviceHelpers.waitForObj
 import android.platform.uiautomatorhelpers.FailedEnsureException
 import android.view.Display.DEFAULT_DISPLAY
@@ -88,21 +87,14 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
         }
     }
 
-    /**
-     * Opens the notification shade with retrying on failure. Use this if there is no need to assert
-     * the way of opening it.
-     *
-     * This function can be used on the desktop environment.
-     *
-     * @return A [NotificationShade] instance representing the opened shade.
-     * @throws IllegalStateException if the shade fails to open after all retry attempts.
-     */
-    fun openNotificationShadeWithRetry(): NotificationShade {
+    private fun openNotificationShadeWithRetryInternal(
+        executeShadeExpand: () -> Unit
+    ): NotificationShade {
         for (attempt in 1..MAX_RETRY_ATTEMPTS) {
             try {
                 val shade =
                     if (Flags.sceneContainer()) {
-                        uiDevice.executeShellCommand("cmd statusbar expand-notifications-instant")
+                        executeShadeExpand()
                         waitForNotificationStackScroller()
                         NotificationShade(displayId)
                     } else {
@@ -120,6 +112,42 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
             "Failed to open notification shade on display $displayId after $MAX_RETRY_ATTEMPTS " +
                 "attempts."
         )
+    }
+
+    /**
+     * Opens the notification shade with retrying on failure. Use this for opening the notification
+     * shade instantly.
+     *
+     * This function can be used on the desktop environment.
+     *
+     * @return A [NotificationShade] instance representing the opened shade.
+     * @throws IllegalStateException if the shade fails to open after all retry attempts.
+     */
+    fun openNotificationShadeWithRetry(): NotificationShade {
+        return openNotificationShadeWithRetryInternal {
+            uiDevice.executeShellCommand("cmd statusbar expand-notifications-instant")
+        }
+    }
+
+    /**
+     * Opens the notification shade via swipe with retrying on failure. Use this for opening the
+     * notification shade using a swipe gesture.
+     *
+     * This function can be used on the desktop environment.
+     *
+     * @param swipeDuration amount of time the swipe will last from start to finish.
+     * @param heightFraction fraction of the height of the display to start from.
+     * @return A [NotificationShade] instance representing the opened shade.
+     * @throws IllegalStateException if the shade fails to open after all retry attempts.
+     */
+    @JvmOverloads
+    fun openNotificationShadeViaSwipeWithRetry(
+        swipeDuration: Duration = Duration.ofMillis(500),
+        heightFraction: Float = 0.1F,
+    ): NotificationShade {
+        return openNotificationShadeWithRetryInternal {
+            openNotificationShadeViaSwipe(swipeDuration, heightFraction)
+        }
     }
 
     private val notificationStackScrollerSelector =
