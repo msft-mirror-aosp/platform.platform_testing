@@ -34,7 +34,7 @@ class TestOption(enum.Enum):
     ALLOW_DISABLING_DISPLAYS = 'ALLOW_DISABLING_DISPLAYS'
     ENABLE_MANUAL = 'ENABLE_MANUAL'
     ENABLE_AUTOMATED = 'ENABLE_AUTOMATED'
-# LINT.ThenChange(../src/platform/test/desktop/DesktopTestOptions.kt)
+# LINT.ThenChange(../src/platform/test/desktop/interactive/DesktopTestOptionsProvider.kt)
 
 
 class OverallResult(enum.Enum):

@@ -34,7 +34,7 @@ android_test {
         "androidx.test.rules",
         "mockito-target-minus-junit4",
         "platform-test-annotations",
-        "desktop-test-lib",
+        "desktop-test-lib-interactive",
         "kotlinx_coroutines",
         "truth",
         "kotlin-test",
