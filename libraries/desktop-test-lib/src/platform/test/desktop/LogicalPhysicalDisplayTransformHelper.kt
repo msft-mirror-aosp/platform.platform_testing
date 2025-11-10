@@ -28,6 +28,7 @@ import android.window.WindowInfosListenerForTest
 import android.window.WindowInfosListenerForTest.DisplayInfo
 import android.window.WindowInfosListenerForTest.WindowInfo
 import androidx.annotation.RequiresPermission
+import com.android.compatibility.common.util.SystemUtil.runWithShellPermissionIdentity
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.function.BiConsumer
@@ -164,7 +165,10 @@ constructor(displayManager: DisplayManager) {
 
         val listener = WindowInfosListenerForTest()
         try {
-            listener.addWindowInfosListener(consumer)
+            runWithShellPermissionIdentity(
+                { listener.addWindowInfosListener(consumer) },
+                Manifest.permission.ACCESS_SURFACE_FLINGER,
+            )
             return consumer.awaitAndGet()
         } finally {
             listener.removeWindowInfosListener(consumer)
@@ -193,7 +197,6 @@ constructor(displayManager: DisplayManager) {
             displayTransform: LogicalPhysicalDisplayTransformHelper
         ) = displayTransform.logicalToPhysical(this.getPointF(), this.displayId)
 
-        val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.ACCESS_SURFACE_FLINGER)
         private val TIMEOUT: Duration = 10.seconds
         private const val TAG = "LogicalPhysicalDisplayTransformHelper"
     }
