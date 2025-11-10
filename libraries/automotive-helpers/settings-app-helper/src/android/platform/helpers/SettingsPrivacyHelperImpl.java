@@ -15,9 +15,12 @@
  */
 package android.platform.helpers;
 
+import static junit.framework.Assert.assertTrue;
+
 import android.app.Instrumentation;
 import android.platform.helpers.ScrollUtility.ScrollActions;
 import android.platform.helpers.ScrollUtility.ScrollDirection;
+import android.platform.spectatio.utils.SpectatioUiUtil;
 
 import androidx.test.uiautomator.By;
 import androidx.test.uiautomator.BySelector;
@@ -27,9 +30,10 @@ import androidx.test.uiautomator.UiObject2;
 public class SettingsPrivacyHelperImpl extends AbstractStandardAppHelper
         implements IAutoPrivacySettingsHelper {
     private static final int MAX_WAIT_COUNT = 5;
-    private static final int WAIT_TIME = 10000;
+    private static final int WAIT_TIME_MS = 20000;
 
     private HelperAccessor<IAutoUISettingsHelper> mSettingUIHelper;
+    private HelperAccessor<IAutoSettingHelper> mSettingHelper;
     private ScrollUtility mScrollUtility;
     private ScrollActions mScrollAction;
     private BySelector mBackwardButtonSelector;
@@ -40,6 +44,7 @@ public class SettingsPrivacyHelperImpl extends AbstractStandardAppHelper
     public SettingsPrivacyHelperImpl(Instrumentation instr) {
         super(instr);
         mSettingUIHelper = new HelperAccessor<>(IAutoUISettingsHelper.class);
+        mSettingHelper = new HelperAccessor<>(IAutoSettingHelper.class);
 
         mScrollUtility = ScrollUtility.getInstance(getSpectatioUiUtil());
         mScrollAction =
@@ -234,27 +239,24 @@ public class SettingsPrivacyHelperImpl extends AbstractStandardAppHelper
     /** {@inheritDoc} */
     @Override
     public boolean verifyMicrophoneManagePermissionsPage() {
-        getSpectatioUiUtil().wait5Seconds();
         BySelector microphoneManagePermissionsSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.MICROPHONE_PERMISSIONS_PAGE);
-        return getSpectatioUiUtil().hasUiElement(microphoneManagePermissionsSelector);
+        return getSpectatioUiUtil().hasUiElement(microphoneManagePermissionsSelector, WAIT_TIME_MS);
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean isAccountAddedAutofill() {
-        getSpectatioUiUtil().wait5Seconds();
         BySelector addAccountSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.ADD_ACCOUNT_TEXT);
-        return getSpectatioUiUtil().hasUiElement(addAccountSelector);
+        return getSpectatioUiUtil().hasUiElement(addAccountSelector, WAIT_TIME_MS);
     }
     /** {@inheritDoc} */
     @Override
     public boolean isNoAccountAddedDialogOpen() {
-        getSpectatioUiUtil().wait5Seconds();
         BySelector noAccountAddedSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.NO_ACCOUNT_TEXT);
-        return getSpectatioUiUtil().hasUiElement(noAccountAddedSelector);
+        return getSpectatioUiUtil().hasUiElement(noAccountAddedSelector, WAIT_TIME_MS);
     }
     /** {@inheritDoc} */
     @Override
@@ -474,7 +476,7 @@ public class SettingsPrivacyHelperImpl extends AbstractStandardAppHelper
                         String.format(
                                 "Scroll on Manage Permission to find  %s",
                                 otherPermissionSelector));
-        getSpectatioUiUtil().waitNSeconds(WAIT_TIME);
+        getSpectatioUiUtil().waitNSeconds(WAIT_TIME_MS);
         getSpectatioUiUtil()
                 .validateUiObject(
                         otherPermissionObject,
@@ -482,7 +484,7 @@ public class SettingsPrivacyHelperImpl extends AbstractStandardAppHelper
         getSpectatioUiUtil().clickAndWait(otherPermissionObject);
         BySelector permissionUsedSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.PERMISSION_USED_BY_SYSTEM);
-        getSpectatioUiUtil().waitForUiObject(permissionUsedSelector, WAIT_TIME);
+        getSpectatioUiUtil().waitForUiObject(permissionUsedSelector, WAIT_TIME_MS);
     }
 
     /** {@inheritDoc} */
@@ -505,6 +507,19 @@ public class SettingsPrivacyHelperImpl extends AbstractStandardAppHelper
                             microPhoneSwitch, AutomotiveConfigConstants.TOGGLE_MICROPHONE);
             getSpectatioUiUtil().clickAndWait(microPhoneSwitch);
         }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void openDataSharingWithGoogle() {
+        mSettingHelper.get().openMenuWith("Data sharing with Google");
+        assertTrue(
+                "Data sharing with Google is not open",
+                getSpectatioUiUtil()
+                        .waitForText(
+                                "Send feedback to Google",
+                                WAIT_TIME_MS,
+                                SpectatioUiUtil.TextMatchType.EXACT));
     }
 }
 
