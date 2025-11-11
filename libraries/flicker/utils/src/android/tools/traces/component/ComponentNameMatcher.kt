@@ -215,7 +215,7 @@ class ComponentNameMatcher(var component: ComponentName) : IComponentNameMatcher
         val QUICK_SHARE_DIALOG_ACTIVITY =
             ComponentNameMatcher(
                 "com.google.android.gms",
-                "com.google.android.gms.nearby.sharing.receive.ReceiveActivity",
+                "com.google.android.gms.nearby.sharing.main.MainActivity",
             )
 
         /**
