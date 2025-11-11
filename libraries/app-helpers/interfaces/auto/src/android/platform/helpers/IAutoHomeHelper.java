@@ -173,4 +173,25 @@ public interface IAutoHomeHelper extends IAppHelper {
      * <p>Checks HVAC panel is opened
      */
     boolean isHVACOpen();
+
+    /**
+     * Setup expectations: Home Screen
+     *
+     * <p>Clicks on Maps App on Dock
+     */
+    void clickMapsAppOnDock();
+
+    /**
+     * Setup expectations: Home Screen
+     *
+     * <p>Clicks on Bluetooth Audio App on Dock
+     */
+    void clickBluetoothAudioAppOnDock();
+
+    /**
+     * Setup expectations: Home Screen
+     *
+     * <p>Clicks on Play store App on Dock
+     */
+    void clickPlaystoreAppOnDock();
 }
