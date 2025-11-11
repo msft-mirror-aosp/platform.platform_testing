@@ -19,12 +19,19 @@ package android.platform.systemui_tapl.ui.quicksettings
 import android.platform.systemui_tapl.ui.BatteryDialog
 import android.platform.systemui_tapl.ui.BluetoothDialog
 import android.platform.systemui_tapl.ui.HearingDevicesDialog
+import android.platform.systemui_tapl.ui.InternetDetailsView
 import android.platform.systemui_tapl.ui.InternetDialog
 import android.platform.systemui_tapl.ui.ModesDialog
 
 fun ComposeQuickSettingsTile.clickInternetTileToOpenDialog(): InternetDialog {
     click()
     return InternetDialog(displayId)
+}
+
+/** Clicks the internet tile to open the internet details view. */
+fun ComposeQuickSettingsTile.clickInternetTileToOpenDetailsView(): InternetDetailsView {
+    click()
+    return InternetDetailsView(displayId)
 }
 
 fun ComposeQuickSettingsTile.clickWifiTileToOpenDialog(): InternetDialog {
