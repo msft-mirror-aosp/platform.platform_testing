@@ -65,6 +65,7 @@ import platform.test.screenshot.PerfectMatcher
 import platform.test.screenshot.ScreenshotActivity
 import platform.test.screenshot.ScreenshotAsserterFactory
 import platform.test.screenshot.ScreenshotTestRule
+import platform.test.screenshot.TimeZoneRule
 import platform.test.screenshot.UnitTestBitmapMatcher
 import platform.test.screenshot.captureToBitmapAsync
 import platform.test.screenshot.dialogScreenshotTest
@@ -77,6 +78,7 @@ class ComposeScreenshotTestRule(
     private val screenshotRule: ScreenshotTestRule = ScreenshotTestRule(pathManager),
     effectContext: CoroutineContext = EmptyCoroutineContext,
 ) : TestRule, BitmapDiffer by screenshotRule, ScreenshotAsserterFactory by screenshotRule {
+    private val timeZoneRule = TimeZoneRule()
     private val colorsRule = MaterialYouColorsRule()
     private val fontsRule = FontsRule()
     private val hardwareRenderingRule = HardwareRenderingRule()
@@ -110,7 +112,7 @@ class ComposeScreenshotTestRule(
 
     // As denoted in `MaterialYouColorsRule` and `FontsRule`, these two rules need to come first,
     // though their relative orders are not critical.
-    private val deviceRule = RuleChain.outerRule(colorsRule).around(commonRule)
+    private val deviceRule = RuleChain.outerRule(colorsRule).around(timeZoneRule).around(commonRule)
     private val roboRule =
         RuleChain.outerRule(fontsRule)
             .around(colorsRule)
