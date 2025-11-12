@@ -41,6 +41,7 @@ import android.platform.uiautomatorhelpers.DeviceHelpers.betterSwipe
 import android.platform.uiautomatorhelpers.DeviceHelpers.uiDevice
 import android.platform.uiautomatorhelpers.DeviceHelpers.waitForObj
 import android.platform.uiautomatorhelpers.FailedEnsureException
+import android.util.Log
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.InputDevice
 import android.view.InputEvent
@@ -87,31 +88,50 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
         }
     }
 
-    private fun openNotificationShadeWithRetryInternal(
-        executeShadeExpand: () -> Unit
-    ): NotificationShade {
+    /** Executes a given block of code and retries if it fails with an exception. */
+    private fun <T> executeWithRetry(description: String, block: () -> T): T {
+        var lastException: Exception? = null
         for (attempt in 1..MAX_RETRY_ATTEMPTS) {
             try {
-                val shade =
-                    if (Flags.sceneContainer()) {
-                        executeShadeExpand()
-                        waitForNotificationStackScroller()
-                        NotificationShade(displayId)
-                    } else {
-                        openNotificationShadeViaGlobalAction()
-                    }
-                return shade
-            } catch (e: FailedEnsureException) {
+                return block()
+            } catch (e: Exception) {
+                lastException = e
                 if (attempt < MAX_RETRY_ATTEMPTS) {
-                    sleep(RETRY_TIME_INTERVAL.toMillis())
+                    Log.w(
+                        TAG,
+                        "Operation '$description' failed. Attempt $attempt/$MAX_RETRY_ATTEMPTS. " +
+                            "Retrying in ${RETRY_TIME_INTERVAL}s...",
+                        e,
+                    )
+
+                    try {
+                        Thread.sleep(RETRY_TIME_INTERVAL)
+                    } catch (interrupted: InterruptedException) {
+                        Thread.currentThread().interrupt()
+                        throw interrupted
+                    }
                 }
             }
         }
 
         throw IllegalStateException(
-            "Failed to open notification shade on display $displayId after $MAX_RETRY_ATTEMPTS " +
-                "attempts."
+            "Failed to $description after $MAX_RETRY_ATTEMPTS attempts.",
+            lastException,
         )
+    }
+
+    private fun openNotificationShadeWithRetryInternal(
+        executeShadeExpand: () -> Unit
+    ): NotificationShade {
+        return executeWithRetry(description = "open notification shade on display $displayId") {
+            if (Flags.sceneContainer()) {
+                executeShadeExpand()
+                waitForNotificationStackScroller()
+                NotificationShade(displayId)
+            } else {
+                openNotificationShadeViaGlobalAction()
+            }
+        }
     }
 
     /**
@@ -350,6 +370,12 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
         }
         waitForQuickSettingsToOpen()
         return QuickSettings(displayId)
+    }
+
+    fun openQuickSettingsWithRetry(): QuickSettings {
+        return executeWithRetry(description = "Open quick settings shade on display $displayId") {
+            openQuickSettings()
+        }
     }
 
     /** Opens quick settings with a swipe gesture that depends on form factor. */
@@ -740,11 +766,12 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
     companion object {
         private val NOTIFICATION_SHADE_OPEN_TIMEOUT = Duration.ofSeconds(20)
         private val NOTIFICATION_STACK_SCROLLER_OPEN_TIMEOUT = Duration.ofSeconds(5)
-        private const val MAX_RETRY_ATTEMPTS = 3
+        private const val MAX_RETRY_ATTEMPTS = 5
         private val RETRY_TIME_INTERVAL = Duration.ofSeconds(1)
         private const val LONG_TIMEOUT: Long = 2000
         private const val SHORT_TIMEOUT: Long = 500
         private const val SCREENSHOT_POST_TIMEOUT_MSEC: Long = 20000
+        private const val TAG = "systemui_tapl.ui.Root"
         private const val TOUCHPAD_POINTER_SPACING = 50
         private val GLOBAL_SCREENSHOT_SELECTOR = sysuiResSelector("screenshot_actions")
 
