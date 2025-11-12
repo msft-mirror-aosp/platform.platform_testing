@@ -20,6 +20,7 @@ import android.Manifest
 import android.graphics.Matrix
 import android.graphics.PointF
 import android.hardware.display.DisplayManager
+import android.platform.uiautomatorhelpers.ShellPrivilege
 import android.util.Log
 import android.view.Surface.ROTATION_180
 import android.view.Surface.ROTATION_270
@@ -164,7 +165,9 @@ constructor(displayManager: DisplayManager) {
 
         val listener = WindowInfosListenerForTest()
         try {
-            listener.addWindowInfosListener(consumer)
+            ShellPrivilege(Manifest.permission.ACCESS_SURFACE_FLINGER).use {
+                listener.addWindowInfosListener(consumer)
+            }
             return consumer.awaitAndGet()
         } finally {
             listener.removeWindowInfosListener(consumer)
@@ -193,7 +196,6 @@ constructor(displayManager: DisplayManager) {
             displayTransform: LogicalPhysicalDisplayTransformHelper
         ) = displayTransform.logicalToPhysical(this.getPointF(), this.displayId)
 
-        val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.ACCESS_SURFACE_FLINGER)
         private val TIMEOUT: Duration = 10.seconds
         private const val TAG = "LogicalPhysicalDisplayTransformHelper"
     }
