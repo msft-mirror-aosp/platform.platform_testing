@@ -36,8 +36,7 @@ class AddRemoveFavoriteContact(bluetooth_base_test.BluetoothBaseTest):
     """Setup steps before any test is executed."""
 
     # Upload contacts to phone device
-    file_path = constants.PATH_TO_CONTACTS_VCF_FILE
-    self.call_utils.upload_vcf_contacts_to_device(self.target, file_path)
+    self.call_utils.upload_vcf_contacts_to_device(self.target)
 
     self.call_utils.wait_with_log(5)
     # Pair caller phone with automotive device
