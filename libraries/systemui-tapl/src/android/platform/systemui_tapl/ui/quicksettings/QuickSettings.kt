@@ -57,7 +57,7 @@ class QuickSettings internal constructor(val displayId: Int = DEFAULT_DISPLAY) {
     /** Presses Edit button to open edit mode. */
     fun openEditMode(): QSEditMode {
         waitForObj(sysuiResSelector(EDIT_MODE_BTN_RES_ID)).click()
-        return QSEditMode()
+        return QSEditMode(displayId)
     }
 
     /** Presses Power button to open the power panel. */

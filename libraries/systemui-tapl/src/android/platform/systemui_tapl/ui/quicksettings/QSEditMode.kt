@@ -35,14 +35,20 @@ import org.junit.Assert.assertTrue
 
 /** System UI test automation object representing QS edit mode. */
 class QSEditMode(val displayId: Int = DEFAULT_DISPLAY) {
+    private val editModeRootSelector = sysuiResSelector(EDIT_MODE_ROOT_TAG, displayId)
+    private val currentTilesGridSelector = sysuiResSelector(CURRENT_TILES_GRID_TAG, displayId)
+    private val editModeTitleSelector = By.text(EDIT_MODE_TITLE_TEXT).displayId(displayId)
+    private val backArrowSelector = By.desc(BACK_ARROW_CONTENT_DESCRIPTION).displayId(displayId)
+    private val removeButtonSelector = By.hasChild(By.text(REMOVE_BUTTON_TEXT)).displayId(displayId)
+
     init {
-        EDIT_MODE_TITLE_SELECTOR.assertVisible()
+        editModeTitleSelector.assertVisible()
     }
 
     /** Closes edit mode and returns to QS. */
     fun close() {
-        BACK_ARROW_SELECTOR.click()
-        CURRENT_TILES_GRID_SELECTOR.assertInvisible { "QS edit mode is visible" }
+        backArrowSelector.click()
+        currentTilesGridSelector.assertInvisible { "QS edit mode is visible" }
     }
 
     /**
@@ -56,7 +62,7 @@ class QSEditMode(val displayId: Int = DEFAULT_DISPLAY) {
      */
     fun scrollToTile(tile: QSEditTile, scrollingUp: Boolean) {
         if (DeviceHelpers.waitForNullableObj(tile.selector) == null) {
-            val gridUiObject = waitForObj(EDIT_MODE_ROOT_SELECTOR)
+            val gridUiObject = waitForObj(editModeRootSelector)
             val selector = tile.selector
             gridUiObject.scrollUntilFound(selector, scrollingUp).let {
                 assertNotNull("Could not find tile $selector", it)
@@ -95,7 +101,7 @@ class QSEditMode(val displayId: Int = DEFAULT_DISPLAY) {
      * Throws an [AssertionError] if the button isn't clickable
      */
     fun clickOnRemoveButton() {
-        with(waitForObj(REMOVE_BUTTON_SELECTOR)) {
+        with(waitForObj(removeButtonSelector)) {
             assertTrue(isClickable)
             click()
         }
@@ -108,7 +114,7 @@ class QSEditMode(val displayId: Int = DEFAULT_DISPLAY) {
      * removable
      */
     fun assertRemoveButtonState(isEnabled: Boolean) {
-        val uiObject = waitForObj(REMOVE_BUTTON_SELECTOR)
+        val uiObject = waitForObj(removeButtonSelector)
         assertEquals(isEnabled, uiObject.isEnabled)
     }
 
@@ -129,18 +135,18 @@ class QSEditMode(val displayId: Int = DEFAULT_DISPLAY) {
 
     private companion object {
         // https://hsv.googleplex.com/4773243557773312?node=37
-        private val EDIT_MODE_ROOT_SELECTOR = sysuiResSelector("EditModeRoot")
+        private val EDIT_MODE_ROOT_TAG = "EditModeRoot"
 
         // https://hsv.googleplex.com/4784770226585600?node=20
-        private val CURRENT_TILES_GRID_SELECTOR = sysuiResSelector("CurrentTilesGrid")
+        private val CURRENT_TILES_GRID_TAG = "CurrentTilesGrid"
 
         // https://hsv.googleplex.com/4784770226585600?node=97
-        private val EDIT_MODE_TITLE_SELECTOR = By.text("Edit tiles")
+        private val EDIT_MODE_TITLE_TEXT = "Edit tiles"
 
         // https://hsv.googleplex.com/4784770226585600?node=95
-        private val BACK_ARROW_SELECTOR = By.desc("Navigate up")
+        private val BACK_ARROW_CONTENT_DESCRIPTION = "Navigate up"
 
         // https://hsv.googleplex.com/4623996246032384?node=92
-        private val REMOVE_BUTTON_SELECTOR = By.hasChild(By.text("Remove"))
+        private val REMOVE_BUTTON_TEXT = "Remove"
     }
 }
