@@ -370,6 +370,7 @@ public class AutomotiveConfigConstants {
             "ACCOUNT_SETTINGS_TRY_ANOTHER_WAY";
     public static final String GOOGLE_ACCOUNT_BUTTON = "GOOGLE_ACCOUNT_BUTTON";
     // Media Center On Home Screen
+    public static final String PLAY_STORE_PACKAGE = "PLAY_STORE_PACKAGE";
     public static final String PLAY_PAUSE_BUTTON_HOME_SCREEN = "PLAY_PAUSE_BUTTON_HOME_SCREEN";
     public static final String PREVIOUS_BUTTON_HOME_SCREEN = "PREVIOUS_BUTTON_HOME_SCREEN";
     public static final String NEXT_BUTTON_HOME_SCREEN = "NEXT_BUTTON_HOME_SCREEN";

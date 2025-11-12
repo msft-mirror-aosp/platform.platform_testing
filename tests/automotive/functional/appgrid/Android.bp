@@ -23,6 +23,7 @@ android_test {
     static_libs: [
         "androidx.test.rules",
         "automotive-app-grid-helper",
+        "automotive-home-helper",
         "platform-test-junit-rules",
         "platform-test-options",
     ],
