@@ -140,7 +140,7 @@ public final class FunctionalTest {
     }
 
     @Test
-    public void noMetricWithInheritance_runsSuperclassFirstAndLast() throws InitializationError {
+    public void annotationsWithInheritance_runsSuperclassFirstAndLast() throws InitializationError {
         Functional runner = new Functional(GrandchildClassLoggingTest.class);
 
         Result result = new JUnitCore().run(runner);
@@ -151,7 +151,13 @@ public final class FunctionalTest {
                         "@NoMetricBefore: super class",
                         "@NoMetricBefore: child class",
                         "@NoMetricBefore: grandchild class",
+                        "@Before: super class",
+                        "@Before: child class",
+                        "@Before: grandchild class",
                         "@Test method body",
+                        "@After: grandchild class",
+                        "@After: child class",
+                        "@After: super class",
                         "@NoMetricAfter: grandchild class",
                         "@NoMetricAfter: child class",
                         "@NoMetricAfter: super class")
@@ -285,6 +291,16 @@ public final class FunctionalTest {
             sLogs.add("@NoMetricBefore: super class");
         }
 
+        @Before
+        public void beforeMethod() {
+            sLogs.add("@Before: super class");
+        }
+
+        @After
+        public void afterMethod() {
+            sLogs.add("@After: super class");
+        }
+
         /** */
         @NoMetricAfter
         public void superClassNoMetricAfter() {
@@ -297,6 +313,16 @@ public final class FunctionalTest {
         @NoMetricBefore
         public void childClassNoMetricBefore() {
             sLogs.add("@NoMetricBefore: child class");
+        }
+
+        @Before
+        public void childBeforeMethod() {
+            sLogs.add("@Before: child class");
+        }
+
+        @After
+        public void childAfterMethod() {
+            sLogs.add("@After: child class");
         }
 
         /** */
@@ -314,10 +340,20 @@ public final class FunctionalTest {
             sLogs.add("@NoMetricBefore: grandchild class");
         }
 
+        @Before
+        public void grandchildBeforeMethod() {
+            sLogs.add("@Before: grandchild class");
+        }
+
         /** */
         @Test
         public void testMethod() {
             sLogs.add("@Test method body");
+        }
+
+        @After
+        public void grandchildAfterMethod() {
+            sLogs.add("@After: grandchild class");
         }
 
         /** */
