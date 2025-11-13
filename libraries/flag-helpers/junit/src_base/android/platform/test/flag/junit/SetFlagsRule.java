@@ -337,7 +337,7 @@ public final class SetFlagsRule implements TestRule {
                 verifyFlag(fakeFlagsImplInstance, flag, IS_FLAG_READ_ONLY_OPTIMIZED_METHOD_NAME);
         if (isOptimized) {
             boolean defaultValueDiffersFromSetValue =
-                    !mIsInitWithDefault || getFlagValue(fakeFlagsImplInstance, flag) != value;
+                    !mIsInitWithDefault || getFlagValue(flagsClass, flag) != value;
             assumeFalse(
                     String.format(
                             "Flag %s is read_only, and the code is optimized. "
@@ -399,14 +399,13 @@ public final class SetFlagsRule implements TestRule {
         }
     }
 
-    private boolean getFlagValue(Object featureFlagsImpl, Flag flag) {
+    private boolean getFlagValue(Class<?> flagClass, Flag flag) {
         // Must be consistent with method name in aconfig auto generated code.
         String methodName = getFlagMethodName(flag);
         String fullFlagName = flag.fullFlagName();
 
         try {
-            Object result =
-                    featureFlagsImpl.getClass().getMethod(methodName).invoke(featureFlagsImpl);
+            Object result = flagClass.getMethod(methodName).invoke(null);
             if (result instanceof Boolean) {
                 return (Boolean) result;
             }
@@ -420,14 +419,14 @@ public final class SetFlagsRule implements TestRule {
                     String.format(
                             "No method %s in the Flags class %s to read the flag value. Please"
                                     + " check the flag name.",
-                            methodName, featureFlagsImpl.getClass().getName()),
+                            methodName, flagClass.getName()),
                     e);
         } catch (ReflectiveOperationException e) {
             throw new FlagReadException(
                     fullFlagName,
                     String.format(
                             "Fail to get value of flag %s from instance %s",
-                            fullFlagName, featureFlagsImpl.getClass().getName()),
+                            fullFlagName, flagClass.getName()),
                     e);
         }
     }
