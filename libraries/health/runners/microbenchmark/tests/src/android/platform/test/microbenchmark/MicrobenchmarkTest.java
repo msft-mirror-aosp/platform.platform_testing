@@ -23,7 +23,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-import android.device.collectors.BaseMetricListener;
 import android.device.collectors.BaseMetricListener.IterationMetadata;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -132,6 +131,40 @@ public final class MicrobenchmarkTest {
                 .inOrder();
     }
 
+    /**
+     * Tests that superclass and subclass @NoMetricBefore and @NoMetricAfter methods are run in
+     * order.
+     */
+    @Test
+    public void testFeatureExecutionOrder_withSubclasses() throws InitializationError {
+        LoggingMicrobenchmark loggingRunner =
+                new LoggingMicrobenchmark(GrandchildClassLoggingTest.class);
+
+        Result result = new JUnitCore().run(loggingRunner);
+
+        assertThat(result.wasSuccessful()).isTrue();
+        assertThat(sLogs)
+                .containsExactly(
+                        "@NoMetricRule starting",
+                        "@NoMetricBefore", // parent class
+                        "@NoMetricBefore: child class",
+                        "@NoMetricBefore: grandchild class",
+                        "@Before", // parent class
+                        "@TightMethodRule before",
+                        "begin: testMethod("
+                                + "android.platform.test.microbenchmark.MicrobenchmarkTest$"
+                                + "GrandchildClassLoggingTest)",
+                        "@Test method body",
+                        "end",
+                        "@TightMethodRule after",
+                        "@After", // parent class
+                        "@NoMetricAfter: grandchild class",
+                        "@NoMetricAfter: child class",
+                        "@NoMetricAfter", // parent class
+                        "@NoMetricRule finished")
+                .inOrder();
+    }
+
     @Test
     public void testNoMetricBeforeFailure_reportsFailedTest() throws InitializationError {
         LoggingMicrobenchmark loggingRunner = new LoggingMicrobenchmark(
@@ -163,7 +196,9 @@ public final class MicrobenchmarkTest {
                         "@NoMetricBefore",
                         "@Before",
                         "@TightMethodRule before",
-                        "begin: testMethod(android.platform.test.microbenchmark.MicrobenchmarkTest$LoggingNoMetricAfterFailure)",
+                        "begin: testMethod("
+                                + "android.platform.test.microbenchmark.MicrobenchmarkTest$"
+                                + "LoggingNoMetricAfterFailure)",
                         "@Test method body",
                         "end",
                         "@TightMethodRule after",
@@ -960,6 +995,35 @@ public final class MicrobenchmarkTest {
         @Override
         public void finished(Description description) {
             sLogs.add("@NoMetricRule finished");
+        }
+    }
+
+    public static class ChildClassLoggingTest extends LoggingTest {
+        /** */
+        @NoMetricBefore
+        public void childClassNoMetricBefore() {
+            sLogs.add("@NoMetricBefore: child class");
+        }
+
+        /** */
+        @NoMetricAfter
+        public void childClassNoMetricAfter() {
+            sLogs.add("@NoMetricAfter: child class");
+        }
+    }
+
+    @RunWith(LoggingMicrobenchmark.class)
+    public static class GrandchildClassLoggingTest extends ChildClassLoggingTest {
+        /** */
+        @NoMetricBefore
+        public void grandchildClassNoMetricBefore() {
+            sLogs.add("@NoMetricBefore: grandchild class");
+        }
+
+        /** */
+        @NoMetricAfter
+        public void grandchildClassNoMetricAfter() {
+            sLogs.add("@NoMetricAfter: grandchild class");
         }
     }
 }

@@ -499,8 +499,11 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
             @Override
             public void evaluate() throws Throwable {
                 try {
+                    // To ensure parent class's @NoMetricBefore is run before subclass's
+                    // @NoMetricBefore, reverse the order (the methods are returned in order from
+                    // subclass to superclass).
                     for (FrameworkMethod noMetricBefore :
-                            getTestClass().getAnnotatedMethods(NoMetricBefore.class)) {
+                            getTestClass().getAnnotatedMethods(NoMetricBefore.class).reversed()) {
                         noMetricBefore.invokeExplosively(test);
                     }
                 } catch (Throwable e) {

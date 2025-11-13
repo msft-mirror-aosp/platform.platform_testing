@@ -109,6 +109,7 @@ public final class FunctionalTest {
                 .containsExactly(
                         "@NoMetricRule starting",
                         "@Rule starting",
+                        "@NoMetricBefore",
                         "@After",
                         "@NoMetricAfter",
                         "@Rule finished",
@@ -138,9 +139,28 @@ public final class FunctionalTest {
                 .inOrder();
     }
 
+    @Test
+    public void noMetricWithInheritance_runsSuperclassFirstAndLast() throws InitializationError {
+        Functional runner = new Functional(GrandchildClassLoggingTest.class);
+
+        Result result = new JUnitCore().run(runner);
+
+        assertThat(result.wasSuccessful()).isTrue();
+        assertThat(sLogs)
+                .containsExactly(
+                        "@NoMetricBefore: super class",
+                        "@NoMetricBefore: child class",
+                        "@NoMetricBefore: grandchild class",
+                        "@Test method body",
+                        "@NoMetricAfter: grandchild class",
+                        "@NoMetricAfter: child class",
+                        "@NoMetricAfter: super class")
+                .inOrder();
+    }
+
     /**
-     * A test that logs {@link Before}, {@link After}, {@link Test} included,
-     * used in conjunction with {@link Functional} to
+     * A test that logs {@link NoMetricBefore}, {@link Before}, {@link After}, {@link
+     * NoMetricAfter}, {@link Test} included, used in conjunction with {@link Functional} to
      * determine all {@link Statement}s are evaluated in the proper order.
      */
     @RunWith(Functional.class)
@@ -255,6 +275,55 @@ public final class FunctionalTest {
         @Override
         public void finished(Description description) {
             sLogs.add("@NoMetricRule finished");
+        }
+    }
+
+    public abstract static class SuperClassLoggingTest {
+        /** */
+        @NoMetricBefore
+        public void superClassNoMetricBefore() {
+            sLogs.add("@NoMetricBefore: super class");
+        }
+
+        /** */
+        @NoMetricAfter
+        public void superClassNoMetricAfter() {
+            sLogs.add("@NoMetricAfter: super class");
+        }
+    }
+
+    public abstract static class ChildClassLoggingTest extends SuperClassLoggingTest {
+        /** */
+        @NoMetricBefore
+        public void childClassNoMetricBefore() {
+            sLogs.add("@NoMetricBefore: child class");
+        }
+
+        /** */
+        @NoMetricAfter
+        public void childClassNoMetricAfter() {
+            sLogs.add("@NoMetricAfter: child class");
+        }
+    }
+
+    @RunWith(Functional.class)
+    public static class GrandchildClassLoggingTest extends ChildClassLoggingTest {
+        /** */
+        @NoMetricBefore
+        public void grandchildClassNoMetricBefore() {
+            sLogs.add("@NoMetricBefore: grandchild class");
+        }
+
+        /** */
+        @Test
+        public void testMethod() {
+            sLogs.add("@Test method body");
+        }
+
+        /** */
+        @NoMetricAfter
+        public void grandchildClassNoMetricAfter() {
+            sLogs.add("@NoMetricAfter: grandchild class");
         }
     }
 }
