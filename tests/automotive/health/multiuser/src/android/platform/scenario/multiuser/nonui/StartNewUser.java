@@ -17,8 +17,8 @@
 package android.platform.scenario.multiuser;
 
 import android.app.UiAutomation;
-import android.content.pm.UserInfo;
 import android.os.Bundle;
+import android.os.Process;
 import android.os.SystemClock;
 import android.platform.helpers.MultiUserHelper;
 import android.platform.test.scenario.annotation.Scenario;
@@ -26,7 +26,6 @@ import android.util.Log;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import java.util.ArrayList;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -36,6 +35,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -100,6 +100,30 @@ public class StartNewUser {
                         mStartUsersOnAdditionalDisplays),
                 displays.length > mStartUsersOnAdditionalDisplays);
 
+        // Delete existing users
+        int currentUserId = Process.myUserHandle().getIdentifier();
+        for (int display : displays) {
+            int userId = mMultiUserHelper.getUserForDisplayId(display);
+            if (userId == currentUserId) {
+                Log.d(
+                        LOG_TAG,
+                        String.format(
+                                Locale.US,
+                                "Skipping deletion of current user %d on display %d",
+                                userId,
+                                display));
+                continue;
+            }
+            try {
+                mMultiUserHelper.stopUser(userId);
+                MultiUserHelper.getInstance().removeUser(userId);
+            } catch (Exception e) {
+                Log.d(
+                        LOG_TAG,
+                        String.format(Locale.US, "Exception during setup: %s", e.getMessage()));
+            }
+        }
+
         // Target User must be created first so the userId will be 11
         mDisplayToUserIdMap.put(
                 mDisplayUnderTest,
@@ -120,10 +144,13 @@ public class StartNewUser {
         SystemClock.sleep(WAIT_FOR_USER_START_TIME_MS);
         int actualUserId = mMultiUserHelper.getUserForDisplayId(mDisplayUnderTest);
         Assert.assertEquals(
-            String.format(Locale.US, "User %d is not started on display %d", userId, mDisplayUnderTest),
-            userId,
-            actualUserId
-        );
+                String.format(
+                        Locale.US,
+                        "User %d is not started on display %d",
+                        userId,
+                        mDisplayUnderTest),
+                userId,
+                actualUserId);
     }
 
     @After
