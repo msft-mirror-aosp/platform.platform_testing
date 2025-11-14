@@ -17,6 +17,7 @@
 package android.platform.systemui_tapl.ui.quicksettings
 
 import android.platform.systemui_tapl.ui.BatteryDialog
+import android.platform.systemui_tapl.ui.BluetoothDetailsView
 import android.platform.systemui_tapl.ui.BluetoothDialog
 import android.platform.systemui_tapl.ui.HearingDevicesDialog
 import android.platform.systemui_tapl.ui.InternetDetailsView
@@ -42,6 +43,12 @@ fun ComposeQuickSettingsTile.clickWifiTileToOpenDialog(): InternetDialog {
 fun ComposeQuickSettingsTile.clickBluetoothTileToOpenDialog(): BluetoothDialog {
     clickToOpenDialogOnDualTarget()
     return BluetoothDialog(displayId)
+}
+
+/** Clicks the bluetooth tile to open the bluetooth details view. */
+fun ComposeQuickSettingsTile.clickBluetoothTileToOpenDetailsView(): BluetoothDetailsView {
+    clickToOpenDialogOnDualTarget()
+    return BluetoothDetailsView(displayId)
 }
 
 fun ComposeQuickSettingsTile.clickFlashlightTileToOpenDialog(): FlashlightDialog {
