@@ -133,7 +133,7 @@ STOP_YOUTUBE_MEDIA_SHELL = 'am force-stop ' + YOUTUBE_MUSIC_PACKAGE
 GET_MEDIA_DUMPSYS_METADATA = 'dumpsys media_session'
 GET_DUMPSYS_METADATA = 'dumpsys bluetooth_manager'
 SONG_METADATA_PATTERN = r"description=.[^\n]+"
-DEFAULT_YOUTUBE_MUSIC_PLAYLIST = 'am start -a android.intent.action.VIEW -d https://music.youtube.com/watch?v=nkBJzfHpq_A'
+DEFAULT_YOUTUBE_MUSIC_PLAYLIST = 'am start -a android.intent.action.VIEW -d https://music.youtube.com/watch?v=dJqxQzxLbHM'
 BLUETOOTH_AUDIO_APP = "Bluetooth Audio"
 YOUTUBE_MUSIC_APP = "YouTube Music"
 BLUETOOTH_PLAYER = "Bluetooth Player"
