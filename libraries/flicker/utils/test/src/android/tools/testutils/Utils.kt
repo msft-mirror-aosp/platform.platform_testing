@@ -32,6 +32,7 @@ import android.tools.traces.parsers.perfetto.LayersTraceParser
 import android.tools.traces.parsers.perfetto.TraceProcessorSession
 import android.tools.traces.parsers.perfetto.WindowManagerTraceParser
 import android.tools.traces.wm.ConfigurationContainerImpl
+import android.tools.traces.wm.KeyguardControllerState
 import android.tools.traces.wm.RootWindowContainer
 import android.tools.traces.wm.WindowContainerImpl
 import androidx.test.platform.app.InstrumentationRegistry
@@ -241,6 +242,12 @@ fun newEmptyRootContainer(orientation: Int = 0, layerId: Int = 0) =
     RootWindowContainer(
         isHomeRecentsComponent = false,
         pendingActivities = listOf<String>(),
+        keyguardController =
+            KeyguardControllerState.from(
+                isAodShowing = false,
+                isKeyguardShowing = false,
+                keyguardOccludedStates = mapOf(),
+            ),
         windowContainer =
             WindowContainerImpl(
                 title = "root",

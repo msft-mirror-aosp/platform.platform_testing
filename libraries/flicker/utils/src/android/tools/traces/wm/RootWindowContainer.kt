@@ -25,6 +25,7 @@ package android.tools.traces.wm
 class RootWindowContainer(
     val isHomeRecentsComponent: Boolean,
     val pendingActivities: Collection<String>,
+    val keyguardController: KeyguardControllerState,
     private val windowContainer: WindowContainer,
 ) : WindowContainer by windowContainer {
     override fun toString(): String {
