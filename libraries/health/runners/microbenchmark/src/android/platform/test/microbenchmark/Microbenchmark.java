@@ -53,6 +53,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -502,8 +503,11 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
                     // To ensure parent class's @NoMetricBefore is run before subclass's
                     // @NoMetricBefore, reverse the order (the methods are returned in order from
                     // subclass to superclass).
-                    for (FrameworkMethod noMetricBefore :
-                            getTestClass().getAnnotatedMethods(NoMetricBefore.class).reversed()) {
+                    List<FrameworkMethod> noMetricBefores =
+                            new ArrayList<>(
+                                    getTestClass().getAnnotatedMethods(NoMetricBefore.class));
+                    Collections.reverse(noMetricBefores);
+                    for (FrameworkMethod noMetricBefore : noMetricBefores) {
                         noMetricBefore.invokeExplosively(test);
                     }
                 } catch (Throwable e) {
