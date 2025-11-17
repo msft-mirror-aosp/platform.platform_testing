@@ -14,32 +14,30 @@
  * limitations under the License.
  */
 
-package platform.test.desktop
+package platform.test.desktop.interactive
 
 import com.android.bedstead.nene.TestApis
+import platform.test.desktop.interactive.DesktopTestOptionsProvider.TestOption
 
-object DesktopTestOptions {
-    // LINT.IfChange
-    enum class TestOption(val key: String) {
-        HOST_DRIVEN_TEST("HOST_DRIVEN_TEST"),
-        KEEP_PERIPHERALS_AFTER_TEST("KEEP_PERIPHERALS_AFTER_TEST"),
-        KEEP_PERIPHERALS_BEFORE_TEST("KEEP_PERIPHERALS_BEFORE_TEST"),
-        ALLOW_DISABLING_DISPLAYS("ALLOW_DISABLING_DISPLAYS"),
-        ENABLE_MANUAL("ENABLE_MANUAL"),
-        ENABLE_AUTOMATED("ENABLE_AUTOMATED"),
-    }
-
-    // LINT.ThenChange(../../../../mobly/desktop_test_base.py)
-
+/** Implementation of desktop test options relying on bedstead library providing test arguments. */
+class DesktopTestOptions : DesktopTestOptionsProvider {
     private val instrumentationArguments = TestApis.instrumentation().arguments()
-    val isHostDrivenTest =
+
+    override fun isHostDrivenTest(): Boolean =
         instrumentationArguments.getBoolean(TestOption.HOST_DRIVEN_TEST.key, false)
-    val keepPeripheralsAfterTest =
+
+    override fun keepPeripheralsAfterTest(): Boolean =
         instrumentationArguments.getBoolean(TestOption.KEEP_PERIPHERALS_AFTER_TEST.key, false)
-    val keepPeripheralsBeforeTest =
+
+    override fun keepPeripheralsBeforeTest(): Boolean =
         instrumentationArguments.getBoolean(TestOption.KEEP_PERIPHERALS_BEFORE_TEST.key, false)
-    val isManual = instrumentationArguments.getBoolean(TestOption.ENABLE_MANUAL.key, false)
-    val isAutomated = instrumentationArguments.getBoolean(TestOption.ENABLE_AUTOMATED.key, false)
-    val allowDisablingDisplays =
+
+    override fun isManual(): Boolean =
+        instrumentationArguments.getBoolean(TestOption.ENABLE_MANUAL.key, false)
+
+    override fun isAutomated(): Boolean =
+        instrumentationArguments.getBoolean(TestOption.ENABLE_AUTOMATED.key, false)
+
+    override fun allowDisablingDisplays(): Boolean =
         instrumentationArguments.getBoolean(TestOption.ALLOW_DISABLING_DISPLAYS.key, false)
 }

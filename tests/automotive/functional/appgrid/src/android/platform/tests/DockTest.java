@@ -21,23 +21,29 @@ import static junit.framework.Assert.assertTrue;
 import android.platform.helpers.AutomotiveConfigConstants;
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoAppGridHelper;
+import android.platform.helpers.IAutoHomeHelper;
 import android.util.Log;
 
 import androidx.test.runner.AndroidJUnit4;
 
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(AndroidJUnit4.class)
 public class DockTest {
 
     private static final String SETTINGS = "Settings";
 
     private HelperAccessor<IAutoAppGridHelper> mAppGridHelper;
+    private HelperAccessor<IAutoHomeHelper> mHomeHelper;
     private static final String LOG_TAG = DockTest.class.getSimpleName();
 
     public DockTest() {
         mAppGridHelper = new HelperAccessor<>(IAutoAppGridHelper.class);
+        mHomeHelper = new HelperAccessor<>(IAutoHomeHelper.class);
     }
 
     @Test
@@ -68,5 +74,29 @@ public class DockTest {
                 mAppGridHelper
                         .get()
                         .verifyAppOnDock(AutomotiveConfigConstants.SETTINGS_APP_ON_DOCK));
+    }
+
+    @Test
+    public void testClickAndVerifyConstantAppsOnDock() {
+        mHomeHelper.get().clickMapsAppOnDock();
+        // Uncomment this after bug b/455634890 is fixed
+        /* assertFalse(
+        "Maps app is not opened",
+              mHomeHelper.get().hasMediaWidget());*/
+        mHomeHelper.get().open();
+        mHomeHelper.get().clickPlaystoreAppOnDock();
+        assertTrue(
+                "Play Store app is not opened",
+                mAppGridHelper
+                        .get()
+                        .checkPackageInForeground(AutomotiveConfigConstants.PLAY_STORE_PACKAGE));
+        mHomeHelper.get().open();
+        mHomeHelper.get().clickBluetoothAudioAppOnDock();
+        assertTrue(
+                "Bluetooth Audio app is not opened",
+                mAppGridHelper
+                        .get()
+                        .checkPackageInForeground(AutomotiveConfigConstants.MEDIA_CENTER_PACKAGE));
+        mHomeHelper.get().open();
     }
 }

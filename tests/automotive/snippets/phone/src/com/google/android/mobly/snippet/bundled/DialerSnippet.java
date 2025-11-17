@@ -292,6 +292,18 @@ public class DialerSnippet implements Snippet {
         mDialerHelper.get().pressContactResult(expectedName);
     }
 
+    /** Scroll contacts down one page */
+    @Rpc(description = "Scroll contacts down one page.")
+    public void scrollContactsDownOnePage() {
+        mDialerHelper.get().scrollDownOnePage();
+    }
+
+    /** Scroll contacts up one page */
+    @Rpc(description = "Scroll contacts up one page.")
+    public void scrollContactsUpOnePage() {
+        mDialerHelper.get().scrollUpOnePage();
+    }
+
     @Rpc(description = "Get list of visible contacts")
     public List<String> getListOfAllContacts() {
         return mDialerHelper.get().getListOfAllVisibleContacts();

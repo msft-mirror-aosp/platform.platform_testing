@@ -27,7 +27,6 @@ python_library_host {
 java_library {
     name: "desktop-test-lib",
     static_libs: [
-        "Interactive",
         "androidx.core_core-ktx",
         "androidx.test.runner",
         "androidx.test.rules",
@@ -42,6 +41,20 @@ java_library {
     srcs: [
         "src/**/*.kt",
         "src/**/*.java",
+    ],
+    lint: {
+        baseline_filename: "lint-baseline.xml",
+    },
+}
+
+java_library {
+    name: "desktop-test-lib-interactive",
+    static_libs: [
+        "Interactive",
+        "desktop-test-lib",
+    ],
+    srcs: [
+        "interactive/**/*.kt",
     ],
     lint: {
         baseline_filename: "lint-baseline.xml",

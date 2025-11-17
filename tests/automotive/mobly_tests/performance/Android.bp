@@ -80,5 +80,32 @@ python_test_host {
         ":AutomotiveSnippet",
         ":PhoneSnippet",
         "bt_performance_10_iterations.yaml",
+        "bluetooth_event_metrics.pb",
+        "bt_connection_time.pb",
+    ],
+}
+
+python_test_host {
+    name: "BTPerformanceDialerJankTest",
+    main: "dialer_jank_test.py",
+    srcs: ["dialer_jank_test.py"],
+    libs: [
+        "mobly",
+        "utilities",
+        "bluetooth_test",
+        "jank_collector",
+    ],
+    test_suites: [
+        "catbox",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    device_common_data: [
+        // Package the snippet with the mobly test
+        ":AutomotiveSnippet",
+        ":PhoneSnippet",
+        "dialer_jank_performance_20_iterations.yaml",
+        "contacts_test.vcf",
     ],
 }

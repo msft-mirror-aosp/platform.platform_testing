@@ -20,8 +20,8 @@ import org.junit.Assume.assumeTrue
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
-import platform.test.desktop.DesktopTestOptions.TestOption
-import platform.test.desktop.DesktopTestOptions.isHostDrivenTest
+import platform.test.desktop.interactive.DesktopTestOptionsProvider
+import platform.test.desktop.interactive.DesktopTestOptionsProvider.TestOption
 
 /**
  * Mark that a test is run as part of a host test suite e.g. mobly.
@@ -44,7 +44,7 @@ class HostDrivenTestRule : TestRule {
                 if (description.getAnnotation(HostDrivenTest::class.java) != null) {
                     assumeTrue(
                         "Test is required to be run with ${TestOption.HOST_DRIVEN_TEST.key} arg",
-                        isHostDrivenTest,
+                        DesktopTestOptionsProvider.getInstance().isHostDrivenTest(),
                     )
                 }
                 base.evaluate()

@@ -12,7 +12,8 @@
     "MEDIA_CENTER_PACKAGE": "com.android.car.media",
     "CONTACTS_PACKAGE": "com.android.contacts",
     "RADIO_PACKAGE": "com.android.car.radio",
-    "SMS_PACKAGE":"com.android.car.messenger"
+    "SMS_PACKAGE":"com.android.car.messenger",
+    "PLAY_STORE_PACKAGE": "com.android.vending"
   },
   "ACTIONS": {
     "CONTACT_LIST_SCROLL_ACTION": "USE_GESTURE",
@@ -2727,7 +2728,7 @@
     },
     "BLUETOOTH_APP_ON_DOCK": {
       "TYPE": "DESCRIPTION",
-      "VALUE": "Bluetooth"
+      "VALUE": "Bluetooth Audio"
     },
     "NETWORK_PALETTE_WIFI": {
       "TYPE": "MULTIPLE",

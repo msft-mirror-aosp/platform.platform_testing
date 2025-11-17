@@ -26,6 +26,7 @@ import org.junit.Assume.assumeTrue
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
+import platform.test.desktop.interactive.DesktopTestOptionsProvider
 
 /** An interface for a controller to request peripherals. */
 fun interface PeripheralsController {
@@ -132,6 +133,7 @@ class PeripheralsResponse(val devices: List<PeripheralDevice> = emptyList()) {
  * A test rule allowing to request peripherals during the test and disconnects them after the test.
  */
 class PeripheralDeviceTestRule : TestRule, PeripheralsController {
+    private val optionsProvider = DesktopTestOptionsProvider.getInstance()
     private val physicalController = PhysicalDeviceController()
     private val simulatedController = SimulatedDeviceController()
 
@@ -150,7 +152,7 @@ class PeripheralDeviceTestRule : TestRule, PeripheralsController {
                     // after-reboot tests, if these tests need to cleanup peripherals, they need
                     // to do it explicitly, or don't pass
                     // [DesktopTestOptions.KEEP_PERIPHERALS_BEFORE_TEST] option
-                    if (!DesktopTestOptions.keepPeripheralsBeforeTest) {
+                    if (!optionsProvider.keepPeripheralsBeforeTest()) {
                         // Ensure no peripherals connected before the test
                         disconnectAll()
                     }
@@ -161,7 +163,7 @@ class PeripheralDeviceTestRule : TestRule, PeripheralsController {
                         // need to do it explicitly, or simply don't pass
                         // [DesktopTestOptions.KEEP_PERIPHERALS_AFTER_TEST] option.
                         // If test evaluation has an exception - cleanup must be done in any case.
-                        if (cl.hasException() || !DesktopTestOptions.keepPeripheralsAfterTest) {
+                        if (cl.hasException() || !optionsProvider.keepPeripheralsAfterTest()) {
                             disconnectAll()
                         }
                     }

@@ -1,0 +1,29 @@
+package {
+    default_team: "trendy_team_auto_engprod",
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+python_test_host {
+    name: "Camera2BootTest",
+    main: "boot_test.py",
+    libs: [
+        "utilities",
+    ],
+    srcs: [
+        "boot_test.py",
+    ],
+    data: [
+        ":spectatio_host_device_configs",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    test_suites: [
+        "catbox",
+    ],
+    defaults: [
+        "spectatio_host_tf_defaults",
+    ],
+    test_config_template: ":spectatio_host_test_config_one_device",
+
+}

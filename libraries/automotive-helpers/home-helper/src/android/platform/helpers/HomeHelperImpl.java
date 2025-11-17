@@ -334,4 +334,41 @@ public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHo
         BySelector hvacPanelSelector = getUiElementFromConfig(AutomotiveConfigConstants.HVAC_PANEL);
         return getSpectatioUiUtil().hasUiElement(hvacPanelSelector);
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public void clickMapsAppOnDock() {
+        BySelector mapsAppSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.MAPS_APP_ON_DOCK);
+        UiObject2 mapsAppObjectOnDock = getSpectatioUiUtil().findUiObject(mapsAppSelector);
+        getSpectatioUiUtil()
+                .validateUiObject(mapsAppObjectOnDock, AutomotiveConfigConstants.MAPS_APP_ON_DOCK);
+        getSpectatioUiUtil().clickAndWaitUntilNewWindowAppears(mapsAppObjectOnDock);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void clickBluetoothAudioAppOnDock() {
+        BySelector bluetoothAppSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.BLUETOOTH_APP_ON_DOCK);
+        UiObject2 bluetoothAppObjectOnDock =
+                getSpectatioUiUtil().findUiObject(bluetoothAppSelector);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        bluetoothAppObjectOnDock, AutomotiveConfigConstants.BLUETOOTH_APP_ON_DOCK);
+        getSpectatioUiUtil().clickAndWaitUntilNewWindowAppears(bluetoothAppObjectOnDock);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void clickPlaystoreAppOnDock() {
+        BySelector playStoreAppSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.PLAY_STORE_APP_ON_DOCK);
+        UiObject2 playStoreAppObjectOnDock =
+                getSpectatioUiUtil().findUiObject(playStoreAppSelector);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        playStoreAppObjectOnDock, AutomotiveConfigConstants.PLAY_STORE_APP_ON_DOCK);
+        getSpectatioUiUtil().clickAndWaitUntilNewWindowAppears(playStoreAppObjectOnDock);
+    }
 }

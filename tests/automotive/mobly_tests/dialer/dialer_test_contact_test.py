@@ -35,8 +35,7 @@ class CallContactTest(bluetooth_base_test.BluetoothBaseTest):
 
     def setup_test(self):
         # Upload contacts to phone device
-        file_path = constants.PATH_TO_CONTACTS_VCF_FILE
-        self.call_utils.upload_vcf_contacts_to_device(self.target, file_path)
+        self.call_utils.upload_vcf_contacts_to_device(self.target)
 
         # Pair the devices
         self.bt_utils.pair_primary_to_secondary()

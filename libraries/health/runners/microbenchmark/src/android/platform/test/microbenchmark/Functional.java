@@ -135,15 +135,17 @@ public class Functional extends BlockJUnit4ClassRunner {
 
     @Override
     protected Statement withBefores(FrameworkMethod method, Object target, Statement s) {
-        // Statements wrap inner to outer, so first add Before, then NoMetricBefore
         final Statement withStandardBefores = super.withBefores(method, target, s);
 
         // Add @NoMetricBefore's
+        // To ensure parent class's @NoMetricBefore is run before subclass's @NoMetricBefore,
+        // reverse the order (the methods are returned in order from subclass to superclass).
         List<FrameworkMethod> noMetricBefores =
-                getTestClass().getAnnotatedMethods(Microbenchmark.NoMetricBefore.class);
+                getTestClass().getAnnotatedMethods(Microbenchmark.NoMetricBefore.class).reversed();
         final Statement withNoMetricBefores =
                 noMetricBefores.isEmpty()
                         ? withStandardBefores
+                        // Statements wrap inner to outer, so first add Before, then NoMetricBefore
                         : new RunBefores(withStandardBefores, noMetricBefores, target);
         // Error artifact saver for exceptions thrown in test-befores and the test method, before
         // test-afters and the exit part of test rules are executed.
@@ -152,7 +154,6 @@ public class Functional extends BlockJUnit4ClassRunner {
 
     @Override
     protected Statement withAfters(FrameworkMethod method, Object target, Statement s) {
-        // Statements wrap inner to outer, so first add After, then NoMetricAfter
         final Statement withStandardAfters = super.withAfters(method, target, s);
 
         // Add @NoMetricAfter's
@@ -161,6 +162,7 @@ public class Functional extends BlockJUnit4ClassRunner {
         final Statement withNoMetricAfters =
                 noMetricAfters.isEmpty()
                         ? withStandardAfters
+                        // Statements wrap inner to outer, so first add After, then NoMetricAfter
                         : new RunAfters(withStandardAfters, noMetricAfters, target);
 
         // Error artifact saver for exceptions thrown in "method-afters", i.e. outside the method

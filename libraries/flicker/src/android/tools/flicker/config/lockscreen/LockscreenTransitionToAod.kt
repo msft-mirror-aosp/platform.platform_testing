@@ -26,11 +26,11 @@ import android.tools.traces.events.CujType
 val LockscreenTransitionToAod =
     FlickerConfigEntry(
         enabled = true,
-        scenarioId = ScenarioId("LOCKSCREEN_TRANSITION_TO_AOD"),
+        scenarioId = ScenarioId("KEYGUARD_TRANSITION_LOCKSCREEN_TO_AOD"),
         assertions = AssertionTemplates.COMMON_ASSERTIONS,
         extractor =
             TaggedScenarioExtractorBuilder()
-                .setTargetTag(CujType.CUJ_LOCKSCREEN_TRANSITION_TO_AOD)
+                .setTargetTag(CujType.CUJ_KEYGUARD_TRANSITION_LOCKSCREEN_TO_AOD)
                 .setTransitionMatcher(
                     TaggedCujTransitionMatcher(associatedTransitionRequired = false)
                 )
