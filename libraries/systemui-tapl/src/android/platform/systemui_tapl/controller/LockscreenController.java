@@ -143,6 +143,7 @@ public class LockscreenController {
     public void turnScreenOff() {
         try {
             getUiDevice().sleep();
+            sleepToAllowScreenStateToSettle();
 
             if (getUiDevice().isScreenOn()) {
                 SystemClock.sleep(SLEEP_INTERVAL_MS * 4);
@@ -153,12 +154,18 @@ public class LockscreenController {
         }
     }
 
+    // TODO(b/461476171) remove the need for this
+    private static void sleepToAllowScreenStateToSettle() {
+        SystemClock.sleep(SLEEP_INTERVAL_MS / 5);
+    }
+
     /** Turns screen on by waking up from sleep. */
     public void turnScreenOn() {
         Trace.beginSection("LockscreenController#turnScreenOn");
         try {
             try {
                 getUiDevice().wakeUp();
+                sleepToAllowScreenStateToSettle();
 
                 if (!getUiDevice().isScreenOn()) {
                     SystemClock.sleep(SLEEP_INTERVAL_MS * 4);
