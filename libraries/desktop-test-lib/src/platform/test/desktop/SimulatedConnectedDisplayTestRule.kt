@@ -30,6 +30,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.runBlocking
@@ -87,37 +88,40 @@ class SimulatedConnectedDisplayTestRule(val initDisplayCount: Int = 0) : TestRul
             return@runBlocking emptyList()
         }
 
-        val displayAddedFlow: Flow<Int> = callbackFlow {
-            val listener =
-                object : DisplayListener {
-                    override fun onDisplayAdded(displayId: Int) {
-                        trySend(displayId)
-                    }
+        val displayAddedFlow: Flow<Int> =
+            callbackFlow {
+                    val listener =
+                        object : DisplayListener {
+                            override fun onDisplayAdded(displayId: Int) {
+                                trySend(displayId)
+                            }
 
-                    override fun onDisplayRemoved(displayId: Int) {}
+                            override fun onDisplayRemoved(displayId: Int) {}
 
-                    override fun onDisplayChanged(displayId: Int) {}
+                            override fun onDisplayChanged(displayId: Int) {}
+                        }
+
+                    val handler = Handler(Looper.getMainLooper())
+                    displayManager.registerDisplayListener(listener, handler)
+
+                    // `disable_window_interaction` is used to let interaction not get obstructed by
+                    // OverlayDisplayWindow and let it go through to the window or surface behind
+                    // it.
+                    val displaySettings =
+                        displays.joinToString(separator = ";") { size ->
+                            "${size.x}x${size.y}/$DEFAULT_DENSITY,disable_window_interaction"
+                        }
+
+                    // Add the overlay displays
+                    Settings.Global.putString(
+                        context.contentResolver,
+                        Settings.Global.OVERLAY_DISPLAY_DEVICES,
+                        displaySettings,
+                    )
+
+                    awaitClose { displayManager.unregisterDisplayListener(listener) }
                 }
-
-            val handler = Handler(Looper.getMainLooper())
-            displayManager.registerDisplayListener(listener, handler)
-
-            // `disable_window_interaction` is used to let interaction not get obstructed by
-            // OverlayDisplayWindow and let it go through to the window or surface behind it.
-            val displaySettings =
-                displays.joinToString(separator = ";") { size ->
-                    "${size.x}x${size.y}/$DEFAULT_DENSITY,disable_window_interaction"
-                }
-
-            // Add the overlay displays
-            Settings.Global.putString(
-                context.contentResolver,
-                Settings.Global.OVERLAY_DISPLAY_DEVICES,
-                displaySettings,
-            )
-
-            awaitClose { displayManager.unregisterDisplayListener(listener) }
-        }
+                .buffer(capacity = displays.size)
 
         addedDisplays = buildList {
             withTimeoutOrNull(TIMEOUT) {
