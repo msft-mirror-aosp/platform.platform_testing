@@ -73,6 +73,7 @@ class BluetoothBaseTest(base_test.BaseTestClass):
         self.target.mbs.btDisable()
 
     def teardown_no_video_recording(self):
+        android_device.take_bug_reports(self.ads, destination=self.log_path)
         # Turn Bluetooth off on both devices.
         logging.info("Running basic test teardown.")
         self.call_utils.press_home()
