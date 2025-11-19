@@ -22,6 +22,7 @@ import android.platform.systemui_tapl.ui.BluetoothDialog
 import android.platform.systemui_tapl.ui.HearingDevicesDialog
 import android.platform.systemui_tapl.ui.InternetDetailsView
 import android.platform.systemui_tapl.ui.InternetDialog
+import android.platform.systemui_tapl.ui.ModesDetailsView
 import android.platform.systemui_tapl.ui.ModesDialog
 
 fun ComposeQuickSettingsTile.clickInternetTileToOpenDialog(): InternetDialog {
@@ -59,6 +60,12 @@ fun ComposeQuickSettingsTile.clickFlashlightTileToOpenDialog(): FlashlightDialog
 fun ComposeQuickSettingsTile.clickModesTileToOpenDialog(): ModesDialog {
     clickToOpenDialogOnDualTarget()
     return ModesDialog(displayId)
+}
+
+/** Clicks the modes tile to open the modes details view. */
+fun ComposeQuickSettingsTile.clickModesTileToOpenDetailsView(): ModesDetailsView {
+    clickToOpenDialogOnDualTarget()
+    return ModesDetailsView(displayId)
 }
 
 fun ComposeQuickSettingsTile.clickBatteryTileToOpenDialog(): BatteryDialog {
