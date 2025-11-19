@@ -30,7 +30,6 @@ import static android.platform.uiautomatorhelpers.DeviceHelpers.getUiDevice;
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
 import android.R;
-import android.annotation.FlaggedApi;
 import android.app.Notification;
 import android.app.Notification.Builder;
 import android.app.Notification.MessagingStyle;
@@ -651,6 +650,30 @@ public class NotificationController {
                 /* title= */ null,
                 /* text= */ NOTIFICATION_TITLE_TEXT,
                 /* summary= */ summary,
+                /* textWhenExpanded= */ null,
+                /* contentIsVisibleInCollapsedState= */ true,
+                /* pkg= */ null);
+    }
+
+    /**
+     * Posts a Notification.MetricStyle .
+     *
+     * @param pkg The application that will be launched by notifications.
+     * @param metrics to be shown in the Notification content.
+     */
+    public NotificationIdentity postMetricStyleNotification(
+            String pkg, List<Notification.Metric> metrics) {
+        final Builder builder = getBuilder(pkg);
+        builder.setContentTitle(NOTIFICATION_TITLE_TEXT)
+                .setStyle(new Notification.MetricStyle().setMetrics(metrics));
+
+        postNotificationSync(getNextNotificationId(), builder, null);
+
+        return new NotificationIdentity(
+                /* type= */ NotificationIdentity.Type.BY_ALT_TITLE,
+                /* title= */ NOTIFICATION_TITLE_TEXT,
+                /* text= */ null,
+                /* summary= */ null,
                 /* textWhenExpanded= */ null,
                 /* contentIsVisibleInCollapsedState= */ true,
                 /* pkg= */ null);
