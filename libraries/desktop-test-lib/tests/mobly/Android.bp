@@ -18,6 +18,7 @@ package {
 
 python_test_host {
     name: "DesktopTestLibTestsMobly",
+    defaults: ["PASIT-defaults"],
     srcs: ["src/*.py"],
     main: "src/__main__.py",
     libs: [
