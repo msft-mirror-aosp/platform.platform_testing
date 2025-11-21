@@ -294,4 +294,11 @@ public interface IAutoPrivacySettingsHelper extends IAppHelper {
      * <p>This method turns on and Off the MicroPhone.
      */
     void turnOnMicroPhone(boolean onOff);
+
+    /**
+     * Setup expectation: Privacy settings is open.
+     *
+     * <p>This method Clicks and Open Data Sharing With Google Page on settings
+     */
+    void openDataSharingWithGoogle();
 }

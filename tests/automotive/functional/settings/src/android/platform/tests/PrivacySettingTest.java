@@ -28,7 +28,6 @@ import android.platform.helpers.SettingsConstants;
 
 import androidx.test.runner.AndroidJUnit4;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,16 +50,12 @@ public class PrivacySettingTest {
         assertTrue(
                 "Privacy settings did not open",
                 mSettingsUIHelper.get().hasUIElement(AutomotiveConfigConstants.MICROPHONE));
+        mPrivacySettingsHelper.get().openDataSharingWithGoogle();
     }
 
-    @After
-    public void goBackToSettingsScreen() {
-        mSettingHelper.get().goBackToSettingsScreen();
-    }
     // This test needs a user logged in
     @Test
     public void testActivityControlUserLoggedIn() {
-        mSettingHelper.get().openMenuWith("Data sharing with Google");
         mSettingHelper.get().openMenuWith("Activity Controls");
         assertTrue(
                 "Manage activity controls is not displayed",
@@ -70,7 +65,6 @@ public class PrivacySettingTest {
     // This test needs a user logged in
     @Test
     public void testAutofillServiceNoUserLoggedIn() {
-        mSettingHelper.get().openMenuWith("Data sharing with Google");
         mSettingHelper.get().openMenuWith("Autofill service from Google");
         assertTrue(
                 "Message to add Account is not displayed",
@@ -80,7 +74,6 @@ public class PrivacySettingTest {
     // No account should be added for this test
     @Test
     public void testAutofillServiceUserLoggedIn() {
-        mSettingHelper.get().openMenuWith("Data sharing with Google");
         mSettingHelper.get().openMenuWith("Autofill service from Google");
         assertFalse(
                 "Message to add Account is displayed",
