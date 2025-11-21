@@ -47,7 +47,7 @@ public class SimpleperfListener extends BaseMetricListener {
     private static final String DEFAULT_OUTPUT_ROOT = "/sdcard/test_results";
     // Default arguments passed to simpleperf command
     private static final String DEFAULT_ARGUMENTS =
-            "-g --post-unwind=yes -f 500 --exclude-perf --log-to-android-buffer";
+            "--post-unwind=yes -f 500 --exclude-perf --log-to-android-buffer";
     // Destination directory to save the trace results.
     private static final String TEST_OUTPUT_ROOT = "test_output_root";
     // Simpleperf profiling file path key from simpleperf record.
@@ -340,6 +340,7 @@ public class SimpleperfListener extends BaseMetricListener {
         commandArgsList.add("simpleperf record");
         commandArgsList.add("-o");
         commandArgsList.add(mSimpleperfHelper.SIMPLEPERF_PROFILING_TMP_FILE_PATH);
+        commandArgsList.add("-g");
         commandArgsList.add(mArguments);
 
         // Appending recording argument for recording specified events if given.
