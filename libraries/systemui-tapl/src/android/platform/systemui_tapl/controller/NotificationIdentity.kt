@@ -45,6 +45,7 @@ constructor(
         MESSAGING_STYLE,
         CONVERSATION,
         BY_TITLE,
+        BY_ALT_TITLE,
         BY_TEXT,
         CALL,
         INBOX,

@@ -415,11 +415,7 @@ public class BootTimeTest extends InstalledInstrumentationsTest
             throws DeviceNotAvailableException {
         mTestInfo = testInfo;
         long start = System.currentTimeMillis();
-        if (mRebootUnlock) {
-            listener.testRunStarted(mTestRunName, mBootCount * 2 + 2);
-        } else {
-            listener.testRunStarted(mTestRunName, mBootCount + 1);
-        }
+        listener.testRunStarted(mTestRunName, mBootCount + 1);
         for (IMetricCollector collector : mCollectors) {
             listener = collector.init(mInvocationContext, listener);
         }
@@ -431,6 +427,37 @@ public class BootTimeTest extends InstalledInstrumentationsTest
                 // Setup device for successive boots, e.g. dismiss SuW
                 setupDeviceForSuccessiveBoots();
 
+                if (mRebootUnlock) {
+                    // Test to measure the reboot time and time from unlocking the
+                    // screen using the pin
+                    // till the NexusLauncherActivity is displayed.
+                    mBootInfo.clear();
+                    Map<String, String> successiveBootUnlockResult = new HashMap<>();
+                    TestDescription successiveBootUnlockTestId =
+                            new TestDescription(
+                                    String.format("%s.%s", BOOTTIME_TEST, BOOTTIME_TEST),
+                                    SUCCESSIVE_BOOT_UNLOCK_TEST);
+                    try {
+                        // If pin is already set skip the setup method otherwise
+                        // setup the pin.
+                        if (!mSkipPinSetup) {
+                            mRunner = createRemoteAndroidTestRunner(SETUP_PIN_TEST);
+                            getDevice()
+                                    .runInstrumentationTests(mRunner, new CollectingTestListener());
+                        }
+                        testSuccessiveBoots(true, listener);
+                    } finally {
+                        if (null != mRebootLogcatReceiver) {
+                            try (InputStreamSource logcatData =
+                                    mRebootLogcatReceiver.getLogcatData()) {
+                                listener.testLog(LOGCAT_UNLOCK_FILE, LogDataType.TEXT, logcatData);
+                            }
+                            mRebootLogcatReceiver.stop();
+                        }
+                        listener.testStarted(successiveBootUnlockTestId);
+                        listener.testEnded(successiveBootUnlockTestId, successiveBootUnlockResult);
+                    }
+                } else {
                 Map<String, String> successiveResult = new HashMap<>();
                 boolean isSuccessiveBootsSuccess = true;
                 TestDescription successiveBootTestId =
@@ -475,38 +502,7 @@ public class BootTimeTest extends InstalledInstrumentationsTest
                         }
                     } else {
                         listener.testEnded(successiveBootTestId, successiveResult);
-                    }
-                }
-
-                // Test to measure the reboot time and time from unlocking the
-                // screen using the pin
-                // till the NexusLauncherActivity is displayed.
-                if (mRebootUnlock) {
-                    mBootInfo.clear();
-                    Map<String, String> successiveBootUnlockResult = new HashMap<>();
-                    TestDescription successiveBootUnlockTestId =
-                            new TestDescription(
-                                    String.format("%s.%s", BOOTTIME_TEST, BOOTTIME_TEST),
-                                    SUCCESSIVE_BOOT_UNLOCK_TEST);
-                    try {
-                        // If pin is already set skip the setup method otherwise
-                        // setup the pin.
-                        if (!mSkipPinSetup) {
-                            mRunner = createRemoteAndroidTestRunner(SETUP_PIN_TEST);
-                            getDevice()
-                                    .runInstrumentationTests(mRunner, new CollectingTestListener());
                         }
-                        testSuccessiveBoots(true, listener);
-                    } finally {
-                        if (null != mRebootLogcatReceiver) {
-                            try (InputStreamSource logcatData =
-                                    mRebootLogcatReceiver.getLogcatData()) {
-                                listener.testLog(LOGCAT_UNLOCK_FILE, LogDataType.TEXT, logcatData);
-                            }
-                            mRebootLogcatReceiver.stop();
-                        }
-                        listener.testStarted(successiveBootUnlockTestId);
-                        listener.testEnded(successiveBootUnlockTestId, successiveBootUnlockResult);
                     }
                 }
             } finally {

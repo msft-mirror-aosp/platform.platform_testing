@@ -22,6 +22,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.security.MessageDigest
 import platform.test.screenshot.GoldenPathManager
 import platform.test.screenshot.proto.ScreenshotResultProto
 
@@ -32,9 +33,8 @@ import platform.test.screenshot.proto.ScreenshotResultProto
  * TODO(b/322324387) Cleanup code - this is copied with only minor modifications (`testIdentifier`
  *   is now an argument rather than a member) from http://shortn/_7AMZiumx0f for reviewability.
  */
-class ExportToScubaStrategy(
-    private val goldenPathManager: GoldenPathManager,
-) : DiffResultExportStrategy {
+class ExportToScubaStrategy(private val goldenPathManager: GoldenPathManager) :
+    DiffResultExportStrategy {
     private val imageExtension = ".png"
     private val resultBinaryProtoFileSuffix = "goldResult.pb"
 
@@ -52,7 +52,7 @@ class ExportToScubaStrategy(
         status: ScreenshotResultProto.DiffResult.Status,
         comparisonStatistics: ScreenshotResultProto.DiffResult.ComparisonStatistics?,
         expected: Bitmap?,
-        diff: Bitmap?
+        diff: Bitmap?,
     ) {
         val resultProto =
             ScreenshotResultProto.DiffResult.newBuilder()
@@ -116,14 +116,14 @@ class ExportToScubaStrategy(
         val protoSuffix = getOnDeviceArtifactsSuffix(goldenIdentifier, resultProtoFileSuffix)
         val binProtoSuffix =
             getOnDeviceArtifactsSuffix(goldenIdentifier, resultBinaryProtoFileSuffix)
-        val succinctTestIdentifier = getSuccinctTestIdentifier(testIdentifier)
+        val shortTestIdentifier = shortenIdentifier(getSuccinctTestIdentifier(testIdentifier))
         val fileName =
             when (fileType) {
-                OutputFileType.IMAGE_ACTUAL -> "${succinctTestIdentifier}_actual_$imageSuffix"
-                OutputFileType.IMAGE_EXPECTED -> "${succinctTestIdentifier}_expected_$imageSuffix"
-                OutputFileType.IMAGE_DIFF -> "${succinctTestIdentifier}_diff_$imageSuffix"
-                OutputFileType.RESULT_PROTO -> "${succinctTestIdentifier}_$protoSuffix"
-                OutputFileType.RESULT_BIN_PROTO -> "${succinctTestIdentifier}_$binProtoSuffix"
+                OutputFileType.IMAGE_ACTUAL -> "${shortTestIdentifier}_actual_$imageSuffix"
+                OutputFileType.IMAGE_EXPECTED -> "${shortTestIdentifier}_expected_$imageSuffix"
+                OutputFileType.IMAGE_DIFF -> "${shortTestIdentifier}_diff_$imageSuffix"
+                OutputFileType.RESULT_PROTO -> "${shortTestIdentifier}_$protoSuffix"
+                OutputFileType.RESULT_BIN_PROTO -> "${shortTestIdentifier}_$binProtoSuffix"
             }
         return File(goldenPathManager.deviceLocalPath, fileName)
     }
@@ -151,6 +151,15 @@ class ExportToScubaStrategy(
         return pattern.replace(identifier, "")
     }
 
+    /** Use MD5 to shorten identifier to 32 chars if longer */
+    private fun shortenIdentifier(identifier: String): String {
+        if (identifier.length <= 32) {
+            return identifier
+        }
+        val bytes = MessageDigest.getInstance("MD5").digest(identifier.toByteArray())
+        return bytes.joinToString("") { "%02x".format(it) } // Returns a 32-char string
+    }
+
     private fun Bitmap.writeToDevice(
         fileType: OutputFileType,
         goldenIdentifier: String,
@@ -165,7 +174,7 @@ class ExportToScubaStrategy(
         fileType: OutputFileType,
         goldenIdentifier: String,
         testIdentifier: String,
-        writeAction: (FileOutputStream) -> Unit
+        writeAction: (FileOutputStream) -> Unit,
     ): File {
         val fileGolden = File(goldenPathManager.deviceLocalPath)
         if (!fileGolden.exists() && !fileGolden.mkdirs()) {
@@ -182,7 +191,7 @@ class ExportToScubaStrategy(
             } catch (e: Exception) {
                 throw IOException(
                     "Could not write file to storage (path: ${file.absolutePath}). ",
-                    e
+                    e,
                 )
             }
         }
@@ -197,5 +206,5 @@ internal enum class OutputFileType {
     IMAGE_EXPECTED,
     IMAGE_DIFF,
     RESULT_PROTO,
-    RESULT_BIN_PROTO
+    RESULT_BIN_PROTO,
 }

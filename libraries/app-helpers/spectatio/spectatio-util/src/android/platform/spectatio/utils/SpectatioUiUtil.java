@@ -611,6 +611,21 @@ public class SpectatioUiUtil {
     }
 
     /**
+     * Checks if given target is available on the Device UI.
+     *
+     * <p>Given target will be searched on current screen. This method will not scroll on the screen
+     * to check for given target.
+     *
+     * @param target {@link BySelector} to search on device UI
+     * @param timeout The maximum time to wait in milliseconds.
+     * @return Returns True if the target is found, else return False.
+     */
+    public boolean hasUiElement(BySelector target, int timeout) {
+        validateSelector(target, /* action= */ "Check For UI Object");
+        return mDevice.wait(Until.hasObject(target), timeout);
+    }
+
+    /**
      * Scroll using forward and backward buttons on device screen and check if the given target is
      * present.
      *

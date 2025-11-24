@@ -31,6 +31,7 @@ import android.tools.traces.wm.DisplayContent
 import android.tools.traces.wm.DisplayCutout
 import android.tools.traces.wm.InsetsSource
 import android.tools.traces.wm.InsetsSourceProvider
+import android.tools.traces.wm.KeyguardControllerState
 import android.tools.traces.wm.PixelFormat
 import android.tools.traces.wm.RootWindowContainer
 import android.tools.traces.wm.RotationAnimation
@@ -120,6 +121,7 @@ class WindowContainerBuilder {
 
     private fun buildRootWindowContainer(): RootWindowContainer {
         val windowContainer = buildWindowContainer(args?.getChild("window_container"))
+        val keyguardController = buildKeyguardControllerState(args?.getChild("keyguard_controller"))
 
         return RootWindowContainer(
             isHomeRecentsComponent =
@@ -128,6 +130,7 @@ class WindowContainerBuilder {
                 args?.getChildren("pending_activities")?.map {
                     it.getChild("title")?.getString() ?: ""
                 } ?: emptyList(),
+            keyguardController,
             windowContainer,
         )
     }
@@ -565,6 +568,22 @@ class WindowContainerBuilder {
             rectProto?.getChild("right")?.getInt() ?: 0,
             rectProto?.getChild("bottom")?.getInt() ?: 0,
         )
+
+    private fun buildKeyguardControllerState(
+        keyguardControllerProto: Args?
+    ): KeyguardControllerState {
+        return KeyguardControllerState.from(
+            isAodShowing = keyguardControllerProto?.getChild("aod_showing")?.getBoolean() ?: false,
+            isKeyguardShowing =
+                keyguardControllerProto?.getChild("keyguard_showing")?.getBoolean() ?: false,
+            keyguardOccludedStates =
+                keyguardControllerProto?.getChildren("keyguard_occluded_states")?.associate {
+                    val displayId = it.getChild("display_id")?.getInt() ?: 0
+                    val keyguardOccluded = it.getChild("keyguard_occluded")?.getBoolean() ?: false
+                    displayId to keyguardOccluded
+                } ?: emptyMap(),
+        )
+    }
 
     companion object {
         @VisibleForTesting const val ROOT_WINDOW_CONTAINER = "RootWindowContainer"

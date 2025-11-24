@@ -41,6 +41,24 @@ public interface IGmailHelper extends IAppHelper {
     public void goToComposeEmail();
 
     /**
+     * Setup expectations: Gmail Composition box is open on the Inbox or Primary page.
+     * Ensures compose email box is opened before composing email
+     * @param body - Email body content
+     */
+    public void composeEmail(String body);
+
+    /**
+     * Setup expectations: Gmail is open and a mailbox is open.
+     *
+     * <p>This method will scroll the mailbox view.
+     *
+     * @param direction The direction to scroll, only accepts UP and DOWN.
+     * @param amount The amount to scroll
+     * @param scrollToEnd Whether or not to scroll to the end
+     */
+    public void scrollComposeEmailBox(Direction direction, float amount, boolean scrollToEnd);
+
+    /**
      * Checks if the current view is the compose email view.
      *
      * @return true if the current view is the compose email view, false otherwise.

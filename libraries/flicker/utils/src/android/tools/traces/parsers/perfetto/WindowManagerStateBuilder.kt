@@ -18,7 +18,6 @@ package android.tools.traces.parsers.perfetto
 
 import android.tools.Rotation
 import android.tools.traces.wm.Activity
-import android.tools.traces.wm.KeyguardControllerState
 import android.tools.traces.wm.RootWindowContainer
 import android.tools.traces.wm.ScreenOrientation
 import android.tools.traces.wm.UserRotationMode
@@ -88,10 +87,7 @@ class WindowManagerStateBuilder {
             isDisplayFrozen = service.getChild("display_frozen")?.getBoolean() ?: false,
             _pendingActivities = rootWindowContainer!!.pendingActivities,
             root = rootWindowContainer!!,
-            keyguardControllerState =
-                buildKeyguardControllerState(
-                    service.getChild("root_window_container")?.getChild("keyguard_controller")
-                ),
+            keyguardControllerState = rootWindowContainer!!.keyguardController,
         )
     }
 
@@ -157,22 +153,6 @@ class WindowManagerStateBuilder {
             windowManagerDrawComplete =
                 windowManagerPolicyProto.getChild("window_manager_draw_complete")?.getBoolean()
                     ?: false,
-        )
-    }
-
-    private fun buildKeyguardControllerState(
-        keyguardControllerProto: Args?
-    ): KeyguardControllerState {
-        return KeyguardControllerState.from(
-            isAodShowing = keyguardControllerProto?.getChild("aod_showing")?.getBoolean() ?: false,
-            isKeyguardShowing =
-                keyguardControllerProto?.getChild("keyguard_showing")?.getBoolean() ?: false,
-            keyguardOccludedStates =
-                keyguardControllerProto?.getChildren("keyguard_occluded_states")?.associate {
-                    val displayId = it.getChild("display_id")?.getInt() ?: 0
-                    val keyguardOccluded = it.getChild("keyguard_occluded")?.getBoolean() ?: false
-                    displayId to keyguardOccluded
-                } ?: emptyMap(),
         )
     }
 }

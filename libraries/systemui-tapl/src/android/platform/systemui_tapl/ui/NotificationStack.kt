@@ -20,6 +20,7 @@ import android.graphics.Rect
 import android.platform.systemui_tapl.controller.NotificationIdentity
 import android.platform.systemui_tapl.controller.NotificationIdentity.Type.BIG_PICTURE
 import android.platform.systemui_tapl.controller.NotificationIdentity.Type.BIG_TEXT
+import android.platform.systemui_tapl.controller.NotificationIdentity.Type.BY_ALT_TITLE
 import android.platform.systemui_tapl.controller.NotificationIdentity.Type.BY_TEXT
 import android.platform.systemui_tapl.controller.NotificationIdentity.Type.BY_TITLE
 import android.platform.systemui_tapl.controller.NotificationIdentity.Type.CALL
@@ -278,6 +279,7 @@ open class NotificationStack internal constructor(val fromLockscreen: Boolean) {
                     MESSAGING_STYLE,
                     CONVERSATION -> MESSAGE_ICON_CONTAINER_SELECTOR
                     BY_TITLE -> notificationByTitleSelector(identity.title!!)
+                    BY_ALT_TITLE -> notificationByAltTitleSelector(identity.title!!)
                 }
 
             // Generate the selector for the notification
@@ -295,6 +297,7 @@ open class NotificationStack internal constructor(val fromLockscreen: Boolean) {
                     BIG_TEXT -> notificationByTitleSelector(identity.title!!)
                     CUSTOM -> CUSTOM_NOTIFICATION_SELECTOR
                     BY_TITLE -> notificationByTitleSelector(identity.title!!)
+                    BY_ALT_TITLE -> notificationByAltTitleSelector(identity.title!!)
                     else -> notificationByTitleSelector(identity.text!!)
                 }
 
@@ -360,6 +363,10 @@ open class NotificationStack internal constructor(val fromLockscreen: Boolean) {
         private fun notificationByTitleSelector(title: String) =
             By.copy(NOTIFICATION_ROW_SELECTOR)
                 .hasDescendant(androidResSelector("title").text(title))
+
+        private fun notificationByAltTitleSelector(title: String) =
+            By.copy(NOTIFICATION_ROW_SELECTOR)
+                .hasDescendant(androidResSelector("alt_title").text(title))
 
         internal fun notificationByTextSelector(text: String) =
             By.copy(NOTIFICATION_ROW_SELECTOR).hasDescendant(By.text(text))

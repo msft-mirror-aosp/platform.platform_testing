@@ -16,6 +16,8 @@
 
 package android.platform.systemui_tapl.ui
 
+import android.app.Notification.Metric
+import android.content.Context
 import android.graphics.PointF
 import android.graphics.Rect
 import android.platform.helpers.ui.UiAutomatorUtils.getUiDevice
@@ -166,6 +168,44 @@ internal constructor(
                     "but is not promoted because it has an expand button."
             },
         )
+    }
+
+    fun verifyAreMetricsDisplayed(context: Context, metrics: List<Metric>) {
+        require(metrics.size in 1..3)
+
+        for (i in metricViews.indices) {
+            if (i >= metrics.size) break
+
+            val metricView = metricViews[i]
+            val metric = metrics[i]
+            waitForObj(
+                By.copy(metricView.label).text("${metric.label}"),
+                errorProvider = { "Couldn't find Metric text label = ${metric.label}" },
+            )
+            val shouldChronometerBeVisible = metric.value is Metric.TimeDifference
+
+            notification.assertVisibility(
+                selector = metricView.chronometer,
+                visible = shouldChronometerBeVisible,
+                errorProvider = {
+                    "Metric chronometer visibility should be $shouldChronometerBeVisible"
+                },
+            )
+
+            notification.assertVisibility(
+                selector = metricView.value,
+                visible = !shouldChronometerBeVisible,
+                errorProvider = {
+                    "Metric value visibility should be ${!shouldChronometerBeVisible}"
+                },
+            )
+            if (!shouldChronometerBeVisible) {
+                waitForObj(
+                    By.copy(metricView.value).text(metric.value.toValueString(context).text()),
+                    errorProvider = { "Couldn't find Metric text label = ${metric.label}" },
+                )
+            }
+        }
     }
 
     /** Swipes on the notification but not able to dismiss the notification. */
@@ -545,5 +585,30 @@ internal constructor(
                     SHORT_TRANSITION_WAIT.toMillis(),
                 ) ?: emptyList()
             }
+
+        private val metricViews =
+            listOf(
+                MetricViewId(
+                    label = androidResSelector("metric_label_0"),
+                    value = androidResSelector("metric_value_0"),
+                    chronometer = androidResSelector("metric_chronometer_0"),
+                ),
+                MetricViewId(
+                    label = androidResSelector("metric_label_1"),
+                    value = androidResSelector("metric_value_1"),
+                    chronometer = androidResSelector("metric_chronometer_1"),
+                ),
+                MetricViewId(
+                    label = androidResSelector("metric_label_2"),
+                    value = androidResSelector("metric_value_2"),
+                    chronometer = androidResSelector("metric_chronometer_2"),
+                ),
+            )
+
+        data class MetricViewId(
+            val label: BySelector,
+            val value: BySelector,
+            val chronometer: BySelector,
+        )
     }
 }

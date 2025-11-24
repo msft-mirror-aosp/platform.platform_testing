@@ -37,6 +37,7 @@ import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -141,7 +142,9 @@ public class Functional extends BlockJUnit4ClassRunner {
         // To ensure parent class's @NoMetricBefore is run before subclass's @NoMetricBefore,
         // reverse the order (the methods are returned in order from subclass to superclass).
         List<FrameworkMethod> noMetricBefores =
-                getTestClass().getAnnotatedMethods(Microbenchmark.NoMetricBefore.class).reversed();
+                new ArrayList<>(
+                        getTestClass().getAnnotatedMethods(Microbenchmark.NoMetricBefore.class));
+        Collections.reverse(noMetricBefores);
         final Statement withNoMetricBefores =
                 noMetricBefores.isEmpty()
                         ? withStandardBefores
