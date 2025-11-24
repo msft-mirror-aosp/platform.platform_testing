@@ -195,6 +195,7 @@ public final class SetFlagsRule implements TestRule {
             @Override
             public void evaluate() throws Throwable {
                 Throwable throwable = null;
+                Map<String, Boolean> modifiedFlag = new HashMap<>();
                 try {
                     if (mListener != null) {
                         mListener.onStartedEvaluating();
@@ -208,10 +209,17 @@ public final class SetFlagsRule implements TestRule {
                         for (Map.Entry<String, Boolean> pair :
                                 mFlagsParameterization.mOverrides.entrySet()) {
                             setFlagValue(pair.getKey(), pair.getValue());
+                            modifiedFlag.put(pair.getKey(), pair.getValue());
                         }
                     }
                     for (Map.Entry<String, Boolean> pair :
                             flagAnnotations.mSetFlagValues.entrySet()) {
+                        // Skip the flags that have been set because of the Parameterization
+                        if (modifiedFlag
+                                .getOrDefault(pair.getKey(), !pair.getValue())
+                                .equals(pair.getValue())) {
+                            continue;
+                        }
                         setFlagValue(pair.getKey(), pair.getValue());
                     }
                     mLockedFlagNames.addAll(flagAnnotations.mRequiredFlagValues.keySet());
@@ -317,10 +325,23 @@ public final class SetFlagsRule implements TestRule {
             mListener.onBeforeSetFlag(flag, value);
         }
 
-        Object fakeFlagsImplInstance = null;
-
         Class<?> flagsClass = getFlagClassFromFlag(flag);
-        fakeFlagsImplInstance = getOrCreateFakeFlagsImp(flagsClass);
+        boolean defaultValueDiffersFromSetValue =
+                !mIsInitWithDefault || getFlagValue(flagsClass, flag) != value;
+
+        boolean isOptimized = isOptimizedFlag(flagsClass);
+        if (isOptimized) {
+            assumeFalse(
+                    String.format(
+                            "Flag %s code is optimized. "
+                                    + " The flag value should not be modified on this build"
+                                    + " Skip this test.",
+                            flag.fullFlagName()),
+                    defaultValueDiffersFromSetValue);
+            return;
+        }
+
+        Object fakeFlagsImplInstance = getOrCreateFakeFlagsImp(flagsClass);
 
         if (!mMutatedFlagsClasses.contains(flagsClass)) {
             // Replace FeatureFlags in Flags class with FakeFeatureFlagsImpl
@@ -333,11 +354,10 @@ public final class SetFlagsRule implements TestRule {
         // The reason for skipping instead of throwning error here is all read_write flag will be
         // change to read_only in the final release configuration. Thus the test could be executed
         // in other release configuration cases
-        boolean isOptimized =
+        // This isRoFlag check could be removed once RO optimization is done
+        boolean isRoFlag =
                 verifyFlag(fakeFlagsImplInstance, flag, IS_FLAG_READ_ONLY_OPTIMIZED_METHOD_NAME);
-        if (isOptimized) {
-            boolean defaultValueDiffersFromSetValue =
-                    !mIsInitWithDefault || getFlagValue(flagsClass, flag) != value;
+        if (isRoFlag) {
             assumeFalse(
                     String.format(
                             "Flag %s is read_only, and the code is optimized. "
@@ -345,7 +365,6 @@ public final class SetFlagsRule implements TestRule {
                                     + " Skip this test.",
                             flag.fullFlagName()),
                     defaultValueDiffersFromSetValue);
-            // Skip the override; the existing default value yields the same as the set value.
             return;
         }
 
@@ -453,6 +472,19 @@ public final class SetFlagsRule implements TestRule {
         } catch (ReflectiveOperationException e) {
             throw new FlagSetException(fullFlagName, e);
         }
+    }
+
+    private static boolean isOptimizedFlag(Class<?> flagsClass) {
+        try {
+            Field featureFlagsField = getFeatureFlagsField(flagsClass);
+            featureFlagsField.get(null);
+        } catch (UnsupportedOperationException | ReflectiveOperationException e) {
+            // If the field is missing (UnsupportedOperationException),
+            // or the interface class cannot be loaded, or access is denied,
+            // we assume the flag is optimized/inlined.
+            return true;
+        }
+        return false;
     }
 
     private static boolean verifyFlag(Object fakeFeatureFlagsImpl, Flag flag, String methodName) {
@@ -604,6 +636,9 @@ public final class SetFlagsRule implements TestRule {
         /** The flags packages that are allowed to be set, for quick per-flag lookup */
         private final Set<String> mSettableFlagsPackages = new HashSet<>();
 
+        /** The flags packages optimized */
+        private final Set<String> mOptimizedFlagsPackages = new HashSet<>();
+
         /** The mapping from the Flags classes to the real implementations */
         private final Map<Class<?>, Object> mFlagsClassToRealFlagsImpl = new HashMap<>();
 
@@ -698,7 +733,8 @@ public final class SetFlagsRule implements TestRule {
         }
 
         private boolean isFlagsClassMonitored(SetFlagsRule.Flag flag) {
-            return mSettableFlagsPackages.contains(flag.flagPackageName());
+            return mOptimizedFlagsPackages.contains(flag.flagPackageName())
+                    || mSettableFlagsPackages.contains(flag.flagPackageName());
         }
 
         private void assertFlagCanBeSet(SetFlagsRule.Flag flag, boolean value) {
@@ -830,20 +866,47 @@ public final class SetFlagsRule implements TestRule {
         }
 
         private void setupClassLevelFlagValues(Description description) {
-            mClassLevelSetFlagValues.putAll(
-                    AnnotationsRetriever.getFlagAnnotations(description).mSetFlagValues);
+            Map<String, Boolean> annotationFlags =
+                    AnnotationsRetriever.getFlagAnnotations(description).mSetFlagValues;
+
+            for (Map.Entry<String, Boolean> entry : annotationFlags.entrySet()) {
+                String fullFlagName = entry.getKey();
+                try {
+                    // Find the package(s) containing this flag (handles repackaging)
+                    Set<String> packages = getAllPackagesForFlag(fullFlagName, mPackageToRepackage);
+
+                    boolean isOptimized = false;
+                    for (String packageName : packages) {
+                        Flag flag = Flag.createFlag(fullFlagName, packageName);
+                        Class<?> flagsClass = getFlagClassFromFlag(flag);
+                        if (isOptimizedFlag(flagsClass)) {
+                            isOptimized = true;
+                            break;
+                        }
+                    }
+                    if (!isOptimized) {
+                        mClassLevelSetFlagValues.put(fullFlagName, entry.getValue());
+                    }
+                } catch (FlagSetException e) {
+                    // If the flag class cannot be found, we cannot determine optimization status.
+                    // We ignore this error here; it will likely be caught later if relevant.
+                }
+            }
         }
 
         private void setupFlagsWatchers(Description description) {
             // Start with the static list of Flags classes to watch
             Set<Class<?>> flagsClassesToWatch = new HashSet<>(mGlobalFlagsClassesToWatch);
-            // Collect the Flags classes from @UsedFlags annotations on the Descriptor
+            // Collect the Flags classes from @UsesFlags annotations on the Descriptor
             Set<String> usedFlagsClasses = AnnotationsRetriever.getAllUsedFlagsClasses(description);
             for (String flagsClassName : usedFlagsClasses) {
                 flagsClassesToWatch.add(getFlagClassFromFlagsClassName(flagsClassName));
             }
-            // Now setup watchers on the provided Flags classes
             for (Class<?> flagsClass : flagsClassesToWatch) {
+                if (isOptimizedFlag(flagsClass)) {
+                    mOptimizedFlagsPackages.add(getFlagPackageName(flagsClass));
+                    continue;
+                }
                 setupFlagsWatcher(flagsClass, getFlagPackageName(flagsClass));
             }
             // Get all annotated flags and then the distinct packages for each flag
@@ -867,6 +930,10 @@ public final class SetFlagsRule implements TestRule {
             // Set up watchers for each wildcard flag
             for (Flag flag : extraWildcardFlags) {
                 Class<?> flagsClass = getFlagClassFromFlag(flag);
+                if (isOptimizedFlag(flagsClass)) {
+                    mOptimizedFlagsPackages.add(flag.flagPackageName());
+                    continue;
+                }
                 setupFlagsWatcher(flagsClass, flag.flagPackageName());
             }
         }
@@ -894,6 +961,7 @@ public final class SetFlagsRule implements TestRule {
                 }
                 mMutatedFlagsClasses.clear();
                 mSettableFlagsPackages.clear();
+                mOptimizedFlagsPackages.clear();
                 mFirstReadOutsideTestsByFlag.clear();
             } catch (IllegalStateException e) {
                 throw e;
