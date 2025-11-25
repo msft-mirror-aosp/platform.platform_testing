@@ -19,6 +19,7 @@ package android.platform.systemui_tapl.ui.quicksettings
 import android.platform.systemui_tapl.ui.BatteryDialog
 import android.platform.systemui_tapl.ui.BluetoothDetailsView
 import android.platform.systemui_tapl.ui.BluetoothDialog
+import android.platform.systemui_tapl.ui.CastDetailsView
 import android.platform.systemui_tapl.ui.HearingDevicesDialog
 import android.platform.systemui_tapl.ui.InternetDetailsView
 import android.platform.systemui_tapl.ui.InternetDialog
@@ -76,6 +77,12 @@ fun ComposeQuickSettingsTile.clickBatteryTileToOpenDialog(): BatteryDialog {
 fun ComposeQuickSettingsTile.clickHearingDevicesToOpenDialog(): HearingDevicesDialog {
     click()
     return HearingDevicesDialog(displayId)
+}
+
+/** Clicks the cast tile to open the cast details view. */
+fun ComposeQuickSettingsTile.clickCastTileToOpenDetailsView(): CastDetailsView {
+    click()
+    return CastDetailsView(displayId)
 }
 
 private fun ComposeQuickSettingsTile.clickToOpenDialogOnDualTarget() {
