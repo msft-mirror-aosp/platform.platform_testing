@@ -18,21 +18,19 @@ import android.os.Build
 import java.time.Duration
 
 private const val CUTTLEFISH = "cutf_cvm"
-private const val CUTTLEFISH_FACTOR = 5L
+private const val CUTTLEFISH_FACTOR = 2L
 
-/** Platform-dependent duration utils (specifically targeting Cuttlefish)
- *  For physical (non-emulator) devices, the timeout is unchanged,
- *  the if the Build.HARDWARE is Cuttlefish, we increase the factor by 5.
+/**
+ * Platform-dependent duration utils (specifically targeting Cuttlefish) For physical (non-emulator)
+ * devices, the timeout is unchanged, the if the Build.HARDWARE is Cuttlefish, we increase the
+ * factor by 2.
  */
 object DurationUtils {
 
     /**
-     * For non-cuttlefish platforms, leave the timeout unchanged, otherwise
-     * increase the delay to compensate for slower performance.
+     * For non-cuttlefish platforms, leave the timeout unchanged, otherwise increase the delay to
+     * compensate for slower performance.
      */
     fun Duration.platformAdjust() =
-        if (Build.HARDWARE == CUTTLEFISH)
-	    this.multipliedBy(CUTTLEFISH_FACTOR)
-        else
-	    this
+        if (Build.HARDWARE == CUTTLEFISH) this.multipliedBy(CUTTLEFISH_FACTOR) else this
 }
