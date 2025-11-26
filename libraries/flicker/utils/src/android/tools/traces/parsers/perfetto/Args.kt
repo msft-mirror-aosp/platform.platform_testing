@@ -117,7 +117,19 @@ class Args {
             when (valueType) {
                 "bool" -> value.toBooleanStrict()
                 "int" -> value.toLong()
-                "uint" -> value.toLong()
+                "uint" -> {
+                    // Perfetto TraceProcessor currently prints uints as signed integers in the
+                    // display_value column. Proposed TP changes will cause uints to be printed as
+                    // unsigned integers. This means they will no longer be convertible in all cases
+                    // by "toLong" and must be converted by "toULong". Until the TP changes land, we
+                    // handle both cases. Once they have landed, we can remove the try...catch block
+                    // and always convert first "toULong", then "toLong".
+                    try {
+                        value.toULong().toLong()
+                    } catch (e: NumberFormatException) {
+                        value.toLong()
+                    }
+                }
                 "real" -> value.toDouble()
                 "string" -> value
                 else -> null
