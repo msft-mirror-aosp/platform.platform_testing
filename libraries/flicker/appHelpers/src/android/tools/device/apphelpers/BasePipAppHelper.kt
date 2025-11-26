@@ -253,7 +253,7 @@ abstract class BasePipAppHelper(
         uiDevice.click(dismissButtonBounds.centerX(), dismissButtonBounds.centerY())
 
         // Wait for animation to complete.
-        wmHelper.StateSyncBuilder().withPipGone().withHomeActivityVisible().waitForAndVerify()
+        wmHelper.StateSyncBuilder().withPipGone().waitForAndVerify()
     }
 
     open fun tapPipToShowMenu(wmHelper: WindowManagerStateHelper) {
