@@ -48,6 +48,8 @@ java_library {
     static_libs: [
         "androidx.test.rules",
         "flag-junit-base",
+        "libaconfig_java_proto_lite",
+        "modules-utils-build_system",
     ],
     sdk_version: "system_current",
 }
