@@ -47,17 +47,12 @@ import java.io.IOException;
 public class LockscreenController {
     private static final int SLEEP_INTERVAL_MS = 500;
 
+    // Both commands below make sure that broadcast receiver will receive the action if the current
+    // user is different than System.
     private static final String FACE_WAKE_FAKE_COMMAND =
-            "am broadcast -a "
-                    + "com.android.systemui.latency.ACTION_FACE_WAKE"
-                    + " --user 0"; // Making sure broadcast receiver will receive the action
-    // if current user is different than System.
+            "am broadcast -a com.android.systemui.latency.ACTION_FACE_WAKE --user 0";
     private static final String FINGERPRINT_WAKE_FAKE_COMMAND =
-            "am broadcast -a "
-                    + "com.android.systemui.latency.ACTION_FINGERPRINT_WAKE"
-                    + " --user 0"; // Making sure broadcast receiver will receive the action
-
-    // if current user is different than System.
+            "am broadcast -a com.android.systemui.latency.ACTION_FINGERPRINT_WAKE --user 0";
 
     /** Returns an instance of LockscreenController. */
     public static LockscreenController get() {
@@ -66,25 +61,25 @@ public class LockscreenController {
 
     private LockscreenController() {}
 
-    /** Enables unlocking via swipe */
+    /** Enables unlocking via swipe. */
     public void setUnlockSwipe() {
         LockscreenUtils.setLockscreen(
                 /* lockscreenType= */ SWIPE, /* lockscreenCode= */ "", /* expectedResult= */ false);
     }
 
-    /** Enables no-lockscreen mode */
+    /** Enables no-lockscreen mode. */
     public void setNoLockScreenMode() {
         LockscreenUtils.setLockscreen(
                 /* lockscreenType= */ NONE, /* lockscreenCode= */ "", /* expectedResult= */ false);
     }
 
-    /** Enables pin unlock */
+    /** Enables pin unlock. */
     public void setLockscreenPin(String pin) {
         LockscreenUtils.setLockscreen(
                 /* lockscreenType= */ PIN, /* lockscreenCode= */ pin, /* expectedResult= */ true);
     }
 
-    /** Enables password unlock */
+    /** Enables password unlock. */
     public void setLockscreenPassword(String password) {
         LockscreenUtils.setLockscreen(
                 /* lockscreenType= */ PASSWORD,
@@ -92,7 +87,7 @@ public class LockscreenController {
                 /* expectedResult= */ true);
     }
 
-    /** Enables pattern unlock */
+    /** Enables pattern unlock. */
     public void setLockscreenPattern(String pattern) {
         LockscreenUtils.setLockscreen(
                 /* lockscreenType= */ PATTERN,
@@ -112,7 +107,7 @@ public class LockscreenController {
     }
 
     /**
-     * Enables or disables glanceale hub.
+     * Enables or disables glanceable hub.
      *
      * @param enableHub Whether to enable glanceable hub?
      * @return whether the hub was previously enabled before calling this method.
@@ -128,12 +123,7 @@ public class LockscreenController {
                 Settings.Secure.getInt(contentResolver, key, defaultValue ? 1 : 0) == 1;
 
         if (value != previousValue) {
-            assertThat(
-                            Settings.Secure.putInt(
-                                    contentResolver,
-                                    key,
-                                    value ? 1 : 0))
-                    .isTrue();
+            assertThat(Settings.Secure.putInt(contentResolver, key, value ? 1 : 0)).isTrue();
         }
 
         return previousValue;
@@ -154,7 +144,7 @@ public class LockscreenController {
         }
     }
 
-    // TODO(b/461476171) remove the need for this
+    // TODO(b/461476171): Remove the need for this short pause.
     private static void sleepToAllowScreenStateToSettle() {
         SystemClock.sleep(SLEEP_INTERVAL_MS / 5);
     }
@@ -179,7 +169,7 @@ public class LockscreenController {
         }
     }
 
-    /** Goes to the Locked screen page */
+    /** Goes to the Locked screen page. */
     public void lockScreen() {
         LockscreenUtils.goToLockScreen();
     }
@@ -225,14 +215,14 @@ public class LockscreenController {
 
     /**
      * Returns whether the device is currently locked and requires a PIN, pattern or password to
-     * unlock. see [KeyguardManager.isDeviceLocked].
+     * unlock. See [KeyguardManager.isDeviceLocked].
      */
     public boolean isDeviceLocked() {
         return getKeyguardManager().isDeviceLocked();
     }
 
     /**
-     * Returns whether the device is currently secured by a PIN, pattern or password. see
+     * Returns whether the device is currently secured by a PIN, pattern or password. See
      * [KeyguardManager.isDeviceSecure].
      */
     public boolean isDeviceSecure() {
