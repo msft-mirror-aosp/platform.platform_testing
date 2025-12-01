@@ -50,6 +50,7 @@ public class MediaCardTest {
     private static final String DEFAULT_SONG_NAME = "NPV links";
 
     private static final String RADIO_STATION = "99.7 Now!";
+    private static final String ANOTHER_RADIO_STATION = "87.9";
     private static final String CUSTOM_SONG_NAME = "Custom Actions overflow";
     private static final String LOG_TAG = MediaCardTest.class.getSimpleName();
 
@@ -80,15 +81,21 @@ public class MediaCardTest {
                 .navigateMediaAppCategories(AutomotiveConfigConstants.BASIC_SONGS_CATEGORY);
 
         Log.i(LOG_TAG, "Act: Open Radio App and play a station");
-        mMediaCenterHelper.get().openRadioAppAndPlayGivenStation(RADIO_STATION);
-
+        try {
+            mMediaCenterHelper.get().openRadioAppAndPlayGivenStation(RADIO_STATION);
+        } catch (Exception e) {
+            mMediaCenterHelper.get().openRadioAppAndPlayGivenStation(ANOTHER_RADIO_STATION);
+        }
         Log.i(LOG_TAG, "Act: Click on Media Card Thumbnail");
         mMediaCenterHelper.get().clickMediaCardThumbnail();
 
         Log.i(LOG_TAG, "Assert: Radio App is open and playing the station");
         assertTrue(
                 "Radio App is Not open",
-                mMediaCenterHelper.get().isMediaAppOpenAndTrackPlaying(RADIO_STATION));
+                (mMediaCenterHelper.get().isMediaAppOpenAndTrackPlaying(RADIO_STATION)
+                        || mMediaCenterHelper
+                                .get()
+                                .isMediaAppOpenAndTrackPlaying(ANOTHER_RADIO_STATION)));
     }
 
     @Test

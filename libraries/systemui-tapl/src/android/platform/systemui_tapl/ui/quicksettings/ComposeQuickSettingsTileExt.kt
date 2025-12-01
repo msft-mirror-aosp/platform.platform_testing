@@ -17,10 +17,13 @@
 package android.platform.systemui_tapl.ui.quicksettings
 
 import android.platform.systemui_tapl.ui.BatteryDialog
+import android.platform.systemui_tapl.ui.BluetoothDetailsView
 import android.platform.systemui_tapl.ui.BluetoothDialog
+import android.platform.systemui_tapl.ui.CastDetailsView
 import android.platform.systemui_tapl.ui.HearingDevicesDialog
 import android.platform.systemui_tapl.ui.InternetDetailsView
 import android.platform.systemui_tapl.ui.InternetDialog
+import android.platform.systemui_tapl.ui.ModesDetailsView
 import android.platform.systemui_tapl.ui.ModesDialog
 
 fun ComposeQuickSettingsTile.clickInternetTileToOpenDialog(): InternetDialog {
@@ -44,6 +47,12 @@ fun ComposeQuickSettingsTile.clickBluetoothTileToOpenDialog(): BluetoothDialog {
     return BluetoothDialog(displayId)
 }
 
+/** Clicks the bluetooth tile to open the bluetooth details view. */
+fun ComposeQuickSettingsTile.clickBluetoothTileToOpenDetailsView(): BluetoothDetailsView {
+    clickToOpenDialogOnDualTarget()
+    return BluetoothDetailsView(displayId)
+}
+
 fun ComposeQuickSettingsTile.clickFlashlightTileToOpenDialog(): FlashlightDialog {
     clickToOpenDialogOnDualTarget()
     return FlashlightDialog(displayId)
@@ -54,6 +63,12 @@ fun ComposeQuickSettingsTile.clickModesTileToOpenDialog(): ModesDialog {
     return ModesDialog(displayId)
 }
 
+/** Clicks the modes tile to open the modes details view. */
+fun ComposeQuickSettingsTile.clickModesTileToOpenDetailsView(): ModesDetailsView {
+    clickToOpenDialogOnDualTarget()
+    return ModesDetailsView(displayId)
+}
+
 fun ComposeQuickSettingsTile.clickBatteryTileToOpenDialog(): BatteryDialog {
     click()
     return BatteryDialog(displayId)
@@ -62,6 +77,12 @@ fun ComposeQuickSettingsTile.clickBatteryTileToOpenDialog(): BatteryDialog {
 fun ComposeQuickSettingsTile.clickHearingDevicesToOpenDialog(): HearingDevicesDialog {
     click()
     return HearingDevicesDialog(displayId)
+}
+
+/** Clicks the cast tile to open the cast details view. */
+fun ComposeQuickSettingsTile.clickCastTileToOpenDetailsView(): CastDetailsView {
+    click()
+    return CastDetailsView(displayId)
 }
 
 private fun ComposeQuickSettingsTile.clickToOpenDialogOnDualTarget() {

@@ -37,6 +37,7 @@ android_test {
     resource_dirs: ["res"],
     asset_dirs: ["assets"],
     static_libs: [
+        "PlatformMotionTesting",
         "platform-screenshot-diff-core",
         "platform-screenshot-diff-proto",
         "uiautomator-helpers",

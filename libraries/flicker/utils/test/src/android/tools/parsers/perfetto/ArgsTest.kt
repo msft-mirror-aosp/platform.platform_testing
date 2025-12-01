@@ -29,10 +29,13 @@ class ArgsTest {
         val args =
             makeArgs(
                 listOf(
-                    Pair("int", 10),
-                    Pair("long", 100L),
-                    Pair("float", 10.1f),
-                    Pair("string", "text"),
+                    Triple("int", "10", "int"),
+                    Triple("long", "100", "int"),
+                    Triple("float", "10.1", "real"),
+                    Triple("string", "text", "string"),
+                    Triple("ulong_string", "10000000000000000000", "uint"),
+                    Triple("long_string", "-8446744073709551616", "uint"),
+                    Triple("bool", "true", "bool"),
                 )
             )
 
@@ -41,13 +44,22 @@ class ArgsTest {
         Truth.assertThat(args.getChild("long")?.getLong()).isEqualTo(100L)
         Truth.assertThat(args.getChild("float")?.getFloat()).isEqualTo(10.1f)
         Truth.assertThat(args.getChild("string")?.getString()).isEqualTo("text")
+        Truth.assertThat(args.getChild("ulong_string")?.getLong()).isEqualTo(-8446744073709551616L)
+        Truth.assertThat(args.getChild("long_string")?.getLong()).isEqualTo(-8446744073709551616L)
+        Truth.assertThat(args.getChild("bool")?.getBoolean()).isEqualTo(true)
 
         assertThrows<ClassCastException> { args.getChild("int")?.getString() }
     }
 
     @Test
     fun getChild() {
-        val args = makeArgs(listOf(Pair("child.grandChild0", 10), Pair("child.grandChild1", 11)))
+        val args =
+            makeArgs(
+                listOf(
+                    Triple("child.grandChild0", "10", "int"),
+                    Triple("child.grandChild1", "11", "int"),
+                )
+            )
 
         Truth.assertThat(args.getChild("invalidChild")).isNull()
         Truth.assertThat(args.getChild("child")).isNotNull()
@@ -61,7 +73,11 @@ class ArgsTest {
     fun getChildren() {
         val args =
             makeArgs(
-                listOf(Pair("children[0]", 10), Pair("children[1]", 11), Pair("children[2]", 12))
+                listOf(
+                    Triple("children[0]", "10", "int"),
+                    Triple("children[1]", "11", "int"),
+                    Triple("children[2]", "12", "int"),
+                )
             )
 
         Truth.assertThat(args.getChildren("invalidChildren")).isNull()
@@ -75,15 +91,15 @@ class ArgsTest {
         val args =
             makeArgs(
                 listOf(
-                    Pair("child0", "0"),
-                    Pair("child1", "1"),
-                    Pair("children[0]", "10"),
-                    Pair("children[1].grandChildInt", 10),
-                    Pair("children[1].grandChildString", "text"),
-                    Pair("children[2].grandChildren[0]", "0"),
-                    Pair("children[2].grandChildren[1]", "1"),
-                    Pair("otherChildren[0]", "0"),
-                    Pair("otherChildren[1]", "1"),
+                    Triple("child0", "0", "string"),
+                    Triple("child1", "1", "string"),
+                    Triple("children[0]", "10", "string"),
+                    Triple("children[1].grandChildInt", "10", "int"),
+                    Triple("children[1].grandChildString", "text", "string"),
+                    Triple("children[2].grandChildren[0]", "0", "string"),
+                    Triple("children[2].grandChildren[1]", "1", "string"),
+                    Triple("otherChildren[0]", "0", "string"),
+                    Triple("otherChildren[1]", "1", "string"),
                 )
             )
 
@@ -111,21 +127,11 @@ class ArgsTest {
     }
 
     companion object {
-        private fun makeArgs(entries: List<Pair<String, Any>>): Args {
+        private fun makeArgs(entries: List<Triple<String, String, String>>): Args {
             return Args().apply {
-                for ((key, value) in entries) {
-                    add(key, value.toString(), getValueType(value))
+                for ((key, value, valueType) in entries) {
+                    add(key, value, valueType)
                 }
-            }
-        }
-
-        private fun getValueType(value: Any): String {
-            return when (value) {
-                is Int -> "int"
-                is Long -> "int"
-                is Float -> "real"
-                is String -> "string"
-                else -> "unknown type"
             }
         }
     }

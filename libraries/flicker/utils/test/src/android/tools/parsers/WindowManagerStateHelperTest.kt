@@ -192,6 +192,44 @@ class WindowManagerStateHelperTest {
         }
     }
 
+    private fun getFullscreenAppState(): WindowManagerState {
+        val reader = getWmTraceReaderFromAsset("wm_trace_open_app_cold")
+        val trace = reader.readWmTrace() ?: error("Unable to read WM trace")
+        val supplier = trace.asSupplier()
+        val setupHelper =
+            TestWindowManagerStateHelper(
+                trace.entries.first(),
+                supplier,
+                numRetries = trace.entries.size,
+                retryIntervalMs = 1,
+            )
+        setupHelper.StateSyncBuilder().withFullScreenApp(simpleAppComponentName).waitFor()
+        return setupHelper.wmState
+    }
+
+    private fun createHelperWithStaticState(
+        wmState: WindowManagerState
+    ): TestWindowManagerStateHelper {
+        // Create a supplier that always returns this state, with a dummy layer state.
+        // The layer state is not important here as we only check WM state.
+        val layerTraceEntry =
+            LayerTraceEntryBuilder()
+                .setBootTimestamp(0)
+                .setDisplays(emptyList())
+                .setLayers(emptyList())
+                .setVSyncId(-1)
+                .build()
+        val deviceStateDump = DeviceStateDump(wmState, layerTraceEntry)
+        val staticSupplier = { deviceStateDump }
+
+        return TestWindowManagerStateHelper(
+            wmState,
+            staticSupplier,
+            numRetries = 1,
+            retryIntervalMs = 1
+        )
+    }
+
     @Test
     fun canWaitForIme() {
         val reader = getWmTraceReaderFromAsset("wm_trace_ime")
@@ -405,6 +443,62 @@ class WindowManagerStateHelperTest {
         Truth.assertWithMessage("Recents activity is visible")
             .that(helper.wmState.isRecentsActivityVisible)
             .isTrue()
+    }
+
+    @Test
+    fun withFullScreenAppCondition_filtersByDisplay() {
+        val wmStateWithApp = getFullscreenAppState()
+        val testHelper = createHelperWithStaticState(wmStateWithApp)
+
+        // The condition for the app on its actual display (0) should be met.
+        // withFullScreenAppCondition is a helper for withFullScreenApp, which waits for an app
+        // to be in a steady fullscreen state. Since we provide a static state that already
+        // meets the condition, the wait should succeed immediately.
+        var success =
+            testHelper
+                .StateSyncBuilder()
+                .withFullScreenAppCondition(simpleAppComponentName, displayId = 0)
+                .waitFor()
+        Truth.assertWithMessage("Condition should be met for app on default display")
+            .that(success)
+            .isTrue()
+
+        // The condition for the app on another display (1) should not be met.
+        // The wait should fail because no such window exists on display 1.
+        success =
+            testHelper
+                .StateSyncBuilder()
+                .withFullScreenAppCondition(simpleAppComponentName, displayId = 1)
+                .waitFor()
+        Truth.assertWithMessage("Condition should not be met for app on another display")
+            .that(success)
+            .isFalse()
+    }
+
+    @Test
+    fun withFreeformAppCondition_filtersByDisplay() {
+        val wmStateWithApp = getFullscreenAppState()
+        val testHelper = createHelperWithStaticState(wmStateWithApp)
+
+        // The condition for display 0 should fail because the app is not in freeform mode.
+        var success =
+            testHelper
+                .StateSyncBuilder()
+                .withFreeformAppCondition(simpleAppComponentName, displayId = 0)
+                .waitFor()
+        Truth.assertWithMessage("Condition should not be met for fullscreen app")
+            .that(success)
+            .isFalse()
+
+        // The condition for display 1 should also fail because the app is not on that display.
+        success =
+            testHelper
+                .StateSyncBuilder()
+                .withFreeformAppCondition(simpleAppComponentName, displayId = 1)
+                .waitFor()
+        Truth.assertWithMessage("Condition should not be met for app on another display")
+            .that(success)
+            .isFalse()
     }
 
     companion object {
