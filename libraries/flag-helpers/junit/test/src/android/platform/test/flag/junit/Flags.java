@@ -44,10 +44,6 @@ public class Flags {
         return false;
     }
 
-    public static boolean flagFinalized() {
-        return true;
-    }
-
     public static void setFeatureFlags(FeatureFlags featureFlagsImpl) {
         FEATURE_FLAGS = featureFlagsImpl;
     }

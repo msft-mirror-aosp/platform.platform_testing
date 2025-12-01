@@ -27,6 +27,8 @@ import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.util.FlagSetException;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.io.IOException;
 import java.lang.annotation.ElementType;
@@ -63,7 +65,7 @@ public abstract class SetFlagsRuleTestCommon {
 
     protected Helper makeDeviceDefaultHelper() {
         return makeParameterizedHelper(null);
-    }
+    };
 
     protected abstract Helper makeNullDefaultHelper();
 
@@ -335,75 +337,6 @@ public abstract class SetFlagsRuleTestCommon {
                         () -> {
                             assertTrue(Flags.flagName3());
                             assertFalse(Flags.flagName4());
-                        })
-                .prepareTest()
-                .assertPasses();
-    }
-
-    @Test
-    public void skipOptimizedFlagIfValueNotMatch() {
-        @DisableFlags(android.platform.test.flag.junit.util.Flags.FLAG_RO_OPTIMIZED)
-        class SomeClass {}
-        makeDeviceDefaultHelper()
-                .setTestClass(SomeClass.class)
-                .addDisableFlags(android.platform.test.flag.junit.util.Flags.FLAG_RO_OPTIMIZED)
-                .prepareTest()
-                .assertSkipped();
-    }
-
-    @Test
-    public void skipOptimizedFlagIfValueNotMatchWithOtherFlags() {
-        @EnableFlags(Flags.FLAG_FLAG_NAME3)
-        @DisableFlags({
-            Flags.FLAG_FLAG_NAME4,
-            android.platform.test.flag.junit.util.Flags.FLAG_RO_OPTIMIZED
-        })
-        class SomeClass {}
-        makeDeviceDefaultHelper()
-                .setTestClass(SomeClass.class)
-                .addEnableFlags(Flags.FLAG_FLAG_NAME3)
-                .addDisableFlags(
-                        Flags.FLAG_FLAG_NAME4,
-                        android.platform.test.flag.junit.util.Flags.FLAG_RO_OPTIMIZED)
-                .setTestCode(
-                        () -> {
-                            assertTrue(Flags.flagName3());
-                            assertFalse(Flags.flagName4());
-                        })
-                .prepareTest()
-                .assertSkipped();
-    }
-
-    @Test
-    public void runOptimizedFlagIfValueNotMatch() {
-        @EnableFlags(android.platform.test.flag.junit.util.Flags.FLAG_RO_OPTIMIZED)
-        class SomeClass {}
-        makeDeviceDefaultHelper()
-                .setTestClass(SomeClass.class)
-                .addEnableFlags(android.platform.test.flag.junit.util.Flags.FLAG_RO_OPTIMIZED)
-                .prepareTest()
-                .assertPasses();
-    }
-
-    @Test
-    public void runOptimizedFlagIfValueNotMatchWithOtherFlags() {
-        @EnableFlags({
-            Flags.FLAG_FLAG_NAME3,
-            android.platform.test.flag.junit.util.Flags.FLAG_RO_OPTIMIZED
-        })
-        @DisableFlags(Flags.FLAG_FLAG_NAME4)
-        class SomeClass {}
-        makeDeviceDefaultHelper()
-                .setTestClass(SomeClass.class)
-                .addEnableFlags(
-                        Flags.FLAG_FLAG_NAME3,
-                        android.platform.test.flag.junit.util.Flags.FLAG_RO_OPTIMIZED)
-                .addDisableFlags(Flags.FLAG_FLAG_NAME4)
-                .setTestCode(
-                        () -> {
-                            assertTrue(Flags.flagName3());
-                            assertFalse(Flags.flagName4());
-                            assertTrue(android.platform.test.flag.junit.util.Flags.roOptimized());
                         })
                 .prepareTest()
                 .assertPasses();

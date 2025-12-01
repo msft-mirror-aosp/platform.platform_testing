@@ -159,19 +159,4 @@ public final class SetFlagsRuleTest {
                     mSetFlagsRule.disableFlags(Flags.FLAG_FLAG_FINALIZED);
                 });
     }
-
-    @Test
-    public void skipOptimizedFlagIfValueNotMatch() {
-        assertThrows(
-                AssumptionViolatedException.class,
-                () -> {
-                    mSetFlagsRule.disableFlags(
-                            android.platform.test.flag.junit.util.Flags.FLAG_RO_OPTIMIZED);
-                });
-    }
-
-    @Test
-    public void runOptimizedFlagIfValueMatch() {
-        mSetFlagsRule.enableFlags(android.platform.test.flag.junit.util.Flags.FLAG_RO_OPTIMIZED);
-    }
 }
