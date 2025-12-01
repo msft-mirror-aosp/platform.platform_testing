@@ -75,7 +75,7 @@ class ScreenshotUtil:
           **kwargs: Additional arguments.
     """
     logging.info(f'{self._LOG_TAG}: Taking device screenshot using ADB.')
-    path_on_device = '/data/local/tmp/screenshot.jpg'
+    path_on_device = '/data/local/tmp/screenshot.png'
     device.adb.execute_shell_command(f'screencap -p {path_on_device}')
     device.adb.pull([path_on_device, screenshot_path])
     device.adb.remove_file(path_on_device)

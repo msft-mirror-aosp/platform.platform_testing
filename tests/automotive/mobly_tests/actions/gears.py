@@ -13,16 +13,14 @@
 #  limitations under the License.
 
 
-from actions_common import actions_setup
-from mobly import asserts, base_test
-from mobly.controllers import android_device
-from mobly.controllers.android_device_lib.snippet_client_v2 import Config
-from utilities.main_utils import common_main, get_test_args
+from spectatio_host_tf.core import test_base, test_runner
 
 
-class VhalGears(base_test.BaseTestClass):
+class VhalGears(test_base.SpectatioHostBaseTestClass):
     def setup_class(self):
-        actions_setup(self)
+        super().setup_class()
+        self.mbs = self.device1.load_bundled_snippets()
+        self.device1.adb.root()
 
     def setup_test(self):
         pass
@@ -32,31 +30,31 @@ class VhalGears(base_test.BaseTestClass):
 
     def test_transmission(self):
         """Shift the car to park and check the UI for the gear indicator change."""
-        self.main_device.mbs.shiftToPark()
-        self.main_device.mbs.shiftToReverse() # check for camera overlay here
-        self.main_device.mbs.shiftToNeutral()
-        self.main_device.mbs.shiftToDrive()
+        self.mbs.shiftToPark()
+        self.mbs.shiftToReverse() # check for camera overlay here
+        self.mbs.shiftToNeutral()
+        self.mbs.shiftToDrive()
 
         # todo - cluster display's gear indicators change their "selected" property in response
         # to this.  perform ui validation that way
 
     def test_rpm(self):
-        self.main_device.mbs.setEngineRpm("1000")
-        asserts.assert_true(self.main_device.mbs.hasUIElementWithText("1.0"), 'RPM set')
+        self.mbs.setEngineRpm("1000")
+        self.asserts.assert_true(self.mbs.hasUIElementWithText("1.0"), 'RPM set')
 
     def test_speed(self):
-        self.main_device.mbs.setVehicleSpeed("30")
-        self.main_device.mbs.setVehicleSpeed("60")
+        self.mbs.setVehicleSpeed("30")
+        self.mbs.setVehicleSpeed("60")
         # todo - cuttlefish speed display doesn't update in response to this.  bug?
 
     def test_parking_brake(self):
         # cuttlefish's cluster display doesn't have a parking brake indicator anywhere, so we
         # are just testing the property persistence for now
-        self.main_device.mbs.setParkingBrake("true")
-        asserts.assert_true(self.main_device.mbs.getParkingBrake(), 'Parking brake engaged')
-        self.main_device.mbs.setParkingBrake("false")
-        asserts.assert_false(self.main_device.mbs.getParkingBrake(), 'Parking brake disengaged')
+        self.mbs.setParkingBrake("true")
+        self.asserts.assert_true(self.mbs.getParkingBrake(), 'Parking brake engaged')
+        self.mbs.setParkingBrake("false")
+        self.asserts.assert_false(self.mbs.getParkingBrake(), 'Parking brake disengaged')
 
 
 if __name__ == '__main__':
-    common_main()
+    test_runner.run()
