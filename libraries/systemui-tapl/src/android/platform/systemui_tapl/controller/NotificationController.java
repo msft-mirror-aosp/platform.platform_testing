@@ -30,6 +30,7 @@ import static android.platform.uiautomatorhelpers.DeviceHelpers.getUiDevice;
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
 import android.R;
+import android.app.Flags;
 import android.app.Notification;
 import android.app.Notification.Builder;
 import android.app.Notification.MessagingStyle;
@@ -378,7 +379,9 @@ public class NotificationController {
         postNotificationSync(id, builder);
         String key = getStatusBarNotificationKey(id);
         return new NotificationIdentity(
-                NotificationIdentity.Type.BY_TITLE,
+                Flags.richOngoingImprovements()
+                        ? NotificationIdentity.Type.BY_ALT_TITLE
+                        : NotificationIdentity.Type.BY_TITLE,
                 /* title= */ title,
                 /* text= */ null,
                 /* summary= */ null,
