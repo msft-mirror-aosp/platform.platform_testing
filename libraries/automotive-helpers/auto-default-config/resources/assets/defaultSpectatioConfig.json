@@ -2924,10 +2924,10 @@
     ],
     "OPEN_DIALER_WORKFLOW": [
       {
-        "NAME": "Go to Home",
-        "TYPE": "PRESS",
+        "NAME": "Kill dialer by activity",
+        "TYPE": "COMMAND",
         "CONFIG": {
-          "TEXT": "HOME"
+          "TEXT": "am force-stop com.android.car.dialer"
         }
       },
       {
