@@ -246,6 +246,13 @@ interface IWindowManagerSubject<WMSubjectType, RegionSubjectType> {
     fun isNotPinned(componentMatcher: IComponentMatcher): WMSubjectType
 
     /**
+     * Asserts that [componentMatcher] exists and is fullscreen
+     *
+     * @param componentMatcher Components to search
+     */
+    fun isFullscreen(componentMatcher: IComponentMatcher): WMSubjectType
+
+    /**
      * Checks if the activity with matching [componentMatcher] is visible
      *
      * In the case that an app is stopped in the background (e.g. OS stopped it to release memory)

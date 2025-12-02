@@ -525,6 +525,20 @@ constructor(val trace: WindowManagerTrace, override val reader: Reader? = null) 
     }
 
     /** {@inheritDoc} */
+    override fun isFullscreen(componentMatcher: IComponentMatcher): WindowManagerTraceSubject =
+        isFullscreen(componentMatcher, isOptional = false)
+
+    /** See [isFullscreen] */
+    fun isFullscreen(
+        componentMatcher: IComponentMatcher,
+        isOptional: Boolean,
+    ): WindowManagerTraceSubject = apply {
+        addAssertion("isFullscreen(${componentMatcher.toWindowIdentifier()})", isOptional) {
+            it.isFullscreen(componentMatcher)
+        }
+    }
+
+    /** {@inheritDoc} */
     override fun isRecentsActivityInvisible(): WindowManagerTraceSubject =
         isRecentsActivityInvisible(isOptional = false)
 

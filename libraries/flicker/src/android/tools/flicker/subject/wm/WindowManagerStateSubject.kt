@@ -590,6 +590,15 @@ constructor(
     }
 
     /** {@inheritDoc} */
+    override fun isFullscreen(componentMatcher: IComponentMatcher): WindowManagerStateSubject =
+        apply {
+            contains(componentMatcher)
+            check { "Window is fullscreen ${componentMatcher.toWindowIdentifier()}" }
+                .that(wmState.isInFullscreenMode(componentMatcher))
+                .isEqual(true)
+        }
+
+    /** {@inheritDoc} */
     override fun isNotPinned(componentMatcher: IComponentMatcher): WindowManagerStateSubject =
         apply {
             contains(componentMatcher)
