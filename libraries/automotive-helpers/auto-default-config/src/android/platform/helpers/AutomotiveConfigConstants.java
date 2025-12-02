@@ -116,6 +116,7 @@ public class AutomotiveConfigConstants {
     public static final String HOME_ASSISTANT_CARD = "HOME_ASSISTANT_CARD";
     public static final String HOME_PHONE_CARD = "HOME_PHONE_CARD";
     public static final String HOME_TEMPERATURE_BUTTON = "HOME_TEMPERATURE_BUTTON";
+    public static final String HVAC_TEMPERATURE_BAR = "HVAC_TEMPERATURE_BAR";
     public static final String HVAC_AC_TOGGLE = "HVAC_AC_TOGGLE";
     public static final String HVAC_AUTO_MODE_TOGGLE = "HVAC_AUTO_MODE_TOGGLE";
     public static final String HVAC_RECIRCULATION_TOGGLE = "HVAC_RECIRCULATION_TOGGLE";
@@ -128,6 +129,12 @@ public class AutomotiveConfigConstants {
     public static final String DRIVER_SEAT_TEMPERATURE_BUTTON = "DRIVER_SEAT_TEMPERATURE_BUTTON";
     public static final String PASSENGER_SEAT_TEMPERATURE_BUTTON =
             "PASSENGER_SEAT_TEMPERATURE_BUTTON";
+    public static final String HVAC_FAN_OFF = "HVAC_FAN_OFF";
+    public static final String HVAC_FAN_1 = "HVAC_FAN_1";
+    public static final String HVAC_FAN_2 = "HVAC_FAN_2";
+    public static final String HVAC_FAN_3 = "HVAC_FAN_3";
+    public static final String HVAC_FAN_4 = "HVAC_FAN_4";
+    public static final String HVAC_FAN_MAX = "HVAC_FAN_MAX";
     public static final String OPEN_SYSTEM_UI = "OPEN_SYSTEM_UI";
     public static final String OPEN_CAR_UI = "OPEN_CAR_UI";
     public static final String HOME_MAPS_WIDGET = "HOME_MAPS_WIDGET";
