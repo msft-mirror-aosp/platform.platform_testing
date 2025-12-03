@@ -21,7 +21,7 @@ package android.platform.systemui_tapl.controller
  * passed to methods for finding a notification.
  *
  * @property key the [StatusBarNotification.key] (only filled in if needed for status bar
- *   assertions)
+ *   assertions).
  */
 data class NotificationIdentity
 @JvmOverloads

@@ -18,7 +18,7 @@ package android.platform.systemui_tapl.controller;
 
 import android.platform.helpers.CommonUtils;
 
-/** Controller for retrieving shade state and controlling it */
+/** Controller for retrieving shade state and controlling it. */
 public class ShadeController {
 
     private ShadeController() {}
@@ -28,9 +28,9 @@ public class ShadeController {
     }
 
     /**
-     * Checks the state of the split shade
+     * Checks the state of the split shade.
      *
-     * @return true if the shade is split
+     * @return true if the shade is split.
      */
     public boolean isSplitShade() {
         return CommonUtils.isSplitShade();
