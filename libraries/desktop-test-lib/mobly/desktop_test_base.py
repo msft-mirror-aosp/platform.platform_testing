@@ -12,14 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+import sys
 import logging
 import enum
 from typing import Any, Dict, List, Optional
 
 from mobly import base_instrumentation_test
+from mobly import asserts
 from mobly.controllers import android_device
 from mobly.records import TestResult
 from mobly.signals import TestSkip, TestError, TestFailure
+
+from chromiumos.test.lab.api import pasit_host_pb2
+from lib.pasit.passport import passport_host
 
 # Set up logging for the module
 _LOG = logging.getLogger(__name__)
@@ -51,6 +57,8 @@ class DesktopTestBase(base_instrumentation_test.BaseInstrumentationTestClass):
     This class provides utility methods to install an APK and run specific
     instrumentation tests on a registered Android device.
     """
+
+    DEFAULT_APK_PATH = os.path.dirname(os.path.abspath(sys.argv[0]))
 
     # Class attributes to be set by subclasses or by set_apk_info
     apk_name: Optional[str] = None
@@ -91,17 +99,30 @@ class DesktopTestBase(base_instrumentation_test.BaseInstrumentationTestClass):
         if not self.package:
             _LOG.warning('APK name is set but package name is missing. Installation may fail.')
 
-        try:
+        apk_file_path = os.path.join(self.DEFAULT_APK_PATH, self.apk_name + ".apk")
+        if 'files' in self.user_params and self.apk_name in self.user_params['files']:
             apk_file_path: str = self.user_params['files'][self.apk_name][0]
-            _LOG.info('Installing APK %s from path: %s', self.apk_name, apk_file_path)
 
-            # Use a more descriptive install method if available, or keep adb call concise.
-            # The '-r' flag means "reinstall", '-g' means "grant all runtime permissions".
-            self.dut.adb.install(['-r', '-g', apk_file_path])
-        except KeyError as e:
-            _LOG.error('Could not find APK "%s" in user_params["files"]. Error: %s',
-                    self.apk_name, e)
-            raise
+        if not os.path.exists(apk_file_path):
+            raise signals.TestError(
+                'Unable to find APK at path "%s"', self.apk_name)
+
+        _LOG.info('Installing APK %s from path: %s', self.apk_name, apk_file_path)
+        self.dut.adb.install(['-r', '-g', apk_file_path])
+
+        # If PASIT info is contained in configs, then set up the controller.
+        self.passport_host = None
+        if 'PassportHost' in self.controller_configs:
+            self.passport_host = self.register_controller(passport_host)[0]
+            self.passport_host.save_topology_diagram(self.log_path)
+
+            # Ensure monitor exists in this testbed, else skip test.
+            asserts.abort_class_if(
+                    not self.passport_host.is_device_type_present(
+                        pasit_host_pb2.PasitHost.Device.Type.MONITOR, None
+                    ),
+                    'No monitor present in testbed'
+                )
 
     def setup_test(self) -> None:
         """Run before every mobly test."""
@@ -109,6 +130,15 @@ class DesktopTestBase(base_instrumentation_test.BaseInstrumentationTestClass):
         self.results = TestResult()
         self.overall_details = ""
         self.overall_extras = {}
+        if self.passport_host:
+            logging.info('Plugging in external display')
+            self.passport_host.activate_device_by_type(pasit_host_pb2.PasitHost.Device.Type.MONITOR)
+
+    def teardown_test(self):
+        """Teardown steps after each test is executed."""
+        if self.passport_host:
+            self.passport_host.reset()
+        super().teardown_test()
 
     def assert_overall_result(self):
         """Verifies the overall test status. Usually used at the end of the mobly test."""

@@ -14,10 +14,14 @@
 
 import logging
 import unittest
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from desktop_test_lib.mobly.desktop_test_base import DesktopTestBase
 from desktop_test_lib.mobly.desktop_test_base import TestOption
+
+from chromiumos.test.lab.api import pasit_host_pb2
+
+
 
 # Set up logging for the module
 _LOG = logging.getLogger(__name__)
@@ -44,6 +48,11 @@ class PeripheralDeviceTest(DesktopTestBase, unittest.TestCase):
             apk_name='DesktopTestLibTests',
             package='platform.test.desktop'
         )
+
+    def setup_class(self):
+        """Setup steps before any test is executed."""
+        super().setup_class()
+        self._run_type = self.user_params.get("run_type", TestOption.ENABLE_AUTOMATED)
 
     def test_reboot_with_physical_display(self) -> None:
         """Tests display state before and after a device reboot.
@@ -103,3 +112,27 @@ class PeripheralDeviceTest(DesktopTestBase, unittest.TestCase):
         self.run_instrumentation_test(test_after_reboot, [TestOption.KEEP_PERIPHERALS_BEFORE_TEST])
 
         self.assert_overall_result()
+
+    def run_instrumentation_test(self,
+            test_name: str,
+            options: List[TestOption] = []) -> Dict[str, Any]:
+        """Executes a wrapped JUnit test, optionally setting the test options.
+
+        If `options` is empty or None, it runs a standard wrapped test. If `options` is provided,
+        it sets the corresponding options to True.
+
+        Args:
+            test_name: The fully qualified class name or method name of the JUnit test.
+            options: List of TestOption enum values.
+
+        Returns:
+            A dictionary containing the instrumentation test results.
+
+        Raises:
+            RuntimeError: If the test package name has not been set.
+
+        """
+        return super().run_instrumentation_test(
+            test_name,
+            options + [self._run_type]
+        )
