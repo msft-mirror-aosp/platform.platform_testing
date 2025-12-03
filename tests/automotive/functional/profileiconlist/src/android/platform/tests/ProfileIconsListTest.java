@@ -18,6 +18,8 @@ package android.platform.tests;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
+import android.app.Instrumentation;
+import android.app.UiAutomation;
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoHomeHelper;
 import android.platform.helpers.IAutoSettingHelper;
@@ -25,6 +27,7 @@ import android.platform.helpers.MultiUserHelper;
 import android.platform.scenario.multiuser.MultiUserConstants;
 import android.util.Log;
 
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.Test;
@@ -34,6 +37,8 @@ import java.util.List;
 
 @RunWith(AndroidJUnit4.class)
 public class ProfileIconsListTest {
+    private final Instrumentation mInstrumentation = InstrumentationRegistry.getInstrumentation();
+    private final UiAutomation mUiAutomation = mInstrumentation.getUiAutomation();
 
     private static final String USER_NAME = MultiUserConstants.SECONDARY_USER_NAME;
 
@@ -58,7 +63,13 @@ public class ProfileIconsListTest {
     @Test
     public void testListOfProfiles() throws Exception {
         Log.i(LOG_TAG, "Act: Create non-admin user");
-        mMultiUserHelper.createUser(USER_NAME, false);
+        mUiAutomation.adoptShellPermissionIdentity(
+                "android.permission.CREATE_USERS", "android.permission.MANAGE_USERS");
+        try {
+            mMultiUserHelper.createUser(USER_NAME, false);
+        } finally {
+            mUiAutomation.dropShellPermissionIdentity();
+        }
         Log.i(LOG_TAG, "Act: Open status bar profiles");
         mHomeHelper.get().openStatusBarProfiles();
         Log.i(LOG_TAG, "Act: Get list of user profile names");

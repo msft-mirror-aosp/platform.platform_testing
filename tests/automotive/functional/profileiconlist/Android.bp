@@ -43,4 +43,5 @@ android_test {
     certificate: "platform",
     test_suites: ["catbox"],
     privileged: true,
+    manifest: "AndroidManifest.xml",
 }
