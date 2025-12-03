@@ -29,7 +29,6 @@ import static android.platform.uiautomatorhelpers.DeviceHelpers.getUiDevice;
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
-import android.R;
 import android.app.Flags;
 import android.app.Notification;
 import android.app.Notification.Builder;
@@ -195,11 +194,11 @@ public class NotificationController {
         // Checks the notification has the lifetime extended flag.
         waitUntilNotificationUpdatedWithFlag(
                 id, Notification.FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY);
-        // Sends the cancelation signal.
+        // Sends the cancellation signal.
         NOTIFICATION_MANAGER.cancel(id);
-        // The cancelation should be refused.
+        // The cancellation should be refused.
         waitForCondition(
-                () -> "Notification is gone when cancelation should have been prevented",
+                () -> "Notification is gone when cancellation should have been prevented",
                 () -> hasNotification(id));
     }
 
@@ -213,21 +212,12 @@ public class NotificationController {
     }
 
     /**
-     * Sends a cancellation signal; does not confirm the notification is canceled.
-     *
-     * @param id notification id
-     */
-    public void sendCancellation(int id) {
-        NOTIFICATION_MANAGER.cancel(id);
-    }
-
-    /**
      * Posts a number of notifications to the device with a package to launch. Successive calls to
      * this should post new notifications in addition to those previously posted. Note that this may
      * fail if the helper has surpassed the system-defined limit for per-package notifications.
      *
      * @param count The number of notifications to post.
-     * @param isMessaging If notification should be a messagingstyle notification
+     * @param isMessaging If notification should be a messaging-style notification.
      */
     public void postNotifications(int count, boolean isMessaging) {
         postNotifications(count, null, isMessaging);
@@ -339,7 +329,7 @@ public class NotificationController {
      * Posts a notification with a custom layout.
      *
      * @param pkg App to launch, when clicking on notification.
-     * @param decorated whether the custom notification should have the standard view wrapper
+     * @param decorated whether the custom notification should have the standard view wrapper.
      */
     @NonNull
     public NotificationIdentity postCustomNotification(@Nullable String pkg, boolean decorated) {
@@ -439,9 +429,11 @@ public class NotificationController {
                                 new Notification.ProgressStyle()
                                         .setProgress(50)
                                         .setProgressStartIcon(
-                                                Icon.createWithResource("", R.drawable.btn_star))
+                                                Icon.createWithResource(
+                                                        "", android.R.drawable.btn_star))
                                         .setProgressEndIcon(
-                                                Icon.createWithResource("", R.drawable.btn_minus))
+                                                Icon.createWithResource(
+                                                        "", android.R.drawable.btn_minus))
                                         .addProgressPoint(
                                                 new Notification.ProgressStyle.Point(10)
                                                         .setColor(Color.RED))
@@ -462,7 +454,7 @@ public class NotificationController {
                                                         .setColor(Color.BLUE))
                                         .setProgressTrackerIcon(
                                                 Icon.createWithResource(
-                                                        "", R.drawable.ic_menu_send)))
+                                                        "", android.R.drawable.ic_menu_send)))
                         .setContentText(NOTIFICATION_CONTENT_TEXT)
                         .setLargeIcon(bitmap));
 
@@ -534,7 +526,7 @@ public class NotificationController {
     }
 
     /**
-     * Posts a number of notifications while the shade is closed with custom prioruty. Successive
+     * Posts a number of notifications while the shade is closed with custom priority. Successive
      * calls to this should post new notifications in addition to those previously posted. Note that
      * this may fail if the helper has surpassed the system-defined limit for per-package
      * notifications.
@@ -659,7 +651,7 @@ public class NotificationController {
     }
 
     /**
-     * Posts a Notification.MetricStyle .
+     * Posts a Notification.MetricStyle.
      *
      * @param pkg The application that will be launched by notifications.
      * @param metrics to be shown in the Notification content.
@@ -777,7 +769,7 @@ public class NotificationController {
 
     public Notification.Action.Builder getDefaultActionBuilder() {
         return new Notification.Action.Builder(
-                Icon.createWithResource("", R.drawable.btn_star),
+                Icon.createWithResource("", android.R.drawable.btn_star),
                 DEFAULT_ACTION_TEXT,
                 PendingIntent.getActivity(
                         getContext(),
@@ -881,11 +873,7 @@ public class NotificationController {
         return identities;
     }
 
-    /**
-     * Posts Standard Silent Notification
-     *
-     * @param pkg
-     */
+    /** Posts Standard Silent Notification. */
     public NotificationIdentity postStandardSilentNotification(String pkg) {
         postNotificationSync(
                 getNextNotificationId(),
@@ -897,24 +885,6 @@ public class NotificationController {
                 /* summary= */ null,
                 /* textWhenExpanded= */ null,
                 /* contentIsVisibleInCollapsedState= */ true,
-                /* pkg= */ pkg);
-    }
-
-    /**
-     * Posts a Standard Notification.
-     *
-     * @param pkg App to launch, when clicking on notification.
-     */
-    public NotificationIdentity postStandardStyleNotification(String pkg) {
-        postNotificationSync(getNextNotificationId(), getBuilder(pkg));
-
-        return new NotificationIdentity(
-                /* type= */ NotificationIdentity.Type.BY_TITLE,
-                /* title= */ NOTIFICATION_TITLE_TEXT,
-                /* text= */ null,
-                /* summary= */ null,
-                /* textWhenExpanded= */ null,
-                /* contentIsVisibleInCollapsedState= */ false,
                 /* pkg= */ pkg);
     }
 
@@ -1437,7 +1407,7 @@ public class NotificationController {
      */
     public void setCooldownSettingDisabled(boolean disabledForTest) {
         StringBuilder sb = new StringBuilder();
-        StringBuilder command = new StringBuilder("");
+        StringBuilder command = new StringBuilder();
         if (disabledForTest) {
             command.append("settings put system notification_cooldown_enabled 0");
         } else {
@@ -1469,7 +1439,7 @@ public class NotificationController {
      * Set up or clear the debug filter; restricting notifications to the provided packages, or
      * resetting if none are provided.
      *
-     * @param allowedPackages package names allowed to show notifications
+     * @param allowedPackages package names allowed to show notifications.
      */
     private void setDebugNotificationFilter(@Nullable List<String> allowedPackages) {
         StringBuilder sb = new StringBuilder();
@@ -1491,7 +1461,7 @@ public class NotificationController {
      * Set up or clear the debug filter; restricting notifications to the test package, or resetting
      * if false is provided.
      *
-     * @param enabled whether to enable the debug filter
+     * @param enabled whether to enable the debug filter.
      */
     public void setDebugNotificationFilter(boolean enabled) {
         setDebugNotificationFilter(enabled ? List.of(PACKAGE_NAME) : null);
@@ -1503,7 +1473,7 @@ public class NotificationController {
      */
     public static class GroupNotificationIdentities {
         public NotificationIdentity summary = null;
-        public List<NotificationIdentity> children = new ArrayList<NotificationIdentity>();
+        public List<NotificationIdentity> children = new ArrayList<>();
     }
 
     /**
