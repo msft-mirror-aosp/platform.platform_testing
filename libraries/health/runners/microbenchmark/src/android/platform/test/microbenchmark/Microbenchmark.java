@@ -287,9 +287,6 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
      * A temporary annotation that acts like the {@code @Before} but is excluded from metric
      * collection.
      *
-     * <p>This should be removed as soon as possible. Do not use this unless explicitly instructed
-     * to do so. You'll regret it!
-     *
      * <p>Note that all {@code TestOption}s must be instantiated as {@code @ClassRule}s to work
      * inside these annotations.
      */
