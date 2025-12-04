@@ -114,14 +114,13 @@ abstract class ComposeQuickSettingsTile private constructor(val displayId: Int =
     }
 
     /**
-     * Perform a long press on the tile, validating that [expectedSettingsPackage] (or
-     * [SETTINGS_PACKAGE] if `null`) is visible afterwards. This will fail if the tile does not
-     * support [LongPressable].
+     * Perform a long press on the tile, validating that [SETTINGS_PACKAGE] is visible afterwards.
+     * This will fail if the tile does not support [LongPressable].
      *
      * See [LongPressable.longPressAndAssertSettings]
      */
-    fun longPressAndAssertSettings(expectedSettingsPackage: String? = null) {
-        getBehavior<LongPressable>()!!.longPressAndAssertSettings(expectedSettingsPackage)
+    fun longPressAndAssertSettings() {
+        getBehavior<LongPressable>()!!.longPressAndAssertSettings()
     }
 
     /**
@@ -261,7 +260,7 @@ interface LongPressable : TileBehavior {
      * Long press on the tile. Validates that a settings activity with the correct package was
      * launched.
      */
-    fun longPressAndAssertSettings(expectedSettingsPackage: String? = null)
+    fun longPressAndAssertSettings()
 
     /** Long press on the tile. Performs no validation. */
     fun longPress()
@@ -272,9 +271,9 @@ private class LongPressableImpl(private val tile: UiObject2) : LongPressable {
         check(tile.isLongClickable)
     }
 
-    override fun longPressAndAssertSettings(expectedSettingsPackage: String?) {
+    override fun longPressAndAssertSettings() {
         Gestures.longClickDownUp(tile, "Quick settings tile", tile.displayId) {
-            val packageName = expectedSettingsPackage ?: SETTINGS_PACKAGE
+            val packageName = SETTINGS_PACKAGE
             By.displayId(tile.displayId).pkg(packageName).assertVisible {
                 "$packageName didn't appear"
             }
