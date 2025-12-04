@@ -129,7 +129,7 @@ class DesktopMouseTestRule(private val deferSetup: Boolean = false) : TestRule {
                 Log.w(TAG, "setup() called more than once, ignoring")
                 return@runBlocking
             }
-            ShellPrivilege(Manifest.permission.CREATE_VIRTUAL_DEVICE).use {
+            ShellPrivilege(uiAutomation, Manifest.permission.CREATE_VIRTUAL_DEVICE).use {
                 virtualDevice =
                     virtualDeviceManager.createVirtualDevice(
                         fakeAssociationRule.associationInfo.id,
@@ -163,7 +163,7 @@ class DesktopMouseTestRule(private val deferSetup: Boolean = false) : TestRule {
                     }
                 inputManager.registerInputDeviceListener(inputDeviceListener, handler)
 
-                ShellPrivilege(Manifest.permission.INJECT_EVENTS).use {
+                ShellPrivilege(uiAutomation, Manifest.permission.INJECT_EVENTS).use {
                     virtualMouse =
                         virtualDevice.createVirtualMouse(
                             VirtualMouseConfig.Builder()
@@ -189,7 +189,7 @@ class DesktopMouseTestRule(private val deferSetup: Boolean = false) : TestRule {
 
         private fun disableMouseScaling(displayId: Int) {
             displayIdsWithMouseScalingDisabled += displayId
-            ShellPrivilege(Manifest.permission.SET_POINTER_SPEED).use {
+            ShellPrivilege(uiAutomation, Manifest.permission.SET_POINTER_SPEED).use {
                 inputManager.setMouseScalingEnabled(false, displayId)
             }
         }
@@ -289,7 +289,7 @@ class DesktopMouseTestRule(private val deferSetup: Boolean = false) : TestRule {
         }
 
         val targetDisplayId = target.displayId
-        val displayTransform = LogicalPhysicalDisplayTransformHelper(displayManager)
+        val displayTransform = LogicalPhysicalDisplayTransformHelper(uiAutomation, displayManager)
         val currentCursorDisplayId = getCursorDisplayId()
 
         if (targetDisplayId != currentCursorDisplayId) {
@@ -343,7 +343,7 @@ class DesktopMouseTestRule(private val deferSetup: Boolean = false) : TestRule {
      * @param dyPx The delta Y (PX) coordinate.
      */
     fun moveDelta(dxPx: Int, dyPx: Int) {
-        val displayTransform = LogicalPhysicalDisplayTransformHelper(displayManager)
+        val displayTransform = LogicalPhysicalDisplayTransformHelper(uiAutomation, displayManager)
         performSteppedMove(
             DeltaLogicalPxF(dxPx.toFloat(), dyPx.toFloat())
                 .toPhysicalPx(getCursorDisplayId(), displayTransform)
@@ -366,7 +366,8 @@ class DesktopMouseTestRule(private val deferSetup: Boolean = false) : TestRule {
      * that the move will be executed, by checking if delta in LogicalPx >= [getMouseMinMovePx]
      */
     fun getMouseMinMovePx(displayId: Int): DeltaLogicalPxF {
-        val displayScale = LogicalPhysicalDisplayTransformHelper(displayManager).getScale(displayId)
+        val displayScale =
+            LogicalPhysicalDisplayTransformHelper(uiAutomation, displayManager).getScale(displayId)
         return DeltaLogicalPxF(displayScale.scaleX, displayScale.scaleY)
     }
 
