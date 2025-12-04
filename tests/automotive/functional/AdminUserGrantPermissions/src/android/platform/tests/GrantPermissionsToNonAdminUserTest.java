@@ -19,6 +19,9 @@ package android.platform.tests;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
+import android.Manifest;
+import android.app.Instrumentation;
+import android.app.UiAutomation;
 import android.content.pm.UserInfo;
 import android.platform.helpers.AutomotiveConfigConstants;
 import android.platform.helpers.HelperAccessor;
@@ -29,10 +32,14 @@ import android.platform.helpers.SettingsConstants;
 import android.platform.scenario.multiuser.MultiUserConstants;
 import android.util.Log;
 
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
+
+import com.android.compatibility.common.util.AdoptShellPermissionsRule;
 
 import org.junit.After;
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -41,10 +48,24 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(AndroidJUnit4.class)
 public class GrantPermissionsToNonAdminUserTest {
+    @Rule
+    public final AdoptShellPermissionsRule mShellPermissionsRule =
+            new AdoptShellPermissionsRule(
+                    InstrumentationRegistry.getInstrumentation().getUiAutomation(),
+                    Manifest.permission.CREATE_USERS,
+                    Manifest.permission.MANAGE_USERS
+            );
+
+    private final Instrumentation mInstrumentation = InstrumentationRegistry.getInstrumentation();
+    private final UiAutomation mUiAutomation = mInstrumentation.getUiAutomation();
     private static final String USER_NAME = MultiUserConstants.SECONDARY_USER_NAME;
     private final MultiUserHelper mMultiUserHelper = MultiUserHelper.getInstance();
     private HelperAccessor<IAutoUserHelper> mUsersHelper;
     private HelperAccessor<IAutoSettingHelper> mSettingHelper;
+
+    private UserInfo mTargetUser;
+
+    private UserInfo mCurrentUser;
     private static final String LOG_TAG = GrantPermissionsToNonAdminUserTest.class.getSimpleName();
 
     public GrantPermissionsToNonAdminUserTest() {
@@ -144,8 +165,9 @@ public class GrantPermissionsToNonAdminUserTest {
 
         // Switches the user mode to secondary and opens it profile account settings
         Log.i(LOG_TAG, "Act: Switch user mode to secondary");
-        UserInfo targetUser = mMultiUserHelper.getUserByName(USER_NAME);
-        mMultiUserHelper.switchToUserId(targetUser.id);
+        mTargetUser = mMultiUserHelper.getUserByName(USER_NAME);
+        mMultiUserHelper.switchToUserId(mTargetUser.id);
+
         Log.i(LOG_TAG, "Act: Skip setup wizard");
         mUsersHelper.get().skipSetupWizard();
         Log.i(LOG_TAG, "Act: Open Profile & Accounts setting");
@@ -153,14 +175,14 @@ public class GrantPermissionsToNonAdminUserTest {
 
         // verifies the current user and the visibility of Add profile
         Log.i(LOG_TAG, "Act: Get user info");
-        UserInfo currentUser = mMultiUserHelper.getCurrentForegroundUserInfo();
+        mCurrentUser = mMultiUserHelper.getCurrentForegroundUserInfo();
         Log.i(LOG_TAG, "Assert: Login user is Seconday user");
-        assertTrue(currentUser.name.equals(USER_NAME));
+        assertTrue(mCurrentUser.name.equals(USER_NAME));
         Log.i(LOG_TAG, "Assert: Add Profile is not visible");
         assertFalse(mUsersHelper.get().isVisibleAddProfile());
         Log.i(LOG_TAG, "Assert: Switch user mode to admin user");
         mMultiUserHelper.switchToUserId(mMultiUserHelper.getInitialUser());
         Log.i(LOG_TAG, "Act: Remove user");
-        mMultiUserHelper.removeUser(targetUser);
+        mMultiUserHelper.removeUser(mTargetUser);
     }
 }
