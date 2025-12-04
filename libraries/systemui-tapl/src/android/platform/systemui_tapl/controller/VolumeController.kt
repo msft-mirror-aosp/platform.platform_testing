@@ -24,9 +24,12 @@ import android.platform.uiautomatorhelpers.DeviceHelpers.context
 import android.platform.uiautomatorhelpers.ShellPrivilege
 import android.platform.uiautomatorhelpers.WaitUtils.ensureThat
 import android.provider.Settings
+import androidx.test.platform.app.InstrumentationRegistry
 
 /** Controller for adjusting the device volume. */
 class VolumeController private constructor() {
+
+    private val uiAutomation = InstrumentationRegistry.getInstrumentation().uiAutomation
 
     private val audioManager: AudioManager =
         context.getSystemService(AudioManager::class.java)
@@ -100,7 +103,7 @@ class VolumeController private constructor() {
      * @param ringerMode[RingerMode]
      */
     fun setRingerModeInternal(ringerMode: RingerMode) {
-        ShellPrivilege(permission.STATUS_BAR_SERVICE).use {
+        ShellPrivilege(uiAutomation, permission.STATUS_BAR_SERVICE).use {
             audioManager.ringerModeInternal = ringerMode.mode
         }
     }

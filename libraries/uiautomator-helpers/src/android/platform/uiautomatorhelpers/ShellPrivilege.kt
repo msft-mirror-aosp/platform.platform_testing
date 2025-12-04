@@ -14,19 +14,25 @@
  */
 package android.platform.uiautomatorhelpers
 
+import android.app.UiAutomation
 import android.content.pm.PackageManager
 import androidx.test.platform.app.InstrumentationRegistry
 
 /**
  * Adopt shell permissions for the target context.
  *
+ * @param uiAutomation UiAutomation to adopt permissions with. It's important to not fetch
+ *   uiAutomation from instrumentation#getUiAutomation() everytime ShellPrivilege gets created, as
+ *   tests might rely on UiAutomation state to perform some actions. One of the most common one is
+ *   how accessibility services are interrupted b/435029163 when getUiAutomation() is called without
+ *   [android.app.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES]
  * @param[permissions] the permission to adopt. Adopt all available permission is it's empty.
  */
-class ShellPrivilege(vararg permissions: String) : AutoCloseable {
+class ShellPrivilege(private val uiAutomation: UiAutomation, vararg permissions: String) :
+    AutoCloseable {
 
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
     private val targetContext = instrumentation.targetContext
-    private val uiAutomation = instrumentation.uiAutomation
     private var permissionsGranted = false
 
     init {
@@ -49,7 +55,7 @@ class ShellPrivilege(vararg permissions: String) : AutoCloseable {
     }
 
     override fun close() {
-        if (permissionsGranted) instrumentation.uiAutomation.dropShellPermissionIdentity()
+        if (permissionsGranted) uiAutomation.dropShellPermissionIdentity()
         permissionsGranted = false
     }
 

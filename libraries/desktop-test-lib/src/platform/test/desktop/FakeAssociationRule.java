@@ -28,6 +28,7 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
 import android.Manifest;
+import android.app.UiAutomation;
 import android.companion.AssociationInfo;
 import android.companion.AssociationRequest;
 import android.companion.CompanionDeviceManager;
@@ -70,6 +71,7 @@ class FakeAssociationRule extends ExternalResource {
     private static final int TIMEOUT_MS = 10000;
 
     private final Context mContext = getInstrumentation().getContext();
+    private final UiAutomation mUiAutomation = getInstrumentation().getUiAutomation();
 
     private final Executor mCallbackExecutor = Runnable::run;
     private final CompanionDeviceManager mCompanionDeviceManager =
@@ -123,6 +125,7 @@ class FakeAssociationRule extends ExternalResource {
         assumeTrue(hasSystemFeature(PackageManager.FEATURE_COMPANION_DEVICE_SETUP));
         try (ShellPrivilege privilege =
                 new ShellPrivilege(
+                        mUiAutomation,
                         Manifest.permission.MANAGE_COMPANION_DEVICES,
                         Manifest.permission.ASSOCIATE_COMPANION_DEVICES)) {
             mCompanionDeviceManager.addOnAssociationsChangedListener(
@@ -136,7 +139,7 @@ class FakeAssociationRule extends ExternalResource {
     protected void after() {
         super.after();
         try (ShellPrivilege privilege =
-                new ShellPrivilege(Manifest.permission.MANAGE_COMPANION_DEVICES)) {
+                new ShellPrivilege(mUiAutomation, Manifest.permission.MANAGE_COMPANION_DEVICES)) {
             clearExistingAssociations();
             mCompanionDeviceManager.removeOnAssociationsChangedListener(
                     mOnAssociationsChangedListener);
