@@ -43,7 +43,7 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
 
     private static final String LOG_TAG = MediaCenterHelperImpl.class.getSimpleName();
 
-    private static final int WAIT_MS = 10000;
+    private static final int WAIT_MS = 15000;
     private static final String RADIO_APP = "Radio";
     private static final String NEWS_APP = "News";
     private MediaSessionManager mMediaSessionManager;
@@ -622,6 +622,14 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
                 getUiElementFromConfig(AutomotiveConfigConstants.BLUETOOTH_DISCONNECTED_LABEL);
         getSpectatioUiUtil().waitForUiObject(isBluetoothAudioDisconnectedLabel, WAIT_MS);
         return getSpectatioUiUtil().hasUiElement(isBluetoothAudioDisconnectedLabel);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void waitForBluetoothAudioDisconnectedLabelToDisappear() {
+        BySelector isBluetoothAudioDisconnectedLabel =
+                getUiElementFromConfig(AutomotiveConfigConstants.BLUETOOTH_DISCONNECTED_LABEL);
+        getSpectatioUiUtil().waitForUiObjectToBeGone(isBluetoothAudioDisconnectedLabel, WAIT_MS);
     }
 
     /**

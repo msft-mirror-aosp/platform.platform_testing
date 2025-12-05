@@ -250,6 +250,13 @@ public interface IAutoMediaHelper extends IAppHelper, Scrollable {
     /**
      * Setup expectations: Bluetooth Audio page opened.
      *
+     * <p>This method wait for is Bluetooth Audio disconnected label visible to be gone.
+     */
+    void waitForBluetoothAudioDisconnectedLabelToDisappear();
+
+    /**
+     * Setup expectations: Bluetooth Audio page opened.
+     *
      * <p>This method returns whether connect to bluetooth label visible or not.
      */
     boolean isConnectToBluetoothLabelVisible();

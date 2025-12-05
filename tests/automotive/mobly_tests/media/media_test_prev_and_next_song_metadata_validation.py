@@ -22,7 +22,7 @@ from utilities.common_utils import CommonUtils
 from utilities.main_utils import common_main
 from utilities.video_utils_service import VideoRecording
 
-TIMESTAMP_MATCHER = "^([0-5]?[0-9]):([0-5][0-9]):([0-5]?[0-9])$"
+TIMESTAMP_MATCHER = "^([0-9]):([0-5]?[0-9])$"
 
 
 class IsMediaMetadataForNextAndPrevSongOnHuValid(bluetooth_base_test.BluetoothBaseTest):
