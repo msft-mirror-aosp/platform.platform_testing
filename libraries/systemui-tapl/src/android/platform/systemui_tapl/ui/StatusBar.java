@@ -350,6 +350,16 @@ public class StatusBar {
         return batteryPercentage.getText();
     }
 
+    public UiObject2 getWifiIcon() {
+        return DeviceHelpers.INSTANCE
+                .waitForObj(
+                        /* UiDevice= */ getUiDevice(),
+                        /* selector= */ statusBarSelector(WIFI_ICON_ID),
+                        /* timeout= */ SHORT_WAIT,
+                        /* errorProvider= */ () ->
+                                "The Wifi icon is not found on the status bar.");
+    }
+
     /** Assert that WiFi icon is visible. Experimental. */
     public void verifyWifiIconIsVisible() {
         DeviceHelpers.INSTANCE.assertVisible(

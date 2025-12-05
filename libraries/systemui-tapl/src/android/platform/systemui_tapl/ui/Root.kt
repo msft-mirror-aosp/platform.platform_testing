@@ -372,6 +372,21 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
         return QuickSettings(displayId)
     }
 
+    fun openOrCloseQuickSettingsByMouseWithRetry(targetVisibility: Boolean) {
+        executeWithRetry(
+            description =
+                (if (targetVisibility) "Open" else "Close") +
+                    "quick settings shade by mouse on display $displayId"
+        ) {
+            statusBar.wifiIcon.click()
+            if (targetVisibility) {
+                waitForQuickSettingsToOpen()
+            } else {
+                waitForShadeToClose(displayId)
+            }
+        }
+    }
+
     fun openQuickSettingsWithRetry(): QuickSettings {
         return executeWithRetry(description = "Open quick settings shade on display $displayId") {
             openQuickSettings()
