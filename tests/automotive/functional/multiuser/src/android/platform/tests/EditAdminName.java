@@ -18,6 +18,9 @@ package android.platform.tests;
 
 import static junit.framework.Assert.assertTrue;
 
+import android.Manifest;
+import android.app.Instrumentation;
+import android.app.UiAutomation;
 import android.content.pm.UserInfo;
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoSettingHelper;
@@ -26,15 +29,28 @@ import android.platform.helpers.MultiUserHelper;
 import android.platform.helpers.SettingsConstants;
 import android.util.Log;
 
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
+
+import com.android.compatibility.common.util.AdoptShellPermissionsRule;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
 public class EditAdminName {
+    @Rule
+    public final AdoptShellPermissionsRule mShellPermissionsRule =
+            new AdoptShellPermissionsRule(
+                    InstrumentationRegistry.getInstrumentation().getUiAutomation(),
+                    Manifest.permission.CREATE_USERS,
+                    Manifest.permission.MANAGE_USERS);
+
+    private final Instrumentation mInstrumentation = InstrumentationRegistry.getInstrumentation();
+    private final UiAutomation mUiAutomation = mInstrumentation.getUiAutomation();
 
     public String INITIAL_USERNAME;
     public static final String EDIT_USERNAME = "editedName";

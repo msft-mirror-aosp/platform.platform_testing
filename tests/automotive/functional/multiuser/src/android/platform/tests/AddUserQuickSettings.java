@@ -19,6 +19,9 @@ package android.platform.tests;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
+import android.Manifest;
+import android.app.Instrumentation;
+import android.app.UiAutomation;
 import android.content.pm.UserInfo;
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoHomeHelper;
@@ -31,7 +34,10 @@ import android.platform.test.rules.ConditionalIgnoreRule;
 import android.platform.test.rules.IgnoreOnPortrait;
 import android.util.Log;
 
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
+
+import com.android.compatibility.common.util.AdoptShellPermissionsRule;
 
 import org.junit.After;
 import org.junit.Rule;
@@ -46,6 +52,15 @@ import java.util.List;
  */
 @RunWith(AndroidJUnit4.class)
 public class AddUserQuickSettings {
+    @Rule
+    public final AdoptShellPermissionsRule mShellPermissionsRule =
+            new AdoptShellPermissionsRule(
+                    InstrumentationRegistry.getInstrumentation().getUiAutomation(),
+                    Manifest.permission.CREATE_USERS,
+                    Manifest.permission.MANAGE_USERS);
+
+    private final Instrumentation mInstrumentation = InstrumentationRegistry.getInstrumentation();
+    private final UiAutomation mUiAutomation = mInstrumentation.getUiAutomation();
     @Rule public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
 
     private final MultiUserHelper mMultiUserHelper = MultiUserHelper.getInstance();
@@ -91,7 +106,8 @@ public class AddUserQuickSettings {
         mSettingHelper.get().openSetting(SettingsConstants.PROFILE_ACCOUNT_SETTINGS);
 
         Log.i(LOG_TAG, "Assert: New user does not have Admin Access");
-        assertFalse("New user has Admin Access", mUsersHelper.get().isNewUserAnAdmin(mNewUser.name));
+        assertFalse(
+                "New user has Admin Access", mUsersHelper.get().isNewUserAnAdmin(mNewUser.name));
 
         Log.i(LOG_TAG, "Act: Open status bar profiles");
         mHomeHelper.get().openStatusBarProfiles();

@@ -18,6 +18,9 @@ package android.platform.tests;
 
 import static junit.framework.Assert.assertTrue;
 
+import android.Manifest;
+import android.app.Instrumentation;
+import android.app.UiAutomation;
 import android.content.pm.UserInfo;
 import android.platform.helpers.AutomotiveConfigConstants;
 import android.platform.helpers.HelperAccessor;
@@ -29,15 +32,28 @@ import android.platform.helpers.MultiUserHelper;
 import android.platform.scenario.multiuser.MultiUserConstants;
 import android.util.Log;
 
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
 
+import com.android.compatibility.common.util.AdoptShellPermissionsRule;
+
 import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /** This test will create user through API and test microphone on status bar */
 @RunWith(AndroidJUnit4.class)
 public class MultiUserMicrophoneOnStatusBarTest {
+    @Rule
+    public final AdoptShellPermissionsRule mShellPermissionsRule =
+            new AdoptShellPermissionsRule(
+                    InstrumentationRegistry.getInstrumentation().getUiAutomation(),
+                    Manifest.permission.CREATE_USERS,
+                    Manifest.permission.MANAGE_USERS);
+
+    private final Instrumentation mInstrumentation = InstrumentationRegistry.getInstrumentation();
+    private final UiAutomation mUiAutomation = mInstrumentation.getUiAutomation();
 
     private static final String USER_NAME = MultiUserConstants.SECONDARY_USER_NAME;
     private static final String DRIVER = AutomotiveConfigConstants.HOME_DRIVER_BUTTON;
