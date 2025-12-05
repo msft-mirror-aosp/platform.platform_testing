@@ -26,10 +26,17 @@ class AodRON internal constructor() {
         LockScreen.RON_AOD_SKELETON.assertVisible { "RON Skeleton is not visible" }
     }
 
-    fun title(title: String): AodRON = also {
+    fun checkTitle(title: String): AodRON = also {
         waitForObj(notificationByTitleSelector(title)) { "Notification Title is not visible." }
     }
 
+    fun checkAltTitle(title: String): AodRON = also {
+        waitForObj(notificationByAltTitleSelector(title)) { "Notification Title is not visible." }
+    }
+
     private fun notificationByTitleSelector(title: String) =
+        By.copy(LockScreen.RON_AOD_SKELETON).hasDescendant(androidResSelector("title").text(title))
+
+    private fun notificationByAltTitleSelector(title: String) =
         By.copy(LockScreen.RON_AOD_SKELETON).hasDescendant(androidResSelector("title").text(title))
 }
