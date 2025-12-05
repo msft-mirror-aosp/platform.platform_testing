@@ -36,9 +36,11 @@ android_test {
         "multi-user-helper",
         "microbenchmark-device-lib",
         "longevity-device-lib",
+        "compatibility-device-util-axt",
     ],
     srcs: ["src/**/*.java"],
     certificate: "platform",
     test_suites: ["catbox"],
     privileged: true,
+    manifest: "AndroidManifest.xml",
 }
