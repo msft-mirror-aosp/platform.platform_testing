@@ -21,3 +21,4 @@ class GoldenWatcherTypes(enum.Enum):
     ROBOLECTRIC = "robolectric"
     PRESUBMIT = "presubmit"
     GERRIT = "gerrit"
+    CODESEARCH = "codesearch"
