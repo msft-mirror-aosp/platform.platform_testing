@@ -24,6 +24,7 @@ import androidx.test.uiautomator.Configurator
 import androidx.test.uiautomator.UiAccessibilityValidator
 import androidx.test.uiautomator.UiDevice
 import com.google.android.apps.common.testing.accessibility.framework.integrations.common.AccessibilityNodeInfoValidator
+import java.util.function.Consumer
 import org.junit.rules.ExternalResource
 
 /**
@@ -39,15 +40,15 @@ import org.junit.rules.ExternalResource
  * }
  * ```
  *
- * Sometimes, you may need to suppress certain errors because they are false positives or they are
+ * Sometimes, you might need to suppress certain errors because they are false positives or they are
  * real issues to be addressed in the future. Suppress failures by modifying the rule's default
  * validator, or by passing in a custom validator:
  * ```kotlin
  * @RunWith(AndroidJUnit4::class)
  * class ExampleTest {
- *   @Rule val a11yRule = UiAutomatorAccessibilityTestRule().apply {
+ *   @Rule val a11yRule = UiAutomatorAccessibilityTestRule().configureValidator {
  *      // TODO: fix touch target sizes, then remove this suppression
- *      validator.suppressingResultMatcher =
+ *      it.suppressingResultMatcher =
  *          AccessibilityCheckResultUtils.matchesCheck(TouchTargetSizeCheck.class)
  *   }
  * }
@@ -142,5 +143,20 @@ constructor(
      */
     fun runChecks(node: AccessibilityNodeInfo) {
         validator.check(node)
+    }
+
+    /**
+     * Fluent method for accessing the [validator] in a one-liner during initialization.
+     *
+     * This avoids any race conditions that might arise by trying to alter the validator in a
+     * `@Before` setup method.
+     *
+     * @param onConfigure called with [validator] for easy altering of its options
+     */
+    fun configureValidator(
+        onConfigure: Consumer<AccessibilityNodeInfoValidator>
+    ): UiAutomatorAccessibilityTestRule {
+        onConfigure.accept(validator)
+        return this
     }
 }
