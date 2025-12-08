@@ -3,4 +3,4 @@ TestBeds:
     Controllers:
       AndroidDevice:
         - serial: serial_number
-          label: auto
+          label: device1

@@ -22,7 +22,6 @@ cc_defaults {
         "VtsHalTargetTestDefaults",
         "android.hardware.graphics.common-ndk_static",
         "android.hardware.graphics.composer3-ndk_static",
-        "librenderengine_deps",
         "use_libaidlvintf_gtest_helper_static",
     ],
     shared_libs: [
@@ -30,7 +29,6 @@ cc_defaults {
         "libbinder",
         "libbinder_ndk",
         "libc++",
-        "libgui",
         "libjsoncpp",
         "liblog",
         "libnativehelper",
@@ -49,7 +47,6 @@ cc_defaults {
         "libgtest",
         "libgtest_main",
         "libhwc_aidl_test",
-        "librenderengine",
         "libshaders",
         "libsync",
         "libtonemap",

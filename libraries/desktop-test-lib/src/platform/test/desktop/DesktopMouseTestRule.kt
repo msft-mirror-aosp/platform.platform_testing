@@ -35,7 +35,7 @@ import android.hardware.input.VirtualMouseConfig
 import android.hardware.input.VirtualMouseRelativeEvent
 import android.os.Handler
 import android.os.Looper
-import android.platform.uiautomatorhelpers.AdoptShellPermissionsRule
+import android.platform.uiautomatorhelpers.ShellPrivilege
 import android.platform.uiautomatorhelpers.WaitUtils
 import android.util.Log
 import android.view.Display.DEFAULT_DISPLAY
@@ -73,20 +73,13 @@ import platform.test.desktop.LogicalPhysicalDisplayTransformHelper.DeltaPhysical
  * If [deferSetup] is set to true, please call [setupMouse] before calling any move method
  */
 class DesktopMouseTestRule(private val deferSetup: Boolean = false) : TestRule {
-    // TODO(b/445827444): Adopt required permissions as needed for each setup(), move(), etc.
-    //  instead of a one-time adoptPermission from setup-teardown. This needs to be done without
-    //  dropping existing permissions
-    private val adoptShellPermissionsTestRule = AdoptShellPermissionsRule(*PERMISSIONS)
     private val fakeAssociationRule = FakeAssociationRule()
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private val uiAutomation = InstrumentationRegistry.getInstrumentation().getUiAutomation()
     private val displayManager = context.getSystemService(DisplayManager::class.java)
     private val inputManager = context.getSystemService(InputManager::class.java)
     private val resourceTracker = ResourceTracker()
-    private val ruleChain =
-        RuleChain.outerRule(adoptShellPermissionsTestRule)
-            .around(fakeAssociationRule)
-            .around(resourceTracker)
+    private val ruleChain = RuleChain.outerRule(fakeAssociationRule).around(resourceTracker)
 
     override fun apply(base: Statement, description: Description) =
         ruleChain.apply(base, description)
@@ -100,7 +93,7 @@ class DesktopMouseTestRule(private val deferSetup: Boolean = false) : TestRule {
             context.getSystemService(VirtualDeviceManager::class.java)
 
         // TODO: b/392534769 - Refactor this to use UinputMouse.
-        private var virtualDevice: VirtualDeviceManager.VirtualDevice? = null
+        private lateinit var virtualDevice: VirtualDeviceManager.VirtualDevice
         private var virtualMouse: VirtualMouse? = null
         private val displayIdsWithMouseScalingDisabled = mutableListOf<Int>()
         private val handler = Handler(Looper.getMainLooper())
@@ -132,16 +125,17 @@ class DesktopMouseTestRule(private val deferSetup: Boolean = false) : TestRule {
         }
 
         fun setup() = runBlocking {
-            if (virtualDevice != null) {
+            if (::virtualDevice.isInitialized) {
                 Log.w(TAG, "setup() called more than once, ignoring")
                 return@runBlocking
             }
-            val createdVirtualDevice =
-                virtualDeviceManager.createVirtualDevice(
-                    fakeAssociationRule.associationInfo.id,
-                    VirtualDeviceParams.Builder().build(),
-                )
-            virtualDevice = createdVirtualDevice
+            ShellPrivilege(uiAutomation, Manifest.permission.CREATE_VIRTUAL_DEVICE).use {
+                virtualDevice =
+                    virtualDeviceManager.createVirtualDevice(
+                        fakeAssociationRule.associationInfo.id,
+                        VirtualDeviceParams.Builder().build(),
+                    )
+            }
 
             Log.i(
                 TAG,
@@ -169,15 +163,17 @@ class DesktopMouseTestRule(private val deferSetup: Boolean = false) : TestRule {
                     }
                 inputManager.registerInputDeviceListener(inputDeviceListener, handler)
 
-                virtualMouse =
-                    createdVirtualDevice.createVirtualMouse(
-                        VirtualMouseConfig.Builder()
-                            .setVendorId(VIRTUAL_MOUSE_VENDOR_ID)
-                            .setProductId(VIRTUAL_MOUSE_PRODUCT_ID)
-                            .setInputDeviceName("VirtualMouse_ConnectedDisplaysTest")
-                            .setAssociatedDisplayId(startDisplayId)
-                            .build()
-                    )
+                ShellPrivilege(uiAutomation, Manifest.permission.INJECT_EVENTS).use {
+                    virtualMouse =
+                        virtualDevice.createVirtualMouse(
+                            VirtualMouseConfig.Builder()
+                                .setVendorId(VIRTUAL_MOUSE_VENDOR_ID)
+                                .setProductId(VIRTUAL_MOUSE_PRODUCT_ID)
+                                .setInputDeviceName("VirtualMouse_ConnectedDisplaysTest")
+                                .setAssociatedDisplayId(startDisplayId)
+                                .build()
+                        )
+                }
                 awaitClose { inputManager.unregisterInputDeviceListener(inputDeviceListener) }
             }
 
@@ -193,7 +189,9 @@ class DesktopMouseTestRule(private val deferSetup: Boolean = false) : TestRule {
 
         private fun disableMouseScaling(displayId: Int) {
             displayIdsWithMouseScalingDisabled += displayId
-            inputManager.setMouseScalingEnabled(false, displayId)
+            ShellPrivilege(uiAutomation, Manifest.permission.SET_POINTER_SPEED).use {
+                inputManager.setMouseScalingEnabled(false, displayId)
+            }
         }
 
         private fun ensureCursorStartsInDisplayTopology(displayId: Int) {
@@ -221,10 +219,10 @@ class DesktopMouseTestRule(private val deferSetup: Boolean = false) : TestRule {
                     Log.e(TAG, "Failed to restore mouse scaling for display#$displayId", e)
                 }
             }
-            virtualMouse?.close()
-            virtualDevice?.close()
-            virtualMouse = null
-            virtualDevice = null
+            if (::virtualDevice.isInitialized) {
+                virtualMouse?.close()
+                virtualDevice.close()
+            }
             super.after()
         }
     }
@@ -291,7 +289,7 @@ class DesktopMouseTestRule(private val deferSetup: Boolean = false) : TestRule {
         }
 
         val targetDisplayId = target.displayId
-        val displayTransform = LogicalPhysicalDisplayTransformHelper(displayManager)
+        val displayTransform = LogicalPhysicalDisplayTransformHelper(uiAutomation, displayManager)
         val currentCursorDisplayId = getCursorDisplayId()
 
         if (targetDisplayId != currentCursorDisplayId) {
@@ -345,7 +343,7 @@ class DesktopMouseTestRule(private val deferSetup: Boolean = false) : TestRule {
      * @param dyPx The delta Y (PX) coordinate.
      */
     fun moveDelta(dxPx: Int, dyPx: Int) {
-        val displayTransform = LogicalPhysicalDisplayTransformHelper(displayManager)
+        val displayTransform = LogicalPhysicalDisplayTransformHelper(uiAutomation, displayManager)
         performSteppedMove(
             DeltaLogicalPxF(dxPx.toFloat(), dyPx.toFloat())
                 .toPhysicalPx(getCursorDisplayId(), displayTransform)
@@ -368,7 +366,8 @@ class DesktopMouseTestRule(private val deferSetup: Boolean = false) : TestRule {
      * that the move will be executed, by checking if delta in LogicalPx >= [getMouseMinMovePx]
      */
     fun getMouseMinMovePx(displayId: Int): DeltaLogicalPxF {
-        val displayScale = LogicalPhysicalDisplayTransformHelper(displayManager).getScale(displayId)
+        val displayScale =
+            LogicalPhysicalDisplayTransformHelper(uiAutomation, displayManager).getScale(displayId)
         return DeltaLogicalPxF(displayScale.scaleX, displayScale.scaleY)
     }
 
@@ -686,16 +685,5 @@ class DesktopMouseTestRule(private val deferSetup: Boolean = false) : TestRule {
         // Mimics UiAutomator delay for injecting MotionEvent
         private val MOUSE_INPUT_DELAY = 5.milliseconds
         private val TIMEOUT: Duration = 10.seconds
-
-        private val PERMISSIONS =
-            arrayOf(
-                Manifest.permission.ASSOCIATE_COMPANION_DEVICES,
-                "android.permission.MANAGE_COMPANION_DEVICES",
-                Manifest.permission.CREATE_VIRTUAL_DEVICE,
-                Manifest.permission.INJECT_EVENTS,
-                "android.permission.MANAGE_DISPLAYS",
-                Manifest.permission.SET_POINTER_SPEED,
-                *LogicalPhysicalDisplayTransformHelper.REQUIRED_PERMISSIONS,
-            )
     }
 }

@@ -21,7 +21,7 @@ from utilities.media_utils import MediaUtils
 from utilities.common_utils import CommonUtils
 from utilities.main_utils import common_main
 
-TIMESTAMP_MATCHER = "^([0-5]?[0-9]):([0-5][0-9]):([0-5]?[0-9])$"
+TIMESTAMP_MATCHER = "^([0-9]):([0-5]?[0-9])$"
 
 
 class IsMediaMetadataOnHuValid(bluetooth_base_test.BluetoothBaseTest):
@@ -44,7 +44,6 @@ class IsMediaMetadataOnHuValid(bluetooth_base_test.BluetoothBaseTest):
         self.call_utils.handle_bluetooth_audio_pop_up()
         self.media_utils.open_youtube_music_app()
         current_phone_song_title = self.media_utils.get_song_title_from_phone()
-        self.media_utils.pause_media_on_hu()
         self.media_utils.maximize_now_playing()
         current_hu_song_title = self.media_utils.get_song_title_from_hu()
         asserts.assert_true(current_phone_song_title == current_hu_song_title,

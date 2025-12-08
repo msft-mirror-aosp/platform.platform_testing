@@ -88,6 +88,12 @@ public class MediaPlayerSnippet implements Snippet {
         return mAutoMediaHelper.get().isBluetoothAudioDisconnectedLabelVisible();
     }
 
+    /** This method used to waitfor bluetooth audio message to disappear */
+    @Rpc(description = "Wait For Bluetooth Audio disconnected label not present")
+    public void waitForBluetoothAudioDisconnectedLabelToDisappear() {
+        mAutoMediaHelper.get().waitForBluetoothAudioDisconnectedLabelToDisappear();
+    }
+
     @Rpc(description = "Is Connect to Bluetooth label present")
     public boolean isConnectToBluetoothLabelVisible() {
         return mAutoMediaHelper.get().isConnectToBluetoothLabelVisible();

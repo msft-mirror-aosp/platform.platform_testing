@@ -215,9 +215,8 @@ public final class SetFlagsRule implements TestRule {
                     for (Map.Entry<String, Boolean> pair :
                             flagAnnotations.mSetFlagValues.entrySet()) {
                         // Skip the flags that have been set because of the Parameterization
-                        if (modifiedFlag
-                                .getOrDefault(pair.getKey(), !pair.getValue())
-                                .equals(pair.getValue())) {
+                        if (modifiedFlag.containsKey(pair.getKey())
+                                && modifiedFlag.get(pair.getKey()).equals(pair.getValue())) {
                             continue;
                         }
                         setFlagValue(pair.getKey(), pair.getValue());
@@ -326,18 +325,15 @@ public final class SetFlagsRule implements TestRule {
         }
 
         Class<?> flagsClass = getFlagClassFromFlag(flag);
-        boolean defaultValueDiffersFromSetValue =
-                !mIsInitWithDefault || getFlagValue(flagsClass, flag) != value;
-
         boolean isOptimized = isOptimizedFlag(flagsClass);
         if (isOptimized) {
             assumeFalse(
                     String.format(
                             "Flag %s code is optimized. "
                                     + " The flag value should not be modified on this build"
-                                    + " Skip this test.",
+                                    + " Skipping this test.",
                             flag.fullFlagName()),
-                    defaultValueDiffersFromSetValue);
+                    checkDefaultValueDiffersFromSetValue(flagsClass, flag, value));
             return;
         }
 
@@ -364,7 +360,7 @@ public final class SetFlagsRule implements TestRule {
                                     + " The flag value should not be modified on this build"
                                     + " Skip this test.",
                             flag.fullFlagName()),
-                    defaultValueDiffersFromSetValue);
+                    checkDefaultValueDiffersFromSetValue(flagsClass, flag, value));
             return;
         }
 
@@ -373,8 +369,8 @@ public final class SetFlagsRule implements TestRule {
         assumeFalse(
                 String.format(
                         "Flag %s is finalized on this device. "
-                                + " The flag value should not be turned off on this device"
-                                + " Skip this test.",
+                                + " The flag value should not be turned off on this device."
+                                + " Skipping this test.",
                         flag.fullFlagName()),
                 isFinalized && !value);
 
@@ -416,6 +412,11 @@ public final class SetFlagsRule implements TestRule {
                         + " ensure that the aconfig auto generated library is in the dependency.",
                     e);
         }
+    }
+
+    private boolean checkDefaultValueDiffersFromSetValue(
+            Class<?> flagClass, Flag flag, boolean value) {
+        return !mIsInitWithDefault || getFlagValue(flagClass, flag) != value;
     }
 
     private boolean getFlagValue(Class<?> flagClass, Flag flag) {

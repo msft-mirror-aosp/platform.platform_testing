@@ -41,7 +41,7 @@ public class QuickSettingsController {
         mHelper = new QuickSettingsHelper(getUiDevice(), getInstrumentation());
     }
 
-    /** Places a tile in quick settings as the first tile. Add the tile if necessary */
+    /** Places a tile in quick settings as the first tile. Add the tile if necessary. */
     public void addAsFirstTile(String tileName) {
         mHelper.setFirstQS(tileName);
     }
@@ -76,10 +76,5 @@ public class QuickSettingsController {
      */
     public void setTiles(List<String> tiles) {
         mHelper.modifyQSTileList(tiles);
-    }
-
-    /** Restore the default large tiles set. */
-    public void restoreDefaultLargeTiles() {
-        mHelper.setQuickSettingsDefaultTiles();
     }
 }

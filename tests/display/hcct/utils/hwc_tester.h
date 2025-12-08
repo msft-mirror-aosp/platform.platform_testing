@@ -25,7 +25,6 @@
 #include <vector>
 
 #include "Readback.h"
-#include "RenderEngine.h"
 
 namespace hcct {
 
@@ -91,7 +90,6 @@ private:
   std::shared_ptr<libhwc_aidl_test::ComposerClientWrapper> mComposerClient;
   std::unordered_map<int64_t, libhwc_aidl_test::DisplayWrapper> mDisplays;
   std::unordered_map<int64_t, ComposerClientWriter> mWriters;
-  std::unique_ptr<libhwc_aidl_test::TestRenderEngine> mRenderEngine;
 };
 
 } // namespace hcct

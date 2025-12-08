@@ -38,9 +38,9 @@ class PlaylistRendering(bluetooth_base_test.BluetoothBaseTest):
     def test_playlist_rendering(self):
         """Tests validating is song selectable using playlist on HU"""
         self.media_utils.open_media_app_on_hu()
+        self.call_utils.handle_bluetooth_audio_pop_up()
         self.media_utils.open_youtube_music_app()
         self.call_utils.wait_with_log(5)
-        self.call_utils.handle_bluetooth_audio_pop_up()
         logging.info("Getting song title from phone device: %s", self.media_utils.get_song_title_from_phone())
         self.media_utils.maximize_now_playing()
         asserts.assert_true(self.media_utils.is_playlist_icon_visible(),
@@ -49,6 +49,9 @@ class PlaylistRendering(bluetooth_base_test.BluetoothBaseTest):
         self.discoverer.mbs.scrollUpOnePage()
         self.media_utils.select_song_from_playlist(2)
         self.media_utils.pause_media_on_hu()
+        # This step is for RB
+        if self.media_utils.is_playlist_icon_visible():
+          self.media_utils.click_on_playlist_icon()
         current_phone_song_title = self.media_utils.get_song_title_from_phone()
         current_hu_song_title = self.media_utils.get_song_title_from_hu()
         asserts.assert_true(current_phone_song_title == current_hu_song_title,

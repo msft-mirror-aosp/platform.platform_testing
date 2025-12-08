@@ -51,3 +51,21 @@ cc_test {
     ],
     defaults: ["hcct_hybrid_test_defaults"],
 }
+
+java_test_host {
+    name: "TestHwcToggleDisplayPower",
+    srcs: ["ToggleDisplayPowerTest.java"],
+
+    test_suites: [
+        "dts",
+        "general-tests",
+        "device-tests",
+    ],
+    libs: [
+        "tradefed",
+        "compatibility-host-util",
+    ],
+    static_libs: [
+        "CfVkmsTestUtils",
+    ],
+}

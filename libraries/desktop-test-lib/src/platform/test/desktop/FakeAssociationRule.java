@@ -27,6 +27,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
+import android.Manifest;
 import android.app.UiAutomation;
 import android.companion.AssociationInfo;
 import android.companion.AssociationRequest;
@@ -34,12 +35,11 @@ import android.companion.CompanionDeviceManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.util.Log;
+import android.platform.uiautomatorhelpers.ShellPrivilege;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.test.filters.SdkSuppress;
-import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.junit.rules.ExternalResource;
 import org.mockito.Mock;
@@ -71,6 +71,7 @@ class FakeAssociationRule extends ExternalResource {
     private static final int TIMEOUT_MS = 10000;
 
     private final Context mContext = getInstrumentation().getContext();
+    private final UiAutomation mUiAutomation = getInstrumentation().getUiAutomation();
 
     private final Executor mCallbackExecutor = Runnable::run;
     private final CompanionDeviceManager mCompanionDeviceManager =
@@ -122,30 +123,26 @@ class FakeAssociationRule extends ExternalResource {
         super.before();
         MockitoAnnotations.initMocks(this);
         assumeTrue(hasSystemFeature(PackageManager.FEATURE_COMPANION_DEVICE_SETUP));
-        mCompanionDeviceManager.addOnAssociationsChangedListener(
-                mCallbackExecutor, mOnAssociationsChangedListener);
-        clearExistingAssociations();
-        mAssociationInfo = createManagedAssociation();
+        try (ShellPrivilege privilege =
+                new ShellPrivilege(
+                        mUiAutomation,
+                        Manifest.permission.MANAGE_COMPANION_DEVICES,
+                        Manifest.permission.ASSOCIATE_COMPANION_DEVICES)) {
+            mCompanionDeviceManager.addOnAssociationsChangedListener(
+                    mCallbackExecutor, mOnAssociationsChangedListener);
+            clearExistingAssociations();
+            mAssociationInfo = createManagedAssociation();
+        }
     }
 
     @Override
     protected void after() {
         super.after();
-        // If permissions were not adopted correctly, or adopted shell permissions were dropped,
-        // e.g. due to another call to  uiAutomation.adoptShellPermissionIdentity(), re-adopt
-        // permission here to ensure teardown at least runs without further exceptions
-        final UiAutomation uiAutomation =
-                InstrumentationRegistry.getInstrumentation().getUiAutomation();
-        try {
-            uiAutomation.adoptShellPermissionIdentity(
-                    "android.permission.MANAGE_COMPANION_DEVICES");
+        try (ShellPrivilege privilege =
+                new ShellPrivilege(mUiAutomation, Manifest.permission.MANAGE_COMPANION_DEVICES)) {
             clearExistingAssociations();
             mCompanionDeviceManager.removeOnAssociationsChangedListener(
                     mOnAssociationsChangedListener);
-        } catch (Throwable t) {
-            Log.w(TAG, "Exception during after() cleanup, some resources might not be freed: " + t);
-        } finally {
-            uiAutomation.dropShellPermissionIdentity();
         }
     }
 

@@ -55,16 +55,6 @@ HwcTester::HwcTester() {
   for (const auto &display : displays) {
     mDisplays.emplace(display.getDisplayId(), std::move(display));
   }
-
-  mRenderEngine = std::unique_ptr<libhwc_aidl_test::TestRenderEngine>(
-      new libhwc_aidl_test::TestRenderEngine(
-          ::android::renderengine::RenderEngineCreationArgs::Builder()
-              .setPixelFormat(static_cast<int>(PixelFormat::RGBA_8888))
-              .setImageCacheSize(libhwc_aidl_test::TestRenderEngine::
-                                     sMaxFrameBufferAcquireBuffers)
-              .setContextPriority(
-                  ::android::renderengine::RenderEngine::ContextPriority::High)
-              .build()));
 }
 
 HwcTester::~HwcTester() {
@@ -206,7 +196,7 @@ ComposerClientWriter &HwcTester::GetWriter(int64_t display) {
 std::unique_ptr<libhwc_aidl_test::TestBufferLayer> HwcTester::CreateBufferLayer(
     int64_t displayId, uint64_t width, uint64_t height) {
   return std::make_unique<hcct::libhwc_aidl_test::TestBufferLayer>(
-      *mComposerClient, *mRenderEngine, displayId, width, height,
+      *mComposerClient, displayId, width, height,
       hcct::common::PixelFormat::RGBA_8888, GetWriter(displayId),
       Composition::DEVICE);
 }
@@ -282,9 +272,9 @@ void HwcTester::DrawColorVectorToDisplay(int64_t displayId,
   // Create a buffer layer with solid color content using DEVICE composition
   // (compatible with drm_hwcomposer)
   auto layer = std::make_shared<libhwc_aidl_test::TestBufferLayer>(
-      *mComposerClient, *displayProps.testRenderEngine, display.getDisplayId(),
-      display.getDisplayWidth(), display.getDisplayHeight(),
-      displayProps.pixelFormat, displayProps.writer, Composition::DEVICE);
+      *mComposerClient, display.getDisplayId(), display.getDisplayWidth(),
+      display.getDisplayHeight(), displayProps.pixelFormat, displayProps.writer,
+      Composition::DEVICE);
   layer->setDisplayFrame(
       {0, 0, display.getDisplayWidth(), display.getDisplayHeight()});
   layer->setSourceCrop({0, 0, static_cast<float>(display.getDisplayWidth()),

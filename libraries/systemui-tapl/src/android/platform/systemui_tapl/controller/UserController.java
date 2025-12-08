@@ -53,8 +53,6 @@ import java.util.concurrent.CountDownLatch;
 /** Controller for manipulating users. */
 public class UserController {
 
-    // TODO(b/264023316): Reduce once fixed.
-    private static final int VERIFICATION_TIME_IN_SECONDS = 90;
     private static final String USER_SWITCHER_VISIBLE_FLAG_CMD = "cmd statusbar flag 204";
 
     /** Returns an instance of UserController. */
@@ -122,10 +120,7 @@ public class UserController {
      * expects the user creation will fail.
      */
     public Optional<Integer> tryCreatingSecondaryUser(String userName) {
-        return tryCreatingSecondaryUserImpl(
-                userName,
-                /* userIcon= */
-                null);
+        return tryCreatingSecondaryUserImpl(userName, /* userIcon= */ null);
     }
 
     private Optional<Integer> tryCreatingSecondaryUserImpl(
@@ -157,7 +152,7 @@ public class UserController {
         final HashSet<Integer> secondaryUsers = new HashSet<>();
         List<UserInfo> userInfoList = getUserManager().getAliveUsers();
         for (UserInfo userInfo : userInfoList) {
-            // Remove all users except for the primary / system user
+            // Remove all users except for the primary / system user.
             if (!userInfo.isPrimary()) {
                 secondaryUsers.add(userInfo.id);
             }

@@ -4,8 +4,10 @@ import multiprocessing
 import time
 from typing import List
 
+from mobly.controllers.android_device import MBS_PACKAGE
 from mobly.controllers.android_device_lib.adb import AdbError
 from mobly.controllers.android_device_lib.services import logcat
+from mobly.controllers.android_device_lib.snippet_client_v2 import Config
 
 from spectatio_host_tf.utils import error_handler
 
@@ -513,6 +515,7 @@ class TestDevice:
 
   def __init__(self, android_device):
     self._adb = TestDeviceAdb(android_device)
+    self._device = android_device
     self._services = android_device.services
 
   @property
@@ -528,6 +531,13 @@ class TestDevice:
       Provides access to Mobly device services (e.g., Logcat).
     """
     return self._services
+
+  def load_bundled_snippets(self):
+      """
+        Load a mobly snippet.
+      """
+      self._device.load_snippet('mbs', MBS_PACKAGE)
+      return self._device.mbs
 
   def update_logcat_config_to_persist_for_given_log_level(
       self, log_level: str = 'V'

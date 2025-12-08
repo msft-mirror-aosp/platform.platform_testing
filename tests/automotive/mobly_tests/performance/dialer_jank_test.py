@@ -17,7 +17,6 @@ import logging
 import time
 
 from bluetooth_test import bluetooth_base_test
-from utilities import constants
 from utilities.main_utils import common_main
 from utilities.crystalball_metrics_utils import export_to_crystalball
 
@@ -48,7 +47,6 @@ class BTPerformanceDialerJankTest(bluetooth_base_test.BluetoothBaseTest):
     logging.info(f'Setup {self.__class__.__name__} with {METRIC_KEYS} = {self.metric_keys}, {ITERATIONS_PARAM_NAME} = {self.iterations} and iteration delay = {self.iteration_delay}')
 
   def setup_test(self):
-    super().enable_recording()
     self.discoverer.services.register('jank_collector', jank_collector.JankCollector, jank_collector.JankCollectorConfig(tracked_packages=["com.android.car.dialer"]))
 
   def test_dialer_jank(self):
@@ -76,6 +74,9 @@ class BTPerformanceDialerJankTest(bluetooth_base_test.BluetoothBaseTest):
         dialer_janky_frames_percent_mean = sum(dialer_janky_frames_percent_list) / len(dialer_janky_frames_percent_list)
         metrics[key] = round(dialer_janky_frames_percent_mean, 2)
     export_to_crystalball(metrics, self.log_path, self.current_test_info.name)
+
+  def teardown_test(self):
+    super().teardown_no_video_recording()
 
 if __name__ == '__main__':
   common_main()

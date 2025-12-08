@@ -121,6 +121,10 @@ class WindowManagerState(
     val freeformWindows: Collection<WindowState>
         get() = visibleWindows.filter { it.windowingMode == PlatformConsts.WINDOWING_MODE_FREEFORM }
 
+    val fullscreenWindows: Collection<WindowState>
+        get() =
+            visibleWindows.filter { it.windowingMode == PlatformConsts.WINDOWING_MODE_FULLSCREEN }
+
     val pendingActivities: Collection<Activity>
         get() = _pendingActivities.mapNotNull { getActivityByName(it) }
 
@@ -412,6 +416,14 @@ class WindowManagerState(
      */
     fun isInPipMode(componentMatcher: IComponentMatcher): Boolean =
         componentMatcher.windowMatchesAnyOf(pinnedWindows)
+
+    /**
+     * Checks that a [WindowState] matching [componentMatcher] is in fullscreen
+     *
+     * @param componentMatcher Components to search
+     */
+    fun isInFullscreenMode(componentMatcher: IComponentMatcher): Boolean =
+        componentMatcher.windowMatchesAnyOf(fullscreenWindows)
 
     fun getZOrder(w: WindowState): Int = windowStates.size - windowStates.indexOf(w)
 

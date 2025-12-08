@@ -127,6 +127,7 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
     @VisibleForTesting static final String DYNAMIC_INNER_CLASS_RULES_OPTION = "inner-class-rules";
     @VisibleForTesting static final String DYNAMIC_OUTER_TEST_RULES_OPTION = "outer-test-rules";
     @VisibleForTesting static final String DYNAMIC_INNER_TEST_RULES_OPTION = "inner-test-rules";
+    @VisibleForTesting static final String DYNAMIC_NO_METRIC_TEST_RULES_OPTION = "no-metric-test-rules";
 
     // Renames repeated test methods as <description><separator><iteration> (if set to true).
     public static final String RENAME_ITERATION_OPTION = "rename-iterations";
@@ -287,9 +288,6 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
      * A temporary annotation that acts like the {@code @Before} but is excluded from metric
      * collection.
      *
-     * <p>This should be removed as soon as possible. Do not use this unless explicitly instructed
-     * to do so. You'll regret it!
-     *
      * <p>Note that all {@code TestOption}s must be instantiated as {@code @ClassRule}s to work
      * inside these annotations.
      */
@@ -365,6 +363,7 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
         final List<TestRule> result = new ArrayList<>();
         final MemberValueConsumer<TestRule> collector = (member, value) -> result.add(value);
 
+        result.add(new DynamicRuleChain(DYNAMIC_NO_METRIC_TEST_RULES_OPTION, mArguments));
         getTestClass().collectAnnotatedMethodValues(target, NoMetricRule.class, TestRule.class,
                 collector);
         getTestClass().collectAnnotatedFieldValues(target, NoMetricRule.class, TestRule.class,
