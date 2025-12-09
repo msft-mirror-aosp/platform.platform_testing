@@ -18,6 +18,7 @@ package android.device.collectors;
 
 import android.device.collectors.annotations.OptionClass;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -39,6 +40,8 @@ import java.util.stream.Collectors;
 @OptionClass(alias = "heapdump-listener")
 public class HeapDumpListener extends BaseCollectionListener<String> {
 
+    private static final String TAG = "HeapDumpListener";
+
     private static final String SPACES_PATTERN = "\\s+";
     private static final String REPLACEMENT_CHAR = "#";
     private static final String FILE_ID_FORMAT = "%s_%d";
@@ -52,7 +55,7 @@ public class HeapDumpListener extends BaseCollectionListener<String> {
     @VisibleForTesting static final String PROCESS_NAMES_KEY = "heapdump-process-names";
     @VisibleForTesting static final String PROCESS_SEPARATOR = ",";
     Map<String, Integer> mTestIterationCount = new HashMap<String, Integer>();
-    Set<Integer> mValidIterationIds;
+    Set<Integer> mValidIterationIds = new HashSet<>();
     boolean mIsDisabled = false;
     boolean mIsEnabledForAll = false;
 
@@ -99,36 +102,51 @@ public class HeapDumpListener extends BaseCollectionListener<String> {
         if (!mIsEnabledForAll) {
             String iterations = args.getString(ENABLE_ITERATION_IDS);
             if (iterations == null || iterations.isEmpty()) {
+                Log.w(TAG, "No iteration IDs set for heap dumps, disabling HeapDumpListener!");
                 mIsDisabled = true;
                 return;
             }
             String[] iterationArray = iterations.split(ITERATION_SEPARATOR);
             Set<String> validIterationIdsStr = new HashSet<String>(Arrays.asList(iterationArray));
-            mValidIterationIds = validIterationIdsStr.stream().map(s -> Integer.parseInt(s))
-                    .collect(Collectors.toSet());
+            mValidIterationIds =
+                    validIterationIdsStr.stream()
+                            .map(Integer::parseInt)
+                            .collect(Collectors.toSet());
+            if (mValidIterationIds.isEmpty()) {
+                Log.e(TAG, "No valid iteration IDs set, check your configuration!");
+            }
         }
     }
 
     @Override
     public void testStart(Function<String, Boolean> filter, Description description) {
+        if (mIsDisabled) {
+            return;
+        }
+
         updateIterationCount(description);
-        if (mIsEnabledForAll) {
-            mHeapHelper.startCollecting(getHeapDumpFileId(description));
-        } else if (mIsCollectPerRun || mValidIterationIds
-                .contains(mTestIterationCount.get(getTestFileName(description)))) {
+        if (mIsCollectPerRun
+                || mIsEnabledForAll
+                || mValidIterationIds.contains(
+                        mTestIterationCount.get(getTestFileName(description)))) {
             mHeapHelper.startCollecting(getHeapDumpFileId(description));
         }
     }
 
     @Override
     public final void onTestEnd(DataRecord testData, Description description) {
-        if (!mIsCollectPerRun) {
-            if (mIsEnabledForAll) {
-                super.onTestEnd(testData, description);
-            } else if (mValidIterationIds
-                    .contains(mTestIterationCount.get(getTestFileName(description)))) {
-                super.onTestEnd(testData, description);
-            }
+        if (mIsDisabled) {
+            return;
+        }
+
+        if (mIsCollectPerRun) {
+            return;
+        }
+
+        if (mIsEnabledForAll
+                || mValidIterationIds.contains(
+                        mTestIterationCount.get(getTestFileName(description)))) {
+            super.onTestEnd(testData, description);
         }
     }
 
