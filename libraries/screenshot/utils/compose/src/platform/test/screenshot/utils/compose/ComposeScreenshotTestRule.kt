@@ -19,8 +19,8 @@ package platform.test.screenshot.utils.compose
 import android.app.Activity
 import android.app.ActivityOptions
 import android.app.Dialog
+import android.app.WindowConfiguration
 import android.content.res.Configuration
-import android.graphics.Rect
 import android.os.Build
 import android.os.LocaleList
 import android.view.ContextThemeWrapper
@@ -86,11 +86,9 @@ class ComposeScreenshotTestRule(
     private val activityRule =
         ActivityScenarioRule(
             ScreenshotActivity::class.java,
-            ActivityOptions.makeBasic()
-                .setLaunchBounds(
-                    Rect(0, 0, emulationSpec.display.width, emulationSpec.display.height)
-                )
-                .toBundle(),
+            ActivityOptions.makeBasic().apply {
+                launchWindowingMode = WindowConfiguration.WINDOWING_MODE_FULLSCREEN
+            }.toBundle(),
         )
 
     @OptIn(ExperimentalTestApi::class)
