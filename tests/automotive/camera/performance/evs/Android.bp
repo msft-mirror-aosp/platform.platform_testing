@@ -4,14 +4,13 @@ package {
 }
 
 python_test_host {
-    name: "Camera2BootTest",
-    main: "boot_test.py",
-    libs: [
-        "utilities",
-        "camera_performance_base_test_lib",
-    ],
+    name: "EvsBootTimeTest",
+    main: "evs_boottime_test.py",
     srcs: [
-        "boot_test.py",
+        "evs_boottime_test.py",
+    ],
+    libs: [
+        "camera_performance_base_test_lib",
     ],
     data: [
         ":spectatio_host_device_configs",
@@ -26,5 +25,4 @@ python_test_host {
         "spectatio_host_tf_defaults",
     ],
     test_config_template: ":spectatio_host_test_config_one_device",
-
 }

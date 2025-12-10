@@ -1,0 +1,6 @@
+# Copyright 2025 Google LLC
+
+CAR_EVS_SERVICE = 'car_evs_service'
+GEAR_VHAL_EVENT = '0x11400400'
+GEAR_REVERSE_VHAL_VALUE = '2'
+GEAR_PARK_VHAL_VALUE = '4'
