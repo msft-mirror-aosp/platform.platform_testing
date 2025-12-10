@@ -149,6 +149,26 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
         }
     }
 
+    /** Opens the notification shade by tapping the status bar icon, with retry logic. */
+    fun openNotificationShadeViaTap() {
+        return executeWithRetry(
+            description = "Open notification shade by tap on display $displayId"
+        ) {
+            statusBar.notificationIconContainer.click()
+            waitForNotificationStackScroller()
+        }
+    }
+
+    /** Closes the notification shade by tapping the status bar icon, with retry logic. */
+    fun closeNotificationShadeViaTap() {
+        return executeWithRetry(
+            description = "Close notification shade by tap on display $displayId"
+        ) {
+            statusBar.notificationIconContainer.click()
+            waitForShadeToClose(displayId)
+        }
+    }
+
     /**
      * Opens the notification shade via swipe with retrying on failure. Use this for opening the
      * notification shade using a swipe gesture.
