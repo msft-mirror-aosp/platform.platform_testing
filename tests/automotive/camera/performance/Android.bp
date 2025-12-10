@@ -1,0 +1,16 @@
+package {
+    default_team: "trendy_team_auto_engprod",
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+python_library_host {
+    name: "camera_performance_base_test_lib",
+    pkg_path: "camera_performance",
+    srcs: [
+        "camera_performance_base_test.py",
+        "utils/constants.py",
+    ],
+    libs: [
+        "utilities",
+    ],
+}
