@@ -44,9 +44,6 @@ import java.util.stream.Collectors;
  */
 @RunWith(JUnit4.class)
 public class ProfileTest {
-    // TODO(b/120508148): Add tests for current scenario and timestamp book-keeping logic and
-    // I/O operations regarding parsing the profile.
-
     protected static final String PROFILE_OPTION_NAME = "profile";
 
     protected static final String VALID_CONFIG_KEY = "valid_config";
