@@ -80,7 +80,8 @@ constructor(
         AccessibilityNodeInfoValidator(InstrumentationRegistry.getInstrumentation().targetContext)
             .setScreenshotCapturer {
                 UiDevice.getInstance(InstrumentationRegistry.getInstrumentation()).takeScreenshot()
-            },
+            }
+            .setRunChecksFromRootView(true),
 ) : ExternalResource() {
 
     private val uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
