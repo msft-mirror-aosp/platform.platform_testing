@@ -17,6 +17,7 @@
 package platform.test.motion.compose
 
 import android.util.Log
+import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -225,12 +226,11 @@ fun MotionTestRule<ComposeToolkit>.recordMotion(
     recordingSpec: ComposeRecordingSpec,
 ): RecordedMotion {
     with(toolkit.composeContentTestRule) {
-        val captureScreenshots = recordingSpec.captureScreenshots
-        Log.i(TAG, "recordMotion(captureScreenshots=$captureScreenshots)")
         val frameIdCollector = mutableListOf<FrameId>()
         val propertyCollector = mutableMapOf<String, MutableList<DataPoint<*>>>()
         val screenshotCollector = mutableListOf<ImageBitmap>()
 
+        @SuppressLint("VisibleForTests")
         fun recordFrame(frameId: FrameId) {
             Log.i(TAG, "recordFrame($frameId)")
             frameIdCollector.add(frameId)
@@ -371,12 +371,7 @@ private class MotionControlImpl(
             }
 
     fun nextFrame() {
-        // we wait for the main thread to get idle, required in robolectric tests as there was a
-        // delay of one frame between actual and expected golden.
-        // Need some more digging into why this is required for robolectric.
-        composeTestRule.waitForIdle()
         composeTestRule.mainClock.advanceTimeByFrame()
-        composeTestRule.waitForIdle()
 
         when (state) {
             MotionControlState.Start -> {
@@ -409,8 +404,6 @@ private class MotionControlImpl(
 
         frameEmitter.tryEmit(composeTestRule.mainClock.currentTime)
         testScope.runCurrent()
-
-        composeTestRule.waitForIdle()
 
         if (state == MotionControlState.Recording && recordingJob.isCompleted) {
             state = MotionControlState.Ended

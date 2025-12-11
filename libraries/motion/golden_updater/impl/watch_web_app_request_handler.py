@@ -31,6 +31,7 @@ from impl.golden_watchers.golden_watcher_types import GoldenWatcherTypes
 from impl.adb_serial_finder import ADBSerialFinder
 from impl.adb_client import AdbClient
 from impl.test_entity import TestEntity
+from impl.codesearch_downloader import CodeSearchDownloader
 
 class WatchWebAppRequestHandler(http.server.BaseHTTPRequestHandler):
     secret_token = None
@@ -64,7 +65,7 @@ class WatchWebAppRequestHandler(http.server.BaseHTTPRequestHandler):
 
         parsed = urllib.parse.urlparse(self.path)
 
-        if parsed.path == "/service/testModes/list":
+        if parsed.path == "/service/config/modes":
             self.get_available_modes()
             return
         elif parsed.path.startswith("/golden/"):
@@ -88,21 +89,6 @@ class WatchWebAppRequestHandler(http.server.BaseHTTPRequestHandler):
                     golden.golden_repo_path, "application/json"
                 )
                 return
-        elif parsed.path.startswith("/getGerrit"):
-            query_params = urllib.parse.parse_qs(parsed.query)
-            # query_params.get() returns a list. Picking out the first element from it
-            leftLinkValues = query_params.get('leftLink')
-            rightLinkValues = query_params.get('rightLink')
-            leftLink = leftLinkValues[0] if leftLinkValues else None
-            rightLink = rightLinkValues[0] if rightLinkValues else None
-            gerrit_downloader = GerritDownloader()
-            res = gerrit_downloader.download(left=leftLink, right=rightLink)
-            testEntity = TestEntity(goldens_list=res)
-            (WatchWebAppRequestHandler
-            .test_entity_cache[GoldenWatcherTypes.GERRIT.value]) = testEntity
-            print("All done. Sending data to UI")
-            self.send_json(res)
-            return
 
         self.send_error_with_message(404, message=f"Invalid GET API: {parsed.path}")
 
@@ -121,16 +107,18 @@ class WatchWebAppRequestHandler(http.server.BaseHTTPRequestHandler):
         message = json.loads(self.rfile.read(length))
 
         parsed = urllib.parse.urlparse(self.path)
-        if parsed.path == "/service/refresh":
+        if parsed.path == "/service/goldens/refresh":
             self.service_refresh_goldens(message["clear"])
-        elif parsed.path == '/service/presubmit_artifact/list':
+        elif parsed.path == '/service/presubmit/tests':
             self.service_presubmit_artifact_list(message["invocation_id"])
-        elif parsed.path == '/service/fetch_artifact':
+        elif parsed.path == '/service/presubmit/artifact':
             self.service_fetch_artifacts(message["resource_id"])
-        elif parsed.path == "/service/mode":
+        elif parsed.path == "/service/config/mode":
             self.switch_mode(message["mode"])
-        elif parsed.path == "/getMultipleGoldensFromGerrit":
+        elif parsed.path == "/service/gerrit/goldens":
             self.fetch_gerrit_artifacts(message["linkPairs"])
+        elif parsed.path == "/service/codesearch/goldens":
+            self.fetch_codesearch_artifact(message["url"])
         else:
             self.send_error_with_message(404, message=f"Invalid POST API: {parsed.path}")
 
@@ -140,13 +128,24 @@ class WatchWebAppRequestHandler(http.server.BaseHTTPRequestHandler):
 
         parsed = urllib.parse.urlparse(self.path)
 
-        if parsed.path == "/service/update":
+        if parsed.path == "/service/goldens/update":
             query_params = urllib.parse.parse_qs(parsed.query)
-            self.service_update_golden({query_params["id"][0]})
-        elif parsed.path == '/service/updateSelectedGoldensIds':
+            golden_id = query_params["id"][0]
+            results, _, _ = self.service_update_golden({golden_id})
+            if results:
+                self.send_json(results[0])
+            else:
+                self.send_error_with_message(404, "Golden not found")
+        elif parsed.path == '/service/goldens/batch-update':
             length = int(self.headers.get("Content-Length"))
             message = json.loads(self.rfile.read(length))
-            self.service_update_golden(set(message["selectedGoldenIds"]))
+            results, passed, failed = self.service_update_golden(set(message["selectedGoldenIds"]))
+            response = {
+                "results": results,
+                "passedCount": passed,
+                "failedCount": failed
+            }
+            self.send_json(response)
         else:
             self.send_error_with_message(404, message=f"Invalid PUT API: {parsed.path}")
 
@@ -196,12 +195,41 @@ class WatchWebAppRequestHandler(http.server.BaseHTTPRequestHandler):
         self.send_header("Content-Type", "application/json")
         self.add_standard_headers()
         self.end_headers()
-        payload = {"message": message}
+        payload = {"success": False, "error": message}
         self.wfile.write(json.dumps(payload).encode("utf-8"))
+
+    def fetch_codesearch_artifact(self, url):
+        codesearch_dir = os.path.join(WatchWebAppRequestHandler.temp_dir, "codesearch")
+        codesearch_downloader = CodeSearchDownloader(codesearch_dir)
+        download_info = codesearch_downloader.download_from_codesearch(url)
+
+        if not download_info:
+            self.send_error_with_message(400, "Failed to download from CodeSearch")
+            return
+
+        try:
+            with open(download_info['local_file_path'], 'r') as f:
+                golden_json = json.load(f)
+
+            # Use golden_name from downloader
+            golden_json['goldenName'] = download_info.get('golden_name', '')
+
+        except Exception as e:
+            self.send_error_with_message(500, f"Failed to parse downloaded JSON: {e}")
+            return
+
+        golden_list = [golden_json]
+        testEntity = TestEntity(goldens_list=golden_list)
+        WatchWebAppRequestHandler.test_entity_cache[
+            GoldenWatcherTypes.CODESEARCH.value] = testEntity
+
+        self.send_json(golden_list)
 
     def fetch_gerrit_artifacts(self, linkPairs):
         gerrit_downloader = GerritDownloader()
         golden_list = gerrit_downloader.downloadMultipleJsons(linkPairs)
+        testEntity = TestEntity(goldens_list=golden_list)
+        WatchWebAppRequestHandler.test_entity_cache[GoldenWatcherTypes.GERRIT.value] = testEntity
         self.send_json(golden_list)
 
     def service_list_goldens(self):
@@ -406,16 +434,19 @@ class WatchWebAppRequestHandler(http.server.BaseHTTPRequestHandler):
         '''
         Find goldens with IDs in update_golden_id_set and updates expected values.
         '''
+        results = []
+        passed_count = 0
+        failed_count = 0
+
         if len(update_golden_id_set) == 0:
-            self.send_json({}, 400)
-        result = {}
-        success_count = 0
+            return results, passed_count, failed_count
 
         goldens = WatchWebAppRequestHandler.test_entity.golden_watcher.cached_goldens.values()
         for golden in goldens:
             if golden.id not in update_golden_id_set:
-                print("skip", golden.id)
                 continue
+
+            result_item = {"id": golden.id}
             try:
                 dst = path.join(WatchWebAppRequestHandler.android_build_top,
                                 golden.golden_repo_path)
@@ -425,21 +456,22 @@ class WatchWebAppRequestHandler(http.server.BaseHTTPRequestHandler):
                 shutil.copyfile(golden.local_file, dst)
 
                 golden.updated = True
-                result[golden.id] = "Updated"
-                success_count += 1
+                result_item["status"] = "PASSED_UPDATE"
+                result_item["message"] = "Updated"
+                passed_count += 1
             except Exception as e:
-                result[golden.id] = f"Failed with exception: {e}"
+                result_item["status"] = "FAILED_UPDATE"
+                result_item["message"] = f"Failed with exception: {e}"
+                failed_count += 1
 
-        if success_count == len(update_golden_id_set):
-            self.send_json(result)
-        elif success_count == 0:
-            self.send_json(result, 400)
-        else:
-            self.send_json(result, 207)
+            results.append(result_item)
+
+        return results, passed_count, failed_count
 
     def send_json(self, data, status_code=200):
         # Replace this with code that generates your JSON data
-        data_encoded = json.dumps(data).encode("utf-8")
+        response = {"success": True, "data": data}
+        data_encoded = json.dumps(response).encode("utf-8")
         self.send_response(status_code)
         self.send_header("Content-type", "application/json")
         self.add_standard_headers()
