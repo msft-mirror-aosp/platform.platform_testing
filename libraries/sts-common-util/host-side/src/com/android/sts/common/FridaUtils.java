@@ -371,18 +371,18 @@ public class FridaUtils extends BaseTargetPreparer implements AutoCloseable {
         ByteArrayOutputStream output =
                 runFrida(List.of("--version", "2>/dev/null" /* discard stderr */));
         poll(() -> output.size() > 0);
-        String version = output.toString(StandardCharsets.UTF_8).trim();
-        CLog.d("Output of frida version query command is: %s", version);
+        final String rawOutput = output.toString(StandardCharsets.UTF_8).trim();
+        CLog.d("Output of frida version query command is: %s", rawOutput);
 
-        // Throw if unable to parse the version
-        try {
-            parseVersion(version);
-        } catch (Exception e) {
+        // Extract the version string while discarding any SELinux warnings.
+        final Matcher versionMatcher = Pattern.compile("(\\d+\\.\\d+\\.\\d+)").matcher(rawOutput);
+        if (!versionMatcher.find()) {
             throw new TargetSetupError(
                     "Unable to get the Frida version. Please run the Frida binary with '--version'"
                         + " on the device and check for any SELinux policy errors. To disable"
                         + " SELinux, use the command: 'adb shell setenforce 0'.");
         }
+        final String version = versionMatcher.group(1);
 
         // Get version threshold
         Optional<String> minVersionFromBl = FridaUtilsBusinessLogicHandler.getFridaVersion();
