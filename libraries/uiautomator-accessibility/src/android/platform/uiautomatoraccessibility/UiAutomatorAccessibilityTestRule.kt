@@ -77,7 +77,10 @@ constructor(
      * your own validator with the various options set.
      */
     val validator: AccessibilityNodeInfoValidator =
-        AccessibilityNodeInfoValidator(InstrumentationRegistry.getInstrumentation().targetContext),
+        AccessibilityNodeInfoValidator(InstrumentationRegistry.getInstrumentation().targetContext)
+            .setScreenshotCapturer {
+                UiDevice.getInstance(InstrumentationRegistry.getInstrumentation()).takeScreenshot()
+            },
 ) : ExternalResource() {
 
     private val uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
