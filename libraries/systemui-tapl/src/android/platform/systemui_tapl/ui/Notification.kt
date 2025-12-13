@@ -525,9 +525,12 @@ internal constructor(
     private fun swipeRightOnNotification() {
         val bounds = notification.visibleBounds
         val centerY = (bounds.top + bounds.bottom) / 2f
+        val leftBoundary = bounds.left.toFloat()
+        val rightBoundary = bounds.right.toFloat()
+        // swipe from slightly to the right to avoid flakiness
         BetterSwipe.swipe(
-            PointF(bounds.left.toFloat(), centerY),
-            PointF(bounds.right.toFloat(), centerY),
+            PointF(leftBoundary + 10, centerY),
+            PointF(rightBoundary, centerY),
         )
     }
 
