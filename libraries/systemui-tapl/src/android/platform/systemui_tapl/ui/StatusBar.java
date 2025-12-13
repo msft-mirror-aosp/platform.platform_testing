@@ -43,6 +43,7 @@ import androidx.test.uiautomator.SearchCondition;
 import androidx.test.uiautomator.UiObject2;
 import androidx.test.uiautomator.Until;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -342,22 +343,19 @@ public class StatusBar {
     /** Returns the value of the battery level on StatusBar. Experimental. */
     public String getBatteryLevel() {
         UiObject2 batteryPercentage =
-                DeviceHelpers.INSTANCE.waitForObj(
-                        /* UiDevice= */ getUiDevice(),
-                        /* selector= */ statusBarSelector(BATTERY_LEVEL_TEXT_ID),
-                        /* timeout= */ LONG_WAIT,
-                        /* errorProvider= */ () -> "Battery percentage not found.");
+                waitForStatusBarChildView(BATTERY_LEVEL_TEXT_ID, "Battery percentage not found.",
+                        LONG_WAIT);
         return batteryPercentage.getText();
     }
 
+    public UiObject2 getNotificationIconContainer() {
+        return waitForStatusBarChildView(NOTIFICATION_ICON_CONTAINER_ID,
+                "The notification icon is not found on the status bar.");
+    }
+
     public UiObject2 getStatusIconContainer() {
-        return DeviceHelpers.INSTANCE
-                .waitForObj(
-                        /* UiDevice= */ getUiDevice(),
-                        /* selector= */ statusBarSelector(STATUS_ICON_CONTAINER_ID),
-                        /* timeout= */ SHORT_WAIT,
-                        /* errorProvider= */ () ->
-                                "The status icon container is not found on the status bar.");
+        return waitForStatusBarChildView(STATUS_ICON_CONTAINER_ID,
+                "The status icon is not found on the status bar.");
     }
 
     /** Assert that WiFi icon is visible. Experimental. */
@@ -463,5 +461,19 @@ public class StatusBar {
         ensureThat(
                 "Visible StatusBar icon count should be " + expected,
                 () -> getNotificationIconCount() == expected);
+    }
+
+    private UiObject2 waitForStatusBarChildView(String viewId, String errorMessage) {
+        return waitForStatusBarChildView(viewId, errorMessage, SHORT_WAIT);
+    }
+
+    private UiObject2 waitForStatusBarChildView(String viewId, String errorMessage,
+            Duration waitDuration) {
+        return DeviceHelpers.INSTANCE
+                .waitForObj(
+                        /* UiDevice= */ getUiDevice(),
+                        /* selector= */ statusBarSelector(viewId),
+                        /* timeout= */ waitDuration,
+                        /* errorProvider= */ () -> errorMessage);
     }
 }
