@@ -35,7 +35,7 @@ import java.util.List;
 /** DialHelperImpl class for Android Auto platform functional tests */
 public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDialHelper {
     private static final String LOG_TAG = DialHelperImpl.class.getSimpleName();
-
+    private static final int WAIT_TIME_MS = 20000;
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
 
@@ -870,7 +870,7 @@ public class DialHelperImpl extends AbstractStandardAppHelper implements IAutoDi
     public boolean isBluetoothHfpErrorDisplayed() {
         BySelector bluetoothHfpErrorSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.DIALER_VIEW);
-        return getSpectatioUiUtil().hasUiElement(bluetoothHfpErrorSelector);
+        return getSpectatioUiUtil().hasUiElement(bluetoothHfpErrorSelector, WAIT_TIME_MS);
     }
 
     /** This method is used to get list of visible contacts */
