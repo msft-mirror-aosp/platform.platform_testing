@@ -1,0 +1,11 @@
+# SDV EngProd Team owns the SDV testing libraries
+#
+# Bug component: 1622745
+
+# Experts reviewers for SDV libraries:
+crisguerrero@google.com
+mariiasvit@google.com
+
+# Emergency reviewers (for urgent cases only):
+madlmayr@google.com #{LAST_RESORT_SUGGESTION}
+amanajas@google.com #{LAST_RESORT_SUGGESTION}

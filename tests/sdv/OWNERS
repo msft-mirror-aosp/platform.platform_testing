@@ -1,0 +1,14 @@
+# Engineering team owns their tests. Refer to each type of test for granular
+# team ownership and reviewers suggestions from the EngProd team in case
+# guidance is needed.
+
+# SDV UTL. Add as a reviewer only in case of emergency.
+vill@google.com  #{LAST_RESORT_SUGGESTION}
+
+# Experts reviewers for the repository:
+crisguerrero@google.com #{LAST_RESORT_SUGGESTION}
+mariiasvit@google.com #{LAST_RESORT_SUGGESTION}
+
+# Emergency reviewers (for urgent cases only):
+madlmayr@google.com #{LAST_RESORT_SUGGESTION}
+amanajas@google.com #{LAST_RESORT_SUGGESTION}
