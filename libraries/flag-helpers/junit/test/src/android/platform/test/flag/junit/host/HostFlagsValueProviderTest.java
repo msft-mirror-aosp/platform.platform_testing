@@ -87,7 +87,7 @@ public class HostFlagsValueProviderTest {
         when(mTestDevice.pullFile("/system/etc/aconfig_flags.pb")).thenReturn(aconfigFlagsPbFile);
         when(mTestDevice.pullFile("/product/etc/aconfig_flags.pb"))
                 .thenReturn(aconfigFlagsEmptyPbFile);
-        mHostFlagsValueProvider = new HostFlagsValueProvider(() -> mTestDevice);
+        mHostFlagsValueProvider = new HostFlagsValueProvider(() -> mTestDevice, null);
         mHostFlagsValueProvider.setUp();
         // Always refresh class-level cache before test
         HostFlagsValueProvider.refreshFlagsCache("123456");
@@ -95,7 +95,7 @@ public class HostFlagsValueProviderTest {
 
     @Test
     public void getBoolean_flagNotExist_returnFalse() throws Exception {
-        assertFalse(mHostFlagsValueProvider.getBoolean("flag_not_exist"));
+        assertFalse(mHostFlagsValueProvider.getBoolean("namespace/flag_not_exist"));
     }
 
     @Test
