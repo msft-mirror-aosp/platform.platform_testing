@@ -58,7 +58,12 @@ public abstract class PerfettoTracingStrategy {
     // for cleanup during instrumentation crash instances.
     private static final String PERFETTO_PERSIST_PID_TRACK = "perfetto_persist_pid_track";
     private static final String DEFAULT_PERFETTO_PID_TRACK_ROOT = "sdcard/";
-    private static final String DEFAULT_PERFETTO_CONFIG_ROOT_DIR = "/data/misc/perfetto-traces/";
+    /**
+     * Default Perfetto configuration directory. According to the official documentation: If this
+     * is a permission denied error, try placing the config in /data/misc/perfetto-configs:
+     * Perfetto should always be able to access this directory.
+     */
+    private static final String DEFAULT_PERFETTO_CONFIG_ROOT_DIR = "/data/misc/perfetto-configs/";
     // Collect per run if it is set to true otherwise collect per test.
     // Default perfetto config file name.
     private static final String DEFAULT_CONFIG_FILE = "trace_config.pb";
