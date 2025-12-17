@@ -233,6 +233,21 @@ constructor(
                 .add(ConditionsFactory.isLayerVisible(componentMatcher))
 
         /**
+         * Waits for an app matching [componentMatcher] to be visible, not in full screen, and for
+         * nothing to be animating
+         *
+         * @param componentMatcher Components to search
+         * @param displayId of the target display
+         */
+        @JvmOverloads
+        fun withFullScreenAppGone(
+            componentMatcher: IComponentMatcher,
+            displayId: Int = Display.DEFAULT_DISPLAY,
+        ) =
+            withAppTransitionIdle(displayId)
+                .add(ConditionsFactory.isInFullscreenMode(componentMatcher).negate())
+
+        /**
          * Waits for an app matching [componentMatcher] to be visible, in freeform, and for nothing
          * to be animating
          *

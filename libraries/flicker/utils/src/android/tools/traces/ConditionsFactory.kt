@@ -394,6 +394,10 @@ object ConditionsFactory {
     fun hasBubbleWindow(): Condition<DeviceStateDump> =
         Condition("hasBubbleWindow") { it.wmState.containsWindow(BUBBLE) }
 
+    /** Checks whether the given component is in fullscreen mode. */
+    fun isInFullscreenMode(componentMatcher: IComponentMatcher): Condition<DeviceStateDump> =
+        Condition("isInFullscreenMode") { it.wmState.isInFullscreenMode(componentMatcher) }
+
     fun isImeShown(displayId: Int): Condition<DeviceStateDump> =
         ConditionList(
             listOf(
