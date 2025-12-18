@@ -49,7 +49,12 @@ import org.junit.rules.ExternalResource
  *   @Rule val a11yRule = UiAutomatorAccessibilityTestRule().configureValidator {
  *      // TODO: fix touch target sizes, then remove this suppression
  *      it.suppressingResultMatcher =
- *          AccessibilityCheckResultUtils.matchesCheck(TouchTargetSizeCheck.class)
+ *          allOf(
+ *              AccessibilityCheckResultUtils.matchesCheck(TouchTargetSizeCheck:class.java),
+ *              AccessibilityCheckResultUtils.matchesElements(
+ *                  ElementMatchers.withResourceName(endsWith("some_view_id"))
+ *              )
+ *          );
  *   }
  * }
  * ```

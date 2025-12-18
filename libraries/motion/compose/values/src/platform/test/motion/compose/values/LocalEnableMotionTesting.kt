@@ -22,6 +22,10 @@ import androidx.compose.runtime.staticCompositionLocalOf
 
 internal val LocalEnableMotionTestValueCollection = staticCompositionLocalOf { false }
 
+/** Whether we are composed inside a go/motion-test. */
+val isRunningMotionTest: Boolean
+    @Composable get() = LocalEnableMotionTestValueCollection.current
+
 /** Enables capturing of test data provided to [motionTestValues]. */
 @Composable
 fun EnableMotionTestValueCollection(content: @Composable () -> Unit) {
