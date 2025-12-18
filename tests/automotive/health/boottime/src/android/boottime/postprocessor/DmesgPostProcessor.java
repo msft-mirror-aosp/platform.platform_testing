@@ -65,6 +65,13 @@ public class DmesgPostProcessor extends BaseBootTimeTestLogPostProcessor {
     @Option(name = "bootloader-info", description = "Collect the boot loader timing.")
     private boolean mBootloaderInfo = false;
 
+    @Option(
+            name = "only-first-appeared-metric",
+            description =
+                    "Conllect only the first message when the messages appears multiple times at"
+                        + " each iteration.")
+    private boolean mOnlyFirstAppearedMetric = true;
+
     /** {@inheritDoc} */
     @Override
     public Map<String, Metric.Builder> processTestMetricsAndLogs(
@@ -157,6 +164,9 @@ public class DmesgPostProcessor extends BaseBootTimeTestLogPostProcessor {
                 key = String.format("%s%s%s", INIT, infoItem.getServiceName(), END_TIME);
             }
             if (key != null) {
+                if (mOnlyFirstAppearedMetric && metrics.containsKey(key)) {
+                    continue;
+                }
                 Double value = infoItem.getStartTime().doubleValue();
                 metrics.put(key, value);
             }
