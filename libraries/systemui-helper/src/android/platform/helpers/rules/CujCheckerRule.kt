@@ -44,7 +44,7 @@ import org.junit.runners.model.Statement
  *
  * Example usage:
  * ```
- * @ExpectedCUJs({Cuj.CUJ_NOTIFICATION_ADD, Cuj.CUJ_NOTIFICATION_REMOVE})
+ * @AssertCUJs({Cuj.CUJ_NOTIFICATION_ADD, Cuj.CUJ_NOTIFICATION_REMOVE})
  * @Test
  * fun bigPictureStyleNotificationTest() {
  *     // ... Test code ...
@@ -56,14 +56,14 @@ import org.junit.runners.model.Statement
  */
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
-annotation class ExpectedCUJs(val value: IntArray)
+annotation class AssertCUJs(val value: IntArray)
 
 /**
  * Annotation used to pass the expected CUJ names(optionally with tags) to CujCheckerRule.
  *
  * Example usage:
  * ```
- * @ExpectedCUJsByName({"LOCKSCREEN_TRANSITION_FROM_AOD::DEFAULT", "CUJ_NOTIFICATION_REMOVE"})
+ * @AssertCUJsByName({"LOCKSCREEN_TRANSITION_FROM_AOD::DEFAULT", "CUJ_NOTIFICATION_REMOVE"})
  * @Test
  * fun bigPictureStyleNotificationTest() {
  *     // ... Test code ...
@@ -74,13 +74,13 @@ annotation class ExpectedCUJs(val value: IntArray)
  */
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
-annotation class ExpectedCUJsByName(val value: Array<String>)
+annotation class AssertCUJsByName(val value: Array<String>)
 
 /**
  * A JUnit rule for verifying the presence of expected CUJs in a Perfetto trace.
  *
  * This rule uses the [PerfettoTraceRule] to capture a Perfetto trace during test execution and then
- * checks if the expected CUJs, as specified by the [@ExpectedCUJs] annotation, are present in the
+ * checks if the expected CUJs, as specified by the [@AssertCUJs] annotation, are present in the
  * trace.
  *
  * The rule can be enabled or disabled via the `enabledFromRuleConstructor` constructor parameter or
@@ -112,13 +112,13 @@ class CujCheckerRule(private val enabledFromRuleConstructor: Boolean = false) : 
         if (!isEnabled()) return base
 
         expectedCujsFromIds.addAll(
-            collectAnnotationValues(description, ExpectedCUJs::class.java) { annotation ->
+            collectAnnotationValues(description, AssertCUJs::class.java) { annotation ->
                 annotation.value.asIterable().map { Cuj.getNameOfCuj(it) }
             }
         )
 
         expectedCujsFromNames.addAll(
-            collectAnnotationValues(description, ExpectedCUJsByName::class.java) { annotation ->
+            collectAnnotationValues(description, AssertCUJsByName::class.java) { annotation ->
                 annotation.value.toList()
             }
         )
