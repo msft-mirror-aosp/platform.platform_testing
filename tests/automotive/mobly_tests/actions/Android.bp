@@ -80,6 +80,33 @@ python_test_host {
 }
 
 python_test_host {
+    name: "MediaKeys",
+    main: "media.py",
+    srcs: [
+        "media.py",
+    ],
+    libs: [
+        "actions_golden_images_lib",
+        "file_utils_library",
+        "image_comparison_library",
+        "screenshot_util_library",
+        "spectatio_host_tf_lib",
+    ],
+    test_suites: [
+        "catbox",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "spectatio_host_tf_defaults",
+    ],
+    device_common_data: [
+        ":AutomotiveSnippet",
+    ],
+}
+
+python_test_host {
     name: "ActionsSensors",
     main: "sensors.py",
     srcs: [

@@ -17,7 +17,6 @@
 package android.platform.helpers;
 
 import android.app.Instrumentation;
-
 import androidx.test.uiautomator.UiObject2;
 
 import com.google.common.collect.ImmutableMap;
