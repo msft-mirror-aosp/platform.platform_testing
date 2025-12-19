@@ -4,6 +4,9 @@
       "name": "TestHwcComposition"
     },
     {
+      "name": "TestHwcToggleDisplayPower"
+    },
+    {
       "name": "VkmsTestHwcHotplugs"
     },
     {
@@ -13,6 +16,9 @@
   "DtsDisplayPerformance": [
     {
       "name": "TestHwcComposition"
+    },
+    {
+      "name": "TestHwcToggleDisplayPower"
     }
   ]
 }
