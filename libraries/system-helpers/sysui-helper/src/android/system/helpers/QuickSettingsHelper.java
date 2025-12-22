@@ -18,7 +18,7 @@ package android.system.helpers;
 
 import static android.content.Context.CONTEXT_IGNORE_SECURITY;
 
-import static com.android.systemui.Flags.qsSplitInternetTile;
+import static com.android.systemui.Flags.qsSplitInternetTileRw;
 
 import android.app.Instrumentation;
 import android.content.Context;
@@ -89,9 +89,9 @@ public class QuickSettingsHelper {
         // Migration from internet to wifi tile and viceversa
         for (int i = 0; i < splitList.length; i++) {
             String tile = splitList[i];
-            if ("internet".equals(tile) && qsSplitInternetTile()) {
+            if ("internet".equals(tile) && qsSplitInternetTileRw()) {
                 splitList[i] = "wifi";
-            } else if ("wifi".equals(tile) && !qsSplitInternetTile()) {
+            } else if ("wifi".equals(tile) && !qsSplitInternetTileRw()) {
                 splitList[i] = "internet";
             }
         }
