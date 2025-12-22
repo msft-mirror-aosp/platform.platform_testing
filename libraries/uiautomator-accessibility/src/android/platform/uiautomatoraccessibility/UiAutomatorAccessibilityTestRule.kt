@@ -25,7 +25,10 @@ import androidx.test.uiautomator.UiAccessibilityValidator
 import androidx.test.uiautomator.UiDevice
 import com.google.android.apps.common.testing.accessibility.framework.integrations.common.AccessibilityNodeInfoValidator
 import java.util.function.Consumer
+import java.util.function.Predicate
 import org.junit.rules.ExternalResource
+import org.junit.runner.Description
+import org.junit.runners.model.Statement
 
 /**
  * Enables accessibility checks for UiAutomator tests using Accessibility Test Framework. The checks
@@ -89,8 +92,27 @@ constructor(
             .setRunChecksFromRootView(true),
 ) : ExternalResource() {
 
+    private var _isCheckingEnabled: Boolean = true
+    private val beforeListeners: MutableList<Consumer<Description>> = mutableListOf()
+
+    /**
+     * If true, all accessibility checks will be disabled, even ones run manually via [runChecks].
+     * Use this to disable checks for certain tests where accessibility checking is problematic such
+     * as during benchmark tests.
+     *
+     * Do not use this method to disable tests that have real failing checks. Use
+     * [AccessibilityNodeInfoValidator#suppressingResultMatcher] instead.
+     *
+     * This can be set at any time during a test and is thread-safe.
+     */
+    var isCheckingEnabled: Boolean
+        get() = synchronized(this) { _isCheckingEnabled }
+        set(value) = synchronized(this) { _isCheckingEnabled = value }
+
     private val uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
     private val validatorCheck: UiAccessibilityValidator = UiAccessibilityValidator { node ->
+        if (!isCheckingEnabled) return@UiAccessibilityValidator
+
         validator.check(node)
     }
 
@@ -99,10 +121,19 @@ constructor(
     ) // Initialization will finish before runActivityChecks is called.
     private val activityLifecycleCallback: ActivityLifecycleCallback =
         ActivityLifecycleCallback { activity, stage ->
+            if (!isCheckingEnabled) return@ActivityLifecycleCallback
+
             if (stage == Stage.PAUSED) {
                 runChecks()
             }
         }
+
+    override fun apply(base: Statement, description: Description): Statement {
+        for (listener in beforeListeners) {
+            listener.accept(description)
+        }
+        return super.apply(base, description)
+    }
 
     override fun before() {
         super.before()
@@ -117,7 +148,7 @@ constructor(
 
     override fun after() {
         try {
-            if (runA11yCheckAfterTest) {
+            if (runA11yCheckAfterTest && isCheckingEnabled) {
                 runChecks()
             }
         } finally {
@@ -138,6 +169,8 @@ constructor(
      * @throws IllegalStateException if there is no root window.
      */
     fun runChecks() {
+        if (!isCheckingEnabled) return
+
         return runChecks(
             uiDevice.windowRoots.firstOrNull()
                 ?: throw IllegalStateException("No root window found")
@@ -151,6 +184,8 @@ constructor(
      * @param node The point at which to start checks.
      */
     fun runChecks(node: AccessibilityNodeInfo) {
+        if (!isCheckingEnabled) return
+
         validator.check(node)
     }
 
@@ -166,6 +201,78 @@ constructor(
         onConfigure: Consumer<AccessibilityNodeInfoValidator>
     ): UiAutomatorAccessibilityTestRule {
         onConfigure.accept(validator)
+        return this
+    }
+
+    /**
+     * Disables all checks based on some predicate on the test description, like the test class name
+     * or test method name.
+     *
+     * This is a way to configure the rule per-test or per-test-class if needed, for instance to
+     * disable checks for a performance test.
+     *
+     * For example:
+     * ```kotlin
+     * @RunWith(AndroidJUnit4::class)
+     * class ExampleTest {
+     *   @Rule
+     *   val a11yRule = UiAutomatorAccessibilityTestRule().disableChecksIf {
+     *     it.methodName?.contains("performance")
+     *   }
+     *   ...
+     * }
+     * ```
+     *
+     * Note: if disableChecksIf() is called multiple times (e.g. by chaining calls or by
+     * subclasses), the checks will be disabled if *any* of the predicates return true.
+     *
+     * @param predicate The predicate to test against the test [Description]. If true, all checks
+     *   will be disabled. This might be run at arbitrary times, so it must be idempotent.
+     * @see isCheckingEnabled
+     */
+    fun disableChecksIf(predicate: Predicate<Description>): UiAutomatorAccessibilityTestRule {
+        return addOnBeforeListener { description ->
+            // Chaining calls gives precedent to any listeners that have already disabled it.
+            if (!isCheckingEnabled) return@addOnBeforeListener
+            isCheckingEnabled = !predicate.test(description)
+        }
+    }
+
+    /**
+     * Adds a listener to be called before each test begins.
+     *
+     * This is a way to configure the rule per-test or per-test class if needed, for instance to
+     * disable checks for a specific test, like a performance test.
+     *
+     * For example:
+     * ```kotlin
+     * @RunWith(AndroidJUnit4::class)
+     * class ExampleTest {
+     *   @Rule
+     *   val a11yRule = UiAutomatorAccessibilityTestRule().addOnBeforeListener { description ->
+     *     // Disable screenshots on performance tests
+     *     if (description.methodName?.contains("performance")) {
+     *       a11yRule.validator.screenshotCapturer = null
+     *     }
+     *   }
+     *   ...
+     * }
+     * ```
+     *
+     * @param listener The listener to be called during [before()].
+     */
+    private fun addOnBeforeListener(
+        listener: Consumer<Description>
+    ): UiAutomatorAccessibilityTestRule {
+        beforeListeners.add(listener)
+        return this
+    }
+
+    /** Removes a listener added with [addOnBeforeListener] */
+    private fun removeOnBeforeListener(
+        listener: Consumer<Description>
+    ): UiAutomatorAccessibilityTestRule {
+        beforeListeners.remove(listener)
         return this
     }
 }
