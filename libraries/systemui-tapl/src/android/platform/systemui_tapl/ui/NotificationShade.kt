@@ -354,7 +354,7 @@ class NotificationShade internal constructor(val displayId: Int = DEFAULT_DISPLA
 
     companion object {
         private const val WAIT_TIME = 10_000L
-        private const val UI_EMPTY_SHADE_VIEW_ID = "no_notifications"
+        private const val UI_EMPTY_SHADE_VIEW_ID = "empty_shade_view"
         private const val UI_SETTINGS_BUTTON_ID = "settings_button"
         private const val UI_QS_CONTAINER_ID = "quick_settings_container"
         private const val UI_RESPONSE_TIMEOUT_MSECS: Long = 3000
