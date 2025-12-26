@@ -34,7 +34,7 @@ class GoldenWatcherFactory:
 
             case GoldenWatcherTypes.PRESUBMIT:
                 return PresubmitGoldenWatcher(
-                    tmpdir, f"{tmpdir}/artifacts_download_dir"
+                    tmpdir, os.path.join(tmpdir,"artifacts_download_dir")
                 )
 
             case GoldenWatcherTypes.ROBOLECTRIC:

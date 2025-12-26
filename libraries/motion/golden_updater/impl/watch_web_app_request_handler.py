@@ -286,7 +286,10 @@ class WatchWebAppRequestHandler(http.server.BaseHTTPRequestHandler):
             golden_watcher = (
                 GoldenWatcherFactory.create_watcher(
                     GoldenWatcherTypes.PRESUBMIT,
-                    WatchWebAppRequestHandler.temp_dir
+                    os.path.join(
+                        WatchWebAppRequestHandler.temp_dir,
+                        GoldenWatcherTypes.PRESUBMIT.value
+                    )
                 )
             )
             presubmit_fetch_client = (
