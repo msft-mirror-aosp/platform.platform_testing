@@ -41,26 +41,26 @@ def main():
               "'none' and 'serial' are deprecated!! Please DO NOT USE!")
         print(f"{Colors.YELLOW}Instead select test mode from UI.{Colors.RESET}")
 
-    with tempfile.TemporaryDirectory() as tmpdir:
-        this_server_address = f"http://localhost:{args.port}"
+    this_server_address = f"http://localhost:{args.port}"
+    tmpdir = os.path.join(os.path.expanduser("~/.cache"),"motion_tool_watcher")
+    secret_token = TokenGenerator.get_token()
 
-        secret_token = TokenGenerator.get_token()
-        WatchWebAppRequestHandler.secret_token = secret_token
-        WatchWebAppRequestHandler.android_build_top = android_build_top
-        WatchWebAppRequestHandler.temp_dir = tmpdir
-        WatchWebAppRequestHandler.this_server_address = this_server_address
+    WatchWebAppRequestHandler.secret_token = secret_token
+    WatchWebAppRequestHandler.android_build_top = android_build_top
+    WatchWebAppRequestHandler.temp_dir = tmpdir
+    WatchWebAppRequestHandler.this_server_address = this_server_address
 
-        with socketserver.TCPServer(
-            ("localhost", args.port), WatchWebAppRequestHandler
-        ) as httpd:
-            uiAddress = f"{args.client_url}?token={secret_token}&port={args.port}"
-            print(f"Open UI at {uiAddress}")
-            webbrowser.open(uiAddress)
-            try:
-                httpd.serve_forever()
-            except KeyboardInterrupt:
-                httpd.shutdown()
-                print("Shutting down")
+    with socketserver.TCPServer(
+        ("localhost", args.port), WatchWebAppRequestHandler
+    ) as httpd:
+        uiAddress = f"{args.client_url}?token={secret_token}&port={args.port}"
+        print(f"Open UI at {uiAddress}")
+        webbrowser.open(uiAddress)
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            httpd.shutdown()
+            print("Shutting down")
 
 
 
