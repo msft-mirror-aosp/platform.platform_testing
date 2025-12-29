@@ -17,6 +17,8 @@ package android.platform.test.microbenchmark;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.junit.Assume.assumeFalse;
+
 import android.platform.test.microbenchmark.Microbenchmark.NoMetricAfter;
 import android.platform.test.microbenchmark.Microbenchmark.NoMetricBefore;
 import android.platform.test.rule.TestWatcher;
@@ -77,6 +79,126 @@ public final class FunctionalTest {
                         "@NoMetricRule finished")
                 .inOrder();
     }
+
+    @Test
+    public void assumptionFailed_inNoMetricBefore_reportsAssumptionFailure_andRunsAfters()
+            throws InitializationError {
+        Functional runner = new Functional(AssumptionFailedNoMetricBeforeTest.class);
+
+        Result result = new JUnitCore().run(runner);
+
+        assertThat(result.wasSuccessful()).isTrue();
+        assertThat(result.getAssumptionFailureCount()).isEqualTo(1);
+        assertThat(sLogs)
+                .containsExactly(
+                        "@NoMetricRule starting",
+                        "@Rule starting",
+                        "@NoMetricBefore",
+                        // No @Before because failed assumption is in a @NoMetricBefore block,
+                        // which happens before @Before
+                        "AssumptionFailedTest#noMetricBefore",
+                        "@After",
+                        "@NoMetricAfter",
+                        "@Rule finished",
+                        "@NoMetricRule finished")
+                .inOrder();
+    }
+
+    @Test
+    public void assumptionFailed_inBefore_reportsAssumptionFailure_andRunsAfters()
+            throws InitializationError {
+        Functional runner = new Functional(AssumptionFailedBeforeTest.class);
+
+        Result result = new JUnitCore().run(runner);
+
+        assertThat(result.wasSuccessful()).isTrue();
+        assertThat(result.getAssumptionFailureCount()).isEqualTo(1);
+        assertThat(sLogs)
+                .containsExactly(
+                        "@NoMetricRule starting",
+                        "@Rule starting",
+                        "@NoMetricBefore",
+                        "@Before",
+                        "AssumptionFailedTest#before",
+                        "@After",
+                        "@NoMetricAfter",
+                        "@Rule finished",
+                        "@NoMetricRule finished")
+                .inOrder();
+    }
+
+    @Test
+    public void assumptionFailed_inTest_reportsAssumptionFailure_andRunsAfters()
+            throws InitializationError {
+        Functional runner = new Functional(AssumptionFailedDuringTest.class);
+
+        Result result = new JUnitCore().run(runner);
+
+        assertThat(result.wasSuccessful()).isTrue();
+        assertThat(result.getAssumptionFailureCount()).isEqualTo(1);
+        assertThat(sLogs)
+                .containsExactly(
+                        "@NoMetricRule starting",
+                        "@Rule starting",
+                        "@NoMetricBefore",
+                        "@Before",
+                        "@Test method body",
+                        "AssumptionFailedTest#test",
+                        "@After",
+                        "@NoMetricAfter",
+                        "@Rule finished",
+                        "@NoMetricRule finished")
+                .inOrder();
+    }
+
+    @Test
+    public void assumptionFailed_inAfter_reportsAssumptionFailure_andRunsAfters()
+            throws InitializationError {
+        Functional runner = new Functional(AssumptionFailedAfterTest.class);
+
+        Result result = new JUnitCore().run(runner);
+
+        assertThat(result.wasSuccessful()).isTrue();
+        assertThat(result.getAssumptionFailureCount()).isEqualTo(1);
+        assertThat(sLogs)
+                .containsExactly(
+                        "@NoMetricRule starting",
+                        "@Rule starting",
+                        "@NoMetricBefore",
+                        "@Before",
+                        "@Test method body",
+                        "AssumptionFailedTest#after",
+                        "@After",
+                        "@NoMetricAfter",
+                        "@Rule finished",
+                        "@NoMetricRule finished")
+                .inOrder();
+    }
+
+    @Test
+    public void assumptionFailed_inNoMetricAfter_reportsAssumptionFailure_andRunsAfters()
+            throws InitializationError {
+        Functional runner = new Functional(AssumptionFailedNoMetricAfterTest.class);
+
+        Result result = new JUnitCore().run(runner);
+
+        assertThat(result.wasSuccessful()).isTrue();
+        assertThat(result.getAssumptionFailureCount()).isEqualTo(1);
+        assertThat(sLogs)
+                .containsExactly(
+                        "@NoMetricRule starting",
+                        "@Rule starting",
+                        "@NoMetricBefore",
+                        "@Before",
+                        "@Test method body",
+                        "@After",
+                        "AssumptionFailedTest#noMetricAfter",
+                        "@NoMetricAfter",
+                        "@Rule finished",
+                        "@NoMetricRule finished")
+                .inOrder();
+    }
+
     @Test
     public void failedTest_reportsFailure() throws InitializationError {
         Functional runner = new Functional(LoggingFailedTest.class);
@@ -237,6 +359,48 @@ public final class FunctionalTest {
         @Test
         public void testMethod() {
             throw new RuntimeException("I failed.");
+        }
+    }
+
+    public static class AssumptionFailedNoMetricBeforeTest extends LoggingTest {
+        @NoMetricBefore
+        public void setUpAssume() {
+            sLogs.add("AssumptionFailedTest#noMetricBefore");
+            assumeFalse(true);
+        }
+    }
+
+    public static class AssumptionFailedBeforeTest extends LoggingTest {
+        @Before
+        public void setUpAssume() {
+            sLogs.add("AssumptionFailedTest#before");
+            assumeFalse(true);
+        }
+    }
+
+    public static class AssumptionFailedDuringTest extends LoggingTest {
+        @Override
+        @Test
+        public void testMethod() {
+            super.testMethod();
+            sLogs.add("AssumptionFailedTest#test");
+            assumeFalse(true);
+        }
+    }
+
+    public static class AssumptionFailedAfterTest extends LoggingTest {
+        @After
+        public void tearDownAssume() {
+            sLogs.add("AssumptionFailedTest#after");
+            assumeFalse(true);
+        }
+    }
+
+    public static class AssumptionFailedNoMetricAfterTest extends LoggingTest {
+        @NoMetricAfter
+        public void tearDownAssume() {
+            sLogs.add("AssumptionFailedTest#noMetricAfter");
+            assumeFalse(true);
         }
     }
 

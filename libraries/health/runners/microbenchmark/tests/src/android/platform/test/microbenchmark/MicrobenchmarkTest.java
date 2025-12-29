@@ -18,6 +18,7 @@ package android.platform.test.microbenchmark;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
@@ -38,6 +39,7 @@ import androidx.test.internal.runner.TestRequestBuilder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -126,6 +128,167 @@ public final class MicrobenchmarkTest {
                         "end",
                         "@TightMethodRule after",
                         "@After",
+                        "@NoMetricAfter",
+                        "@NoMetricRule finished")
+                .inOrder();
+    }
+
+    @Test
+    public void testFailed_reportsFailure_andRunsAfterMethods() throws InitializationError {
+        LoggingMicrobenchmark loggingRunner = new LoggingMicrobenchmark(LoggingFailedTest.class);
+
+        Result result = new JUnitCore().run(loggingRunner);
+
+        assertThat(result.wasSuccessful()).isFalse();
+        assertThat(result.getFailureCount()).isEqualTo(1);
+
+        assertThat(sLogs)
+                .containsExactly(
+                        "@NoMetricRule starting",
+                        "@NoMetricBefore",
+                        "@Before",
+                        "@TightMethodRule before",
+                        "begin: testMethod("
+                                + "android.platform.test.microbenchmark.MicrobenchmarkTest$"
+                                + "LoggingFailedTest)",
+                        "end",
+                        "@After",
+                        "@NoMetricAfter",
+                        "@NoMetricRule finished")
+                .inOrder();
+    }
+
+    @Test
+    @Ignore("b/472473305")
+    // TODO: b/472473305 - Currently, an assumption failure in the @NoMetricBefore annotation will
+    // cause the @After and @NoMetricAfter methods to not run. Re-enable this test when that bug
+    // is fixed.
+    public void testAssumptionFailed_inNoMetricBefore_reportsFailure_andRunsAfterMethods()
+            throws InitializationError {
+        LoggingMicrobenchmark loggingRunner =
+                new LoggingMicrobenchmark(AssumptionFailedNoMetricBeforeTest.class);
+
+        Result result = new JUnitCore().run(loggingRunner);
+        assertThat(result.wasSuccessful()).isTrue();
+        assertThat(result.getAssumptionFailureCount()).isEqualTo(1);
+        assertThat(result.getFailureCount()).isEqualTo(0);
+
+        assertThat(sLogs)
+                .containsExactly(
+                        "@NoMetricRule starting",
+                        "@NoMetricBefore",
+                        "AssumptionFailedTest#noMetricBefore",
+                        "@Before",
+                        "@After",
+                        "@NoMetricAfter",
+                        "@NoMetricRule finished")
+                .inOrder();
+    }
+
+    @Test
+    public void testAssumptionFailed_inBefore_reportsFailure_andRunsAfterMethods()
+            throws InitializationError {
+        LoggingMicrobenchmark loggingRunner =
+                new LoggingMicrobenchmark(AssumptionFailedBeforeTest.class);
+
+        Result result = new JUnitCore().run(loggingRunner);
+
+        assertThat(result.wasSuccessful()).isTrue();
+        assertThat(result.getAssumptionFailureCount()).isEqualTo(1);
+        assertThat(result.getFailureCount()).isEqualTo(0);
+        assertThat(sLogs)
+                .containsExactly(
+                        "@NoMetricRule starting",
+                        "@NoMetricBefore",
+                        "@Before",
+                        "AssumptionFailedTest#before",
+                        "@After",
+                        "@NoMetricAfter",
+                        "@NoMetricRule finished")
+                .inOrder();
+    }
+
+    @Test
+    public void testAssumptionFailed_inTest_reportsFailure_andRunsAfterMethods()
+            throws InitializationError {
+        LoggingMicrobenchmark loggingRunner =
+                new LoggingMicrobenchmark(AssumptionFailedDuringTest.class);
+
+        Result result = new JUnitCore().run(loggingRunner);
+
+        assertThat(result.wasSuccessful()).isTrue();
+        assertThat(result.getAssumptionFailureCount()).isEqualTo(1);
+        assertThat(result.getFailureCount()).isEqualTo(0);
+        assertThat(sLogs)
+                .containsExactly(
+                        "@NoMetricRule starting",
+                        "@NoMetricBefore",
+                        "@Before",
+                        "@TightMethodRule before",
+                        "begin: testMethod(android.platform.test.microbenchmark.MicrobenchmarkTest$"
+                                + "AssumptionFailedDuringTest)",
+                        "AssumptionFailedTest#test",
+                        "end",
+                        // TODO: b/472473305 - Currently, "@TightMethodRule after" does not run.
+                        "@After",
+                        "@NoMetricAfter",
+                        "@NoMetricRule finished")
+                .inOrder();
+    }
+
+    @Test
+    public void testAssumptionFailed_inAfter_reportsFailure_andRunsAfterMethods()
+            throws InitializationError {
+        LoggingMicrobenchmark loggingRunner =
+                new LoggingMicrobenchmark(AssumptionFailedAfterTest.class);
+
+        Result result = new JUnitCore().run(loggingRunner);
+
+        assertThat(result.wasSuccessful()).isTrue();
+        assertThat(result.getAssumptionFailureCount()).isEqualTo(1);
+        assertThat(result.getFailureCount()).isEqualTo(0);
+        assertThat(sLogs)
+                .containsExactly(
+                        "@NoMetricRule starting",
+                        "@NoMetricBefore",
+                        "@Before",
+                        "@TightMethodRule before",
+                        "begin: testMethod(android.platform.test.microbenchmark.MicrobenchmarkTest$"
+                                + "AssumptionFailedAfterTest)",
+                        "@Test method body",
+                        "end",
+                        "@TightMethodRule after",
+                        "AssumptionFailedTest#after",
+                        "@After",
+                        "@NoMetricAfter",
+                        "@NoMetricRule finished")
+                .inOrder();
+    }
+
+    @Test
+    public void testAssumptionFailed_inNoMetricAfter_reportsFailure_andRunsAfterMethods()
+            throws InitializationError {
+        LoggingMicrobenchmark loggingRunner =
+                new LoggingMicrobenchmark(AssumptionFailedNoMetricAfterTest.class);
+
+        Result result = new JUnitCore().run(loggingRunner);
+
+        assertThat(result.wasSuccessful()).isTrue();
+        assertThat(result.getAssumptionFailureCount()).isEqualTo(1);
+        assertThat(result.getFailureCount()).isEqualTo(0);
+        assertThat(sLogs)
+                .containsExactly(
+                        "@NoMetricRule starting",
+                        "@NoMetricBefore",
+                        "@Before",
+                        "@TightMethodRule before",
+                        "begin: testMethod(android.platform.test.microbenchmark.MicrobenchmarkTest$"
+                                + "AssumptionFailedNoMetricAfterTest)",
+                        "@Test method body",
+                        "end",
+                        "@TightMethodRule after",
+                        "@After",
+                        "AssumptionFailedTest#noMetricAfter",
                         "@NoMetricAfter",
                         "@NoMetricRule finished")
                 .inOrder();
@@ -923,6 +1086,47 @@ public final class MicrobenchmarkTest {
         @Test
         public void testMethod() {
             throw new RuntimeException("I failed.");
+        }
+    }
+
+    public static class AssumptionFailedNoMetricBeforeTest extends LoggingTest {
+        @NoMetricBefore
+        public void setUpAssume() {
+            sLogs.add("AssumptionFailedTest#noMetricBefore");
+            assumeFalse(true);
+        }
+    }
+
+    public static class AssumptionFailedBeforeTest extends LoggingTest {
+        @Before
+        public void setUpAssume() {
+            sLogs.add("AssumptionFailedTest#before");
+            assumeFalse(true);
+        }
+    }
+
+    public static class AssumptionFailedDuringTest extends LoggingTest {
+        @Test
+        @Override
+        public void testMethod() {
+            sLogs.add("AssumptionFailedTest#test");
+            assumeFalse(true);
+        }
+    }
+
+    public static class AssumptionFailedAfterTest extends LoggingTest {
+        @After
+        public void tearDownAssume() {
+            sLogs.add("AssumptionFailedTest#after");
+            assumeFalse(true);
+        }
+    }
+
+    public static class AssumptionFailedNoMetricAfterTest extends LoggingTest {
+        @NoMetricAfter
+        public void tearDownAssume() {
+            sLogs.add("AssumptionFailedTest#noMetricAfter");
+            assumeFalse(true);
         }
     }
 
