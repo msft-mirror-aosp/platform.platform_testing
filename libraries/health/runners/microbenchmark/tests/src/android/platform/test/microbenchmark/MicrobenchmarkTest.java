@@ -177,6 +177,7 @@ public final class MicrobenchmarkTest {
         assertThat(sLogs)
                 .containsExactly(
                         "@NoMetricRule starting",
+                        "@NoMetricBefore",
                         "@NoMetricRule finished")
                 .inOrder();
     }
@@ -563,7 +564,17 @@ public final class MicrobenchmarkTest {
         Result result = new JUnitCore().run(loggingRunner);
 
         assertThat(result.wasSuccessful()).isFalse();
-        assertThat(result.getFailureCount()).isEqualTo(2);
+        assertThat(result.getFailureCount()).isEqualTo(3);
+        // Only the first iteration fails at the test creation step.
+        assertThat(result.getFailures().get(0).getMessage()).isEqualTo("I failed.");
+        // But because each iteration still needs to get reported for our tooling, we see 1
+        // additional failure per iteration.
+        assertThat(result.getFailures().get(1).getMessage())
+                .isEqualTo("Terminating early because test creation failed.");
+        assertThat(result.getFailures().get(2).getMessage())
+                .isEqualTo("Terminating early because test creation failed.");
+
+        // Empty logs proves that the test is not executed.
         assertThat(sLogs).isEmpty();
     }
 
@@ -580,6 +591,11 @@ public final class MicrobenchmarkTest {
 
         assertThat(result.wasSuccessful()).isFalse();
         assertThat(result.getFailureCount()).isEqualTo(2);
+        // Each iteration fails at the test creation step.
+        assertThat(result.getFailures().get(0).getMessage()).isEqualTo("I failed.");
+        assertThat(result.getFailures().get(1).getMessage()).isEqualTo("I failed.");
+
+        // Empty logs proves that the test is not executed.
         assertThat(sLogs).isEmpty();
     }
 
