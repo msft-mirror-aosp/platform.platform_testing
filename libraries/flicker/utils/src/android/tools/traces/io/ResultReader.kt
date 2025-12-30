@@ -49,9 +49,6 @@ import java.io.IOException
  * @param result to read from
  */
 open class ResultReader(result: IResultData) : Reader {
-    private var _cujTrace: CujTrace? = null
-    private var cujTraceRead = false
-
     @VisibleForTesting
     var result = result
         internal set
@@ -256,30 +253,19 @@ open class ResultReader(result: IResultData) : Reader {
      */
     @Throws(IOException::class)
     override fun readCujTrace(): CujTrace? {
-        if (cujTraceRead) {
-            return _cujTrace
-        }
         return withTracing("readCujTrace") {
             val traceData = readBytes(ResultArtifactDescriptor(TraceType.PERFETTO))
 
-            val res =
-                traceData?.let {
-                    val res =
-                        TraceProcessorSession.loadPerfettoTrace(traceData) { session ->
-                            val cujTrace =
-                                CujTraceParser()
-                                    .parse(
-                                        session,
-                                        from = transitionTimeRange.start,
-                                        to = transitionTimeRange.end,
-                                    )
-                            cujTrace
-                        }
-                    res
+            traceData?.let {
+                TraceProcessorSession.loadPerfettoTrace(traceData) { session ->
+                    CujTraceParser()
+                        .parse(
+                            session,
+                            from = transitionTimeRange.start,
+                            to = transitionTimeRange.end,
+                        )
                 }
-            _cujTrace = res
-            cujTraceRead = true
-            res
+            }
         }
     }
 
