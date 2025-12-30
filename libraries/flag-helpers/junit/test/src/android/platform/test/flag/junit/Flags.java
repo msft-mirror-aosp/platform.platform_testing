@@ -21,6 +21,8 @@ public class Flags {
 
     public static final String FLAG_FLAG_NAME3 = "android.platform.test.flag.junit.flag_name3";
     public static final String FLAG_FLAG_NAME4 = "android.platform.test.flag.junit.flag_name4";
+    public static final String FLAG_FLAG_NAME5 = "android.platform.test.flag.junit.flag_name5";
+    public static final String FLAG_FLAG_NAME6 = "android.platform.test.flag.junit.flag_name6";
     public static final String FLAG_RO_ENABLED = "android.platform.test.flag.junit.ro_enabled";
     public static final String FLAG_RO_DISABLED = "android.platform.test.flag.junit.ro_disabled";
     public static final String FLAG_FLAG_FINALIZED =
@@ -34,6 +36,16 @@ public class Flags {
     /** Another flag. */
     public static boolean flagName4() {
         return FEATURE_FLAGS.flagName4();
+    }
+
+    /** Yet another flag. */
+    public static boolean flagName5() {
+        return FEATURE_FLAGS.flagName5();
+    }
+
+    /** And one more for good measure. */
+    public static boolean flagName6() {
+        return FEATURE_FLAGS.flagName6();
     }
 
     public static boolean roEnabled() {
