@@ -17,7 +17,8 @@
 package android.platform.helpers;
 
 public interface IAutoHvacHelper extends IAppHelper {
-    void showHideHvac();
+    void showHvac();
+    void hideHvac();
 
     boolean checkAcToggle();
     void clickAcToggle();
@@ -39,4 +40,6 @@ public interface IAutoHvacHelper extends IAppHelper {
     void driverDecreaseTemperature();
     void passengerIncreaseTemperature();
     void passengerDecreaseTemperature();
+
+    void setFanSpeed(int fanSpeed);
 }

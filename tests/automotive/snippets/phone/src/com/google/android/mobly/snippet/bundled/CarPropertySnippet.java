@@ -74,6 +74,21 @@ public class CarPropertySnippet implements Snippet {
         set("HVAC_TEMPERATURE_DISPLAY_UNITS").value(VehicleUnit.FAHRENHEIT).execute(mUiAutomation);
     }
 
+    @Rpc(description = "Set the fan speed of the HVAC")
+    public void setHvacFanSpeed(int fanSpeed) {
+        set("HVAC_FAN_SPEED")
+                .areaId(VehicleAreaSeat.SEAT_ROW_1_LEFT)
+                .value(fanSpeed)
+                .execute(mUiAutomation);
+    }
+
+    @Rpc(description = "Get the fan speed of the HVAC")
+    public int getHvacFanSpeed() {
+        return get("HVAC_FAN_SPEED")
+                .areaId(VehicleAreaSeat.SEAT_ROW_1_LEFT)
+                .intValue(mUiAutomation);
+    }
+
     @Rpc(description = "Set the cabin temperature for the driver side")
     public void setDriverHvacTemperature(String fahrenheit) {
         setHvacTemperature(fahrenheit, DRIVER_SEAT);
@@ -350,8 +365,8 @@ public class CarPropertySnippet implements Snippet {
             mCommand = new ExecutableCommand(command);
         }
 
-        public SetProp areaId(int areaId) {
-            mCommand.append("-a ").append("" + areaId + " ");
+        SetProp areaId(int areaId) {
+            mCommand.append("-a ").append(areaId + " ");
             return this;
         }
 
@@ -385,10 +400,17 @@ public class CarPropertySnippet implements Snippet {
 
     private static class GetProp {
         private final ExecutableCommand mCommand;
+        private int mAreaId = 0;
+
         public GetProp(String name) {
             String command =
                     "dumpsys android.hardware.automotive.vehicle.IVehicle/default --get " + name;
             mCommand = new ExecutableCommand(command);
+        }
+
+        public GetProp areaId(int areaId) {
+            mAreaId = areaId;
+            return this;
         }
 
         public boolean booleanValue(UiAutomation uiAutomation) {
@@ -406,16 +428,24 @@ public class CarPropertySnippet implements Snippet {
         private String execute(UiAutomation uiAutomation, String typeName) {
             String VALUE_OBJECT_HEADER = "RawPropValues{";
             String output = mCommand.executeWithOutput(uiAutomation);
-            int valuesObjectStart = output.indexOf(VALUE_OBJECT_HEADER);
-            int valuesStart = valuesObjectStart + VALUE_OBJECT_HEADER.length();
-            int valuesObjectEnd = output.indexOf("}", valuesStart);
-            String values = output.substring(valuesStart, valuesObjectEnd);
+            for (String line: output.split("\n")) {
+                if (!line.contains("areaId: " + mAreaId + ",")) {
+                    continue;
+                }
+                int valuesObjectStart = line.indexOf(VALUE_OBJECT_HEADER);
+                int valuesStart = valuesObjectStart + VALUE_OBJECT_HEADER.length();
+                int valuesObjectEnd = line.indexOf("}", valuesStart);
+                String values = line.substring(valuesStart, valuesObjectEnd);
 
-            String typeHeader = typeName + "Values: [";
-            int valueListStart = values.indexOf(typeHeader);
-            int valueStart = valueListStart + typeHeader.length();
-            int valueEnd = values.indexOf("]", valueStart);
-            return values.substring(valueStart, valueEnd);
+                String typeHeader = typeName + "Values: [";
+                int valueListStart = values.indexOf(typeHeader);
+                int valueStart = valueListStart + typeHeader.length();
+                int valueEnd = values.indexOf("]", valueStart);
+                return values.substring(valueStart, valueEnd);
+            }
+            throw new RuntimeException(
+                    mCommand + " didn't produce a value at area id " + mAreaId
+            );
         }
     }
 }

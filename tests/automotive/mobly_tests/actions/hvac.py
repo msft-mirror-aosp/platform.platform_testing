@@ -12,8 +12,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-
+from file_utils_library.file_util import find_resource_path
+from image_comparison_library import image_comparison
+from screenshot_util_library.screenshot_util import ScreenshotUtil
 from spectatio_host_tf.core import test_base, test_runner
+
+import time
 
 
 class VhalHvac(test_base.SpectatioHostBaseTestClass):
@@ -21,6 +25,8 @@ class VhalHvac(test_base.SpectatioHostBaseTestClass):
         super().setup_class()
         self.mbs = self.device1.load_bundled_snippets()
         self.device1.adb.root()
+
+        self.register_service_factory('screenshot', ScreenshotUtil)
 
     def setup_test(self):
         pass
@@ -30,7 +36,7 @@ class VhalHvac(test_base.SpectatioHostBaseTestClass):
 
     def test_ac_by_property(self):
         """Set the AC property and check that the HVAC UI reflects the setting."""
-        self.mbs.showHideHvac()
+        self.mbs.showHvac()
         self.mbs.disableHvacAutoMode()
 
         self.mbs.turnOnAc()
@@ -38,11 +44,11 @@ class VhalHvac(test_base.SpectatioHostBaseTestClass):
         self.mbs.turnOffAc()
         self.asserts.assert_false(self.mbs.checkAcToggle(), 'AC shows off')
 
-        self.mbs.showHideHvac()
+        self.mbs.hideHvac()
 
     def test_ac_by_softkey(self):
         """Tap the AC UI element and check that the property reflects the change."""
-        self.mbs.showHideHvac()
+        self.mbs.showHvac()
         self.mbs.disableHvacAutoMode()
         self.mbs.turnOffAc()
 
@@ -51,11 +57,11 @@ class VhalHvac(test_base.SpectatioHostBaseTestClass):
         self.mbs.clickAcToggle()
         self.asserts.assert_false(self.mbs.getAcState(), 'Auto mode property cleared')
 
-        self.mbs.showHideHvac()
+        self.mbs.hideHvac()
 
     def test_recirculation_by_property(self):
         """Set the air recirculation property and check that the HVAC UI reflects the setting."""
-        self.mbs.showHideHvac()
+        self.mbs.showHvac()
         self.mbs.disableHvacAutoMode()
 
         self.mbs.enableAirRecirculation()
@@ -63,11 +69,11 @@ class VhalHvac(test_base.SpectatioHostBaseTestClass):
         self.mbs.disableAirRecirculation()
         self.asserts.assert_false(self.mbs.checkRecirculationToggle(), 'Recirculation unset')
 
-        self.mbs.showHideHvac()
+        self.mbs.hideHvac()
 
     def test_recirculation_by_softkey(self):
         """Tap the air recirculation UI element and check that the property reflects the change."""
-        self.mbs.showHideHvac()
+        self.mbs.showHvac()
         self.mbs.disableHvacAutoMode()
         self.mbs.disableAirRecirculation()
 
@@ -78,7 +84,7 @@ class VhalHvac(test_base.SpectatioHostBaseTestClass):
 
     def test_defrosters_by_property(self):
         """Set the defroster properties and check that the HVAC UI reflects the setting."""
-        self.mbs.showHideHvac()
+        self.mbs.showHvac()
 
         self.mbs.enableFrontDefrost()
         self.asserts.assert_true(self.mbs.checkFrontDefrostToggle(), 'Front defrost set')
@@ -90,10 +96,10 @@ class VhalHvac(test_base.SpectatioHostBaseTestClass):
         self.mbs.disableRearDefrost()
         self.asserts.assert_false(self.mbs.checkRearDefrostToggle(), 'Rear defrost unset')
 
-        self.mbs.showHideHvac()
+        self.mbs.hideHvac()
 
     def test_defrosters_by_softkey(self):
-        self.mbs.showHideHvac()
+        self.mbs.showHvac()
         self.mbs.disableFrontDefrost()
         self.mbs.disableRearDefrost()
 
@@ -107,22 +113,22 @@ class VhalHvac(test_base.SpectatioHostBaseTestClass):
         self.mbs.clickRearDefrostToggle()
         self.asserts.assert_false(self.mbs.getRearDefrost(), 'Rear defrost unset')
 
-        self.mbs.showHideHvac()
+        self.mbs.hideHvac()
 
     def test_auto_mode_by_property(self):
         """Set the auto mode property and check that the HVAC UI reflects the setting."""
-        self.mbs.showHideHvac()
+        self.mbs.showHvac()
 
         self.mbs.enableHvacAutoMode()
         self.asserts.assert_true(self.mbs.checkAutoModeToggle(), 'Auto mode shows on')
         self.mbs.disableHvacAutoMode()
         self.asserts.assert_false(self.mbs.checkAutoModeToggle(), 'Auto mode shows off')
 
-        self.mbs.showHideHvac()
+        self.mbs.hideHvac()
 
     def test_auto_mode_by_softkey(self):
         """Tap the auto mode UI element and check that the property reflects the change."""
-        self.mbs.showHideHvac()
+        self.mbs.showHvac()
         self.mbs.disableHvacAutoMode()
 
         self.mbs.clickAutoModeToggle()
@@ -130,7 +136,7 @@ class VhalHvac(test_base.SpectatioHostBaseTestClass):
         self.mbs.clickAutoModeToggle()
         self.asserts.assert_false(self.mbs.getHvacAutoMode(), 'Auto mode property cleared')
 
-        self.mbs.showHideHvac()
+        self.mbs.hideHvac()
 
     def test_set_driver_temp(self):
         """Set the driver temperature and check the UI for the resulting expected temp."""
@@ -191,7 +197,7 @@ class VhalHvac(test_base.SpectatioHostBaseTestClass):
 
     def test_set_driver_seat_heater(self):
         """Click the seat heater buttons and check the property value."""
-        self.mbs.showHideHvac()
+        self.mbs.showHvac()
 
         initial_seat_temp = self.mbs.getDriverSeatTemperature()
         for i in range(1, 4):
@@ -199,7 +205,78 @@ class VhalHvac(test_base.SpectatioHostBaseTestClass):
             new_seat_temp = self.mbs.getDriverSeatTemperature()
             self.asserts.assert_equal(new_seat_temp, (initial_seat_temp + i) % 3, 'Seat temp fail')
 
-        self.mbs.showHideHvac()
+        self.mbs.hideHvac()
+
+    def test_fan_speeds_by_softkey(self):
+        """Click the fan speed UI and check that the property responds."""
+        self.mbs.showHvac()
+        self.mbs.disableHvacAutoMode()
+
+        for speed in [1,4,6]:
+          self.mbs.clickFanSpeed(speed)
+          new_speed = self.mbs.getHvacFanSpeed()
+          self.asserts.assert_equal(speed, new_speed, 'Fan speed property mismatch')
+
+    def test_fan_speeds_by_property(self):
+        """Set the fan speed by property and check that the UI responds."""
+        self.mbs.showHvac()
+        self.mbs.disableHvacAutoMode()
+
+        FAN_OFF = 1
+        FAN_SPEED_RECT = 297, 208, 783, 262
+
+        self.mbs.setHvacFanSpeed(FAN_OFF)
+        ANIMATION_WAIT_SECONDS = 0.2
+        time.sleep(ANIMATION_WAIT_SECONDS)
+        strategy = ScreenshotUtil.ScreenshotStrategy.DISPLAY_SCREENSHOT_USING_ADB.value
+
+        off_test_path = 'fan_off.png'
+        off_golden_path = find_resource_path(
+            'actions_golden_images',
+            'golden_images/fan_off_golden.png'
+        )
+        self.screenshot.take_screenshot(
+            screenshot_strategy = strategy,
+            device = self.device1,
+            screenshot_path = off_test_path,
+        )
+
+        off_check = image_comparison.CompareImagesUsingPIL(
+            off_test_path,
+            off_golden_path,
+            include_area=FAN_SPEED_RECT
+        )
+        is_similar = off_check.are_images_similar()
+        diff_path = 'fan_off_diff.png'
+        off_check.save_diff_image(diff_path)
+
+        FAN_MAX = 6
+        self.mbs.setHvacFanSpeed(FAN_MAX)
+        time.sleep(ANIMATION_WAIT_SECONDS)
+        max_test_path = 'fan_max.png'
+        max_golden_path = find_resource_path(
+            'actions_golden_images',
+            'golden_images/fan_max_golden.png'
+        )
+        self.screenshot.take_screenshot(
+            screenshot_strategy = strategy,
+            device = self.device1,
+            screenshot_path = max_test_path,
+        )
+
+        max_check = image_comparison.CompareImagesUsingPIL(
+            max_test_path,
+            max_golden_path,
+            include_area=FAN_SPEED_RECT,
+        )
+        max_is_similar = max_check.are_images_similar()
+
+        diff_path = 'fan_max_diff.png'
+        max_check.save_diff_image(diff_path)
+
+        self.mbs.hideHvac()
+        self.asserts.assert_true(is_similar, "Fan speed off matches golden")
+        self.asserts.assert_true(max_is_similar, "Fan speed max matches golden")
 
 if __name__ == '__main__':
     test_runner.run()

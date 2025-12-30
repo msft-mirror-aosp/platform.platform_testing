@@ -574,6 +574,10 @@
       "VALUE": "hvac_temperature_text",
       "PACKAGE": "com.android.systemui"
     },
+    "HVAC_TEMPERATURE_BAR": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "hvac_temperature_bar"
+    },
     "HVAC_AC_TOGGLE": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "ac_button"
@@ -669,6 +673,30 @@
     "PASSENGER_SEAT_TEMPERATURE_BUTTON": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "seat_heat_level_button_right"
+    },
+    "HVAC_FAN_OFF": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "fan_off"
+    },
+    "HVAC_FAN_1": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "fan_speed_1"
+    },
+    "HVAC_FAN_2": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "fan_speed_2"
+    },
+    "HVAC_FAN_3": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "fan_speed_3"
+    },
+    "HVAC_FAN_4": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "fan_speed_4"
+    },
+    "HVAC_FAN_MAX": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "fan_max"
     },
     "PHONE_FACET_BUTTON": {
       "TYPE": "RESOURCE_ID",
