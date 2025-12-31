@@ -134,6 +134,9 @@ public class HostFlagsValueProvider implements IFlagsValueProvider {
                 && mTestResourceFlags != null
                 && mTestResourceFlags.exists()) {
             Aconfig.parsed_flag staticFlag = mTestResourceFlags.getFlag(flag);
+            if (staticFlag == null) {
+                return false;
+            }
             // If the flag is READ_ONLY, read the flag value from the static aconfig.pb
             if (staticFlag.getPermission().equals(Aconfig.flag_permission.READ_ONLY)) {
                 LogUtil.CLog.i(
