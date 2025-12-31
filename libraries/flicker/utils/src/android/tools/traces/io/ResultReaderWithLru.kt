@@ -22,8 +22,12 @@ import android.tools.io.Reader
 import android.tools.io.ResultArtifactDescriptor
 import android.tools.io.TraceType
 import android.tools.io.TransitionTimeRange
+import android.tools.traces.events.CujTrace
 import android.tools.traces.events.EventLog
+import android.tools.traces.protolog.ProtoLogTrace
 import android.tools.traces.surfaceflinger.LayersTrace
+import android.tools.traces.surfaceflinger.TransactionsTrace
+import android.tools.traces.wm.TransitionsTrace
 import android.tools.traces.wm.WindowManagerTrace
 import android.tools.withTracing
 import android.util.Log
@@ -67,6 +71,60 @@ open class ResultReaderWithLru(
     }
 
     /** {@inheritDoc} */
+    @Throws(IOException::class)
+    override fun readWmState(tag: String): WindowManagerTrace? {
+        val descriptor = ResultArtifactDescriptor(TraceType.PERFETTO, tag)
+        val artifact = reader.artifacts.firstOrNull { it.hasTrace(descriptor) } ?: return null
+        val key = CacheKey(artifact.stableId, descriptor, reader.transitionTimeRange)
+        return wmTraceCache.logAndReadTrace(key) { reader.readWmState(tag) }
+    }
+
+    /** {@inheritDoc} */
+    @Throws(IOException::class)
+    override fun readLayersDump(tag: String): LayersTrace? {
+        val descriptor = ResultArtifactDescriptor(TraceType.PERFETTO, tag)
+        val artifact = reader.artifacts.firstOrNull { it.hasTrace(descriptor) } ?: return null
+        val key = CacheKey(artifact.stableId, descriptor, reader.transitionTimeRange)
+        return layersTraceCache.logAndReadTrace(key) { reader.readLayersDump(tag) }
+    }
+
+    /** {@inheritDoc} */
+    @Throws(IOException::class)
+    override fun readTransactionsTrace(): TransactionsTrace? {
+        val descriptor = ResultArtifactDescriptor(TraceType.PERFETTO)
+        val artifact = reader.artifacts.firstOrNull { it.hasTrace(descriptor) } ?: return null
+        val key = CacheKey(artifact.stableId, descriptor, reader.transitionTimeRange)
+        return transactionsTraceCache.logAndReadTrace(key) { reader.readTransactionsTrace() }
+    }
+
+    /** {@inheritDoc} */
+    @Throws(IOException::class)
+    override fun readTransitionsTrace(): TransitionsTrace? {
+        val descriptor = ResultArtifactDescriptor(TraceType.PERFETTO)
+        val artifact = reader.artifacts.firstOrNull { it.hasTrace(descriptor) } ?: return null
+        val key = CacheKey(artifact.stableId, descriptor, reader.transitionTimeRange)
+        return transitionsTraceCache.logAndReadTrace(key) { reader.readTransitionsTrace() }
+    }
+
+    /** {@inheritDoc} */
+    @Throws(IOException::class)
+    override fun readProtoLogTrace(): ProtoLogTrace? {
+        val descriptor = ResultArtifactDescriptor(TraceType.PERFETTO)
+        val artifact = reader.artifacts.firstOrNull { it.hasTrace(descriptor) } ?: return null
+        val key = CacheKey(artifact.stableId, descriptor, reader.transitionTimeRange)
+        return protoLogTraceCache.logAndReadTrace(key) { reader.readProtoLogTrace() }
+    }
+
+    /** {@inheritDoc} */
+    @Throws(IOException::class)
+    override fun readCujTrace(): CujTrace? {
+        val descriptor = ResultArtifactDescriptor(TraceType.PERFETTO)
+        val artifact = reader.artifacts.firstOrNull { it.hasTrace(descriptor) } ?: return null
+        val key = CacheKey(artifact.stableId, descriptor, reader.transitionTimeRange)
+        return cujTraceCache.logAndReadTrace(key) { reader.readCujTrace() }
+    }
+
+    /** {@inheritDoc} */
     override fun slice(startTimestamp: Timestamp, endTimestamp: Timestamp): ResultReaderWithLru {
         val slicedReader = reader.slice(startTimestamp, endTimestamp)
         return ResultReaderWithLru(slicedReader.result, slicedReader)
@@ -104,5 +162,9 @@ open class ResultReaderWithLru(
         private val wmTraceCache = LruCache<CacheKey, WindowManagerTrace>(5)
         private val layersTraceCache = LruCache<CacheKey, LayersTrace>(5)
         private val eventLogCache = LruCache<CacheKey, EventLog>(5)
+        private val transactionsTraceCache = LruCache<CacheKey, TransactionsTrace>(5)
+        private val transitionsTraceCache = LruCache<CacheKey, TransitionsTrace>(5)
+        private val protoLogTraceCache = LruCache<CacheKey, ProtoLogTrace>(5)
+        private val cujTraceCache = LruCache<CacheKey, CujTrace>(5)
     }
 }

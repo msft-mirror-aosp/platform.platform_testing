@@ -19,6 +19,8 @@ package android.platform.test.flag.junit;
 import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
+import static java.util.Objects.requireNonNull;
+
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsDisabled;
@@ -32,8 +34,10 @@ import org.junit.runner.Description;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
+import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.HashMap;
@@ -43,9 +47,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Retrieves feature flag related annotations from a given {@code Description}.
@@ -204,7 +210,6 @@ public class AnnotationsRetriever {
     @Nonnull
     private static <T extends Annotation> Set<String> getFlagsForAnnotation(
             FlagsAnnotation<T> flagsAnnotation, Collection<Annotation> annotations) {
-        Class<T> annotationType = flagsAnnotation.mAnnotationType;
         Set<String> results = new HashSet<>();
         Queue<Annotation> annotationQueue = new ArrayDeque<>();
         Set<Class<? extends Annotation>> visitedAnnotations = new HashSet<>();
@@ -212,8 +217,8 @@ public class AnnotationsRetriever {
         while (!annotationQueue.isEmpty()) {
             Annotation annotation = annotationQueue.poll();
             Class<? extends Annotation> currentAnnotationType = annotation.annotationType();
-            if (currentAnnotationType.equals(annotationType)) {
-                results.addAll(flagsAnnotation.getFlagsSet((T) annotation));
+            if (flagsAnnotation.isRelevant(currentAnnotationType)) {
+                results.addAll(flagsAnnotation.getFlagsSet(annotation));
             } else if (!KNOWN_UNRELATED_ANNOTATIONS.contains(currentAnnotationType)
                     && !visitedAnnotations.contains(currentAnnotationType)) {
                 annotationQueue.addAll(List.of(annotation.annotationType().getAnnotations()));
@@ -294,18 +299,65 @@ public class AnnotationsRetriever {
     }
 
     private abstract static class FlagsAnnotation<T extends Annotation> {
-        Class<T> mAnnotationType;
+        private final Class<T> mType;
+        private final @Nullable Class<? extends Annotation> mContainerType;
+        private final @Nullable Function<Annotation, T[]> mExtractSinglesFromContainer;
 
         FlagsAnnotation(Class<T> type) {
-            mAnnotationType = type;
+            mType = type;
+
+            Repeatable repeatableMetaAnnotation = type.getAnnotation(Repeatable.class);
+            if (repeatableMetaAnnotation != null) {
+                mContainerType = repeatableMetaAnnotation.value();
+                try {
+                    Method valueMethod = mContainerType.getMethod("value");
+                    mExtractSinglesFromContainer = containerAnnotation -> {
+                        try {
+                            return (T[]) valueMethod.invoke(containerAnnotation);
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    };
+                } catch (Exception e) {
+                    throw new AssertionError("Impossible!", e);
+                }
+            } else {
+                mContainerType = null;
+                mExtractSinglesFromContainer = null;
+            }
         }
 
         protected abstract String[] getFlags(T annotation);
 
+        /**
+         * Gets the set of flags affected by the given annotation. Note that {@code annotation} must
+         * be of a type for which {@link #isRelevant} returns true -- i.e. either {@code T} or its
+         * container (in case of a repeatable annotation).
+         */
         @Nonnull
-        Set<String> getFlagsSet(T annotation) {
-            String[] flags = getFlags(annotation);
-            return flags == null ? Set.of() : new HashSet<>(List.of(flags));
+        Set<String> getFlagsSet(Annotation annotation) {
+            if (mType.isInstance(annotation)) {
+                String[] flags = getFlags(mType.cast(annotation));
+                return flags == null ? Set.of() : new HashSet<>(List.of(flags));
+            } else if (mContainerType != null && mContainerType.isInstance(annotation)) {
+                T[] singleAnnotations = requireNonNull(mExtractSinglesFromContainer).apply(
+                        annotation);
+                Set<String> collectedFlags = new HashSet<>();
+                if (singleAnnotations != null) {
+                    for (T singleAnnotation : singleAnnotations) {
+                        collectedFlags.addAll(getFlagsSet(singleAnnotation));
+                    }
+                }
+                return collectedFlags;
+            } else {
+                throw new IllegalArgumentException(String.format("Unexpected annotation for %s: %s",
+                        getClass().getSimpleName(), annotation));
+            }
+        }
+
+        boolean isRelevant(Class<? extends Annotation> annotationType) {
+            return mType.equals(annotationType)
+                    || (mContainerType != null && mContainerType.equals(annotationType));
         }
     }
 
@@ -345,8 +397,9 @@ public class AnnotationsRetriever {
                 }
 
                 @Nonnull
-                Set<String> getFlagsSet(UsesFlags annotation) {
-                    Class<?>[] values = annotation.value();
+                @Override
+                Set<String> getFlagsSet(Annotation annotation) {
+                    Class<?>[] values = ((UsesFlags) annotation).value();
                     if (values == null) {
                         return Set.of();
                     }

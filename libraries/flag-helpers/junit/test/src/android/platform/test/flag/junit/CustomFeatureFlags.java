@@ -45,6 +45,16 @@ public class CustomFeatureFlags implements FeatureFlags {
     }
 
     @Override
+    public boolean flagName5() {
+        return getValue(Flags.FLAG_FLAG_NAME5, FeatureFlags::flagName5);
+    }
+
+    @Override
+    public boolean flagName6() {
+        return getValue(Flags.FLAG_FLAG_NAME6, FeatureFlags::flagName6);
+    }
+
+    @Override
     public boolean roEnabled() {
         return getValue(Flags.FLAG_RO_ENABLED, FeatureFlags::roEnabled);
     }
@@ -62,6 +72,8 @@ public class CustomFeatureFlags implements FeatureFlags {
         return Arrays.asList(
                 Flags.FLAG_FLAG_NAME3,
                 Flags.FLAG_FLAG_NAME4,
+                Flags.FLAG_FLAG_NAME5,
+                Flags.FLAG_FLAG_NAME6,
                 Flags.FLAG_RO_ENABLED,
                 Flags.FLAG_RO_DISABLED,
                 Flags.FLAG_FLAG_FINALIZED);

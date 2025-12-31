@@ -79,4 +79,15 @@ public class ExampleSetFlagsRuleTest {
         assertTrue(Flags.flagName3());
         assertTrue(Flags.flagName4());
     }
+
+    @Test
+    @EnableFlags({Flags.FLAG_FLAG_NAME3, Flags.FLAG_FLAG_NAME4})
+    @EnableFlags({Flags.FLAG_FLAG_NAME5})
+    @EnableFlags({Flags.FLAG_FLAG_NAME6})
+    public void runATestWithRepeatedFlagEnabledAnnotations() {
+        assertTrue(Flags.flagName3());
+        assertTrue(Flags.flagName4());
+        assertTrue(Flags.flagName5());
+        assertTrue(Flags.flagName6());
+    }
 }

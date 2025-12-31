@@ -166,26 +166,36 @@ open class PerfettoTraceMonitor(
             logAll: Boolean = true,
             groupOverrides: List<ProtoLogGroupOverride> = emptyList(),
             dataSourceName: String = PROTOLOG_DATA_SOURCE,
-        ): Builder = apply {
-            enableCustomTrace(
-                createProtoLogDataSourceConfig(logAll, null, groupOverrides, dataSourceName)
-            )
-        }
+        ): Builder = apply { enableProtoLog(logAll, null, groupOverrides, dataSourceName) }
 
         @JvmOverloads
         fun enableProtoLog(
             defaultLogFrom: LogLevel,
             groupOverrides: List<ProtoLogGroupOverride> = emptyList(),
             dataSourceName: String = PROTOLOG_DATA_SOURCE,
+        ): Builder = apply { enableProtoLog(true, defaultLogFrom, groupOverrides, dataSourceName) }
+
+        @JvmOverloads
+        fun enableProtoLog(
+            logAll: Boolean,
+            defaultLogFrom: LogLevel?,
+            groupOverrides: List<ProtoLogGroupOverride> = emptyList(),
+            dataSourceName: String = PROTOLOG_DATA_SOURCE,
         ): Builder = apply {
             enableCustomTrace(
                 createProtoLogDataSourceConfig(
-                    false,
+                    logAll,
                     defaultLogFrom,
                     groupOverrides,
                     dataSourceName,
                 )
             )
+
+            if (android.tracing.Flags.nativeProtoLogging()) {
+                enableCustomTrace(
+                    DataSourceConfig.newBuilder().setName(PROTOLOG_VIEWER_DATA_SOURCE).build()
+                )
+            }
         }
 
         fun enableViewCaptureTrace(): Builder = apply {
@@ -416,6 +426,7 @@ open class PerfettoTraceMonitor(
         const val SF_TRANSACTIONS_DATA_SOURCE = "android.surfaceflinger.transactions"
         const val TRANSITIONS_DATA_SOURCE = "com.android.wm.shell.transition"
         const val PROTOLOG_DATA_SOURCE = "android.protolog"
+        const val PROTOLOG_VIEWER_DATA_SOURCE = "android.protolog.viewer"
         const val VIEWCAPTURE_DATA_SOURCE = "android.viewcapture"
         const val WINDOWMANAGER_DATA_SOURCE = "android.windowmanager"
         const val PROCESS_STATS_DATA_SOURCE = "linux.process_stats"
