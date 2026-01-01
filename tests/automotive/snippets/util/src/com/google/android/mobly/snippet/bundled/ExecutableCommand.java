@@ -57,4 +57,8 @@ public class ExecutableCommand {
             throw new RuntimeException("IOException while executing command: " + command, e);
         }
     }
+
+    public String toString() {
+        return mCommand.toString();
+    }
 }

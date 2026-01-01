@@ -141,9 +141,11 @@ class CompareImagesUsingPIL(ImageComparator):
       golden_image_path: str,
       test_image_path: str,
       exclude_area: Optional[Tuple[int, int, int, int]] = None,
+      include_area: Optional[Tuple[int, int, int, int]] = None,
   ):
     super().__init__(golden_image_path, test_image_path)
     self._exclude_area = exclude_area
+    self._include_area = include_area
     self._load_and_process_images()
 
   def _load_and_process_images(self):
@@ -168,7 +170,7 @@ class CompareImagesUsingPIL(ImageComparator):
       self._golden_image = golden_image
       self._test_image = test_image
 
-      if self._exclude_area:
+      if self._exclude_area or self._include_area:
         self._apply_exclusion_mask()
 
       self._diff_image = ImageChops.difference(
@@ -180,16 +182,34 @@ class CompareImagesUsingPIL(ImageComparator):
       raise ImageComparisonError(
           'Error processing images for PIL comparison.') from e
 
+  def _create_exclusion_mask(self):
+    """
+      Create a black mask to be used to exclude an area of both images.
+    """
+    logging.info(
+        f'{_LOG_TAG}: Creating exclusion mask'
+    )
+    mask = Image.new('L', self._golden_image.size, 255)
+    mask_drawer = ImageDraw.Draw(mask)
+    if self._exclude_area:
+      mask_drawer.rectangle(self._exclude_area, fill=0)
+    if self._include_area:
+      image_right, image_bottom = self._golden_image.size
+      include_left, include_top, include_right, include_bottom = self._include_area
+      mask_drawer.rectangle((0, 0, image_right, include_top), fill=0)
+      mask_drawer.rectangle((0, include_bottom, image_right, image_bottom), fill=0)
+      mask_drawer.rectangle((0, include_top, include_left, include_bottom), fill=0)
+      mask_drawer.rectangle((include_right, include_top, image_right, include_bottom), fill=0)
+    return mask
+
   def _apply_exclusion_mask(self):
     """
-      Applies a black mask to the excluded area on both images.
+      Applies a black mask to the excluded area, or all but the included area, on both images.
     """
     logging.info(
         f'{_LOG_TAG}: Applying exclusion mask to area: {self._exclude_area}'
     )
-    mask = Image.new('L', self._golden_image.size, 255)
-    mask_drawer = ImageDraw.Draw(mask)
-    mask_drawer.rectangle(self._exclude_area, fill=0)
+    mask = self._create_exclusion_mask()
     black_img = Image.new('RGB', self._golden_image.size, (0, 0, 0))
 
     self._golden_image = ImageChops.composite(

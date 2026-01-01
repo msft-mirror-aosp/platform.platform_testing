@@ -18,16 +18,49 @@ package android.platform.helpers;
 
 import android.app.Instrumentation;
 
+import androidx.test.uiautomator.UiObject2;
+
+import com.google.common.collect.ImmutableMap;
+
 public class HvacHelperImpl extends AbstractStandardAppHelper implements IAutoHvacHelper {
     private static final String LOG_TAG = HvacHelperImpl.class.getSimpleName();
+
+    /*
+     * In this map, keys are fan speed property values, and values are the resource IDs for the
+     * corresponding UI elements.  Property value 1 turns the fan off and has a UI element to match.
+     * Property values 2-5 activate the fan 1-4 UI elements.  Property value 6 activates "max".
+     */
+    private static final ImmutableMap<Integer, String> FAN_SPEED_UI =
+            ImmutableMap.<Integer, String>builder()
+                .put(1, AutomotiveConfigConstants.HVAC_FAN_OFF)
+                .put(2, AutomotiveConfigConstants.HVAC_FAN_1)
+                .put(3, AutomotiveConfigConstants.HVAC_FAN_2)
+                .put(4, AutomotiveConfigConstants.HVAC_FAN_3)
+                .put(5, AutomotiveConfigConstants.HVAC_FAN_4)
+                .put(6, AutomotiveConfigConstants.HVAC_FAN_MAX)
+                .build();
 
     public HvacHelperImpl(Instrumentation instr) {
         super(instr);
     }
 
+    private void showHideHvac(boolean show) {
+        UiObject2 temperatureBar = getSpectatioUiUtil().findUiObject(
+                getUiElementFromConfig(AutomotiveConfigConstants.HVAC_TEMPERATURE_BAR)
+        );
+        if ((temperatureBar == null) == show) {
+            clickConfigObject(AutomotiveConfigConstants.HOME_TEMPERATURE_BUTTON);
+        }
+    }
+
     @Override
-    public void showHideHvac() {
-        clickConfigObject(AutomotiveConfigConstants.HOME_TEMPERATURE_BUTTON);
+    public void showHvac() {
+        showHideHvac(true);
+    }
+
+    @Override
+    public void hideHvac() {
+        showHideHvac(false);
     }
 
     @Override
@@ -103,6 +136,11 @@ public class HvacHelperImpl extends AbstractStandardAppHelper implements IAutoHv
     @Override
     public void passengerDecreaseTemperature() {
         clickConfigObject(AutomotiveConfigConstants.PASSENGER_HVAC_DECREASE_BUTTON);
+    }
+
+    @Override
+    public void setFanSpeed(int fanSpeed) {
+        clickConfigObject(FAN_SPEED_UI.get(fanSpeed));
     }
 
     private void clickConfigObject(String key) {

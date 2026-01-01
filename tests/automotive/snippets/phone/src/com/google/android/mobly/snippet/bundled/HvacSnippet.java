@@ -29,9 +29,14 @@ public class HvacSnippet implements Snippet {
         mHelper = new HelperAccessor<>(IAutoHvacHelper.class);
     }
 
-    @Rpc(description = "Attempt to open/close the HVAC panel")
-    public void showHideHvac() {
-        mHelper.get().showHideHvac();
+    @Rpc(description = "Attempt to open the HVAC panel")
+    public void showHvac() {
+        mHelper.get().showHvac();
+    }
+
+    @Rpc(description = "Attempt to close the HVAC panel")
+    public void hideHvac() {
+        mHelper.get().hideHvac();
     }
 
     @Rpc(description = "Report whether AC is on")
@@ -107,5 +112,10 @@ public class HvacSnippet implements Snippet {
     @Rpc(description = "Click the driver seat temperature icon")
     public void clickDriverSeatTemperature() {
         mHelper.get().clickDriverSeatTemperature();
+    }
+
+    @Rpc(description = "Click the corresponding fan speed control")
+    public void clickFanSpeed(int fanSpeed) {
+        mHelper.get().setFanSpeed(fanSpeed);
     }
 }

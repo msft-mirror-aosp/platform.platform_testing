@@ -17,6 +17,21 @@ package {
     default_applicable_licenses: ["Android-Apache-2.0"],
 }
 
+filegroup {
+    name: "actions_golden_images",
+    srcs: [
+        "golden_images/**/*.png",
+    ],
+}
+
+python_library_host {
+    name: "actions_golden_images_lib",
+    pkg_path: "actions_golden_images",
+    data: [
+        ":actions_golden_images",
+    ],
+}
+
 python_test_host {
     name: "ActionsGears",
     main: "gears.py",
@@ -47,6 +62,10 @@ python_test_host {
         "hvac.py",
     ],
     libs: [
+        "actions_golden_images_lib",
+        "file_utils_library",
+        "image_comparison_library",
+        "screenshot_util_library",
         "spectatio_host_tf_lib",
     ],
     test_suites: [
@@ -55,24 +74,8 @@ python_test_host {
     test_options: {
         unit_test: false,
     },
-    device_common_data: [
-        ":AutomotiveSnippet",
-        "actions_config.yaml",
-    ],
-}
-
-filegroup {
-    name: "actions_golden_images",
-    srcs: [
-        "golden_images/**/*.png",
-    ],
-}
-
-python_library_host {
-    name: "actions_golden_images_lib",
-    pkg_path: "actions_golden_images",
-    data: [
-        ":actions_golden_images",
+    defaults: [
+        "spectatio_host_tf_defaults",
     ],
 }
 
