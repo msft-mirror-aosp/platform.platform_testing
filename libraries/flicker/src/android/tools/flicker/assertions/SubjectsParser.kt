@@ -21,6 +21,7 @@ import android.tools.flicker.subject.FlickerSubject
 import android.tools.flicker.subject.events.EventLogSubject
 import android.tools.flicker.subject.layers.LayerTraceEntrySubject
 import android.tools.flicker.subject.layers.LayersTraceSubject
+import android.tools.flicker.subject.protolog.ProtoLogSubject
 import android.tools.flicker.subject.wm.WindowManagerStateSubject
 import android.tools.flicker.subject.wm.WindowManagerTraceSubject
 import android.tools.io.Reader
@@ -49,6 +50,7 @@ open class SubjectsParser(private val resultReader: Reader) {
             expectedSubjectClass == EventLogSubject::class -> eventLogSubject
             expectedSubjectClass == WindowManagerStateSubject::class -> getWmStateSubject(tag)
             expectedSubjectClass == LayerTraceEntrySubject::class -> getLayerTraceEntrySubject(tag)
+            expectedSubjectClass == ProtoLogSubject::class -> protoLogSubject
             else -> error("Unknown expected subject type $expectedSubjectClass")
         }
     }
@@ -109,8 +111,17 @@ open class SubjectsParser(private val resultReader: Reader) {
     val eventLogSubject: EventLogSubject?
         get() = doGetEventLogSubject()
 
+    /** Truth subject that corresponds to a list of [FocusEvent] */
+    val protoLogSubject: ProtoLogSubject?
+        get() = doGetProtoLogSubject()
+
     protected open fun doGetEventLogSubject(): EventLogSubject? {
         val trace = resultReader.readEventLogTrace() ?: return null
         return EventLogSubject(trace, resultReader)
+    }
+
+    protected open fun doGetProtoLogSubject(): ProtoLogSubject? {
+        val trace = resultReader.readProtoLogTrace() ?: return null
+        return ProtoLogSubject(trace, resultReader)
     }
 }
