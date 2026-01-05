@@ -20,6 +20,8 @@ import com.google.common.truth.Truth.assertThat
 import kotlin.test.fail
 import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.Description
+import org.junit.runners.model.Statement
 
 /** Tests for [PeripheralDeviceTestRule] and [HostDrivenTestRule]. */
 class PeripheralDeviceTest {
@@ -101,5 +103,21 @@ class PeripheralDeviceTest {
                 else -> fail("Unexpected peripheral device: $it")
             }
         }
+    }
+
+    @Test
+    fun testCleanupAfterPhysicalOrSimulatedDisplay() {
+        peripheralDeviceRule.apply(
+            object : Statement() {
+                override fun evaluate() {
+                    testPhysicalOrSimulatedDisplay()
+                }
+            },
+            Description.createTestDescription(
+                this::class.java,
+                "testCleanupAfterPhysicalOrSimulatedDisplay",
+            ),
+        )
+        assertThat(peripheralDeviceRule.getPeripherals().devices).hasSize(0)
     }
 }
