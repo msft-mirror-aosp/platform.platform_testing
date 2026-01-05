@@ -49,6 +49,7 @@ object Utils {
                     .enableTransitionsTrace()
                     .enableImeTrace()
                     .enableWindowManagerTrace()
+                    .enableCujTrace()
                 this.add(perfettoMonitorBuilder.build())
             }
             .apply {
