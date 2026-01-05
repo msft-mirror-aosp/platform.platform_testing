@@ -51,12 +51,11 @@ object Utils {
                     .enableWindowManagerTrace()
                     .enableCujTrace()
                 this.add(perfettoMonitorBuilder.build())
-
-                if (!android.tracing.Flags.nativeProtoLogging()) {
-                    // Start this trace last, since we get our CUJ tags from it and don't want to
-                    // extract CUJ slices of the trace that are missing data from the other traces.
-                    this.add(EventLogMonitor())
-                }
+            }
+            .apply {
+                // Start this trace last, since we get our CUJ tags from it and don't want to
+                // extract CUJ slices of the trace that are missing data from the other traces.
+                this.add(EventLogMonitor())
             }
 
     @JvmStatic

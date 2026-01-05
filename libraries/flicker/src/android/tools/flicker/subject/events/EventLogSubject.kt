@@ -26,17 +26,6 @@ import android.tools.traces.events.FocusEvent
 /** Truth subject for [FocusEvent] objects. */
 class EventLogSubject(val eventLog: EventLog, override val reader: Reader) :
     FlickerSubject(), FocusEventSubject {
-
-    init {
-        if (android.tracing.Flags.nativeProtoLogging()) {
-            error(
-                "EventLogSubject should no longer be used with native protolog support." +
-                    "Instead use the ProtoLogSubject, since all events supported by " +
-                    "eventlog are supported by protolog."
-            )
-        }
-    }
-
     override val timestamp = eventLog.entries.firstOrNull()?.timestamp ?: Timestamps.empty()
 
     override val focusChanges by lazy {
