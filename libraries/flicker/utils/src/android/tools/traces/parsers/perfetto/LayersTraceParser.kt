@@ -178,7 +178,7 @@ class LayersTraceParser(
                     layer.getChild("corner_radii"),
                 )
 
-            val effectiveCornerRadii = newCornerRadii(0f, layer.getChild("effective_corner_radii"))
+            val effectiveCornerRadii = newCornerRadii(0f, layer.getChild("effective_radii"))
 
             return Layer.from(
                 name = layer.getChild("name")?.getString() ?: "",
