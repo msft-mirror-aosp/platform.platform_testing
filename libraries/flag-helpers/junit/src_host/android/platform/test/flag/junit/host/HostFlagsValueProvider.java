@@ -168,7 +168,7 @@ public class HostFlagsValueProvider implements IFlagsValueProvider {
             CommandResult commandResult =
                     mTestDeviceSupplier
                             .get()
-                            .executeAdbV2Command(
+                            .executeShellV2Command(
                                     String.format("su root aflags list | grep %s", flag));
             if (!commandResult.getStatus().equals(CommandStatus.SUCCESS)
                     || commandResult.getStdout() == null
