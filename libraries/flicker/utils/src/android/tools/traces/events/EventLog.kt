@@ -30,8 +30,6 @@ class EventLog(override val entries: Collection<Event>) : Trace<Event> {
     val focusEvents: Collection<FocusEvent> =
         entries.filterIsInstance<FocusEvent>().filter { it.type !== FocusEvent.Type.REQUESTED }
 
-    val cujEvents: Collection<CujEvent> = entries.filterIsInstance<CujEvent>()
-
     companion object {
         const val MAGIC_NUMBER = "EventLog"
     }

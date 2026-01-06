@@ -48,8 +48,7 @@ object TestTraces {
 
     object EventLog {
         private const val ASSET = "eventlog.winscope"
-        // from CUJ event
-        val START_TIME = Timestamps.from(unixNanos = 100)
+        val START_TIME = Timestamps.from(unixNanos = 1670594369069951546)
         val SLICE_TIME = Timestamps.from(unixNanos = 1670594384516466159)
         val END_TIME = Timestamps.from(unixNanos = 1670594389958451901)
         val FILE

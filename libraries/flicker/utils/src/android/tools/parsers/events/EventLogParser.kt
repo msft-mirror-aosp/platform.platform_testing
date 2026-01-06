@@ -19,7 +19,6 @@ package android.tools.parsers.events
 import android.tools.Timestamp
 import android.tools.Timestamps
 import android.tools.parsers.AbstractParser
-import android.tools.traces.events.CujEvent
 import android.tools.traces.events.Event
 import android.tools.traces.events.EventLog
 import android.tools.traces.events.EventLog.Companion.MAGIC_NUMBER
@@ -75,15 +74,6 @@ class EventLogParser : AbstractParser<Collection<String>, EventLog>() {
                     Event(timestamp, pid, uid, tid, tag)
                 }
             }
-            JANK_CUJ_BEGIN_TAG -> {
-                CujEvent.fromData(pid, uid, tid, tag, eventData)
-            }
-            JANK_CUJ_END_TAG -> {
-                CujEvent.fromData(pid, uid, tid, tag, eventData)
-            }
-            JANK_CUJ_CANCEL_TAG -> {
-                CujEvent.fromData(pid, uid, tid, tag, eventData)
-            }
             else -> {
                 Event(timestamp, pid, uid, tid, tag)
             }
@@ -125,7 +115,6 @@ class EventLogParser : AbstractParser<Collection<String>, EventLog>() {
         const val JANK_CUJ_END_TAG = "jank_cuj_events_end_request"
         const val JANK_CUJ_CANCEL_TAG = "jank_cuj_events_cancel_request"
 
-        private val FOCUS_EVENT_REGEX =
-            Regex("""^\[Focus .*,reason=.*]$""")
+        private val FOCUS_EVENT_REGEX = Regex("""^\[Focus .*,reason=.*]$""")
     }
 }
