@@ -127,7 +127,9 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
     @VisibleForTesting static final String DYNAMIC_INNER_CLASS_RULES_OPTION = "inner-class-rules";
     @VisibleForTesting static final String DYNAMIC_OUTER_TEST_RULES_OPTION = "outer-test-rules";
     @VisibleForTesting static final String DYNAMIC_INNER_TEST_RULES_OPTION = "inner-test-rules";
-    @VisibleForTesting static final String DYNAMIC_NO_METRIC_TEST_RULES_OPTION = "no-metric-test-rules";
+
+    @VisibleForTesting
+    static final String DYNAMIC_NO_METRIC_TEST_RULES_OPTION = "no-metric-test-rules";
 
     // Renames repeated test methods as <description><separator><iteration> (if set to true).
     public static final String RENAME_ITERATION_OPTION = "rename-iterations";
@@ -422,7 +424,7 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
                 eachNotifier.addFailure(e);
                 eachNotifier.fireTestFinished();
                 if (mTerminateOnTestFailure) {
-                    throw new TerminateEarlyException("test failed.");
+                    throw new TerminateEarlyException("test creation failed.");
                 }
                 return;
             }
