@@ -50,7 +50,7 @@ class QuickSettings internal constructor(val displayId: Int = DEFAULT_DISPLAY) {
         if (!ShadeUtils.isDualShadeConfig()) {
             footerSelector.assertVisible()
         } else {
-            waitForObj(sysuiResSelector(SETTINGS_BUTTON_RES_ID, displayId))
+            waitForObj(sysuiResSelector(POWER_BTN_RES_ID, displayId))
         }
     }
 

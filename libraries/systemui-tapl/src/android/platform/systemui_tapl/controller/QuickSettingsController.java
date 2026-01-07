@@ -56,6 +56,11 @@ public class QuickSettingsController {
         return mHelper.getQSDefaultTileList();
     }
 
+    /** Gets the list of default QS tiles for the headless system user. */
+    public List<String> getDefaultHsuTiles() {
+        return mHelper.getQSDefaultHsuTileList();
+    }
+
     /** Gets the list of current QS tiles. */
     public List<String> getCurrentTiles() {
         return mHelper.getCurrentTilesList();
