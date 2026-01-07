@@ -24,7 +24,7 @@ import android.tools.testutils.newTestResultWriter
 import android.tools.testutils.outputFileName
 import android.tools.traces.deleteIfExists
 import android.tools.traces.io.IResultData
-import android.tools.traces.monitors.events.EventLogMonitor
+import android.tools.traces.monitors.PerfettoTraceMonitor
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.ClassRule
@@ -133,7 +133,7 @@ class ArtifactAssertionRunnerTest {
 
         private fun newResultReaderWithEmptySubject(): IResultData {
             val writer = newTestResultWriter()
-            val monitor = EventLogMonitor()
+            val monitor = PerfettoTraceMonitor.newBuilder().enableProtoLog().build()
             monitor.start()
             monitor.stop(writer)
             return writer.write()

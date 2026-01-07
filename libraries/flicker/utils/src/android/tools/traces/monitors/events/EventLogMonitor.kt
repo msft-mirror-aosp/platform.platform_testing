@@ -29,6 +29,17 @@ import java.io.FileOutputStream
 
 /** Collects event logs during transitions. */
 open class EventLogMonitor : TraceMonitor() {
+
+    init {
+        if (android.tracing.Flags.nativeProtoLogging()) {
+            error(
+                "EventLogMonitor should not be used with native protolog support." +
+                    "Instead only ProtoLog should be traced, since all events supported by " +
+                    "eventlog are supported by protolog."
+            )
+        }
+    }
+
     override val traceType = TraceType.EVENT_LOG
     final override var isEnabled = false
         private set

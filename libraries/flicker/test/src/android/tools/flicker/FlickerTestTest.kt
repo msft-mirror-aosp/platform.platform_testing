@@ -30,6 +30,7 @@ import android.tools.testutils.assertThrows
 import android.tools.traces.io.ResultReader
 import com.google.common.truth.Truth
 import java.io.File
+import org.junit.Assume.assumeFalse
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -170,6 +171,7 @@ class FlickerTestTest {
 
     @Test
     fun executesEventLog() {
+        assumeFalse(android.tracing.Flags.nativeProtoLogging())
         val predicate: (FlickerTest) -> Unit = { it.assertEventLog { executionCount++ } }
         doWriteTraceExecuteAssertionAndVerify(
             TraceType.EVENT_LOG,
