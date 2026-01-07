@@ -20,14 +20,14 @@ import android.annotation.SuppressLint
 import android.tools.Tag
 import android.tools.flicker.assertions.AssertionDataImpl
 import android.tools.flicker.subject.FlickerSubject
+import android.tools.flicker.subject.events.EventLogSubject
 import android.tools.flicker.subject.exceptions.SimpleFlickerAssertionError
-import android.tools.flicker.subject.protolog.ProtoLogSubject
 import android.tools.io.RunStatus
 import android.tools.testutils.CleanFlickerEnvironmentRule
 import android.tools.testutils.TEST_SCENARIO_KEY
 import android.tools.testutils.assertExceptionMessage
 import android.tools.testutils.newTestResultWriter
-import android.tools.traces.monitors.PerfettoTraceMonitor
+import android.tools.traces.monitors.events.EventLogMonitor
 import com.google.common.truth.Truth
 import org.junit.Before
 import org.junit.ClassRule
@@ -49,7 +49,7 @@ class CachedAssertionRunnerTest {
         DataStore.clear()
         executionCount = 0
         val writer = newTestResultWriter(TEST_SCENARIO_KEY)
-        val monitor = PerfettoTraceMonitor.newBuilder().enableProtoLog().build()
+        val monitor = EventLogMonitor()
         monitor.start()
         monitor.stop(writer)
         val result = writer.write()
@@ -123,7 +123,7 @@ class CachedAssertionRunnerTest {
 
     companion object {
         private fun newAssertionData(assertion: (FlickerSubject) -> Unit) =
-            AssertionDataImpl(Tag.ALL, ProtoLogSubject::class, assertion)
+            AssertionDataImpl(Tag.ALL, EventLogSubject::class, assertion)
 
         @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }
