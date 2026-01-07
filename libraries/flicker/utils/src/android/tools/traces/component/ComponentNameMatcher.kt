@@ -187,7 +187,7 @@ class ComponentNameMatcher(var component: ComponentName) : IComponentNameMatcher
         val ADD_ITEM_ACTIVITY =
             ComponentNameMatcher(
                 "com.google.android.apps.nexuslauncher",
-                "com.android.launcher3.dragndrop.AddItemActivity",
+                "com.android.launcher3.QuickstepAddItemActivity",
             )
 
         @JvmField
