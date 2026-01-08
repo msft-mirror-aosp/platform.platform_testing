@@ -29,6 +29,8 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 /**
  * Dumps flags from static aconfig.pb in test resources.
  *
@@ -51,16 +53,10 @@ record TestResourceFlags(boolean mExists, Map<String, Aconfig.parsed_flag> mAllF
      * Gets the parsed flag for the given flag name.
      *
      * @param flagName The full aconfig flag name ({packageName}.{flagName}).
-     * @return The parsed_flag object.
-     * @throws FlagReadException if the flag is not found.
+     * @return The parsed_flag object, or {@code null} if the flag is not found.
      */
+    @Nullable
     public Aconfig.parsed_flag getFlag(String flagName) {
-        if (!mAllFlags.containsKey(flagName)) {
-            throw new FlagReadException(
-                    flagName,
-                    "Unable to find the flag. Ensure the aconfig generated libraries are included"
-                            + " as test dependencies");
-        }
         return mAllFlags.get(flagName);
     }
 
