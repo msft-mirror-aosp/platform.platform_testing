@@ -1,0 +1,56 @@
+// Copyright (C) 2026 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package {
+    default_team: "trendy_team_automotive",
+    default_applicable_licenses: ["sdv_tests_license"],
+}
+
+python_library_host {
+    name: "sdv_ivi_rob_base_test_lib",
+    srcs: [
+        "sdv_ivi_rob_base_test.py",
+    ],
+    pkg_path: "robustness",
+    libs: [
+        "sdv_vpm_lib",
+    ],
+}
+
+python_defaults {
+    name: "sdv_ivi_rob_cuj_test_defaults",
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    libs: [
+        "sdv_sb_lifecycle_robustness_lib",
+        "sdv_ivi_rob_base_test_lib",
+        "sdv_vpm_lib",
+    ],
+}
+
+python_test_host {
+    name: "SdvIviRobCujTest",
+    main: "cuj-rob-ivi.py",
+    srcs: ["cuj-rob-ivi.py"],
+
+    defaults: ["sdv_ivi_rob_cuj_test_defaults"],
+    test_options: {
+        unit_test: false,
+    },
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    test_config_template: ":sdv_two_devices_long_running_test",
+}

@@ -1,0 +1,31 @@
+<!--
+  Copyright (C) 2026 The Android Open Source Project
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+      http://www.apache.org/licenses/LICENSE-2.0
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<!-- TODO(b/402089309): Deprecate test when b/383592250 and b/403259181 are ready. -->
+<configuration description="SDV e2e CUJ Core 22 Test for User Build">
+   <!--
+      User build testing requires two devices to be running:
+        * User build VM / "VM under test".
+        * UserDebug or Eng build VM / "Proxy VM".
+      Meanwhile, SDV test framework does not recognize user builds as existing device.
+      This force to use `one-devices` template.
+
+      Note: CI/CD configuration still should create 2 VMs: Userdebug and User.
+  -->
+    <template-include name="device-config" default="sdv-device-config/userbuild/one-device-noroot" />
+
+    <!-- Plan. Use the same name as the file name -->
+    <option name="plan" value="sdv-e2e-cuj-core-22-user-build-test"/>
+
+    <!-- Test: mobly-par-file-name should match the module name -->
+    <option name="mobly-host:mobly-par-file-name" value="SdvE2ECujCore22TestUserBuildTest" />
+</configuration>

@@ -1,0 +1,194 @@
+# Copyright (C) 2026 The Android Open Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Trace configuration for Perfetto capture.
+# You can use Perfetto UI to generate a config at https://ui.perfetto.dev/#!/record/instructions
+# Documentation: https://perfetto.dev/docs/concepts/config
+# Reference: https://perfetto.dev/docs/reference/trace-config-proto
+# Example configs: https://cs.android.com/android/platform/superproject/+/master:external/perfetto/test/configs/
+
+# The duration of the trace.
+# duration_ms: 15000
+
+# google3/java/com/google/devtools/hawkeye/measurer/perfetto/trace_config.textproto
+# periodically writes the trace to disk.
+ write_into_file: true
+ file_write_period_ms: 3000
+
+ flush_period_ms: 5000
+
+
+# If data sources are writing at different rates, it may be beneficial to direct them to different
+# buffers. The target_buffer property of a source config determines the used buffer.
+# Here we define a second smaller buffer for infrequent sources.
+buffers: {
+    size_kb: 32768
+    fill_policy: RING_BUFFER
+}
+data_sources: {
+  config {
+    name: "android.log"
+    android_log_config {
+    }
+  }
+}
+
+data_sources: {
+    config {
+        # Process stats help Perfetto with thread grouping and process names.
+        # Config reference: https://perfetto.dev/docs/reference/trace-config-proto#ProcessStatsConfig
+        name: "linux.process_stats"
+        target_buffer: 0
+        process_stats_config {
+            scan_all_processes_on_start: true
+
+            # Intervals to collect memory stat counters. Use interval >100 ms to not load CPU.
+            # Doc: https://perfetto.dev/docs/data-sources/memory-counters#per-process-polled-counters
+            # Uncomment to enable.
+            proc_stats_poll_ms: 1000
+        }
+    }
+}
+
+data_sources: {
+    config {
+        # /proc counters.
+        # Config reference: https://perfetto.dev/docs/reference/trace-config-proto#SysStatsConfig
+        name: "linux.sys_stats"
+        target_buffer: 0
+        sys_stats_config {
+            stat_period_ms: 250
+            stat_counters: STAT_CPU_TIMES
+            stat_counters: STAT_FORK_COUNT
+
+            # Polls CPU frequency.
+            # Doc: https://perfetto.dev/docs/data-sources/cpu-freq
+            # Always 0 on Cuttlefish. Uncomment to enable.
+            cpufreq_period_ms: 1000
+
+            meminfo_period_ms: 1000
+            meminfo_counters: MEMINFO_MEM_TOTAL
+            meminfo_counters: MEMINFO_ACTIVE_ANON
+            meminfo_counters: MEMINFO_ACTIVE_FILE
+            meminfo_counters: MEMINFO_INACTIVE_ANON
+            meminfo_counters: MEMINFO_INACTIVE_FILE
+            meminfo_counters: MEMINFO_KERNEL_STACK
+            meminfo_counters: MEMINFO_MLOCKED
+            meminfo_counters: MEMINFO_SHMEM
+            meminfo_counters: MEMINFO_SLAB
+            meminfo_counters: MEMINFO_SLAB_UNRECLAIMABLE
+            meminfo_counters: MEMINFO_VMALLOC_USED
+            meminfo_counters: MEMINFO_MEM_FREE
+            meminfo_counters: MEMINFO_SWAP_FREE
+
+            vmstat_period_ms: 1000
+            vmstat_counters: VMSTAT_PGFAULT
+            vmstat_counters: VMSTAT_PGMAJFAULT
+            vmstat_counters: VMSTAT_PGFREE
+            vmstat_counters: VMSTAT_PGPGIN
+            vmstat_counters: VMSTAT_PGPGOUT
+            vmstat_counters: VMSTAT_PSWPIN
+            vmstat_counters: VMSTAT_PSWPOUT
+            vmstat_counters: VMSTAT_PGSCAN_DIRECT
+            vmstat_counters: VMSTAT_PGSTEAL_DIRECT
+            vmstat_counters: VMSTAT_PGSCAN_KSWAPD
+            vmstat_counters: VMSTAT_PGSTEAL_KSWAPD
+            vmstat_counters: VMSTAT_WORKINGSET_REFAULT
+        }
+    }
+}
+
+data_sources: {
+    config {
+        # Kernel tracing info.
+        # Config reference: https://perfetto.dev/docs/reference/trace-config-proto#FtraceConfig
+        name: "linux.ftrace"
+        ftrace_config {
+            # CPU Scheduling events.
+            # Doc: https://perfetto.dev/docs/data-sources/cpu-scheduling
+            ftrace_events: "sched/sched_switch"
+            ftrace_events: "sched/sched_process_exit"
+            ftrace_events: "sched/sched_process_free"
+            ftrace_events: "task/task_newtask"
+            ftrace_events: "task/task_rename"
+
+            # Doc: https://perfetto.dev/docs/data-sources/cpu-scheduling#scheduling-wakeups-and-latency-analysis
+            # ftrace_events: "sched/sched_wakeup_new"
+            # ftrace_events: "sched/sched_waking"
+
+            # CPU frequency and idle states.
+            # Doc: https://perfetto.dev/docs/data-sources/cpu-freq
+            # ftrace_events: "power/cpu_idle"
+            # No events of this type on Cuttlefish. Uncomment to enable.
+            #ftrace_events: "power/suspend_resume"
+            #ftrace_events: "power/cpu_frequency"
+
+            ftrace_events: "dmabuf_heap/dma_heap_stat"
+            ftrace_events: "kmem/ion_heap_grow"
+            ftrace_events: "kmem/ion_heap_shrink"
+
+
+            # System calls
+            # Doc: https://perfetto.dev/docs/data-sources/syscalls
+            # this casues the data-loss when data source track_event is also recorded.
+            # https://yaqs.corp.google.com/eng/q/4429311124239810560
+            #ftrace_events: "raw_syscalls/sys_enter"
+            #ftrace_events: "raw_syscalls/sys_exit"
+
+            # Shows raw ATrace writes on the timeline in ftrace events.
+            # ftrace_events: "ftrace/print"
+
+            # ATrace events.
+            # Doc: https://perfetto.dev/docs/data-sources/atrace
+            # atrace_categories enable system events per category (tag).
+            # This affects all apps at once.
+
+            # Events from autogenerated (with gen_trace in Android.bp) AIDL instrumentation.
+            # atrace_categories: "aidl"
+
+            # Events from the binder kernel driver used for IPC.
+             atrace_categories: "binder_driver"
+
+            # Bionic is Android's C library.
+            # Events instrumented with this tag:
+            # - Linker (e.g. dlopen).
+            # - Pthread create, join, and mutex contention.
+            # atrace_categories: "bionic"
+
+            # App events are those that use the app tag in ATrace (ATRACE_TAG_APP).
+            # The app tag is the same for all apps and the events are enabled based on the app name.
+            # Setting atrace_apps to "*" enable ATrace events for all apps. Setting it to app name
+            # restricts them to those apps. Use multiple atrace_apps entries to enable multiple apps.
+             atrace_apps: "*"
+        }
+    }
+}
+
+data_sources: {
+    config {
+        # Track events from the tracing SDK.
+        # Here you can set filters for categories and tags.
+        # Doc: https://perfetto.dev/docs/instrumentation/track-events#category-configuration
+        # Config reference: https://perfetto.dev/docs/reference/trace-config-proto#TrackEventConfig
+        name: "track_event"
+    }
+}
+
+# builtin_data_sources: {
+    # Synchronization of multiple clock of different VMs.
+    # Here you can set filters for categories and tags.
+    # Doc: https://perfetto.dev/docs/concepts/clock-sync
+    # Config reference: https://perfetto.dev/docs/reference/trace-config-proto#BuiltinClock
+    # primary_trace_clock: BUILTIN_CLOCK_MONOTONIC
+# }

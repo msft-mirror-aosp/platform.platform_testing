@@ -1,0 +1,70 @@
+// Copyright (C) 2026 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package {
+    default_team: "trendy_team_auto_engprod",
+    default_applicable_licenses: ["sdv_tests_license"],
+}
+
+python_library_host {
+    name: "sdv_cpu_metrics_lib",
+    pkg_path: "sdv_perf_cpu_metrics",
+    srcs: [
+        "processor.py",
+        "common_query.py",
+        "single_vm_query.py",
+        "multi_vm_cpu_query.py",
+        "aggregator.py",
+    ],
+    libs: [
+        "sdv_perfetto_trace_processor_lib",
+    ],
+
+}
+
+// TODO(b/448645787): TBD whether this is needed.
+python_defaults {
+    name: "sdv_cpu_metrics_defaults",
+    libs: [
+        "sdv_cpu_metrics_lib",
+    ],
+    defaults: [
+        "sdv_perfetto_trace_processor_defaults",
+    ],
+}
+
+python_test_host {
+    name: "sdv_cpu_metrics_processor_test",
+    srcs: ["processor_test.py"],
+    main: "processor_test.py",
+    data: ["test_resources/*"],
+    defaults: [
+        "sdv_cpu_metrics_defaults",
+    ],
+    test_options: {
+        unit_test: true,
+    },
+}
+
+python_test_host {
+    name: "sdv_cpu_metrics_aggregator_test",
+    srcs: ["aggregator_test.py"],
+    main: "aggregator_test.py",
+    test_options: {
+        unit_test: true,
+    },
+    defaults: [
+        "sdv_cpu_metrics_defaults",
+    ],
+}

@@ -1,0 +1,32 @@
+<!--
+  Copyright (C) 2026 The Android Open Source Project
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+      http://www.apache.org/licenses/LICENSE-2.0
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<configuration description="SDV Sample Comm Stack Two VM Reference Test">
+  <!-- Template for Device Configuration -->
+  <template-include name="device-config" default="sdv-device-config/two-devices" />
+
+  <!-- Plan. Use the same name as the file name -->
+  <option name="plan" value="sdv-sample-comm-stack-two-vm-test"/>
+
+  <!-- Test: mobly-par-file-name should match the module name -->
+  <option name="mobly-host:mobly-par-file-name" value="SdvSampleCommStackTwoVMTest" />
+
+  <!-- Extra dependencies required for the test. Only needed in first device. -->
+  <!-- TODO(b/448843336): Use Android build libraries instead -->
+  <!-- TODO(b/449630628): Remove when numpy import is replaced by AOSP library -->
+  <device name="device1">
+    <target_preparer class="com.android.tradefed.targetprep.PythonVirtualenvPreparer">
+      <!-- Required for sdv_comm_helper_lib -->
+      <option name="dep-module" value="numpy" />
+    </target_preparer>
+  </device>
+</configuration>

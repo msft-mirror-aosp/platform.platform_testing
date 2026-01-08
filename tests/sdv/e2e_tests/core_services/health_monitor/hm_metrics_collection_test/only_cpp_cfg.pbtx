@@ -1,0 +1,23 @@
+# Copyright 2025 Google LLC
+
+# See `default_trace_cfg.pbtx` for a documented example of config file
+
+write_into_file: true
+file_write_period_ms: 3000
+
+flush_period_ms: 5000
+
+buffers: {
+    size_kb: 32768
+    fill_policy: RING_BUFFER
+}
+
+# for collecting traces from cpp code:
+data_sources: {
+    config {
+        name: "track_event"
+        track_event_config {
+            enabled_categories: "*"
+        }
+    }
+}
