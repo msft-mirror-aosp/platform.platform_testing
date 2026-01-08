@@ -355,6 +355,7 @@ public class NotificationController {
      * Posts a no style promoted ongoing notification.
      *
      * <p>Returns the new notification's [StatusBarNotification.getKey()].
+     * TODO (b/430633086): Remove this method once the rich ongoing improvements are launched.
      */
     @NonNull
     public NotificationIdentity postNoStyleRON(
@@ -369,9 +370,7 @@ public class NotificationController {
         postNotificationSync(id, builder);
         String key = getStatusBarNotificationKey(id);
         return new NotificationIdentity(
-                Flags.richOngoingImprovements()
-                        ? NotificationIdentity.Type.BY_ALT_TITLE
-                        : NotificationIdentity.Type.BY_TITLE,
+            NotificationIdentity.Type.BY_TITLE,
                 /* title= */ title,
                 /* text= */ null,
                 /* summary= */ null,
@@ -382,6 +381,34 @@ public class NotificationController {
                 /* key= */ key);
     }
 
+    /**
+     * Posts a no style promoted ongoing notification.
+     *
+     * <p>Returns the new notification's [StatusBarNotification.getKey()].
+     */
+    @NonNull
+    public NotificationIdentity postNoStyleRONWithAltTitle(
+            @Nullable String pkg, @Nullable String title, @Nullable String shortCriticalText) {
+        final Bitmap bitmap = Bitmap.createBitmap(400, 400, Bitmap.Config.ARGB_8888);
+        new Canvas(bitmap).drawColor(Color.BLUE);
+        final Builder builder = makePromotedOngoing(getBuilder(pkg));
+        builder.setLargeIcon(bitmap);
+        builder.setContentTitle(title);
+        builder.setShortCriticalText(shortCriticalText);
+        int id = getNextNotificationId();
+        postNotificationSync(id, builder);
+        String key = getStatusBarNotificationKey(id);
+        return new NotificationIdentity(
+            NotificationIdentity.Type.BY_ALT_TITLE,
+                /* title= */ title,
+                /* text= */ null,
+                /* summary= */ null,
+                /* textWhenExpanded= */ null,
+                /* contentIsVisibleInCollapsedState= */ true,
+                /* pkg= */ null,
+                /* hasAction= */ false,
+                /* key= */ key);
+    }
     @NonNull
     private Builder makePromotedOngoing(@NonNull Builder builder) {
         builder.setOngoing(true);
