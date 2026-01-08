@@ -28,6 +28,7 @@ java_library {
         "automotive-utility-helper",
         "automotive-config-lib",
         "android.car-system-stubs",
+        "automotive-app-grid-helper",
         "spectatio-lib",
 
     ],
