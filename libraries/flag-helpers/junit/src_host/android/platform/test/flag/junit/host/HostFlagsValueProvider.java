@@ -137,16 +137,19 @@ public class HostFlagsValueProvider implements IFlagsValueProvider {
             if (staticFlag == null) {
                 return false;
             }
+            boolean staticValue = staticFlag.getState().equals(Aconfig.flag_state.ENABLED);
             // If the flag is READ_ONLY, read the flag value from the static aconfig.pb
             if (staticFlag.getPermission().equals(Aconfig.flag_permission.READ_ONLY)) {
                 LogUtil.CLog.i(
                         String.format(
                                 "Read flag value from test resources: %s - %s | %s",
                                 flag, staticFlag.getPermission(), staticFlag.getState()));
-                return staticFlag.getState().equals(Aconfig.flag_state.ENABLED);
+                return staticValue;
+            } else {
+                // If the flag is READ_WRITE, read the flag value from device through adb command
+                // Use the static value if aflags command is not available
+                return getFlagValueWithAdbCommand(parsedFlag.fullFlagName(), staticValue);
             }
-            // If the flag is READ_WRITE, read the flag value from device through adb command
-            return getFlagValueWithAdbCommand(parsedFlag.fullFlagName());
         }
         return getDeviceBoolean(flag);
     }
@@ -166,13 +169,16 @@ public class HostFlagsValueProvider implements IFlagsValueProvider {
         return Boolean.parseBoolean(value);
     }
 
-    private boolean getFlagValueWithAdbCommand(String flag) {
+    private boolean getFlagValueWithAdbCommand(String flag, boolean defaultValue) {
         try {
+            ITestDevice testDevice = mTestDeviceSupplier.get();
+            if (testDevice.getProperty("ro.build.type").equals("user")) {
+                // Use the default value on user builds because aflags requires root permission
+                return defaultValue;
+            }
             CommandResult commandResult =
-                    mTestDeviceSupplier
-                            .get()
-                            .executeShellV2Command(
-                                    String.format("su root aflags list | grep %s", flag));
+                    testDevice.executeShellV2Command(
+                            String.format("su root aflags list | grep %s", flag));
             if (!commandResult.getStatus().equals(CommandStatus.SUCCESS)
                     || commandResult.getStdout() == null
                     || commandResult.getStdout().trim().isEmpty()) {
