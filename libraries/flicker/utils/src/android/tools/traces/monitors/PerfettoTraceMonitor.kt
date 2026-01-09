@@ -24,6 +24,7 @@ import java.util.concurrent.locks.ReentrantLock
 import perfetto.protos.PerfettoConfig
 import perfetto.protos.PerfettoConfig.DataSourceConfig
 import perfetto.protos.PerfettoConfig.FtraceConfig
+import perfetto.protos.PerfettoConfig.InputMethodConfig
 import perfetto.protos.PerfettoConfig.PriorityBoostConfig
 import perfetto.protos.PerfettoConfig.ProcessStatsConfig
 import perfetto.protos.PerfettoConfig.SurfaceFlingerLayersConfig
@@ -136,7 +137,24 @@ open class PerfettoTraceMonitor(
         private var uniqueSessionName: String? = null
         private var jankCujEnabled = false
 
-        fun enableImeTrace(): Builder = apply { enableCustomTrace(createImeDataSourceConfig()) }
+        fun enableImeTrace(
+            client: Boolean = true,
+            service: Boolean = true,
+            managerService: Boolean = true,
+        ): Builder = apply {
+            val dsConfig =
+                DataSourceConfig.newBuilder()
+                    .setName(IME_DATA_SOURCE)
+                    .setInputmethodConfig(
+                        InputMethodConfig.newBuilder()
+                            .setClient(client)
+                            .setService(service)
+                            .setManagerService(managerService)
+                            .build()
+                    )
+                    .build()
+            enableCustomTrace(dsConfig)
+        }
 
         fun enableCujTrace(): Builder = apply { jankCujEnabled = true }
 
@@ -329,10 +347,6 @@ open class PerfettoTraceMonitor(
                 tearDownAction = teardown,
                 jankCujEnabled = jankCujEnabled,
             )
-        }
-
-        private fun createImeDataSourceConfig(): DataSourceConfig {
-            return DataSourceConfig.newBuilder().setName(IME_DATA_SOURCE).build()
         }
 
         private fun createLayersTraceDataSourceConfig(
