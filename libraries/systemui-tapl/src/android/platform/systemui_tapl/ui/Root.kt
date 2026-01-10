@@ -21,16 +21,17 @@ import android.graphics.PointF
 import android.graphics.Rect
 import android.os.RemoteException
 import android.os.SystemClock
-import android.os.SystemClock.sleep
 import android.platform.helpers.ShadeUtils
 import android.platform.systemui_tapl.controller.LockscreenController
 import android.platform.systemui_tapl.controller.NotificationIdentity
+import android.platform.systemui_tapl.controller.VolumeController
 import android.platform.systemui_tapl.ui.ExpandedBubbleStack.Companion.BUBBLE_EXPANDED_VIEW
 import android.platform.systemui_tapl.ui.NotificationShade.Companion.waitForShadeToClose
 import android.platform.systemui_tapl.ui.quicksettings.BrightnessSlider
 import android.platform.systemui_tapl.ui.quicksettings.PowerPanel
 import android.platform.systemui_tapl.ui.quicksettings.QuickSettings
 import android.platform.systemui_tapl.utils.DeviceUtils.LONG_WAIT
+import android.platform.systemui_tapl.utils.DeviceUtils.SHORT_WAIT
 import android.platform.systemui_tapl.utils.DeviceUtils.sysuiResSelector
 import android.platform.systemui_tapl.utils.LAUNCHER_PACKAGE
 import android.platform.uiautomatorhelpers.BetterSwipe
@@ -52,6 +53,7 @@ import android.view.WindowManager
 import android.view.WindowMetrics
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
+import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.UiSelector
 import androidx.test.uiautomator.Until
 import com.android.app.tracing.traceSection
@@ -88,13 +90,26 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
         }
     }
 
-    /** Executes a given block of code and retries if it fails with an exception. */
-    private fun <T> executeWithRetry(description: String, block: () -> T): T {
+    /**
+     * Executes a given block of code and retries if it fails with an exception.
+     *
+     * @param description Describe the operation for logging.
+     * @param resetAction Optional logic to run if an exception occurs (e.g., clearing a cache or
+     *   resetting a connection). Defaults to empty.
+     * @param block The main operation to execute.
+     */
+    private fun <T> executeWithRetry(
+        description: String,
+        resetAction: () -> Unit = {},
+        block: () -> T,
+    ): T {
         var lastException: Exception? = null
         for (attempt in 1..MAX_RETRY_ATTEMPTS) {
             try {
                 return block()
             } catch (e: Exception) {
+                resetAction()
+
                 lastException = e
                 if (attempt < MAX_RETRY_ATTEMPTS) {
                     Log.w(
@@ -394,9 +409,7 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
 
     /** Opens the Quick Settings shade by clicking the status icon container, with retry logic. */
     fun openQuickSettingsByTapWithRetry() {
-        executeWithRetry(
-            description = "Open quick settings shade by mouse on display $displayId"
-        ) {
+        executeWithRetry(description = "Open quick settings shade by mouse on display $displayId") {
             statusBar.statusIconContainer.click()
             waitForQuickSettingsToOpen()
         }
@@ -455,6 +468,44 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
             uiDevice.executeShellCommand("cmd statusbar collapse")
         }
         waitForShadeToClose(displayId)
+    }
+
+    /**
+     * Simulates a volume up key press event and verifying that the volume slider appears on screen.
+     * The volume is reset to its original level if the action fails.
+     */
+    fun increaseVolumeByKey(volumeController: VolumeController) {
+        val volumeBefore = volumeController.volume
+        executeWithRetry(
+            description = "Press volume up key and verify slider visibility",
+            resetAction = { volumeController.volume = volumeBefore },
+        ) {
+            val result = uiDevice.pressKeyCode(KeyEvent.KEYCODE_VOLUME_UP)
+            if (!result) {
+                throw IllegalStateException("Failed to inject VOLUME_UP key event.")
+            }
+
+            volumeSliderContainerSelector.assertVisible(timeout = SHORT_WAIT)
+        }
+    }
+
+    /**
+     * Mutes the volume by pressing the mute key and verifies that the volume slider appears on
+     * screen. The volume is reset to its original level if the action fails.
+     */
+    fun muteVolumeByKey(volumeController: VolumeController) {
+        val volumeBefore = volumeController.volume
+        executeWithRetry(
+            description = "Press mute key and verify slider visibility",
+            resetAction = { volumeController.volume = volumeBefore },
+        ) {
+            val result = uiDevice.pressKeyCode(KeyEvent.KEYCODE_VOLUME_MUTE)
+            if (!result) {
+                throw IllegalStateException("Failed to inject VOLUME_MUTE key event.")
+            }
+
+            volumeSliderContainerSelector.assertVisible(timeout = SHORT_WAIT)
+        }
     }
 
     /** Gets status bar. */
@@ -614,6 +665,9 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
     /** Returns the volume dialog or fails if it's invisible. */
     val volumeDialog: VolumeDialog
         get() = VolumeDialog()
+
+    val volumeSliderContainerSelector: BySelector
+        get() = sysuiResSelector("volume_dialog_main_slider_container", displayId)
 
     /** Asserts that the volume dialog is not visible. */
     fun assertVolumeDialogNotVisible() {

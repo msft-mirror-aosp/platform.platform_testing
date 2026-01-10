@@ -16,6 +16,10 @@
 
 package android.tools.monitors
 
+import android.platform.test.annotations.RequiresFlagsDisabled
+import android.platform.test.annotations.RequiresFlagsEnabled
+import android.platform.test.flag.junit.CheckFlagsRule
+import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.tools.device.apphelpers.BrowserAppHelper
 import android.tools.io.TraceType
 import android.tools.testutils.CleanFlickerEnvironmentRule
@@ -34,15 +38,18 @@ import com.google.common.truth.Truth
 import java.io.File
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runners.MethodSorters
 
 /**
  * Contains [PerfettoTraceMonitor] tests. To run this test: `atest
- * FlickerLibTest:PerfettoTraceMonitorTest`
+ * FlickerLibUtilsTest:PerfettoTraceMonitorTest`
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class PerfettoTraceMonitorTest : TraceMonitorTest<PerfettoTraceMonitor>() {
+    @get:Rule val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
+
     override val traceType = TraceType.PERFETTO
 
     override fun getMonitor() =
@@ -124,7 +131,100 @@ class PerfettoTraceMonitorTest : TraceMonitorTest<PerfettoTraceMonitor>() {
     }
 
     @Test
+    @RequiresFlagsEnabled(android.tracing.Flags.FLAG_PERFETTO_IME_FINE_GRAINED_CONFIG)
     fun imeTracingTest() {
+        fun validateImeTracing(
+            enableClient: Boolean,
+            enableService: Boolean,
+            enableManagerService: Boolean,
+        ) {
+            val traceMonitor =
+                PerfettoTraceMonitor.newBuilder()
+                    .enableImeTrace(enableClient, enableService, enableManagerService)
+                    .build()
+
+            val reader =
+                traceMonitor.withTracing(resultReaderProvider = { buildResultReader(it) }) {
+                    val wmHelper = WindowManagerStateHelper()
+                    val imeApp = ImeAppHelper(instrumentation)
+                    imeApp.launchViaIntent(wmHelper)
+                    imeApp.openIME(wmHelper)
+                    imeApp.waitIMEShown(wmHelper)
+                    imeApp.closeIME(wmHelper)
+                }
+
+            val traceData = reader.readBytes(TraceType.PERFETTO) ?: ByteArray(0)
+            assertTrace(traceData)
+
+            getDebugFile(
+                    "uiTrace-PerfettoTraceMonitorTest-imeTracingTest-$enableClient-$enableService-$enableManagerService"
+                )
+                .writeBytes(traceData)
+
+            val getRowsCount = { session: TraceProcessorSession, tableName: String ->
+                val sql =
+                    "INCLUDE PERFETTO MODULE android.winscope.inputmethod;" +
+                        "SELECT COUNT(*) FROM $tableName;"
+                session.query(sql) { rows ->
+                    require(rows.size == 1)
+                    rows[0]["COUNT(*)"] as Long
+                }
+            }
+
+            val (countRowsClients, countRowsManagerService, countRowsService) =
+                TraceProcessorSession.loadPerfettoTrace(traceData) { session ->
+                    Triple(
+                        getRowsCount(session, "android_inputmethod_clients"),
+                        getRowsCount(session, "android_inputmethod_manager_service"),
+                        getRowsCount(session, "android_inputmethod_service"),
+                    )
+                }
+
+            if (enableClient) {
+                Truth.assertWithMessage("TP doesn't contain IME client rows")
+                    .that(countRowsClients)
+                    .isGreaterThan(0L)
+            } else {
+                Truth.assertWithMessage("TP contains IME client rows")
+                    .that(countRowsClients)
+                    .isEqualTo(0L)
+            }
+
+            if (enableService) {
+                Truth.assertWithMessage("TP doesn't contain IME service rows")
+                    .that(countRowsService)
+                    .isGreaterThan(0L)
+            } else {
+                Truth.assertWithMessage("TP contains IME service rows")
+                    .that(countRowsService)
+                    .isEqualTo(0L)
+            }
+
+            if (enableManagerService) {
+                Truth.assertWithMessage("TP doesn't contain IME manager service rows")
+                    .that(countRowsManagerService)
+                    .isGreaterThan(0L)
+            } else {
+                Truth.assertWithMessage("TP contains IME manager service rows")
+                    .that(countRowsManagerService)
+                    .isEqualTo(0L)
+            }
+        }
+
+        validateImeTracing(
+            enableClient = false,
+            enableService = false,
+            enableManagerService = false,
+        )
+        validateImeTracing(enableClient = true, enableService = false, enableManagerService = false)
+        validateImeTracing(enableClient = false, enableService = true, enableManagerService = false)
+        validateImeTracing(enableClient = false, enableService = false, enableManagerService = true)
+        validateImeTracing(enableClient = true, enableService = true, enableManagerService = true)
+    }
+
+    @Test
+    @RequiresFlagsDisabled(android.tracing.Flags.FLAG_PERFETTO_IME_FINE_GRAINED_CONFIG)
+    fun imeTracingLegacyConfigTest() {
         val traceMonitor = PerfettoTraceMonitor.newBuilder().enableImeTrace().build()
         val reader =
             traceMonitor.withTracing(resultReaderProvider = { buildResultReader(it) }) {
