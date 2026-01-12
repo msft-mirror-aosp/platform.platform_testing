@@ -1,4 +1,2 @@
-# Copyright 2024 Google LLC
-
 # Bug component: 1236360
 include platform/system/software_defined_vehicle/telemetry:main:/OWNERS
