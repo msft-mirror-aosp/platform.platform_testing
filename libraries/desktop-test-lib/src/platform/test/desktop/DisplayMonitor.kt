@@ -32,6 +32,8 @@ import android.provider.Settings
 import android.util.Log
 import android.util.SparseArray
 import android.view.Display
+import android.view.Display.Mode.FLAG_ANISOTROPY_CORRECTION
+import android.view.Display.Mode.FLAG_SIZE_OVERRIDE
 import androidx.annotation.GuardedBy
 import androidx.core.util.size
 import androidx.test.platform.app.InstrumentationRegistry
@@ -488,11 +490,22 @@ class DisplayMonitor(caller: String, val allowDisablingDisplays: Boolean = false
 
     private fun getDisplayMode(display: Display): Display.Mode {
         val userPreferredMode = display.userPreferredDisplayMode
+        if (userPreferredMode != null && (userPreferredMode.flags and FLAG_SIZE_OVERRIDE) != 0) {
+            return userPreferredMode
+        }
         if (
             userPreferredMode != null &&
-                (userPreferredMode.flags and Display.Mode.FLAG_SIZE_OVERRIDE) != 0
+                (userPreferredMode.flags and FLAG_ANISOTROPY_CORRECTION) != 0
         ) {
-            return userPreferredMode
+            val parentMode =
+                display.supportedModes.find { it.modeId == userPreferredMode.parentModeId }
+            // active mode size matches with parent mode size
+            if (
+                parentMode != null &&
+                    display.mode.matches(parentMode.physicalWidth, parentMode.physicalHeight)
+            ) {
+                return userPreferredMode
+            }
         }
         return display.mode
     }
