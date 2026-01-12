@@ -1,0 +1,107 @@
+# Copyright (C) 2026 The Android Open Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+uuid: "369aae14-ab05-4b7e-89e9-fb11aac43917"
+version: 3758096386
+descriptor_protos {
+  name: "adhoc.proto"
+  package: "aaos.sdv.telemetry.adhoc"
+  message_type {
+    name: "distance_storage"
+    field { name: "distance" number: 1 type: TYPE_DOUBLE }
+  }
+  message_type {
+    name: "report"
+    field { name: "value" number: 1 type: TYPE_DOUBLE }
+  }
+  syntax: "proto2"
+}
+triggers {
+  name: "journey"
+  data_trigger { publisher_name: "journey_publisher" }
+}
+triggers {
+  name: "journey_end"
+  conditional_trigger {
+    trigger_names: "journey"
+    selector_node_index: 4
+    is_true {}
+  }
+}
+triggers {
+  name: "journey_start"
+  conditional_trigger {
+    trigger_names: "journey"
+    selector_node_index: 2
+    is_true {}
+  }
+}
+publishers {
+  name: "distance_publisher"
+  service_publisher {
+    service_name: ".google.sdv.telemetry_samples.Distance"
+    connection_type: SUBSCRIPTION
+  }
+}
+publishers {
+  name: "distance_storage"
+  aggregation_publisher {
+    trigger_names: "journey_start"
+    message_builder {
+      message_type: ".aaos.sdv.telemetry.adhoc.distance_storage"
+      field_assignments {
+        field_name: "distance"
+        no_aggregation { expression_node_index: 5 }
+      }
+    }
+  }
+}
+publishers {
+  name: "journey_publisher"
+  service_publisher {
+    service_name: ".google.sdv.telemetry_samples.Journey"
+    connection_type: SUBSCRIPTION
+  }
+}
+# Expression Node 0
+expression_nodes { field_leaf_node { publisher_name: "journey_publisher" field_names: "event" } }
+# Expression Node 1
+expression_nodes { constant_leaf_node { int32_value: 0 } }
+# Expression Node 2
+expression_nodes { combination_node { left_index: 0 right_index: 1 relational_operator: EQ } }
+# Expression Node 3
+expression_nodes { constant_leaf_node { int32_value: 1 } }
+# Expression Node 4
+expression_nodes { combination_node { left_index: 0 right_index: 3 relational_operator: EQ } }
+# Expression Node 5
+expression_nodes {
+  field_leaf_node { publisher_name: "distance_publisher" field_names: "distance" }
+}
+# Expression Node 6
+expression_nodes { field_leaf_node { publisher_name: "distance_storage" field_names: "distance" } }
+# Expression Node 7
+expression_nodes { combination_node { left_index: 5 right_index: 6 arithmetic_operator: SUBTRACT } }
+metrics_report_configs {
+  name: "report"
+  trigger_names: "journey_end"
+  message_builder {
+    message_type: ".aaos.sdv.telemetry.adhoc.report"
+    field_assignments {
+      field_name: "value"
+      no_aggregation { expression_node_index: 7 }
+    }
+  }
+}
+start_trigger_name: "journey_start"
+finish_trigger_name: "journey_end"

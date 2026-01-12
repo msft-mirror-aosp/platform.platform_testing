@@ -1,0 +1,38 @@
+# Copyright (C) 2026 The Android Open Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import sys
+
+from mobly import test_runner
+
+"""
+Pass test arguments after '--' to the test runner. Needed for Mobly Test Runner.
+
+Splits the arguments vector by '--'. Anything before separtor is treated as absl flags.
+Everything after is a Mobly Test Runner arguments. Example:
+
+    python3 <test> -- -c /tmp/config.yaml
+
+Example usage:
+
+    if __name__ == '__main__':
+        test_runner.run()
+"""
+
+
+def run():
+    if '--' in sys.argv:
+        index = sys.argv.index('--')
+        sys.argv = sys.argv[:1] + sys.argv[index + 1 :]
+    test_runner.main()

@@ -1,0 +1,13 @@
+<!-- Copyright 2025 Google LLC -->
+
+# Hardware Tests
+
+SDV Hardware Tests are tests designed to be executed on a physical device.
+
+Note that the other CF tests created in the repository may be also be executed on hardware, but these are not included here. Refer to CI/CD configs.
+
+## Naming conventions
+
+- Src file: sdv_hw_name_test.py
+- Test class: SdvHWNameTest
+- CATBox config: sdv-hw-name-test.xml

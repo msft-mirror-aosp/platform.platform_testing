@@ -1,0 +1,194 @@
+// Copyright (C) 2026 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package {
+    default_team: "trendy_team_auto_engprod",
+    default_applicable_licenses: ["sdv_tests_license"],
+}
+
+python_library_host {
+    name: "sdv_rob_base_test_lib",
+    srcs: [
+        "sdv_rob_base_test.py",
+    ],
+    pkg_path: "robustness",
+    libs: [
+        "cuj22_common_lib",
+        "sdv_vpm_lib",
+    ],
+}
+
+python_test_host {
+    name: "SdvRobCuj001Test",
+    main: "cuj_rob_001_test.py",
+    data: [":sdv_test_fw_device_configs"],
+    srcs: ["cuj_rob_001_test.py"],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: ["sdv_test_fw_defaults"],
+    libs: [
+        "sdv_rob_base_test_lib",
+    ],
+    test_config_template: ":sdv_two_devices",
+}
+
+python_test_host {
+    name: "SdvRobCuj002Test",
+    main: "cuj_rob_002_test.py",
+    data: [":sdv_test_fw_device_configs"],
+    srcs: ["cuj_rob_002_test.py"],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: ["sdv_test_fw_defaults"],
+    libs: ["sdv_rob_base_test_lib"],
+    test_config_template: ":sdv_two_devices",
+}
+
+python_test_host {
+    name: "SdvRobCuj003Test",
+    main: "cuj_rob_003_test.py",
+    data: [":sdv_test_fw_device_configs"],
+    srcs: ["cuj_rob_003_test.py"],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: ["sdv_test_fw_defaults"],
+    libs: [
+        "sdv_rob_base_test_lib",
+    ],
+    test_config_template: ":sdv_two_devices",
+}
+
+python_test_host {
+    name: "SdvRobCuj004Test",
+    main: "cuj_rob_004_test.py",
+    data: [":sdv_test_fw_device_configs"],
+    srcs: ["cuj_rob_004_test.py"],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: ["sdv_test_fw_defaults"],
+    libs: ["sdv_rob_base_test_lib"],
+    test_config_template: ":sdv_two_devices",
+}
+
+python_test_host {
+    name: "SdvRobCuj010Test",
+    main: "cuj_rob_010_test.py",
+    data: [":sdv_test_fw_device_configs"],
+    srcs: ["cuj_rob_010_test.py"],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: ["sdv_test_fw_defaults"],
+    libs: [
+        "sdv_rob_base_test_lib",
+    ],
+    test_config_template: ":sdv_two_devices",
+}
+
+python_test_host {
+    name: "SdvRobCuj011Test",
+    main: "cuj_rob_011_test.py",
+    data: [":sdv_test_fw_device_configs"],
+    srcs: ["cuj_rob_011_test.py"],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: ["sdv_test_fw_defaults"],
+    libs: ["sdv_rob_base_test_lib"],
+    test_config_template: ":sdv_two_devices",
+}
+
+python_test_host {
+    name: "SdvRobCuj012Test",
+    main: "cuj_rob_012_test.py",
+    data: [":sdv_test_fw_device_configs"],
+    srcs: ["cuj_rob_012_test.py"],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: ["sdv_test_fw_defaults"],
+    libs: [
+        "sdv_rob_base_test_lib",
+    ],
+    test_config_template: ":sdv_two_devices",
+}
+
+python_test_host {
+    name: "SdvRobCuj013Test",
+    main: "cuj_rob_013_test.py",
+    data: [":sdv_test_fw_device_configs"],
+    srcs: ["cuj_rob_013_test.py"],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: ["sdv_test_fw_defaults"],
+    libs: ["sdv_rob_base_test_lib"],
+    test_config_template: ":sdv_two_devices",
+}
+
+python_test_host {
+    name: "SdvRobCuj020Test",
+    main: "cuj_rob_020_test.py",
+    data: [":sdv_test_fw_device_configs"],
+    srcs: ["cuj_rob_020_test.py"],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: ["sdv_test_fw_defaults"],
+    libs: ["sdv_rob_base_test_lib"],
+    test_config_template: ":sdv_two_devices",
+}
+
+python_test_host {
+    name: "SdvRobCuj021Test",
+    main: "cuj_rob_021_test.py",
+    data: [":sdv_test_fw_device_configs"],
+    srcs: ["cuj_rob_021_test.py"],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: ["sdv_test_fw_defaults"],
+    libs: ["sdv_rob_base_test_lib"],
+    test_config_template: ":sdv_two_devices",
+}
+
+python_test_host {
+    name: "SdvRobCuj022Test",
+    main: "cuj_rob_022_test.py",
+    data: [":sdv_test_fw_device_configs"],
+    srcs: ["cuj_rob_022_test.py"],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: ["sdv_test_fw_defaults"],
+    libs: ["sdv_rob_base_test_lib"],
+    test_config_template: ":sdv_two_devices",
+}
+
+python_test_host {
+    name: "SdvRobCuj023Test",
+    main: "cuj_rob_023_test.py",
+    data: [":sdv_test_fw_device_configs"],
+    srcs: ["cuj_rob_023_test.py"],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: ["sdv_test_fw_defaults"],
+    libs: ["sdv_rob_base_test_lib"],
+    test_config_template: ":sdv_two_devices",
+}

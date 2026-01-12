@@ -1,0 +1,39 @@
+{
+  "common": {
+    "host_package": "<REPLACE_THIS_BY_REPO_ROOT>/out/host/linux-x86"
+  },
+  "instances": [
+    {
+      "vm": {
+        "memory_mb": 4096,
+        "cpus": 4,
+        "use_sdcard": false
+      },
+      "disk": {
+        "default_build": "<REPLACE_THIS_BY_REPO_ROOT>/out/target/product/sdv_core_cf"
+      },
+      "boot": {
+        "extra_bootconfig_args": "androidboot.sdv.instance_name=instance1 androidboot.sdv.boot_mode=locked androidboot.virt.address=3 androidboot.sdv.init_open_dice.sample_file=dice_handover_instance1 androidboot.sdv.vvmfactorytrust=c779a73d0595a6814ba0414a419e99ad4026ad0feb603f2ad80ee6a9e4d1adb7 androidboot.sdv.keymint.rpc.hbk=799da7577efd41d5b27810c5952fcec0291cbcfd687e77ac9a6cec8370651b1d androidboot.sdv.preprovisioned_vvmtruststore=img androidboot.sdv.ignore_avb_state=true"
+      },
+      "graphics": {
+        "gpu_mode": "none"
+      }
+    },
+    {
+      "vm": {
+        "memory_mb": 4096,
+        "cpus": 4,
+        "use_sdcard": false
+      },
+      "disk": {
+        "default_build": "<REPLACE_THIS_BY_REPO_ROOT>/out/target/product/sdv_core_cf"
+      },
+      "boot": {
+        "extra_bootconfig_args": "androidboot.sdv.instance_name=instance2 androidboot.sdv.boot_mode=locked androidboot.virt.address=4 androidboot.sdv.init_open_dice.sample_file=dice_handover_instance2 androidboot.sdv.vvmfactorytrust=c779a73d0595a6814ba0414a419e99ad4026ad0feb603f2ad80ee6a9e4d1adb7 androidboot.sdv.keymint.rpc.hbk=a3b876291ff7341d861e325406b96a0b58d0a3daf6b030681b8afc24b84d1160 androidboot.sdv.preprovisioned_vvmtruststore=img androidboot.sdv.ignore_avb_state=true"
+      },
+      "graphics": {
+        "gpu_mode": "none"
+      }
+    }
+  ]
+}

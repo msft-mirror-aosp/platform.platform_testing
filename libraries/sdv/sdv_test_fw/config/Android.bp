@@ -1,0 +1,93 @@
+// Copyright (C) 2026 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package {
+    default_applicable_licenses: ["sdv_tests_license"],
+}
+
+// SDV Device configuration files
+filegroup {
+    name: "sdv_test_fw_device_configs",
+    srcs: [
+        "testbed/*",
+    ],
+}
+
+// SDV test config base templates. Sufficient for most tests.
+filegroup {
+    name: "sdv_one_device",
+    srcs: ["test_config/sdv-one-device.xml"],
+}
+
+filegroup {
+    name: "sdv_two_devices",
+    srcs: ["test_config/sdv-two-devices.xml"],
+}
+
+filegroup {
+    name: "sdv_three_devices",
+    srcs: ["test_config/sdv-three-devices.xml"],
+}
+
+// SDV test config exception templates. Only use in special circumstances.
+// TODO(b/339164406): Use templates extension instead once we figure out how.
+filegroup {
+    name: "sdv_one_device_long_test",
+    srcs: ["test_config/exceptions/sdv-one-device-long.xml"],
+}
+
+filegroup {
+    name: "sdv_two_devices_long_test",
+    srcs: ["test_config/exceptions/sdv-two-devices-long.xml"],
+}
+
+// for SDV long running tests (over 10 hours)
+filegroup {
+    name: "sdv_one_device_long_running_test",
+    srcs: ["test_config/long_running/sdv-one-device-long-running.xml"],
+}
+
+filegroup {
+    name: "sdv_two_devices_long_running_test",
+    srcs: ["test_config/long_running/sdv-two-devices-long-running.xml"],
+}
+
+filegroup {
+    name: "sdv_three_devices_long_running_test",
+    srcs: ["test_config/long_running/sdv-three-devices-long-running.xml"],
+}
+
+// SDV configuration file for 2 no root devices.
+filegroup {
+    name: "sdv_two_devices_noroot",
+    srcs: ["test_config/userbuild/sdv-two-devices-noroot.xml"],
+}
+
+// SDV configuration file for 3 no root devices.
+filegroup {
+    name: "sdv_three_devices_noroot",
+    srcs: ["test_config/userbuild/sdv-three-devices-noroot.xml"],
+}
+
+// SDV configuration file for 1 no root device.
+filegroup {
+    name: "sdv_one_device_noroot",
+    srcs: ["test_config/userbuild/sdv-one-device-noroot.xml"],
+}
+
+// SDV configuration file for 1 no root device.
+filegroup {
+    name: "sdv_second_of_two_devices_noroot",
+    srcs: ["test_config/userbuild/sdv-second-of-two-devices-noroot.xml"],
+}

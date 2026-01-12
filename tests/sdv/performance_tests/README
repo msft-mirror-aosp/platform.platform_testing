@@ -1,0 +1,11 @@
+<!-- Copyright 2025 Google LLC -->
+
+# Performance Tests
+
+Performance tests use the perfetto library.
+
+## Naming conventions
+
+- Src file: sdv_performance_name_test.py
+- Test class: SdvPerformanceNameTest
+- CATBox config: sdv-performance-name-test.xml

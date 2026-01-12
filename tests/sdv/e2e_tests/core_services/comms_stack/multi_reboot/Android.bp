@@ -1,0 +1,124 @@
+// Copyright (C) 2026 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package {
+    default_team: "trendy_team_automotive",
+    default_applicable_licenses: ["sdv_tests_license"],
+}
+
+python_test_host {
+    name: "SdvCommsStackMultiRebootTestOrchConfig_0_0_10",
+    main: "sdv_comm_stack_multi_reboot_test_orch_config_0_0_10.py",
+    srcs: [
+        "sdv_comm_stack_multi_reboot_test_orch_config_0_0_10.py",
+        "sdv_comm_stack_multi_reboot_test_orch_config_base.py",
+    ],
+    libs: [
+        "cuj22_common_lib",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: "multi-reboot-exception-template.xml",
+}
+
+python_test_host {
+    name: "SdvCommsStackMultiRebootTestOrchConfig_0_10_0",
+    main: "sdv_comm_stack_multi_reboot_test_orch_config_0_10_0.py",
+    srcs: [
+        "sdv_comm_stack_multi_reboot_test_orch_config_0_10_0.py",
+        "sdv_comm_stack_multi_reboot_test_orch_config_base.py",
+    ],
+    libs: [
+        "cuj22_common_lib",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: "multi-reboot-exception-template.xml",
+}
+
+python_test_host {
+    name: "SdvCommsStackMultiRebootTestOrchConfig_5_5_0",
+    main: "sdv_comm_stack_multi_reboot_test_orch_config_5_5_0.py",
+    srcs: [
+        "sdv_comm_stack_multi_reboot_test_orch_config_5_5_0.py",
+        "sdv_comm_stack_multi_reboot_test_orch_config_base.py",
+    ],
+    libs: [
+        "cuj22_common_lib",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: "multi-reboot-exception-template.xml",
+}
+
+python_test_host {
+    name: "SdvCommsStackMultiRebootTestOrchConfig_10_0_0",
+    main: "sdv_comm_stack_multi_reboot_test_orch_config_10_0_0.py",
+    srcs: [
+        "sdv_comm_stack_multi_reboot_test_orch_config_10_0_0.py",
+        "sdv_comm_stack_multi_reboot_test_orch_config_base.py",
+    ],
+    libs: [
+        "cuj22_common_lib",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: "multi-reboot-exception-template.xml",
+}
+
+python_test_host {
+    name: "SdvCommsStackMultiRebootTestCliTool",
+    main: "sdv_comm_stack_multi_reboot_test_cli_tool.py",
+    srcs: [
+        "sdv_comm_stack_multi_reboot_test_cli_tool.py",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: "multi-reboot-exception-template.xml",
+}

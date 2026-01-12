@@ -1,0 +1,47 @@
+# Copyright (C) 2026 The Android Open Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+uuid: "91a83072-fb29-4c85-822e-06b8290f9e50"
+version: 3758096386
+descriptor_protos {
+  name: "adhoc.proto"
+  package: "aaos.sdv.telemetry.adhoc"
+  message_type {
+    name: "report"
+    field { name: "value" number: 1 type: TYPE_INT32 }
+  }
+  syntax: "proto2"
+}
+triggers {
+  name: "periodic_400ms"
+  periodic_trigger { interval { nanos: 400000000 } }
+}
+triggers {
+  name: "periodic_600ms"
+  periodic_trigger { interval { nanos: 600000000 } }
+}
+# Expression Node 0
+expression_nodes { constant_leaf_node { int32_value: 42 } }
+metrics_report_configs {
+  name: "report"
+  trigger_names: "periodic_600ms"
+  message_builder {
+    message_type: ".aaos.sdv.telemetry.adhoc.report"
+    field_assignments {
+      field_name: "value"
+      no_aggregation { expression_node_index: 0 }
+    }
+  }
+}
+start_trigger_name: "periodic_400ms"

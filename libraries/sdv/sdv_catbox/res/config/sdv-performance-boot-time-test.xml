@@ -1,0 +1,52 @@
+<!--
+  Copyright (C) 2026 The Android Open Source Project
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+      http://www.apache.org/licenses/LICENSE-2.0
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<configuration description="SDV Boot Time Test">
+    <!-- Plan -->
+    <option name="plan" value="sdv-performance-boot-time-test"/>
+
+    <!-- Include SDV Base Configuration -->
+    <include name="common/sdv-catbox-base"/>
+
+    <!-- Test Tag -->
+    <option name="test-tag" value="sdv-catbox-performance-boot-time" />
+
+    <!-- Template for Device Configuration -->
+    <template-include name="device-config" default="sdv-device-config/generic/one-device" />
+
+    <!-- ACTUAL TEST -->
+    <option name="compatibility:include-filter" value="BootTimeTest android.boottime.BootTimeTest#testSuccessiveBoots"/>
+    <option name="compatibility:test-arg" value="com.android.tradefed.testtype.HostTest:set-option:boot-delay:20000" />
+    <option name="compatibility:test-arg" value="com.android.tradefed.testtype.HostTest:set-option:boot-count:10" />
+    <option name="compatibility:test-arg" value="com.android.tradefed.testtype.HostTest:set-option:after-boot-delay:5000" />
+
+    <metrics_collector class="com.android.tradefed.device.metric.AtraceCollector"/>
+    <metrics_collector class="com.android.tradefed.device.metric.PerfettoPullerMetricCollector">
+        <option name="collect-on-run-ended-only" value="false" />
+    </metrics_collector>
+
+    <metric_post_processor class="com.android.tradefed.postprocessor.PerfettoGenericPostProcessor" />
+    <metric_post_processor class="com.android.tradefed.postprocessor.MetricFilePostProcessor">
+        <option name="aggregate-similar-tests" value="true" />
+    </metric_post_processor>
+    <metric_post_processor class="android.boottime.postprocessor.LogcatPostProcessor">
+        <option name="file-regex" value=".*Successive_reboots_logcat.*"/>
+        <option name="starting-phase-signal" value="init first stage started!"/>
+        <option name="boot-time-pattern" key="vm_boot_completed" value="VIRTUAL_DEVICE_BOOT_COMPLETED"/>
+        <option name="boot-time-pattern" key="orch_loading_all_bundles_configs_completed" value="Finished loading all service bundles orch configs."/>
+        <option name="boot-time-pattern" key="orch_loading_vm_config_completed" value="Finished loading vm_config"/>
+        <option name="boot-time-pattern" key="all-apex-loaded" value="apexd   : OnStart done, duration="/>
+    </metric_post_processor>
+    <metric_post_processor class="android.boottime.postprocessor.DmesgPostProcessor">
+        <option name="file-regex" value=".*Successive_reboots_dmesg.*"/>
+    </metric_post_processor>
+</configuration>

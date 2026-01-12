@@ -1,0 +1,125 @@
+// Copyright (C) 2026 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package {
+    default_team: "trendy_team_auto_engprod",
+    default_applicable_licenses: ["sdv_tests_license"],
+}
+
+python_library_host {
+    name: "sdv_perfetto_collector_lib",
+    pkg_path: "sdv_perfetto",
+    srcs: [
+        "perfetto_collector.py",
+    ],
+    libs: [
+        "mobly",
+        "sdv_perfetto_collector_config_lib",
+        "sdv_test_fw_lib",
+    ],
+    data: [
+        "//system/extras/torq:torq",
+    ],
+}
+
+python_library_host {
+    name: "sdv_perfetto_collector_config_lib",
+    pkg_path: "sdv_perfetto",
+    srcs: [
+        "collector_config.py",
+    ],
+    data: [
+        ":sdv_default_trace_config",
+    ],
+}
+
+python_library_host {
+    name: "sdv_perfetto_trace_processor_lib",
+    pkg_path: "sdv_perfetto",
+    srcs: [
+        "perfetto_trace_processor.py",
+    ],
+    libs: [
+        "perfetto-trace-processor-python",
+        "perfetto_metrics_python_protos",
+        "sdv_perf_dashboard_lib",
+    ],
+}
+
+filegroup {
+    name: "sdv_default_trace_config",
+    srcs: [
+        "config/default_trace_cfg.pbtx",
+    ],
+}
+
+python_defaults {
+    name: "sdv_perfetto_defaults",
+    libs: [
+        "sdv_perfetto_collector_lib",
+    ],
+    // TODO(b/448645787): Fix cfg.pbtx retrieval in Collector to remove the
+    // embedded_launcher.
+    embedded_launcher: false,
+}
+
+python_defaults {
+    name: "sdv_perfetto_trace_processor_defaults",
+    libs: [
+        "sdv_perfetto_trace_processor_lib",
+    ],
+    // TODO(b/448645787): Fix NotADirectoryError for trace_processor/trace_processor.descriptor to remove the
+    embedded_launcher: false,
+}
+
+// Library tests.
+
+python_test_host {
+    name: "sdv_perfetto_collector_test",
+    srcs: ["perfetto_collector_test.py"],
+    main: "perfetto_collector_test.py",
+    defaults: [
+        "sdv_perfetto_defaults",
+    ],
+    test_options: {
+        unit_test: true,
+    },
+    libs: [
+        "perfetto_metrics_python_protos",
+    ],
+}
+
+python_test_host {
+    name: "sdv_collector_config_test",
+    srcs: ["collector_config_test.py"],
+    main: "collector_config_test.py",
+    defaults: [
+        "sdv_perfetto_defaults",
+    ],
+    test_options: {
+        unit_test: true,
+    },
+}
+
+python_test_host {
+    name: "sdv_perfetto_trace_processor_test",
+    srcs: ["perfetto_trace_processor_test.py"],
+    main: "perfetto_trace_processor_test.py",
+    defaults: [
+        "sdv_perfetto_trace_processor_defaults",
+    ],
+    test_options: {
+        unit_test: true,
+    },
+}

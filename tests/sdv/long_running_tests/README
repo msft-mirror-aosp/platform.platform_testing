@@ -1,0 +1,13 @@
+<!-- Copyright 2025 Google LLC -->
+
+# Long-running Tests
+
+Long-running tests are designed for extended execution periods, currently up to 10h in CI/CD.
+
+These tests are excluded from presubmit checks and only run on selected postsubmit builds to prevent pipeline bottlenecks.
+
+## Naming conventions
+
+- Src file: sdv_long_running_name_test.py
+- Test class: SdvLongRunningNameTest
+- CATBox config: sdv-long-running-name-test.xml

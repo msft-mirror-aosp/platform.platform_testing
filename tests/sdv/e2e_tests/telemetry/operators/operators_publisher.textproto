@@ -1,0 +1,31 @@
+# Copyright (C) 2026 The Android Open Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+service_name: ".google.sdv.telemetry_samples.OperatorsTestdata"
+data_format_protos {
+  name: "operators.proto"
+  package: "google.sdv.telemetry_samples"
+  message_type {
+    name: "OperatorsTestdata"
+    field { name: "integer" number: 1 type: TYPE_INT32 json_name: "integer" }
+    field { name: "float" number: 2 type: TYPE_FLOAT json_name: "float" }
+    field { name: "boolean" number: 3 type: TYPE_BOOL json_name: "boolean" }
+  }
+}
+data_format_message_name: ".google.sdv.telemetry_samples.OperatorsTestdata"
+data_generators {
+  loop_data: false
+  default_delay { seconds: 1 nanos: 0 }
+  csv_file { file_path: "/data/local/tmp/operators_publisher_data.csv" delimiter: "," }
+}
