@@ -21,6 +21,7 @@ license {
     visibility: [
         ":__subpackages__",
         "//platform_testing/tests/sdv:__subpackages__",
+        "//vendor:__subpackages__",
     ],
     license_kinds: [
         "legacy_proprietary",
