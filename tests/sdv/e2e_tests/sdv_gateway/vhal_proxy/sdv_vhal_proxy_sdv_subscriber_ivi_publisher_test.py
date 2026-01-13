@@ -34,7 +34,7 @@ class SdvVhalProxySdvSubscriberIviPublisherTest(
         'cmd car_service set-property-value RANGE_REMAINING 0 {set_value}'
     )
     LOG_TAG = 'SdvRangeRemaining'
-    EXPECTED_VHAL_PROXY_LOG = 'Some\\(F32\\({expect_value}\\)\\)'
+    EXPECTED_VHAL_PROXY_LOG = 'Some(F32({expect_value}))'
     TEST_VALUE = 23.3233
 
     def setup_class(self):
@@ -72,7 +72,6 @@ class SdvVhalProxySdvSubscriberIviPublisherTest(
         )
         WaitingMethods.wait_and_verify_expected_logs(
             self.core_vm_device,
-            logcat_args=f'{self.LOG_TAG}:V *:S',
             grep_text=expected_log,
             timeout=60,
             assert_msg=(
