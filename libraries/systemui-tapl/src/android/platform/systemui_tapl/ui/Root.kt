@@ -58,7 +58,6 @@ import androidx.test.uiautomator.UiSelector
 import androidx.test.uiautomator.Until
 import com.android.app.tracing.traceSection
 import com.android.launcher3.tapl.LauncherInstrumentation
-import com.android.launcher3.tapl.Workspace
 import com.android.systemui.Flags
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
@@ -641,17 +640,9 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
      * LauncherInstrumentation.goHome because LauncherInstrumentation.goHome expects all prior
      * animations to settle before it's used, which is true for Launcher tests that use it, but not
      * necessarily true for SysUI tests.
-     *
-     * @return the Workspace object.
      */
-    fun goHomeViaKeycode(): Workspace {
+    fun goHomeViaKeycode() {
         uiDevice.pressHome()
-        // getWorkspace will check `expectedRotation` and fail if it doesn't match the one from
-        // the device. However, if the test has an Orientation annotation, the orientation won't
-        // be fixed back until after this is run, possibly failing the test.
-        val instrumentation = LauncherInstrumentation()
-        instrumentation.setExpectedRotation(uiDevice.displayRotation)
-        return instrumentation.getWorkspace()
     }
 
     private fun wakeUp() {
