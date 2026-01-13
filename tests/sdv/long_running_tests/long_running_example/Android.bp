@@ -1,0 +1,78 @@
+// Copyright (C) 2026 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package {
+    default_team: "trendy_team_auto_engprod",
+    default_applicable_licenses: ["sdv_tests_license"],
+}
+
+// One VM example test
+python_test_host {
+    name: "SdvOneDeviceLongRunningExampleTest",
+    main: "sdv_long_running_example_test_1vm.py",
+    srcs: [
+        "long_running_common.py",
+        "sdv_long_running_example_test_1vm.py",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: ":sdv_one_device_long_running_test",
+}
+
+// Two VMs example test
+python_test_host {
+    name: "SdvTwoDevicesLongRunningExampleTest",
+    main: "sdv_long_running_example_test_2vm.py",
+    srcs: [
+        "long_running_common.py",
+        "sdv_long_running_example_test_2vm.py",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: ":sdv_two_devices_long_running_test",
+}
+
+// Three VMs example test
+python_test_host {
+    name: "SdvThreeDevicesLongRunningExampleTest",
+    main: "sdv_long_running_example_test_3vm.py",
+    srcs: [
+        "long_running_common.py",
+        "sdv_long_running_example_test_3vm.py",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: ":sdv_three_devices_long_running_test",
+}

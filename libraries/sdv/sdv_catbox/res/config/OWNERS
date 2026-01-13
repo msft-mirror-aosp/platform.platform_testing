@@ -1,0 +1,33 @@
+# Copyright 2024 Google LLC
+
+# For templates:
+per-file common/*=crisguerrero@google.com,mariiasvit@google.com
+per-file sdv-device-config/*=crisguerrero@google.com,mariiasvit@google.com
+
+# SDV test configs need to be approved by SDV EngProd team for now.
+# All tests should follow the right nomenclature per type of test.
+
+# For tests with exceptions (e.g. timeout override):
+crisguerrero@google.com #{LAST_RESORT_SUGGESTION}
+mariiasvit@google.com #{LAST_RESORT_SUGGESTION}
+
+# For userbuild tests:
+amanajas@google.com #{LAST_RESORT_SUGGESTION}
+
+# Sample tests:
+per-file sdv-sample*=almuthanna@google.com,xinner@google.com
+
+# E2E tests:
+per-file sdv-e2e*=almuthanna@google.com,xinner@google.com
+
+# Long-running tests:
+per-file sdv-long-running*=almuthanna@google.com
+
+# Performance tests:
+per-file sdv-performance*=bxiao@google.com
+
+# Hardware tests:
+per-file sdv-hw*=dotchere@google.com,pneuhaus@google.com
+
+# Telemetry
+per-file *telemetry*=file:platform/system/software_defined_vehicle/telemetry:main:/OWNERS

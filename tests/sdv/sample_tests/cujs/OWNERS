@@ -1,0 +1,17 @@
+# CUJ tests are owned by all SDV engineering teams
+
+# Automotive services
+# Bug component: 1308123
+include platform/system/software_defined_vehicle/automotive_services:main:/OWNERS
+
+# Core services
+# Bug component: 1307790
+include platform/system/software_defined_vehicle/core_services:main:/OWNERS
+
+# Platform:
+# Bug component: 1307789
+include platform/system/software_defined_vehicle/platform:main:/OWNERS
+
+# Telemetry
+# Bug component: 1236360
+include platform/system/software_defined_vehicle/telemetry:main:/OWNERS

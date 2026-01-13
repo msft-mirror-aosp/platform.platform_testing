@@ -38,5 +38,5 @@ class AodRON internal constructor() {
         By.copy(LockScreen.RON_AOD_SKELETON).hasDescendant(androidResSelector("title").text(title))
 
     private fun notificationByAltTitleSelector(title: String) =
-        By.copy(LockScreen.RON_AOD_SKELETON).hasDescendant(androidResSelector("title").text(title))
+        By.copy(LockScreen.RON_AOD_SKELETON).hasDescendant(androidResSelector("alt_title").text(title))
 }

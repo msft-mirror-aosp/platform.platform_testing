@@ -1,0 +1,129 @@
+# Copyright 2025 Google LLC
+#
+# Trace configuration for Perfetto capture.
+# You can use Perfetto UI to generate a config at https://ui.perfetto.dev/#!/record/instructions
+# Documentation: https://perfetto.dev/docs/concepts/config
+# Reference: https://perfetto.dev/docs/reference/trace-config-proto
+# Example configs: https://cs.android.com/android/platform/superproject/+/master:external/perfetto/test/configs/
+
+# The duration of the trace.
+# duration_ms: 15000
+
+# google3/java/com/google/devtools/hawkeye/measurer/perfetto/trace_config.textproto
+# periodically writes the trace to disk.
+ write_into_file: true
+ file_write_period_ms: 3000
+
+ flush_period_ms: 5000
+
+
+# If data sources are writing at different rates, it may be beneficial to direct them to different
+# buffers. The target_buffer property of a source config determines the used buffer.
+# Here we define a second smaller buffer for infrequent sources.
+buffers: {
+    size_kb: 32768
+    fill_policy: RING_BUFFER
+}
+data_sources: {
+  config {
+    name: "android.log"
+    android_log_config {
+    }
+  }
+}
+
+data_sources: {
+    config {
+        # Process stats help Perfetto with thread grouping and process names.
+        # Config reference: https://perfetto.dev/docs/reference/trace-config-proto#ProcessStatsConfig
+        name: "linux.process_stats"
+        target_buffer: 0
+        process_stats_config {
+            scan_all_processes_on_start: true
+
+            # Intervals to collect memory stat counters. Use interval >100 ms to not load CPU.
+            # Doc: https://perfetto.dev/docs/data-sources/memory-counters#per-process-polled-counters
+            # Uncomment to enable.
+            proc_stats_poll_ms: 1000
+        }
+    }
+}
+
+data_sources: {
+    config {
+        # /proc counters.
+        # Config reference: https://perfetto.dev/docs/reference/trace-config-proto#SysStatsConfig
+        name: "linux.sys_stats"
+        target_buffer: 0
+        sys_stats_config {
+            stat_period_ms: 250
+            stat_counters: STAT_CPU_TIMES
+            stat_counters: STAT_FORK_COUNT
+
+            meminfo_period_ms: 1000
+            meminfo_counters: MEMINFO_MEM_TOTAL
+            meminfo_counters: MEMINFO_ACTIVE_ANON
+            meminfo_counters: MEMINFO_ACTIVE_FILE
+            meminfo_counters: MEMINFO_INACTIVE_ANON
+            meminfo_counters: MEMINFO_INACTIVE_FILE
+            meminfo_counters: MEMINFO_KERNEL_STACK
+            meminfo_counters: MEMINFO_MLOCKED
+            meminfo_counters: MEMINFO_SHMEM
+            meminfo_counters: MEMINFO_SLAB
+            meminfo_counters: MEMINFO_SLAB_UNRECLAIMABLE
+            meminfo_counters: MEMINFO_VMALLOC_USED
+            meminfo_counters: MEMINFO_MEM_FREE
+            meminfo_counters: MEMINFO_SWAP_FREE
+        }
+    }
+}
+
+data_sources: {
+    config {
+        # Kernel tracing info.
+        # Config reference: https://perfetto.dev/docs/reference/trace-config-proto#FtraceConfig
+        name: "linux.ftrace"
+        ftrace_config {
+            # CPU Scheduling events.
+            # Doc: https://perfetto.dev/docs/data-sources/cpu-scheduling
+            ftrace_events: "sched/sched_switch"
+            ftrace_events: "sched/sched_process_exit"
+            ftrace_events: "sched/sched_process_free"
+            ftrace_events: "task/task_newtask"
+            ftrace_events: "task/task_rename"
+
+            ftrace_events: "dmabuf_heap/dma_heap_stat"
+            ftrace_events: "kmem/ion_heap_grow"
+            ftrace_events: "kmem/ion_heap_shrink"
+
+            # Events from the binder kernel driver used for IPC.
+            # atrace_categories: "binder_driver"
+
+
+            # App events are those that use the app tag in ATrace (ATRACE_TAG_APP).
+            # The app tag is the same for all apps and the events are enabled based on the app name.
+            # Setting atrace_apps to "*" enable ATrace events for all apps. Setting it to app name
+            # restricts them to those apps. Use multiple atrace_apps entries to enable multiple apps.
+             atrace_apps: "*health_monitor*"
+             atrace_apps: "*sdv_comms_client*"
+        }
+    }
+}
+
+data_sources: {
+    config {
+        # Track events from the tracing SDK.
+        # Here you can set filters for categories and tags.
+        # Doc: https://perfetto.dev/docs/instrumentation/track-events#category-configuration
+        # Config reference: https://perfetto.dev/docs/reference/trace-config-proto#TrackEventConfig
+        name: "track_event"
+    }
+}
+
+# builtin_data_sources: {
+    # Synchronization of multiple clock of different VMs.
+    # Here you can set filters for categories and tags.
+    # Doc: https://perfetto.dev/docs/concepts/clock-sync
+    # Config reference: https://perfetto.dev/docs/reference/trace-config-proto#BuiltinClock
+    # primary_trace_clock: BUILTIN_CLOCK_MONOTONIC
+# }

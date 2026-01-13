@@ -1,0 +1,54 @@
+# Copyright 2025 Google LLC
+#
+# Trace configuration for Perfetto capture.
+# You can use Perfetto UI to generate a config at https://ui.perfetto.dev/#!/record/instructions
+# Documentation: https://perfetto.dev/docs/concepts/config
+# Reference: https://perfetto.dev/docs/reference/trace-config-proto
+# Example configs: https://cs.android.com/android/platform/superproject/+/master:external/perfetto/test/configs/
+
+write_into_file: true
+file_write_period_ms: 3000
+
+flush_period_ms: 5000
+
+
+buffers: {
+    size_kb: 32768
+    fill_policy: RING_BUFFER
+}
+
+data_sources: {
+    config {
+        # Process stats help Perfetto with thread grouping and process names.
+        # Config reference: https://perfetto.dev/docs/reference/trace-config-proto#ProcessStatsConfig
+        name: "linux.process_stats"
+        target_buffer: 0
+        process_stats_config {
+            scan_all_processes_on_start: true
+            proc_stats_poll_ms: 1000
+        }
+    }
+}
+
+
+data_sources: {
+    config {
+        # Kernel tracing info.
+        # Config reference: https://perfetto.dev/docs/reference/trace-config-proto#FtraceConfig
+        name: "linux.ftrace"
+        ftrace_config {
+            # CPU Scheduling events.
+            # Doc: https://perfetto.dev/docs/data-sources/cpu-scheduling
+            ftrace_events: "sched/sched_switch"
+            ftrace_events: "task/task_rename"
+        }
+    }
+}
+
+builtin_data_sources: {
+    # Synchronization of multiple clock of different VMs.
+    # Here you can set filters for categories and tags.
+    # Doc: https://perfetto.dev/docs/concepts/clock-sync
+    # Config reference: https://perfetto.dev/docs/reference/trace-config-proto#BuiltinClock
+    primary_trace_clock: BUILTIN_CLOCK_MONOTONIC
+}
