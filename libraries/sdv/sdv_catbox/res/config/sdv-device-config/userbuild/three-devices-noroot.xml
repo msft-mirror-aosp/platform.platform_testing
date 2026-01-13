@@ -23,20 +23,14 @@
 
   <device name="device1">
     <build_provider class="com.android.compatibility.common.tradefed.build.CompatibilityBuildProvider" />
-    <!-- Run the custom lock preparer early on -->
-    <target_preparer class="com.android.tradefed.targetprep.SdvAvbLockPreparer" />
   </device>
 
   <device name="device2">
     <build_provider class="com.android.compatibility.common.tradefed.build.CompatibilityBuildProvider" />
-    <!-- Run the custom lock preparer early on -->
-    <target_preparer class="com.android.tradefed.targetprep.SdvAvbLockPreparer" />
   </device>
 
   <device name="device3">
     <build_provider class="com.android.compatibility.common.tradefed.build.CompatibilityBuildProvider" />
-    <!-- Run the custom lock preparer early on -->
-    <target_preparer class="com.android.tradefed.targetprep.SdvAvbLockPreparer" />
   </device>
 
   <!-- Testbed config file -->
