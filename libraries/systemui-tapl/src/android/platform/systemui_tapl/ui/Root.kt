@@ -16,9 +16,11 @@
 
 package android.platform.systemui_tapl.ui
 
+import android.Manifest
 import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.Rect
+import android.hardware.display.DisplayManager
 import android.os.RemoteException
 import android.os.SystemClock
 import android.platform.helpers.ShadeUtils
@@ -51,6 +53,7 @@ import android.view.KeyEvent
 import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.WindowMetrics
+import androidx.annotation.RequiresPermission
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
@@ -468,6 +471,29 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
             uiDevice.executeShellCommand("cmd statusbar collapse")
         }
         waitForShadeToClose(displayId)
+    }
+
+    /**
+     * Simulates a brightness up key press event and verifying that the brightness slider appears on
+     * screen. The brightness is reset to its original level if the action fails.
+     */
+    @RequiresPermission(Manifest.permission.CONTROL_DISPLAY_BRIGHTNESS)
+    fun increaseBrightnessByKeyAndVerifySlider(
+        displayManager: DisplayManager
+    ): BrightnessDialogSlider {
+        val brightnessBefore = displayManager.getBrightness(displayId)
+
+        return executeWithRetry(
+            description = "Press brightness up key and verify slider visibility",
+            resetAction = { displayManager.setBrightness(displayId, brightnessBefore) },
+        ) {
+            val result = uiDevice.pressKeyCode(KeyEvent.KEYCODE_BRIGHTNESS_UP)
+            if (!result) {
+                throw IllegalStateException("Failed to inject BRIGHTNESS_UP key event.")
+            }
+
+            BrightnessDialogSlider()
+        }
     }
 
     /**
