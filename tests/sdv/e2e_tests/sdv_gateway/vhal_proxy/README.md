@@ -53,8 +53,11 @@ atest SdvVhalProxySdvSubscriberIviPublisher
 
 ```
 NOTIFY_AS_NATIVE=0.0.0.0:6520,0.0.0.0:6521 ./tools/catbox-tradefed run commandAndExit sdv-e2e-vhal-proxy-sdv-publisher-ivi-subscriber-test --{device1}serial 0.0.0.0:6520 --{device2}serial 0.0.0.0:6521
+
+NOTIFY_AS_NATIVE=0.0.0.0:6520,0.0.0.0:6521 ./tools/catbox-tradefed run commandAndExit sdv-e2e-vhal-proxy-sdv-subscriber-ivi-publisher-test --{device1}serial 0.0.0.0:6520 --{device2}serial 0.0.0.0:6521
 ```
 
 ## CI/CD execution
 
 - Name: `sdv/e2e/sdv_vhal_proxy_sdv_publisher_ivi_subscriber_test`
+- Name: `sdv/e2e/sdv_vhal_proxy_sdv_subscriber_ivi_publisher_test`
