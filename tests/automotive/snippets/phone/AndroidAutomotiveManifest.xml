@@ -62,6 +62,7 @@
                        com.google.android.mobly.snippet.bundled.UISnippet,
                        com.google.android.mobly.snippet.bundled.MediaPlayerSnippet,
                        com.google.android.mobly.snippet.bundled.UxrestrictionSnippet,
+                       com.google.android.mobly.snippet.bundled.VehicleHardKeysSnippet,
                        com.google.android.mobly.snippet.bundled.WifiManagerSnippet" />
 
   </application>
