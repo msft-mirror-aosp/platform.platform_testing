@@ -36,6 +36,8 @@ import androidx.test.uiautomator.UiDevice;
 import androidx.test.uiautomator.UiObject2;
 import androidx.test.uiautomator.Until;
 
+import com.android.systemui.Flags;
+
 import org.junit.Assert;
 
 import java.util.ArrayList;
@@ -53,7 +55,10 @@ public class QuickSettingsHelper {
     private static final int LONG_TIMEOUT = 2000;
     private static final int SHORT_TIMEOUT = 500;
     private static final String SYSTEMUI_PACKAGE = "com.android.systemui";
-    private static final String QS_DEFAULT_TILES_RES = "quick_settings_tiles_default";
+    private static final String QS_DEFAULT_TILES_RES =
+            Flags.qsSplitInternetTileRw()
+                    ? "quick_settings_tiles_default_split"
+                    : "quick_settings_tiles_default";
     private static final BySelector FOOTER_SELECTOR = By.res(SYSTEMUI_PACKAGE, "qs_footer");
     private static final String SYSUI_QS_TILES_SETTING = "sysui_qs_tiles";
     private static final String SET_QS_TILES_COMMAND = "cmd statusbar set-tiles ";
