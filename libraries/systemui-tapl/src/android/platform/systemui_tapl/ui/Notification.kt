@@ -457,6 +457,10 @@ internal constructor(
         notification.waitForObj(By.text(label)).click()
     }
 
+    fun clickSendButton() {
+        notification.waitForObj(REMOTE_INPUT_SEND_SELECTOR, SHORT_WAIT).click()
+    }
+
     /**
      * Press the reply button, enter [text] to reply with and send.
      *
@@ -528,10 +532,7 @@ internal constructor(
         val leftBoundary = bounds.left.toFloat()
         val rightBoundary = bounds.right.toFloat()
         // swipe from slightly to the right to avoid flakiness
-        BetterSwipe.swipe(
-            PointF(leftBoundary + 10, centerY),
-            PointF(rightBoundary, centerY),
-        )
+        BetterSwipe.swipe(PointF(leftBoundary + 10, centerY), PointF(rightBoundary, centerY))
     }
 
     companion object {
