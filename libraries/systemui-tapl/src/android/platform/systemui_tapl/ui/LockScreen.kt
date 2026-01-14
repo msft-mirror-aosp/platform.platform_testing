@@ -33,7 +33,6 @@ import android.view.Display.DEFAULT_DISPLAY
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import com.android.launcher3.tapl.LauncherInstrumentation
-import com.android.launcher3.tapl.Workspace
 import com.android.systemui.Flags.sceneContainer
 import com.google.common.truth.Truth.assertWithMessage
 
@@ -82,8 +81,8 @@ class LockScreen internal constructor(val displayId: Int = DEFAULT_DISPLAY) {
         get() = LockscreenNotificationShade()
 
     /** Swipes up to the unlocked state. */
-    fun swipeUpToUnlock(): Workspace {
-        return unlock(useSwipeUp = true)
+    fun swipeUpToUnlock() {
+        unlock(useSwipeUp = true)
     }
 
     /**
@@ -92,8 +91,8 @@ class LockScreen internal constructor(val displayId: Int = DEFAULT_DISPLAY) {
      * This method provides a non-interactive way to unlock the screen, which is essential for
      * automated environments like test setup or teardown.
      */
-    fun unlockWithShellCommand(): Workspace {
-        return unlock(useSwipeUp = false)
+    fun unlockWithShellCommand() {
+        unlock(useSwipeUp = false)
     }
 
     /** Uses home key to get to the unlocked state, skipping potentially flaky gesture. */
@@ -176,7 +175,7 @@ class LockScreen internal constructor(val displayId: Int = DEFAULT_DISPLAY) {
         )
     }
 
-    private fun unlock(useSwipeUp: Boolean): Workspace {
+    private fun unlock(useSwipeUp: Boolean) {
         if (useSwipeUp) {
             swipeUp()
         } else {
@@ -187,7 +186,7 @@ class LockScreen internal constructor(val displayId: Int = DEFAULT_DISPLAY) {
         assertWithMessage("Device is still locked after swiping up")
             .that(LockscreenController.get().isDeviceLocked)
             .isFalse()
-        return Root.get().goHomeViaKeycode()
+        Root.get().goHomeViaKeycode()
     }
 
     companion object {
