@@ -32,7 +32,9 @@ class SdvSampleLoggingAPITest(
 ):
 
     IN_ASSERT_MESSAGE = 'The {} do not contain the expected string "{}"'
+    REGEX_ASSERT_MESSAGE = 'The {} do not contain a match of the expected regex "{}"'
     NOT_IN_ASSERT_MESSAGE = 'The {} should not contain the string "{}"'
+    NOT_REGEX_ASSERT_MESSAGE = 'The {} should not contain any match of the expected regex "{}"'
     REGEX_ASSERT_MESSAGE = 'Logs do not contain the {} regular expression'
     TIMESTAMP_ASSERT_MESSAGE = (
         'Logs do not contain expected timestamp (between {} and {}, got {})'
@@ -99,10 +101,13 @@ class SdvSampleLoggingAPITest(
             'I log_sdv_rust_lib_sample: INFO log from Rust library',
             'W log_sdv_rust_lib_sample: WARNING log from Rust library',
             'E log_sdv_rust_lib_sample: ERROR log from Rust library',
-            'F logging_sdv_sample: logging.cpp:43] test FATAL log',
-            "F DEBUG   : Abort message: 'test FATAL log'",
         ]
         self.check_contains_all(log, basic_expected_logs, label='logs')
+        basic_expected_regexes = [
+            'F logging_sdv_sample: logging.cpp:[0-9]+] test FATAL log',
+            "F DEBUG\s+: Abort message: 'test FATAL log'",
+        ]
+        self.check_matches_all(log, basic_expected_regexes, label='logs')
 
         logging.info(
             f'{self.get_suite_name()}#{self.current_test_info.name} finished'
@@ -131,13 +136,13 @@ class SdvSampleLoggingAPITest(
             "F DEBUG   : Abort message: 'Check failed: argc <= 1 "
             + "(argc=2, 1=1) test CHECK'",
         ]
-        failed_check_unexpected_logs = [
-            'F logging_sdv_sample: logging.cpp:43] test FATAL log',
-            "F DEBUG   : Abort message: 'test FATAL log'",
+        failed_check_unexpected_regexes = [
+            'F logging_sdv_sample: logging.cpp:.+] test FATAL log',
+            "F DEBUG.+: Abort message: 'test FATAL log'",
         ]
         self.check_contains_all(log, failed_check_expected_logs, label='logs')
-        self.check_contains_none(
-            log, failed_check_unexpected_logs, label='logs'
+        self.check_matches_none(
+            log, failed_check_unexpected_regexes, label='logs'
         )
 
         logging.info(
@@ -225,48 +230,49 @@ class SdvSampleLoggingAPITest(
             f'{self.get_suite_name()}#{self.current_test_info.name} finished'
         )
 
-    def basic_rust_expected_logs(self, max_level: str) -> List[str]:
+    def basic_rust_expected_logs(self, max_level: str, use_regex: bool) -> List[str]:
         asserts.assert_in(
             max_level, 'VDIWEF',
             ('max_level must be one of: V (for VERBOSE), D (DEBUG), I (INFO), ' +
              'W (WARNING), E (ERROR), F (FATAL)'))
-
-        basic_rust_logs = [
-            'V logging_sdv_rust_sample: logging: test VERBOSE log 42',
-            'D logging_sdv_rust_sample: logging: test DEBUG log',
-            'I logging_sdv_rust_sample: logging: test INFO log',
-            'W logging_sdv_rust_sample: logging: test WARNING log',
-            'E logging_sdv_rust_sample: logging: test ERROR log',
-            'V sdv_library: VERBOSE log from C++ library',
-            'D sdv_library: DEBUG log from C++ library',
-            'I sdv_library: INFO log from C++ library',
-            'W sdv_library: WARNING log from C++ library',
-            'E sdv_library: ERROR log from C++ library',
-            (
-                'V logging_sdv_rust_sample: log_sdv_rust_lib_sample: VERBOSE'
-                ' log from Rust library'
-            ),
-            (
-                'D logging_sdv_rust_sample: log_sdv_rust_lib_sample: DEBUG log'
-                ' from Rust library'
-            ),
-            (
-                'I logging_sdv_rust_sample: log_sdv_rust_lib_sample: INFO log'
-                ' from Rust library'
-            ),
-            (
-                'W logging_sdv_rust_sample: log_sdv_rust_lib_sample: WARNING'
-                ' log from Rust library'
-            ),
-            (
-                'E logging_sdv_rust_sample: log_sdv_rust_lib_sample: ERROR log'
-                ' from Rust library'
-            ),
-            'E logging_sdv_rust_sample: sdv_log: panicked at system/'
-            + 'software_defined_vehicle/samples/logging/src/logging.rs:36:5:',
-            'E logging_sdv_rust_sample: test FATAL log',
-            "F DEBUG   : Abort message: 'test FATAL log'",
-        ]
+        if use_regex:
+            basic_rust_logs = ['E logging_sdv_rust_sample: sdv_log: panicked at system/'
+            + 'software_defined_vehicle/samples/logging/src/logging.rs:[0-9]+:[0-9]+:']
+        else:
+            basic_rust_logs = [
+                'V logging_sdv_rust_sample: logging: test VERBOSE log 42',
+                'D logging_sdv_rust_sample: logging: test DEBUG log',
+                'I logging_sdv_rust_sample: logging: test INFO log',
+                'W logging_sdv_rust_sample: logging: test WARNING log',
+                'E logging_sdv_rust_sample: logging: test ERROR log',
+                'V sdv_library: VERBOSE log from C++ library',
+                'D sdv_library: DEBUG log from C++ library',
+                'I sdv_library: INFO log from C++ library',
+                'W sdv_library: WARNING log from C++ library',
+                'E sdv_library: ERROR log from C++ library',
+                (
+                    'V logging_sdv_rust_sample: log_sdv_rust_lib_sample: VERBOSE'
+                    ' log from Rust library'
+                ),
+                (
+                    'D logging_sdv_rust_sample: log_sdv_rust_lib_sample: DEBUG log'
+                    ' from Rust library'
+                ),
+                (
+                    'I logging_sdv_rust_sample: log_sdv_rust_lib_sample: INFO log'
+                    ' from Rust library'
+                ),
+                (
+                    'W logging_sdv_rust_sample: log_sdv_rust_lib_sample: WARNING'
+                    ' log from Rust library'
+                ),
+                (
+                    'E logging_sdv_rust_sample: log_sdv_rust_lib_sample: ERROR log'
+                    ' from Rust library'
+                ),
+                'E logging_sdv_rust_sample: test FATAL log',
+                "F DEBUG   : Abort message: 'test FATAL log'",
+            ]
 
         # Higher number = more verbose log
         def verbosity(s: str) -> int:
@@ -281,7 +287,10 @@ class SdvSampleLoggingAPITest(
 
         return [log for log in basic_rust_logs if verbosity(log[0]) <= verbosity(max_level)]
 
-    def log_level_basic_rust_test(self, expected_results: List[str]):
+    def log_level_basic_rust_test(self, max_level: str):
+        expected_results_exact_contains = self.basic_rust_expected_logs(max_level, False)
+        expected_results_regex_contains = self.basic_rust_expected_logs(max_level, True)
+
         # Allow exception here because sample produces an error as part of its flow
         self.sdv_device.execute_shell_command(
             self.sample_path('logging_sdv_rust_sample'),
@@ -292,14 +301,15 @@ class SdvSampleLoggingAPITest(
             rust_result_regex,
             grep_args=self.EXTENDED_REGEX_GREP_FLAG,
         )
-        self.check_contains_all(log, expected_results, label='logs')
+        self.check_contains_all(log, expected_results_exact_contains, label='logs')
+        self.check_matches_all(log, expected_results_regex_contains, label='logs')
 
     def test_basic_rust_log(self):
         logging.info(
             f'{self.get_suite_name()}#{self.current_test_info.name} started'
         )
 
-        self.log_level_basic_rust_test(self.basic_rust_expected_logs(max_level='V'))
+        self.log_level_basic_rust_test(max_level='V')
 
         logging.info(
             f'{self.get_suite_name()}#{self.current_test_info.name} finished'
@@ -310,7 +320,7 @@ class SdvSampleLoggingAPITest(
             f'{self.get_suite_name()}#{self.current_test_info.name} started'
         )
 
-        self.log_level_basic_rust_test(self.basic_rust_expected_logs(max_level='I'))
+        self.log_level_basic_rust_test(max_level='I')
 
         logging.info(
             f'{self.get_suite_name()}#{self.current_test_info.name} finished'
@@ -323,7 +333,7 @@ class SdvSampleLoggingAPITest(
 
         with self.property_override('persist.log.tag', 'W'):
             self.sdv_device.reboot_device()
-            self.log_level_basic_rust_test(self.basic_rust_expected_logs(max_level='W'))
+            self.log_level_basic_rust_test(max_level='W')
 
         logging.info(
             f'{self.get_suite_name()}#{self.current_test_info.name} finished'
@@ -640,12 +650,28 @@ class SdvSampleLoggingAPITest(
                 self.IN_ASSERT_MESSAGE.format(label, result),
             )
 
+    def check_matches_all(self, all_results, expected_regexes, label):
+        for regex in expected_regexes:
+            asserts.assert_regex(
+                all_results,
+                regex,
+                self.REGEX_ASSERT_MESSAGE.format(label, regex),
+            )
+
     def check_contains_none(self, all_results, not_expected_results, label):
         for result in not_expected_results:
             asserts.assert_not_in(
                 result,
                 all_results,
                 self.NOT_IN_ASSERT_MESSAGE.format(label, result),
+            )
+
+    def check_matches_none(self, all_results, not_expected_regexes, label):
+        for regex in not_expected_regexes:
+            asserts.assert_not_regex(
+                all_results,
+                regex,
+                self.NOT_REGEX_ASSERT_MESSAGE.format(label, regex),
             )
 
     def filter_logs_test(self, level, expected_results):
