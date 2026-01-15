@@ -39,6 +39,7 @@ android_library {
         "androidx.compose.material3_material3",
         "androidx.compose.ui_ui-test-junit4",
         "androidx.compose.ui_ui-test-manifest",
+        "SystemUI-res",
     ],
 
     kotlincflags: ["-Xjvm-default=all"],
