@@ -18,10 +18,12 @@ from typing import Any, Dict, List, Optional, Tuple
 from perfetto.common.query_result_iterator import QueryResultIterator
 from sdv_perf_cpu_metrics import aggregator
 from sdv_perf_cpu_metrics import common_query
-from sdv_perf_cpu_metrics import single_vm_query
 from sdv_perf_cpu_metrics import multi_vm_cpu_query
+from sdv_perf_cpu_metrics import single_vm_query
 from sdv_perf_cpu_metrics.aggregator import Aggregate
 from sdv_perfetto.perfetto_trace_processor import PerfettoTraceProcessor
+from sdv_perfetto.perfetto_trace_processor import query_iterator_to_dict
+from sdv_perfetto.perfetto_trace_processor import query_iterator_to_dict_split_by_value
 
 
 class CpuMetricsProcessor:
@@ -95,7 +97,7 @@ class CpuMetricsProcessor:
                     ts_start=ts_start,
                     ts_end=ts_end,
                     vm_id=vm_id)
-            ts_data = aggregator.query_iterator_to_dict(ts_query_iterator, aggregator_keys)
+            ts_data = query_iterator_to_dict(ts_query_iterator, aggregator_keys)
             aggregated_metrics = aggregator.compute_aggregated_metrics(
                     ts_data, 'overall_cpu_perc',
                     aggregates,
@@ -123,7 +125,7 @@ class CpuMetricsProcessor:
                     ts_start=ts_start,
                     ts_end=ts_end,
                     vm_id=vm_id)
-            ts_data = aggregator.query_iterator_to_dict_split_by_value(
+            ts_data = query_iterator_to_dict_split_by_value(
                     'cpu', ts_query_iterator, aggregator_keys)
             aggregated_metrics = aggregator.compute_aggregated_metrics(
                     ts_data, 'overall_cpu_perc',
