@@ -22,7 +22,7 @@ import time
 
 import mobly.utils as utils
 from sdv_sb_lifecycle_robustness import sdv_sb_lifecycle_robustness_base_test
-from sdv_test_fw.device import sdv_device
+from sdv_test_fw.device import sdv_adb
 from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
 from vpm.sdv_vpm import SdvVpm
@@ -274,7 +274,7 @@ class SdvIviRobBaseTest(
 
     def _verify_message_reception(
         self,
-        adb_device: sdv_device.SdvDeviceAdb,
+        adb_device: sdv_adb.SdvAdb,
         log_tag: str,
         grep_text: str,
         assert_msg_received: str,
