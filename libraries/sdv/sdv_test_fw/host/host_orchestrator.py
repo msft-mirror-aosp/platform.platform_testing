@@ -27,8 +27,8 @@ class CvdAction(enum.Enum):
   STOP = "stop"
 
 
-class HostOrchestratorUtil:
-  """Util class which provides methods to interact with host orchestrator"""
+class HostOrchestrator:
+  """Interacts with the CF VM through Host Orchestrator API"""
 
   _CVDS_KEY = "cvds"
   _GROUP_KEY = "group"
@@ -45,6 +45,9 @@ class HostOrchestratorUtil:
       return self == self.SUCCESS
 
   def __init__(self, host_orchestrator_url, device_index):
+    """ Requires the host orchestrator API URL (in `user_params['ho_base_url']`)
+    and the device index. It correlates with the adb device identifier
+    (0 - device1, 1 - device2, 2 - device3)."""
     self.host_orchestrator_url = host_orchestrator_url
     self.http = httplib2.Http()
     self.device_cvd = self._get_device_cvd(device_index)
@@ -73,7 +76,7 @@ class HostOrchestratorUtil:
     try:
       return self._request_json(self._generate_cvds_url())
     except httplib2.HttpLib2Error as e:
-      logging.error("HostOrchestratorUtil#get_cvds: Error occurred. Error: <%s>", e)
+      logging.error("HostOrchestrator#get_cvds: Error occurred. Error: <%s>", e)
       raise Exception(e)
 
   def _get_device_cvd(self, device_index):
@@ -81,14 +84,14 @@ class HostOrchestratorUtil:
     cvds = self._get_cvds()
     if self._CVDS_KEY not in cvds or not cvds[self._CVDS_KEY]:
       logging.error(
-          "HostOrchestratorUtil#_get_device_cvd: No CVDs found. Response: <%s>",
+          "HostOrchestrator#_get_device_cvd: No CVDs found. Response: <%s>",
           cvds,
       )
       raise Exception("Failed to get device CVD. No CVDs found.")
     cvds_list = cvds[self._CVDS_KEY]
     if not (0 <= device_index < len(cvds_list)):
       logging.error(
-          "HostOrchestratorUtil#_get_device_cvd: device_index %d is out of"
+          "HostOrchestrator#_get_device_cvd: device_index %d is out of"
           " bounds. Found %d CVDs.",
           device_index,
           len(cvds_list),
@@ -104,7 +107,7 @@ class HostOrchestratorUtil:
       return self._request_json(self._generate_operations_url(operation_name))
     except httplib2.HttpLib2Error as e:
       logging.error(
-          "HostOrchestratorUtil#get_operation: Error occurred. Error: <%s>", e
+          "HostOrchestrator#get_operation: Error occurred. Error: <%s>", e
       )
       raise Exception(e)
 
@@ -123,7 +126,7 @@ class HostOrchestratorUtil:
         return
       time.sleep(self._WAIT_FOR_OPERATION_MS / 1000)
     logging.error(
-      "HostOrchestratorUtil#wait_for_operation: Operation timed out. Name: <%s>",
+      "HostOrchestrator#wait_for_operation: Operation timed out. Name: <%s>",
       operation_name
     )
     raise Exception(f"Operation {operation_name} timed out")
@@ -141,12 +144,12 @@ class HostOrchestratorUtil:
       self._wait_for_operation(operation[self._NAME_KEY])
     except httplib2.HttpLib2Error as e:
       logging.error(
-          "HostOrchestratorUtil#%s: Error occurred. Error: <%s>", action.name, e
+          "HostOrchestrator#%s: Error occurred. Error: <%s>", action.name, e
       )
       raise Exception(e)
     except Exception as e:
       logging.error(
-          "HostOrchestratorUtil#%s: Failed to %s CVD; Error: <%s>",
+          "HostOrchestrator#%s: Failed to %s CVD; Error: <%s>",
           action.name,
           action_name,
           e,

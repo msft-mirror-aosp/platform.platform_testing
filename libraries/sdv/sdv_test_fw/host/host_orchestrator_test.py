@@ -15,11 +15,11 @@
 import unittest
 from unittest import mock
 
-from host_orchestrator_util import host_orchestrator_util
+from sdv_test_fw.host import host_orchestrator
 
 
-@mock.patch("host_orchestrator_util.host_orchestrator_util.httplib2.Http")
-class HostOrchestratorUtilTest(unittest.TestCase):
+@mock.patch("httplib2.Http")
+class HostOrchestratorTest(unittest.TestCase):
 
   def test_powerwash_success(self, mock_http_class):
     mock_http = mock.Mock()
@@ -32,12 +32,12 @@ class HostOrchestratorUtilTest(unittest.TestCase):
         (mock.Mock(status=200), b'{"name": "op", "done": false}'),
         (mock.Mock(status=200), b'{"name": "op", "done": true}'),
     ]
-    host_orchestrator = host_orchestrator_util.HostOrchestratorUtil(
+    ho = host_orchestrator.HostOrchestrator(
         "http://localhost:8080", 0
     )
-    result = host_orchestrator.powerwash()
+    result = ho.powerwash()
     self.assertEqual(
-        result, host_orchestrator_util.HostOrchestratorUtil.Status.SUCCESS
+        result, host_orchestrator.HostOrchestrator.Status.SUCCESS
     )
     self.assertEqual(mock_http.request.call_count, 3)
 
@@ -52,26 +52,26 @@ class HostOrchestratorUtilTest(unittest.TestCase):
         (mock.Mock(status=200), b'{"name": "op", "done": false}'),
         (mock.Mock(status=200), b'{"name": "op", "done": true}'),
     ]
-    host_orchestrator = host_orchestrator_util.HostOrchestratorUtil(
+    ho = host_orchestrator.HostOrchestrator(
         "http://localhost:8080", 0
     )
-    result = host_orchestrator.powerbtn()
+    result = ho.powerbtn()
     self.assertEqual(
-        result, host_orchestrator_util.HostOrchestratorUtil.Status.SUCCESS
+        result, host_orchestrator.HostOrchestrator.Status.SUCCESS
     )
     self.assertEqual(mock_http.request.call_count, 3)
 
-  @mock.patch("host_orchestrator_util.host_orchestrator_util.logging.error")
+  @mock.patch("logging.error")
   def test_init_no_cvds(self, mock_logging_error, mock_http_class):
     mock_http = mock.Mock()
     mock_http_class.return_value = mock_http
     mock_http.request.return_value = (mock.Mock(status=200), b'{"cvds": []}')
     with self.assertRaises(Exception) as context:
-      host_orchestrator_util.HostOrchestratorUtil("http://localhost:8080", 0)
+      host_orchestrator.HostOrchestrator("http://localhost:8080", 0)
     self.assertIn("No CVDs found", str(context.exception))
     mock_logging_error.assert_called()
 
-  @mock.patch("host_orchestrator_util.host_orchestrator_util.logging.error")
+  @mock.patch("logging.error")
   def test_init_http_error(self, mock_logging_error, mock_http_class):
     mock_http = mock.Mock()
     mock_http_class.return_value = mock_http
@@ -80,13 +80,13 @@ class HostOrchestratorUtilTest(unittest.TestCase):
         b"Internal Server Error",
     )
     with self.assertRaises(Exception) as context:
-      host_orchestrator_util.HostOrchestratorUtil("http://localhost:8080", 0)
+      host_orchestrator.HostOrchestrator("http://localhost:8080", 0)
     self.assertIn("HTTP Error: 500", str(context.exception))
     mock_logging_error.assert_called()
 
-  @mock.patch("host_orchestrator_util.host_orchestrator_util.time.sleep")
-  @mock.patch("host_orchestrator_util.host_orchestrator_util.time.time")
-  @mock.patch("host_orchestrator_util.host_orchestrator_util.logging.error")
+  @mock.patch("time.sleep")
+  @mock.patch("time.time")
+  @mock.patch("logging.error")
   def test_powerwash_timeout(
       self, mock_logging_error, mock_time, mock_sleep, mock_http_class
   ):
@@ -117,25 +117,25 @@ class HostOrchestratorUtilTest(unittest.TestCase):
 
     mock_sleep.side_effect = advance_time
 
-    host_orchestrator = host_orchestrator_util.HostOrchestratorUtil(
+    ho = host_orchestrator.HostOrchestrator(
         "http://localhost:8080", 0
     )
     original_timeout = (
-        host_orchestrator_util.HostOrchestratorUtil._WAIT_FOR_OPERATION_TIMEOUT_MS
+        host_orchestrator.HostOrchestrator._WAIT_FOR_OPERATION_TIMEOUT_MS
     )
-    host_orchestrator_util.HostOrchestratorUtil._WAIT_FOR_OPERATION_TIMEOUT_MS = (
+    host_orchestrator.HostOrchestrator._WAIT_FOR_OPERATION_TIMEOUT_MS = (
         timeout_ms
     )
 
     with self.assertRaisesRegex(Exception, "Operation op timed out"):
-      host_orchestrator.powerwash()
+      ho.powerwash()
 
-    host_orchestrator_util.HostOrchestratorUtil._WAIT_FOR_OPERATION_TIMEOUT_MS = (
+    host_orchestrator.HostOrchestrator._WAIT_FOR_OPERATION_TIMEOUT_MS = (
         original_timeout
     )
 
     mock_logging_error.assert_any_call(
-        "HostOrchestratorUtil#wait_for_operation: Operation timed out. Name: <%s>",
+        "HostOrchestrator#wait_for_operation: Operation timed out. Name: <%s>",
         "op",
     )
 

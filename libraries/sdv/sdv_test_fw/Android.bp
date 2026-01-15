@@ -32,6 +32,7 @@ python_library_host {
         "mobly", // Required for the framework.
         "pexpect", // Required for Interactive commands.
         "ptyprocess", // Required for Interactive commands.
+        "py-httplib2", // Required for Host Orchestrator.
     ],
 }
 
