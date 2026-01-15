@@ -66,7 +66,7 @@ class SdvInfo:
         """Initialize with all relevant device information for SDV.
 
         Args:
-            adb_device: SdvDeviceAdb for interacting with the device.
+            adb_device: SdvAdb for interacting with the device.
         """
         # TODO(467096713): Extend with more relevant information (e.g. device serial)
 
