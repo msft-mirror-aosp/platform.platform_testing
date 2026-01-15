@@ -16,9 +16,11 @@
 
 package android.platform.systemui_tapl.ui
 
+import android.Manifest
 import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.Rect
+import android.hardware.display.DisplayManager
 import android.os.RemoteException
 import android.os.SystemClock
 import android.platform.helpers.ShadeUtils
@@ -51,6 +53,7 @@ import android.view.KeyEvent
 import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.WindowMetrics
+import androidx.annotation.RequiresPermission
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
@@ -58,7 +61,6 @@ import androidx.test.uiautomator.UiSelector
 import androidx.test.uiautomator.Until
 import com.android.app.tracing.traceSection
 import com.android.launcher3.tapl.LauncherInstrumentation
-import com.android.launcher3.tapl.Workspace
 import com.android.systemui.Flags
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
@@ -471,6 +473,29 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
     }
 
     /**
+     * Simulates a brightness up key press event and verifying that the brightness slider appears on
+     * screen. The brightness is reset to its original level if the action fails.
+     */
+    @RequiresPermission(Manifest.permission.CONTROL_DISPLAY_BRIGHTNESS)
+    fun increaseBrightnessByKeyAndVerifySlider(
+        displayManager: DisplayManager
+    ): BrightnessDialogSlider {
+        val brightnessBefore = displayManager.getBrightness(displayId)
+
+        return executeWithRetry(
+            description = "Press brightness up key and verify slider visibility",
+            resetAction = { displayManager.setBrightness(displayId, brightnessBefore) },
+        ) {
+            val result = uiDevice.pressKeyCode(KeyEvent.KEYCODE_BRIGHTNESS_UP)
+            if (!result) {
+                throw IllegalStateException("Failed to inject BRIGHTNESS_UP key event.")
+            }
+
+            BrightnessDialogSlider()
+        }
+    }
+
+    /**
      * Simulates a volume up key press event and verifying that the volume slider appears on screen.
      * The volume is reset to its original level if the action fails.
      */
@@ -641,17 +666,9 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
      * LauncherInstrumentation.goHome because LauncherInstrumentation.goHome expects all prior
      * animations to settle before it's used, which is true for Launcher tests that use it, but not
      * necessarily true for SysUI tests.
-     *
-     * @return the Workspace object.
      */
-    fun goHomeViaKeycode(): Workspace {
+    fun goHomeViaKeycode() {
         uiDevice.pressHome()
-        // getWorkspace will check `expectedRotation` and fail if it doesn't match the one from
-        // the device. However, if the test has an Orientation annotation, the orientation won't
-        // be fixed back until after this is run, possibly failing the test.
-        val instrumentation = LauncherInstrumentation()
-        instrumentation.setExpectedRotation(uiDevice.displayRotation)
-        return instrumentation.getWorkspace()
     }
 
     private fun wakeUp() {
