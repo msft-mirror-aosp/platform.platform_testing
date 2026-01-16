@@ -29,6 +29,7 @@ import android.platform.systemui_tapl.utils.DeviceUtils.LONG_WAIT
 import android.platform.systemui_tapl.utils.DeviceUtils.SHORT_WAIT
 import android.platform.systemui_tapl.utils.DeviceUtils.androidResSelector
 import android.platform.systemui_tapl.utils.DeviceUtils.sysuiResSelector
+import android.platform.systemui_tapl.utils.mouseHover
 import android.platform.test.scenario.tapl_common.Gestures
 import android.platform.test.scenario.tapl_common.TaplUiDevice
 import android.platform.uiautomatorhelpers.BetterSwipe
@@ -115,6 +116,26 @@ internal constructor(
         // group notification shall not been found again
         groupNotificationIdentity?.let {
             notificationByTextSelector(it.summary!!).assertInvisible()
+        }
+    }
+
+    /**
+     * Dismisses the notification by hovering over to reveal the dismiss button, then clicking it.
+     *
+     * **Note:** This requires [FLAG_NOTIFICATION_ADD_X_ON_HOVER_TO_DISMISS] to be enabled.
+     */
+    fun dismissByClickButton() {
+        notification.apply {
+            // Show the dismiss button by mouse hover.
+            mouseHover()
+
+            val dismissButton =
+                wait(Until.findObject(DISMISS_BUTTON_SELECTOR), SHORT_TRANSITION_WAIT.toMillis())
+                    ?: throw AssertionError(
+                        "Dismiss button was not found in the notification after waiting."
+                    )
+
+            dismissButton.click()
         }
     }
 
@@ -542,6 +563,7 @@ internal constructor(
         private val SHORT_TRANSITION_WAIT = Duration.ofMillis(1500)
         private val TIMEOUT_MS = LONG_WAIT.toMillis()
 
+        private val DISMISS_BUTTON_SELECTOR = sysuiResSelector("dismiss_button")
         private val TITLE_SELECTOR = androidResSelector("title")
         private val MESSAGE_SELECTOR = androidResSelector("group_message_container")
         private val COLLAPSE_SELECTOR = By.descContains("Collapse")
