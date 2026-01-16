@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#      http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -12,177 +12,252 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import enum
-import json
+"""Client for interacting with the Android Host Orchestrator service."""
+
 import logging
-import time
+from typing import Any, Dict, List, Optional
 
-import httplib2
-
-
-class CvdAction(enum.Enum):
-  POWERWASH = "powerwash"
-  POWERBTN = "powerbtn"
-  START = "start"
-  STOP = "stop"
+from sdv_test_fw.host import api_client
+from sdv_test_fw.host import ho_requests
+from sdv_test_fw.verification import polling
 
 
 class HostOrchestrator:
-  """Interacts with the CF VM through Host Orchestrator API"""
+    """Interacts with the CF VM through Host Orchestrator API.
 
-  _CVDS_KEY = "cvds"
-  _GROUP_KEY = "group"
-  _NAME_KEY = "name"
-
-  _WAIT_FOR_OPERATION_TIMEOUT_MS = 5 * 60 * 1000  # 5 minutes
-  _WAIT_FOR_OPERATION_MS = 5 * 1000  # 5 sec
-
-  class Status(enum.Enum):
-    SUCCESS = 1
-    FAILURE = 2
-
-    def is_success(self):
-      return self == self.SUCCESS
-
-  def __init__(self, host_orchestrator_url, device_index):
-    """ Requires the host orchestrator API URL (in `user_params['ho_base_url']`)
-    and the device index. It correlates with the adb device identifier
-    (0 - device1, 1 - device2, 2 - device3)."""
-    self.host_orchestrator_url = host_orchestrator_url
-    self.http = httplib2.Http()
-    self.device_cvd = self._get_device_cvd(device_index)
-
-  def _generate_cvds_url(self):
-    return f"{self.host_orchestrator_url}/cvds"
-
-  def _generate_operations_url(self, operation_name):
-    return f"{self.host_orchestrator_url}/operations/{operation_name}"
-
-  def _generate_cvd_action_url(self, action_name):
-    """Generates the URL for a CVD action."""
-    cvd = self.device_cvd
-    return f"{self.host_orchestrator_url}/cvds/{cvd[self._GROUP_KEY]}/{cvd[self._NAME_KEY]}/:{action_name}"
-
-  def _request_json(self, url, method="GET", body=None):
-    """Sends a request and returns the JSON response."""
-    response, content = self.http.request(url, method, body=body)
-    if not (200 <= response.status < 300):
-      raise httplib2.HttpLib2Error(
-          f"HTTP Error: {response.status} {content.decode()}"
-      )
-    return json.loads(content)
-
-  def _get_cvds(self):
-    try:
-      return self._request_json(self._generate_cvds_url())
-    except httplib2.HttpLib2Error as e:
-      logging.error("HostOrchestrator#get_cvds: Error occurred. Error: <%s>", e)
-      raise Exception(e)
-
-  def _get_device_cvd(self, device_index):
-    """Gets the CVD information for the device_index."""
-    cvds = self._get_cvds()
-    if self._CVDS_KEY not in cvds or not cvds[self._CVDS_KEY]:
-      logging.error(
-          "HostOrchestrator#_get_device_cvd: No CVDs found. Response: <%s>",
-          cvds,
-      )
-      raise Exception("Failed to get device CVD. No CVDs found.")
-    cvds_list = cvds[self._CVDS_KEY]
-    if not (0 <= device_index < len(cvds_list)):
-      logging.error(
-          "HostOrchestrator#_get_device_cvd: device_index %d is out of"
-          " bounds. Found %d CVDs.",
-          device_index,
-          len(cvds_list),
-      )
-      raise IndexError(f"device_index {device_index} is out of bounds.")
-    return cvds_list[device_index]
-
-  def _get_operation(self, operation_name):
+    This client manages the lifecycle and actions of Cuttlefish Virtual Devices
+    (CVDs)
+    running on a host. It handles retrieving device lists, executing actions
+    like
+    start/stop, and polling for operation completion.
     """
-    Get the status of an operation using the host orchestrator
-    """
-    try:
-      return self._request_json(self._generate_operations_url(operation_name))
-    except httplib2.HttpLib2Error as e:
-      logging.error(
-          "HostOrchestrator#get_operation: Error occurred. Error: <%s>", e
-      )
-      raise Exception(e)
 
-  def _wait_for_operation(
-      self,
-      operation_name,
-      timeout_ms=_WAIT_FOR_OPERATION_TIMEOUT_MS
-  ):
-    """
-    Wait for the operation to complete.
-    """
-    max_end_time = int(time.time() * 1000) + timeout_ms
-    while int(time.time() * 1000) < max_end_time:
-      operation = self._get_operation(operation_name)
-      if operation["done"]:
-        return
-      time.sleep(self._WAIT_FOR_OPERATION_MS / 1000)
-    logging.error(
-      "HostOrchestrator#wait_for_operation: Operation timed out. Name: <%s>",
-      operation_name
-    )
-    raise Exception(f"Operation {operation_name} timed out")
+    def __init__(self, host_orchestrator_url: str):
+        """Initializes the Host Orchestrator client.
 
-  def _cvd_action(self, action, post_json_data=""):
-    """Perform an action on the device CVD."""
-    action_name = action.value
-    try:
-      url = self._generate_cvd_action_url(action_name)
+        Args:
+            host_orchestrator_url: The root URL of the Host Orchestrator
+              service.
+        """
+        self._api_client = api_client.ApiClient(host_orchestrator_url)
+        # Lazy initialization: _cvds is None until the first request needs it.
+        self._cvds = None
 
-      # The action returns an Operation {name:String, done:Boolean}
-      operation = self._request_json(url, "POST", body=post_json_data)
+    # ==========================================================================
+    # Public Interface
+    # ==========================================================================
 
-      # Wait for operation to complete
-      self._wait_for_operation(operation[self._NAME_KEY])
-    except httplib2.HttpLib2Error as e:
-      logging.error(
-          "HostOrchestrator#%s: Error occurred. Error: <%s>", action.name, e
-      )
-      raise Exception(e)
-    except Exception as e:
-      logging.error(
-          "HostOrchestrator#%s: Failed to %s CVD; Error: <%s>",
-          action.name,
-          action_name,
-          e,
-      )
-      raise Exception(e)
-    return self.Status.SUCCESS
+    def powerwash(self, device_index: int):
+        """Powerwashes (factory resets) a specific CVD.
 
-  def powerwash(self):
-    """
-    Powerwash CVD using the host orchestrator
-    """
-    return self._cvd_action(CvdAction.POWERWASH)
+        Args:
+            device_index: The zero-based index of the device in the host's
+              device list.
 
-  def powerbtn(self):
-    """
-    Press power button on CVD using the host orchestrator
-    """
-    return self._cvd_action(CvdAction.POWERBTN)
+        Raises:
+            IndexError: If the device_index is out of bounds of the available
+            CVDs.
+            api_client.ApiClientError: If the underlying API request fails.
+            TimeoutError: If the operation does not complete within the timeout.
+        """
+        self._perform_action(device_index, ho_requests.CvdAction.POWERWASH)
 
-  def start(self):
-    # TODO(b/459780275): does not work with multivm
-    """
-    Start CVD using the host orchestrator
-    """
-    # empty JSON is required for start action with default options
-    return self._cvd_action(CvdAction.START, "{}")
+    def powerbtn(self, device_index: int):
+        """Simulates a power button press on a specific CVD.
 
-  def stop(self):
-    # TODO(b/459780275): does not work with multivm
-    """
-    Stop CVD using the host orchestrator
-    """
-    return self._cvd_action(CvdAction.STOP)
+        Args:
+            device_index: The zero-based index of the device in the host's
+              device list.
 
-  # TODO(b/430509532): add all REST API methods see https://github.com/jmacnak/android-cuttlefish/blob/main/frontend/src/host_orchestrator/orchestrator/controller.go
+        Raises:
+            IndexError: If the device_index is out of bounds of the available
+            CVDs.
+            api_client.ApiClientError: If the underlying API request fails.
+            TimeoutError: If the operation does not complete within the timeout.
+        """
+        self._perform_action(device_index, ho_requests.CvdAction.POWERBTN)
 
+    def start(self, device_index: int):
+        """Starts a stopped CVD.
+
+        Args:
+            device_index: The zero-based index of the device in the host's
+              device list.
+
+        Raises:
+            IndexError: If the device_index is out of bounds of the available
+            CVDs.
+            api_client.ApiClientError: If the underlying API request fails.
+            TimeoutError: If the operation does not complete within the timeout.
+        """
+        # The original code sent empty JSON "{}" for start
+        self._perform_action(
+            device_index, ho_requests.CvdAction.START, payload={}
+        )
+
+    def stop(self, device_index: int):
+        """Stops a running CVD.
+
+        Args:
+            device_index: The zero-based index of the device in the host's
+              device list.
+
+        Raises:
+            IndexError: If the device_index is out of bounds of the available
+            CVDs.
+            api_client.ApiClientError: If the underlying API request fails.
+            TimeoutError: If the operation does not complete within the timeout.
+        """
+        self._perform_action(device_index, ho_requests.CvdAction.STOP)
+
+    # ==========================================================================
+    # Internal Logic
+    # ==========================================================================
+
+    def _load_cvds(self):
+        """Fetches the list of CVDs from the host and caches them locally.
+
+        This method performs a lazy load; if `self._cvds` is already populated,
+        it returns immediately. If the server returns an empty list or invalid
+        response, this method raises an exception.
+
+        Raises:
+            api_client.ApiClientError: If the network request fails.
+            Exception: If the response format is invalid or the host reports
+            zero CVDs.
+        """
+        if self._cvds is not None:
+            return
+
+        try:
+            response = self._api_client.execute(ho_requests.list_cvds())
+        except api_client.ApiClientError as e:
+            logging.error("HostOrchestrator: Error listing CVDs: %s", e)
+            raise  # Re-raise the explicit API error
+
+        if not response or "cvds" not in response:
+            logging.error(
+                "HostOrchestrator: Invalid response structure: %s", response
+            )
+            raise Exception("Failed to get device CVD. Invalid response.")
+
+        cvds = [ho_requests.Cvd.from_json(item) for item in response["cvds"]]
+
+        # Explicit verification: Fail fast if the list is empty
+        if not cvds:
+            logging.error("HostOrchestrator: Server returned 0 CVDs.")
+            raise Exception("Failed to get device CVD. No CVDs found.")
+
+        # Cache the result only if valid
+        self._cvds = cvds
+
+    def _get_device_cvd(self, device_index: int) -> ho_requests.Cvd:
+        """Retrieves the cached CVD object for the given index.
+
+        Ensures the local cache is populated before access.
+
+        Args:
+            device_index: The zero-based index of the device.
+
+        Returns:
+            The Cvd object corresponding to the index.
+
+        Raises:
+            IndexError: If the device_index is outside the range of available
+            CVDs.
+            api_client.ApiClientError: If _load_cvds fails to retrieve the
+            device list.
+        """
+        self._load_cvds()
+
+        # Access internal variable directly, guarded by _load_cvds
+        if not (0 <= device_index < len(self._cvds)):
+            logging.error(
+                "HostOrchestrator: device_index %d is out of bounds. Found %d"
+                " CVDs.",
+                device_index,
+                len(self._cvds),
+            )
+            raise IndexError(f"device_index {device_index} is out of bounds.")
+
+        return self._cvds[device_index]
+
+    def _perform_action(
+        self,
+        device_index: int,
+        action: ho_requests.CvdAction,
+        payload: Optional[Dict[str, Any]] = None,
+    ):
+        """Executes a generic action on a CVD and waits for completion.
+
+        This method resolves the target device, sends the action request, and
+        polls the resulting operation until it completes or times out.
+
+        Args:
+            device_index: The zero-based index of the target device.
+            action: The CvdAction enum member indicating the action to perform.
+            payload: Optional dictionary payload to include in the request body.
+
+        Raises:
+            IndexError: If the device_index is invalid.
+            api_client.ApiClientError: If the action request fails.
+            TimeoutError: If the operation times out.
+        """
+        try:
+            # 1. Resolve target CVD
+            cvd = self._get_device_cvd(device_index)
+
+            # 2. Execute Request
+            response = self._api_client.execute(
+                ho_requests.cvd_action(
+                    group=cvd.group,
+                    name=cvd.name,
+                    action=action,
+                    payload=payload,
+                )
+            )
+            operation = ho_requests.Operation.from_json(response)
+
+            # 3. Wait for Completion
+            # We use wait_and_return_result so we can raise a TimeoutError
+            # instead of the default assert raised if we use wait_for_true.
+            result = polling.wait_and_return_result(
+                self._poll_operation_completion, operation.name
+            )
+
+            if result is None:
+                raise TimeoutError(f"Operation {operation.name} timed out")
+
+        except api_client.ApiClientError as e:
+            logging.error(
+                "HostOrchestrator#%s: Failed to execute action on device %d."
+                " Error: <%s>",
+                action.name,
+                device_index,
+                e,
+            )
+            raise  # Re-raise the explicit API error
+
+    def _poll_operation_completion(self, operation_name: str) -> Optional[bool]:
+        """Checks the status of a long-running operation.
+
+        Args:
+            operation_name: The unique identifier of the operation to check.
+
+        Returns:
+            True if the operation is marked as 'done'.
+            None if the operation is still in progress (to continue polling).
+
+        Raises:
+            api_client.ApiClientError: If the network request to fetch the
+            operation status fails.
+        """
+        response = self._api_client.execute(
+            ho_requests.get_operation(operation_name)
+        )
+        operation = ho_requests.Operation.from_json(response)
+
+        # wait_and_return_result continues polling while the return value is None.
+        if operation.done:
+            return True
+        return None

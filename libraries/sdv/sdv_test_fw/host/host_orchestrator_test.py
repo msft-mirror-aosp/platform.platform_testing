@@ -4,7 +4,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+#      http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,130 +15,199 @@
 import unittest
 from unittest import mock
 
+from sdv_test_fw.host import api_client
+from sdv_test_fw.host import ho_requests
 from sdv_test_fw.host import host_orchestrator
 
 
-@mock.patch("httplib2.Http")
-class HostOrchestratorTest(unittest.TestCase):
+class BaseHostOrchestratorTest(unittest.TestCase):
+    """Base test class handling common setup for HostOrchestrator tests."""
 
-  def test_powerwash_success(self, mock_http_class):
-    mock_http = mock.Mock()
-    mock_http_class.return_value = mock_http
-    mock_http.request.side_effect = [
-        (
-            mock.Mock(status=200),
-            b'{"cvds": [{"group": "cvd-group", "name": "cvd-1"}]}',
-        ),
-        (mock.Mock(status=200), b'{"name": "op", "done": false}'),
-        (mock.Mock(status=200), b'{"name": "op", "done": true}'),
-    ]
-    ho = host_orchestrator.HostOrchestrator(
-        "http://localhost:8080", 0
-    )
-    result = ho.powerwash()
-    self.assertEqual(
-        result, host_orchestrator.HostOrchestrator.Status.SUCCESS
-    )
-    self.assertEqual(mock_http.request.call_count, 3)
+    def setUp(self):
+        self.mock_api_client = mock.MagicMock(spec=api_client.ApiClient)
 
-  def test_powerbtn_success(self, mock_http_class):
-    mock_http = mock.Mock()
-    mock_http_class.return_value = mock_http
-    mock_http.request.side_effect = [
-        (
-            mock.Mock(status=200),
-            b'{"cvds": [{"group": "cvd-group", "name": "cvd-1"}]}',
-        ),
-        (mock.Mock(status=200), b'{"name": "op", "done": false}'),
-        (mock.Mock(status=200), b'{"name": "op", "done": true}'),
-    ]
-    ho = host_orchestrator.HostOrchestrator(
-        "http://localhost:8080", 0
-    )
-    result = ho.powerbtn()
-    self.assertEqual(
-        result, host_orchestrator.HostOrchestrator.Status.SUCCESS
-    )
-    self.assertEqual(mock_http.request.call_count, 3)
+        # Patch ApiClient only during init to inject the mock.
+        with mock.patch(
+            "sdv_test_fw.host.api_client.ApiClient",
+            return_value=self.mock_api_client,
+        ):
+            self.ho = host_orchestrator.HostOrchestrator(
+                "http://localhost:8080"
+            )
 
-  @mock.patch("logging.error")
-  def test_init_no_cvds(self, mock_logging_error, mock_http_class):
-    mock_http = mock.Mock()
-    mock_http_class.return_value = mock_http
-    mock_http.request.return_value = (mock.Mock(status=200), b'{"cvds": []}')
-    with self.assertRaises(Exception) as context:
-      host_orchestrator.HostOrchestrator("http://localhost:8080", 0)
-    self.assertIn("No CVDs found", str(context.exception))
-    mock_logging_error.assert_called()
+        # Reusable Data
+        self.cvd_list_response = {
+            "cvds": [
+                {"group": "g1", "name": "cvd-1"},
+                {"group": "g2", "name": "cvd-2"},
+            ]
+        }
+        self.op_running = {"name": "ops/1", "done": False}
+        self.op_done = {"name": "ops/1", "done": True}
 
-  @mock.patch("logging.error")
-  def test_init_http_error(self, mock_logging_error, mock_http_class):
-    mock_http = mock.Mock()
-    mock_http_class.return_value = mock_http
-    mock_http.request.return_value = (
-        mock.Mock(status=500),
-        b"Internal Server Error",
-    )
-    with self.assertRaises(Exception) as context:
-      host_orchestrator.HostOrchestrator("http://localhost:8080", 0)
-    self.assertIn("HTTP Error: 500", str(context.exception))
-    mock_logging_error.assert_called()
 
-  @mock.patch("time.sleep")
-  @mock.patch("time.time")
-  @mock.patch("logging.error")
-  def test_powerwash_timeout(
-      self, mock_logging_error, mock_time, mock_sleep, mock_http_class
-  ):
-    mock_http = mock.Mock()
-    mock_http_class.return_value = mock_http
-    responses = [
-        (
-            mock.Mock(status=200),
-            b'{"cvds": [{"group": "cvd-group", "name": "cvd-1"}]}',
-        ),
-        (mock.Mock(status=200), b'{"name": "op"}'),
-    ]
-    status_response = (mock.Mock(status=200), b'{"name": "op", "done": false}')
+class HostOrchestratorLogicTest(BaseHostOrchestratorTest):
+    """Tests the internal logic, state management, and error handling."""
 
-    def mock_request_logic(*args, **kwargs):
-      if responses:
-        return responses.pop(0)
-      return status_response
+    def test_lazy_loading_success(self):
+        """Verifies that the CVD list is fetched on the first access."""
+        self.mock_api_client.execute.side_effect = [
+            self.cvd_list_response,
+            self.op_running,
+            self.op_done,
+        ]
 
-    mock_http.request.side_effect = mock_request_logic
+        self.ho.start(0)
 
-    start_time = 1726052400.0
-    timeout_ms = 100
-    mock_time.return_value = start_time
+        # Assert: Check that the ListCVDs request was executed at least once
+        self.mock_api_client.execute.assert_any_call(ho_requests.list_cvds())
 
-    def advance_time(sleep_duration_s):
-      mock_time.return_value += sleep_duration_s
+    def test_caching_behavior(self):
+        """Verifies that subsequent requests reuse the cached CVD list."""
+        # Sequence:
+        # 1. List Request (fetched once)
+        # 2. Action 1 (Start) -> running, done
+        # 3. Action 2 (Stop) -> running, done (List NOT fetched again)
+        self.mock_api_client.execute.side_effect = [
+            self.cvd_list_response,
+            self.op_running,
+            self.op_done,
+            self.op_running,
+            self.op_done,
+        ]
 
-    mock_sleep.side_effect = advance_time
+        self.ho.start(0)
+        self.ho.stop(0)
 
-    ho = host_orchestrator.HostOrchestrator(
-        "http://localhost:8080", 0
-    )
-    original_timeout = (
-        host_orchestrator.HostOrchestrator._WAIT_FOR_OPERATION_TIMEOUT_MS
-    )
-    host_orchestrator.HostOrchestrator._WAIT_FOR_OPERATION_TIMEOUT_MS = (
-        timeout_ms
-    )
+        # Assert: Verify list_cvds was called EXACTLY once.
+        # We use .count() with the exact request object for a clean, strict check.
+        self.assertEqual(
+            self.mock_api_client.execute.call_args_list.count(
+                mock.call(ho_requests.list_cvds())
+            ),
+            1,
+        )
 
-    with self.assertRaisesRegex(Exception, "Operation op timed out"):
-      ho.powerwash()
+    @mock.patch("logging.error")
+    def test_lazy_loading_handles_empty_list(self, mock_logging_error):
+        """Verifies that an empty CVD list raises an exception immediately."""
+        self.mock_api_client.execute.return_value = {"cvds": []}
 
-    host_orchestrator.HostOrchestrator._WAIT_FOR_OPERATION_TIMEOUT_MS = (
-        original_timeout
-    )
+        with self.assertRaisesRegex(Exception, "No CVDs found"):
+            self.ho.start(0)
 
-    mock_logging_error.assert_any_call(
-        "HostOrchestrator#wait_for_operation: Operation timed out. Name: <%s>",
-        "op",
-    )
+        mock_logging_error.assert_called()
+
+    @mock.patch("logging.error")
+    def test_index_out_of_bounds(self, mock_logging_error):
+        """Verifies correct exception when accessing an invalid device index."""
+        self.mock_api_client.execute.return_value = self.cvd_list_response
+
+        with self.assertRaises(IndexError):
+            self.ho.start(99)
+
+        mock_logging_error.assert_called()
+
+    @mock.patch("sdv_test_fw.host.host_orchestrator.polling")
+    def test_polling_timeout_raises_timeout_error(self, mock_polling):
+        """Verifies that a timeout in polling raises a specific TimeoutError."""
+        mock_polling.wait_and_return_result.return_value = None
+
+        self.mock_api_client.execute.side_effect = [
+            self.cvd_list_response,
+            self.op_running,
+        ]
+
+        with self.assertRaisesRegex(TimeoutError, "Operation ops/1 timed out"):
+            self.ho.start(0)
+
+    @mock.patch("logging.error")
+    def test_api_client_error_propagation(self, mock_logging_error):
+        """Verifies that exceptions from the ApiClient are re-raised correctly."""
+        self.mock_api_client.execute.side_effect = api_client.NetworkError(
+            "Connection refused"
+        )
+
+        with self.assertRaises(api_client.NetworkError):
+            self.ho.start(0)
+
+        mock_logging_error.assert_called()
+
+    @mock.patch("logging.error")
+    def test_action_api_failure_propagation(self, mock_logging_error):
+        """Verifies that exceptions during the action request are re-raised."""
+        self.mock_api_client.execute.side_effect = [
+            self.cvd_list_response,
+            api_client.HttpError(500, "Internal Server Error"),
+        ]
+
+        with self.assertRaises(api_client.HttpError):
+            self.ho.powerbtn(0)
+
+        mock_logging_error.assert_called()
+
+
+class HostOrchestratorInterfaceTest(BaseHostOrchestratorTest):
+    """Tests for the public API contract of HostOrchestrator.
+
+    Verifies that client methods construct and send the exact expected
+    request objects using the ho_requests factory.
+    """
+
+    def _setup_successful_action_sequence(self):
+        """Configures the mock to simulate a full successful action flow.
+
+        Sequence:
+        1. List CVDs (Lazy load)
+        2. Action Request (Returns 'Running')
+        3. Poll Request (Returns 'Done')
+        """
+        self.mock_api_client.execute.side_effect = [
+            self.cvd_list_response,
+            self.op_running,
+            self.op_done,
+        ]
+
+    def test_powerwash(self):
+        self._setup_successful_action_sequence()
+
+        self.ho.powerwash(0)
+
+        expected_request = ho_requests.cvd_action(
+            "g1", "cvd-1", ho_requests.CvdAction.POWERWASH, payload=None
+        )
+        self.mock_api_client.execute.assert_any_call(expected_request)
+
+    def test_powerbtn(self):
+        self._setup_successful_action_sequence()
+
+        self.ho.powerbtn(0)
+
+        expected_request = ho_requests.cvd_action(
+            "g1", "cvd-1", ho_requests.CvdAction.POWERBTN, payload=None
+        )
+        self.mock_api_client.execute.assert_any_call(expected_request)
+
+    def test_start(self):
+        self._setup_successful_action_sequence()
+
+        self.ho.start(0)
+
+        expected_request = ho_requests.cvd_action(
+            "g1", "cvd-1", ho_requests.CvdAction.START, payload={}
+        )
+        self.mock_api_client.execute.assert_any_call(expected_request)
+
+    def test_stop(self):
+        self._setup_successful_action_sequence()
+
+        self.ho.stop(0)
+
+        expected_request = ho_requests.cvd_action(
+            "g1", "cvd-1", ho_requests.CvdAction.STOP, payload=None
+        )
+        self.mock_api_client.execute.assert_any_call(expected_request)
 
 
 if __name__ == "__main__":
-  unittest.main()
+    unittest.main()
