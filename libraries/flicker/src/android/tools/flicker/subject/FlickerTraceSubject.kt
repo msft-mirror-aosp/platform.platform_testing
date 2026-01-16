@@ -41,7 +41,8 @@ abstract class FlickerTraceSubject<EntrySubject : FlickerSubject> : FlickerSubje
      * @param name Assertion name
      * @param isOptional If this assertion is optional or must pass
      */
-    protected fun addAssertion(
+    @JvmOverloads
+    fun addAssertion(
         name: String,
         isOptional: Boolean = false,
         assertion: AssertionPredicate<EntrySubject>,
