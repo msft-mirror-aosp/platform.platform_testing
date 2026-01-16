@@ -87,8 +87,23 @@ enum class DisplaySize(val width: Int, val height: Int) {
     SIZE_4K_ULTRA_WIDE(5120, 2160),
 }
 
+data class DisplayMode(
+    val size: DisplaySize,
+    val refreshRate: Float = PeripheralDeviceTestRule.DEFAULT_REFRESH_RATE,
+)
+
 /** A display peripheral. */
-data class DisplayPeripheral(override val type: PeripheralType, val size: DisplaySize) : Peripheral
+open class DisplayPeripheral(override val type: PeripheralType, open val size: DisplaySize) :
+    Peripheral
+
+// Display peripheral supporting multiple display modes to be set up, could only be requested for
+// SIMULATED display
+data class SimulatedDisplayPeripheral(val modes: List<DisplayMode>) :
+    DisplayPeripheral(PeripheralType.SIMULATED, modes.first().size) {
+    init {
+        require(modes.isNotEmpty()) { "Must provide at least one mode" }
+    }
+}
 
 /** A request to connect [peripherals]. */
 class PeripheralsRequest(val peripherals: List<Peripheral>, val timeout: Duration) {
@@ -249,8 +264,9 @@ class PeripheralDeviceTestRule : TestRule, PeripheralsController {
         )
     }
 
-    private companion object {
-        const val TAG = "PeripheralDeviceTestR"
+    companion object {
+        const val DEFAULT_REFRESH_RATE = 60f
+        private const val TAG = "PeripheralDeviceTestR"
         private val TIMEOUT = 30.seconds
     }
 }

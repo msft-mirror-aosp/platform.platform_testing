@@ -75,8 +75,20 @@ class SimulatedDeviceController : PeripheralsController {
         // Expect new displays created
         if (!displayMonitor.startMonitoring(createDisplayExpectation(peripherals))) {
             val displaySettings =
-                peripherals.joinToString(separator = ";") {
-                    "${it.size.width}x${it.size.height}/$DEFAULT_DENSITY,disable_window_interaction"
+                peripherals.joinToString(separator = ";") { peripheral ->
+                    val modes =
+                        when (peripheral) {
+                            is SimulatedDisplayPeripheral -> peripheral.modes
+                            is DisplayPeripheral ->
+                                PREDEFINED_MODES[peripheral.size]
+                                    ?: listOf(DisplayMode(peripheral.size))
+                        }
+                    val modeString =
+                        modes.joinToString(separator = "|") { mode ->
+                            val size = mode.size
+                            "${size.width}x${size.height}/$DEFAULT_DENSITY@${mode.refreshRate}"
+                        }
+                    "$modeString,disable_window_interaction"
                 }
             if (timeout.isPositive()) {
                 Settings.Global.putString(
@@ -130,5 +142,39 @@ class SimulatedDeviceController : PeripheralsController {
     private companion object {
         const val TAG = "Simulated"
         const val DEFAULT_DENSITY = 160
+
+        val PREDEFINED_MODES: Map<DisplaySize, List<DisplayMode>> =
+            mapOf(
+                DisplaySize.SIZE_1080P to listOf(DisplayMode(DisplaySize.SIZE_1080P)),
+                DisplaySize.SIZE_1080P_ULTRA_WIDE to
+                    listOf(
+                        DisplayMode(DisplaySize.SIZE_1080P_ULTRA_WIDE),
+                        DisplayMode(DisplaySize.SIZE_1080P),
+                    ),
+                DisplaySize.SIZE_2K to
+                    listOf(DisplayMode(DisplaySize.SIZE_2K), DisplayMode(DisplaySize.SIZE_1080P)),
+                DisplaySize.SIZE_2K_ULTRA_WIDE to
+                    listOf(
+                        DisplayMode(DisplaySize.SIZE_2K_ULTRA_WIDE),
+                        DisplayMode(DisplaySize.SIZE_2K),
+                        DisplayMode(DisplaySize.SIZE_1080P_ULTRA_WIDE),
+                        DisplayMode(DisplaySize.SIZE_1080P),
+                    ),
+                DisplaySize.SIZE_4K to
+                    listOf(
+                        DisplayMode(DisplaySize.SIZE_4K),
+                        DisplayMode(DisplaySize.SIZE_2K),
+                        DisplayMode(DisplaySize.SIZE_1080P),
+                    ),
+                DisplaySize.SIZE_4K_ULTRA_WIDE to
+                    listOf(
+                        DisplayMode(DisplaySize.SIZE_4K_ULTRA_WIDE),
+                        DisplayMode(DisplaySize.SIZE_4K),
+                        DisplayMode(DisplaySize.SIZE_2K_ULTRA_WIDE),
+                        DisplayMode(DisplaySize.SIZE_2K),
+                        DisplayMode(DisplaySize.SIZE_1080P_ULTRA_WIDE),
+                        DisplayMode(DisplaySize.SIZE_1080P),
+                    ),
+            )
     }
 }
