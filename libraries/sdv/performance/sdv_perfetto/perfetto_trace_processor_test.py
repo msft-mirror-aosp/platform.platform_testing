@@ -20,6 +20,10 @@ from protos.perfetto.metrics import metrics_pb2
 from protos.perfetto.metrics.android import cpu_metric_pb2
 from sdv_perfetto import perfetto_trace_processor
 
+class MockQueryResult:
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
 class PerfettoTraceProcessorTest(unittest.TestCase):
 
@@ -131,6 +135,31 @@ class PerfettoTraceProcessorTest(unittest.TestCase):
     )
     self.assertEqual(result, processor)
 
+  def test_query_iterator_to_dict_with_valid_input(self):
+    mock_iterator = iter([
+            MockQueryResult(col1=1, col2='a'),
+            MockQueryResult(col1=2, col2='b'),
+        ])
+    keys = ['col1', 'col2']
+    expected = {'col1': [1, 2], 'col2': ['a', 'b']}
+    self.assertEqual(perfetto_trace_processor.query_iterator_to_dict(mock_iterator, keys), expected)
+
+  def test_query_iterator_to_dict_split_by_value_with_valid_input(self):
+    mock_iterator = iter([
+            MockQueryResult(id=0, cpu=0, util=0.2),
+            MockQueryResult(id=1, cpu=0, util=0.3),
+            MockQueryResult(id=0, cpu=1, util=0.5),
+            MockQueryResult(id=1, cpu=1, util=0.1),
+        ])
+    cols = ['id', 'cpu', 'util']
+    expected = {
+            'id': {'cpu_0': [0, 1], 'cpu_1': [0, 1]},
+            'util': {'cpu_0': [0.2, 0.3], 'cpu_1': [0.5, 0.1]},
+        }
+    self.assertEqual(
+            perfetto_trace_processor.query_iterator_to_dict_split_by_value('cpu', mock_iterator, cols),
+            expected,
+        )
 
 if __name__ == '__main__':
   unittest.main()
