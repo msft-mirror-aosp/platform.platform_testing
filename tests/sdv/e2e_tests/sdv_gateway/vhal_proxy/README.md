@@ -29,7 +29,7 @@ Launching IVI VM:
 ```bash
 source build/envsetup.sh && lunch sdv_ivi_cf-trunk_staging-userdebug
 m
-cvd create -vsock_guest_cid=3 -base_instance_num=1 --extra_bootconfig_args="androidboot.sdv.instance_name=instance1 androidboot.virt.address=3"
+cvd create --config=sdv_ivi_instance1
 ```
 
 Launching Core VM:
@@ -37,7 +37,7 @@ Launching Core VM:
 ```bash
 source build/envsetup.sh && lunch sdv_core_cf-trunk_staging-userdebug
 m
-cvd create -vsock_guest_cid=4 -base_instance_num=2 --extra_bootconfig_args="androidboot.sdv.instance_name=instance2 androidboot.virt.address=4"
+cvd create --config=sdv_core_instance2
 ```
 
 ### Mobly
