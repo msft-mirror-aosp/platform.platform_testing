@@ -643,6 +643,8 @@ class Root private constructor(val displayId: Int = DEFAULT_DISPLAY) {
      */
     fun goHomeViaKeycode() {
         uiDevice.pressHome()
+        // Not waiting for any UI may cause race conditions.
+        uiDevice.waitForIdle()
     }
 
     private fun wakeUp() {
