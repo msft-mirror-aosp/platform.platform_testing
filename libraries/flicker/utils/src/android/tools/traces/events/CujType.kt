@@ -81,7 +81,7 @@ enum class CujType(override val id: Int) : ICujType {
     CUJ_SUW_LOADING_TO_NEXT_FLOW(47),
     CUJ_SUW_LOADING_SCREEN_FOR_STATUS(48),
     CUJ_SPLIT_SCREEN_ENTER(49),
-    CUJ_SPLIT_SCREEN_EXIT(50),
+    // 50 is reserved - previously assigned to deprecated CUJ_SPLIT_SCREEN_EXIT.
     CUJ_LOCKSCREEN_LAUNCH_CAMERA(51),
     CUJ_SPLIT_SCREEN_RESIZE(52),
     CUJ_SETTINGS_SLIDER(53),
