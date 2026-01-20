@@ -42,7 +42,6 @@ import android.tools.flicker.assertors.assertions.AppWindowRemainInsideDisplayBo
 import android.tools.flicker.assertors.assertions.EntireScreenCoveredAlways
 import android.tools.flicker.assertors.assertions.FocusChanges
 import android.tools.flicker.assertors.assertions.HasAtMostOneWindowMatching
-import android.tools.flicker.assertors.assertions.LayerBecomesInvisible
 import android.tools.flicker.assertors.assertions.LayerBecomesVisible
 import android.tools.flicker.assertors.assertions.LayerReduces
 import android.tools.flicker.assertors.assertions.ScreenLockedAtStart
@@ -185,17 +184,6 @@ object AssertionTemplates {
                     ),
                     AppWindowBecomesVisible(SPLIT_SCREEN_PRIMARY_APP),
                     AppWindowBecomesVisible(SPLIT_SCREEN_SECONDARY_APP),
-                )
-                .associateBy({ it }, { AssertionInvocationGroup.BLOCKING })
-
-    val EXIT_SPLITSCREEN_ASSERTIONS =
-        COMMON_ASSERTIONS +
-            listOf(
-                    LayerBecomesInvisible(SPLIT_SCREEN_DIVIDER),
-                    AppLayerBecomesInvisible(SPLIT_SCREEN_PRIMARY_APP),
-                    AppLayerIsVisibleAlways(SPLIT_SCREEN_SECONDARY_APP),
-                    AppWindowBecomesInvisible(SPLIT_SCREEN_PRIMARY_APP),
-                    AppWindowIsVisibleAlways(SPLIT_SCREEN_SECONDARY_APP),
                 )
                 .associateBy({ it }, { AssertionInvocationGroup.BLOCKING })
 
