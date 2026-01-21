@@ -18,14 +18,32 @@ package com.google.android.mobly.snippet.bundled;
 
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoMediaHelper;
+import android.platform.helpers.IAutoVehicleHardKeysHelper;
 
 import com.google.android.mobly.snippet.Snippet;
 import com.google.android.mobly.snippet.rpc.Rpc;
 
 public class MediaPlayerSnippet implements Snippet {
 
+    private final HelperAccessor<IAutoVehicleHardKeysHelper> mHardkeysHelper =
+            new HelperAccessor<>(IAutoVehicleHardKeysHelper.class);
     private final HelperAccessor<IAutoMediaHelper> mAutoMediaHelper =
             new HelperAccessor<>(IAutoMediaHelper.class);
+
+    @Rpc(description = "Toggle muting of audio stream by hardkey")
+    public void hardkeyMute() {
+        mHardkeysHelper.get().tuneMuteKey();
+    }
+
+    @Rpc(description = "Decrease volume by hardkey")
+    public void hardkeyVolumeDown() {
+        mHardkeysHelper.get().tuneVolumeDownKey();
+    }
+
+    @Rpc(description = "Increase volume by hardkey")
+    public void hardkeyVolumeUp() {
+        mHardkeysHelper.get().tuneVolumeUpKey();
+    }
 
     @Rpc(description = "Play Media")
     public void playMedia() {
