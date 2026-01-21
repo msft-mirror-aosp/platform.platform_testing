@@ -1,0 +1,27 @@
+// Copyright 2025 Google LLC
+
+package {
+    default_team: "trendy_team_auto_engprod",
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+python_test_host {
+    name: "DisplaySafetyHarUiVerificationTest",
+    main: "display_safety_har_ui_verification_test.py",
+    srcs: [
+        "display_safety_har_ui_verification_test.py",
+    ],
+    data: [
+        ":spectatio_host_device_configs",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "spectatio_host_tf_defaults",
+    ],
+    libs: [
+        "display_safety_test_lib",
+    ],
+    test_config_template: ":display_safety_test_config_one_device",
+}
