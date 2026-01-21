@@ -29,7 +29,7 @@ Launching IVI VM:
 ```bash
 source build/envsetup.sh && lunch sdv_ivi_cf-trunk_staging-userdebug
 m
-cvd create -vsock_guest_cid=3 -base_instance_num=1 --extra_bootconfig_args="androidboot.sdv.instance_name=instance1 androidboot.virt.address=3"
+cvd create --config=sdv_ivi_instance1
 ```
 
 Launching Core VM:
@@ -37,7 +37,7 @@ Launching Core VM:
 ```bash
 source build/envsetup.sh && lunch sdv_core_cf-trunk_staging-userdebug
 m
-cvd create -vsock_guest_cid=4 -base_instance_num=2 --extra_bootconfig_args="androidboot.sdv.instance_name=instance2 androidboot.virt.address=4"
+cvd create --config=sdv_core_instance2
 ```
 
 ### Mobly
@@ -53,8 +53,11 @@ atest SdvVhalProxySdvSubscriberIviPublisher
 
 ```
 NOTIFY_AS_NATIVE=0.0.0.0:6520,0.0.0.0:6521 ./tools/catbox-tradefed run commandAndExit sdv-e2e-vhal-proxy-sdv-publisher-ivi-subscriber-test --{device1}serial 0.0.0.0:6520 --{device2}serial 0.0.0.0:6521
+
+NOTIFY_AS_NATIVE=0.0.0.0:6520,0.0.0.0:6521 ./tools/catbox-tradefed run commandAndExit sdv-e2e-vhal-proxy-sdv-subscriber-ivi-publisher-test --{device1}serial 0.0.0.0:6520 --{device2}serial 0.0.0.0:6521
 ```
 
 ## CI/CD execution
 
 - Name: `sdv/e2e/sdv_vhal_proxy_sdv_publisher_ivi_subscriber_test`
+- Name: `sdv/e2e/sdv_vhal_proxy_sdv_subscriber_ivi_publisher_test`

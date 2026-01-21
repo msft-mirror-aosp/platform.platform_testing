@@ -10,13 +10,13 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<configuration description="SDV VHAL Proxy SDV Publisher IVI Subscriber Test">
+<configuration description="SDV VHAL Proxy SDV Subscriber IVI Publisher Test">
     <!-- Template for Device Configuration -->
     <template-include name="device-config" default="sdv-device-config/two-devices" />
 
     <!-- Plan. Use the same name as the file name -->
-    <option name="plan" value="sdv-e2e-vhal-proxy-sdv-publisher-ivi-subscriber-test"/>
+    <option name="plan" value="sdv-e2e-vhal-proxy-sdv-subscriber-ivi-publisher-test"/>
 
     <!-- Test: mobly-par-file-name should match the module name -->
-    <option name="mobly-host:mobly-par-file-name" value="SdvVhalProxySdvPublisherIviSubscriber" />
+    <option name="mobly-host:mobly-par-file-name" value="SdvVhalProxySdvSubscriberIviPublisher" />
 </configuration>
