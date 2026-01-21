@@ -25,7 +25,6 @@ import android.platform.uiautomatorhelpers.DeviceHelpers.uiDevice
 import android.platform.uiautomatorhelpers.DeviceHelpers.waitForObj
 import android.platform.uiautomatorhelpers.PRECISE_GESTURE_INTERPOLATOR
 import androidx.test.uiautomator.BySelector
-import com.android.systemui.Flags
 import com.google.common.truth.Truth
 
 /** System UI test automation object representing the dialog for adjusting the device volume. */
@@ -49,12 +48,7 @@ class VolumeDialog internal constructor() {
 
     /** Open the ringer drawer by clicking the ringer mode icon on the volume dialog. */
     fun openRingerDrawer(): VolumeRingerDrawer {
-        val ringerIconSelector =
-            if (Flags.volumeRedesign()) {
-                sysuiResSelector("ringer_buttons_background")
-            } else {
-                sysuiResSelector("volume_new_ringer_active_icon_container")
-            }
+        val ringerIconSelector = sysuiResSelector("ringer_buttons_background")
         waitForObj(ringerIconSelector).click()
         return VolumeRingerDrawer.get()
     }
@@ -65,21 +59,13 @@ class VolumeDialog internal constructor() {
         replaceWith = ReplaceWith("openNewVolumePanel"),
     )
     fun openVolumePanel(): VolumePanelDialog {
-        if (Flags.volumeRedesign()) {
-            sysuiResSelector("volume_dialog_settings").click()
-        } else {
-            sysuiResSelector("settings").click()
-        }
+        sysuiResSelector("volume_dialog_settings").click()
         return VolumePanelDialog()
     }
 
     /** Open the volume setting panel by clicking the setting icon on the volume dialog. */
     fun openNewVolumePanel(): VolumePanel {
-        if (Flags.volumeRedesign()) {
-            waitForObj(sysuiResSelector("volume_dialog_settings")).click()
-        } else {
-            waitForObj(sysuiResSelector("settings")).click()
-        }
+        waitForObj(sysuiResSelector("volume_dialog_settings")).click()
         return VolumePanel()
     }
 
@@ -107,12 +93,7 @@ class VolumeDialog internal constructor() {
          * @param volume value for volume to changed
          */
         private fun dragAndChangeVolume(volume: Int) {
-            val slider =
-                if (Flags.volumeRedesign()) {
-                    sysuiResSelector("volume_dialog_slider")
-                } else {
-                    sysuiResSelector("volume_row_slider")
-                }
+            val slider = sysuiResSelector("volume_dialog_slider")
             val coordinates = getDragCoordinates(slider, volume)
             assertVolumeDialogVisible()
             BetterSwipe.swipe(
