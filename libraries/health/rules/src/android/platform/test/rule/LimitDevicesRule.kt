@@ -199,6 +199,7 @@ enum class DeviceProduct(val product: String) {
     ROBOLECTRIC("robolectric"),
     COMET("comet"),
     CHEETAH("cheetah"),
+    BRYA("brya"),
 }
 
 private fun makeAssumptionViolatedStatement(errorMessage: String): Statement =
