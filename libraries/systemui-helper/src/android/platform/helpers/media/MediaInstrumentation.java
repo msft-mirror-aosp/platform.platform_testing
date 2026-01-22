@@ -168,13 +168,11 @@ public final class MediaInstrumentation {
         Rect umoBound = umo.getVisibleBounds();
         Rect footerBound = footer.getVisibleBounds();
         int distance = umoBound.bottom - footerBound.top;
-        if (distance <= 0) {
+        if (distance < 0) {
             return umo;
         }
-        distance += footerBound.height();
         UiObject2 scrollable = mDevice.wait(Until.findObject(By.scrollable(true)), WAIT_TIME_MILLIS);
-        scrollable.scroll(
-                Direction.DOWN, (float)distance / scrollable.getVisibleBounds().height(), 100);
+        scrollable.scroll(Direction.DOWN, 0.50f, 100);
         InstrumentationRegistry.getInstrumentation().getUiAutomation().clearCache();
         return mDevice.wait(Until.findObject(By.res(umo.getResourceName())), WAIT_TIME_MILLIS);
     }
