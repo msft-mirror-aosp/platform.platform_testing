@@ -17,5 +17,5 @@
 package android.tools.flicker.config.splitscreen
 
 internal object SplitScreen {
-    val SCENARIOS = listOf(SplitScreenEnter, SplitScreenExit, SplitScreenResize)
+    val SCENARIOS = listOf(SplitScreenEnter, SplitScreenResize)
 }

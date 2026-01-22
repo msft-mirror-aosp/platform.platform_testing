@@ -44,6 +44,69 @@ class PeripheralDeviceTest {
     }
 
     @Test
+    fun testSimulatedDisplay_multiModes() {
+        val expectedMode1 = DisplayMode(DisplaySize.SIZE_1080P, 90f)
+        val expectedMode2 = DisplayMode(DisplaySize.SIZE_2K, 60f)
+
+        val response =
+            peripheralDeviceRule.requestPeripherals(
+                SimulatedDisplayPeripheral(listOf(expectedMode1, expectedMode2))
+            )
+
+        assertThat(response.devices.filter { it.connected }).hasSize(1)
+        response.devices.forEach {
+            when (it) {
+                is SimulatedDisplayDevice -> {
+                    val display = it.display ?: fail("Missing display info")
+                    val supportedModes = display.supportedModes
+                    assertThat(supportedModes).hasLength(2)
+                    val mode1 = supportedModes.get(0)
+                    val mode2 = supportedModes.get(1)
+                    assertThat(mode1.physicalWidth).isEqualTo(expectedMode1.size.width)
+                    assertThat(mode1.physicalHeight).isEqualTo(expectedMode1.size.height)
+                    assertThat(mode1.refreshRate).isEqualTo(expectedMode1.refreshRate)
+                    assertThat(mode2.physicalWidth).isEqualTo(expectedMode2.size.width)
+                    assertThat(mode2.physicalHeight).isEqualTo(expectedMode2.size.height)
+                    assertThat(mode2.refreshRate).isEqualTo(expectedMode2.refreshRate)
+                }
+
+                else -> fail("Unexpected peripheral device: $it")
+            }
+        }
+    }
+
+    @Test
+    fun testSimulatedDisplay_predefinedModes() {
+        val response =
+            peripheralDeviceRule.requestPeripherals(
+                DisplayPeripheral(PeripheralType.SIMULATED, DisplaySize.SIZE_2K)
+            )
+
+        assertThat(response.devices.filter { it.connected }).hasSize(1)
+        response.devices.forEach {
+            when (it) {
+                is SimulatedDisplayDevice -> {
+                    val display = it.display ?: fail("Missing display info")
+                    val supportedModes = display.supportedModes
+                    assertThat(supportedModes).hasLength(2)
+                    val mode1 = supportedModes.get(0)
+                    val mode2 = supportedModes.get(1)
+                    assertThat(mode1.physicalWidth).isEqualTo(DisplaySize.SIZE_2K.width)
+                    assertThat(mode1.physicalHeight).isEqualTo(DisplaySize.SIZE_2K.height)
+                    assertThat(mode1.refreshRate)
+                        .isEqualTo(PeripheralDeviceTestRule.DEFAULT_REFRESH_RATE)
+                    assertThat(mode2.physicalWidth).isEqualTo(DisplaySize.SIZE_1080P.width)
+                    assertThat(mode2.physicalHeight).isEqualTo(DisplaySize.SIZE_1080P.height)
+                    assertThat(mode2.refreshRate)
+                        .isEqualTo(PeripheralDeviceTestRule.DEFAULT_REFRESH_RATE)
+                }
+
+                else -> fail("Unexpected peripheral device: $it")
+            }
+        }
+    }
+
+    @Test
     fun testPhysicalDisplay() {
         val response =
             peripheralDeviceRule.requestPeripherals(

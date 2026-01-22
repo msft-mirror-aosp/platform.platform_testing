@@ -233,21 +233,12 @@ object TransitionFilters {
             }
         }
 
-    val EXIT_SPLIT_SCREEN_FILTER: TransitionsTransform = { ts, _, _ ->
-        ts.filter { isSplitscreenExitTransition(it) }
-    }
-
     val RESIZE_SPLIT_SCREEN_FILTER: TransitionsTransform = { ts, _, _ ->
         ts.filter { isSplitscreenResizeTransition(it) }
     }
 
     fun isSplitscreenEnterTransition(transition: Transition): Boolean {
         return transition.handler == SPLIT_SCREEN_TRANSITION_HANDLER && transition.type == TO_FRONT
-    }
-
-    fun isSplitscreenExitTransition(transition: Transition): Boolean {
-        return transition.type == TransitionType.SPLIT_DISMISS ||
-            transition.type == TransitionType.SPLIT_DISMISS_SNAP
     }
 
     fun isSplitscreenResizeTransition(transition: Transition): Boolean {
