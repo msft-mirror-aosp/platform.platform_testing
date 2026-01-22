@@ -1,0 +1,18 @@
+// Copyright 2025 Google LLC
+
+package {
+    default_team: "trendy_team_auto_engprod",
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+python_library_host {
+    name: "display_safety_utils_library",
+    pkg_path: "display_safety_utils",
+    srcs: [
+        "*.py",
+    ],
+    libs: [
+        "file_utils_library",
+        "screenshot_util_library",
+    ],
+}
