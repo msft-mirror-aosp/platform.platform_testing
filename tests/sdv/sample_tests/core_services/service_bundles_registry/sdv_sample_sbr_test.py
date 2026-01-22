@@ -34,7 +34,7 @@ class SdvSampleSBRTest(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
         ' local-vm:{package}.{service_bundle}/instance-1'
     )
     FILE_NOT_FOUND_MESSAGE = 'No such file or directory'
-    LIFECYCLE_LOG_MESSAGE = 'lifecycle_manager\:'
+    LIFECYCLE_LOG_MESSAGE = 'lifecycle_manager:'
     SERVICE_BUNDLE_EXECUTION_REGEXP = (
         'Executing.*{service_bundle_library_full_path}'
     )

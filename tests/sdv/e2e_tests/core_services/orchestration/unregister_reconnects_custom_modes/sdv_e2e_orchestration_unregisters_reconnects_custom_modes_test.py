@@ -35,7 +35,7 @@ class SdvE2EOrchestrationUnregistersReconnectsCustomModeTest(
     ON_COMMAND = 'ON'
     OFF_COMMAND = 'OFF'
     SUCCESS_CUSTOM_MODE_LOGCAT_GREP_TEXT_TEMPLATE = (
-        'Finished enforcing mode \'Custom\("{mode_name}"\)\' with state'
+        'Finished enforcing mode \'Custom\\("{mode_name}"\\)\' with state'
         ' \'"{state}"\'. successfully'
     )
     SUBSCRIBED_CUSTOM_MODE_LOGCAT_TEXT = (

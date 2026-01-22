@@ -105,7 +105,7 @@ class SdvVmDiscoveryAttributeTest(sdv_base_test.SdvBaseTestClass):
         deadline = time.perf_counter() + timeout
         while time.perf_counter() < deadline:
             logcat_result = device.adb().grep_from_logcat(grep_text, logcat_args=logcat_args)
-            if logcat_result is not "":
+            if logcat_result != "":
                 return True
             time.sleep(poll_interval)
         return False

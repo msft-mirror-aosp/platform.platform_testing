@@ -104,8 +104,8 @@ class SdvSampleLoggingAPITest(
         ]
         self.check_contains_all(log, basic_expected_logs, label='logs')
         basic_expected_regexes = [
-            'F logging_sdv_sample: logging.cpp:[0-9]+] test FATAL log',
-            "F DEBUG\s+: Abort message: 'test FATAL log'",
+            r'F logging_sdv_sample: logging.cpp:[0-9]+] test FATAL log',
+            r"F DEBUG\s+: Abort message: 'test FATAL log'",
         ]
         self.check_matches_all(log, basic_expected_regexes, label='logs')
 
