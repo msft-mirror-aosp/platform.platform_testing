@@ -1,0 +1,85 @@
+# Copyright (C) 2026 The Android Open Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+uuid: "27f28563-9352-4f39-86d9-d5e67e793084"
+version: 3758096386
+descriptor_protos {
+  name: "adhoc.proto"
+  package: "aaos.sdv.telemetry.adhoc"
+  message_type {
+    name: "aggregation_publisher"
+    field { name: "value" number: 1 label: LABEL_REPEATED type: TYPE_INT32 }
+  }
+  message_type {
+    name: "report"
+    field { name: "value" number: 1 label: LABEL_REPEATED type: TYPE_INT32 }
+  }
+  syntax: "proto2"
+}
+triggers {
+  name: "data_trigger"
+  data_trigger { publisher_name: "publisher" }
+}
+triggers {
+  name: "end_trigger"
+  periodic_trigger { interval { nanos: 400000000 } }
+}
+triggers {
+  name: "finish_trigger"
+  periodic_trigger { interval { seconds: 2 } }
+}
+triggers {
+  name: "start_trigger"
+  periodic_trigger { interval { nanos: 500000000 } }
+}
+publishers {
+  name: "publisher"
+  service_publisher {
+    service_name: ".google.sdv.telemetry_samples.LifecycleTriggers"
+    connection_type: SUBSCRIPTION
+  }
+}
+publishers {
+  name: "aggregation_publisher"
+  aggregation_publisher {
+    trigger_names: "data_trigger"
+    message_builder {
+      message_type: ".aaos.sdv.telemetry.adhoc.aggregation_publisher"
+      field_assignments {
+        field_name: "value"
+        vector_aggregation { expression_node_index: 0 }
+      }
+    }
+  }
+}
+# Expression Node 0
+expression_nodes { field_leaf_node { publisher_name: "publisher" field_names: "integer" } }
+# Expression Node 1
+expression_nodes {
+  field_leaf_node { publisher_name: "aggregation_publisher" field_names: "value" }
+}
+metrics_report_configs {
+  name: "report"
+  report_incomplete: true
+  message_builder {
+    message_type: ".aaos.sdv.telemetry.adhoc.report"
+    field_assignments {
+      field_name: "value"
+      no_aggregation { expression_node_index: 1 }
+    }
+  }
+}
+start_trigger_name: "start_trigger"
+end_trigger_name: "end_trigger"
+finish_trigger_name: "finish_trigger"
