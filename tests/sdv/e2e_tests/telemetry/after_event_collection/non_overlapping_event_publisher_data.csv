@@ -1,0 +1,9 @@
+# Copyright 2025 Google LLC
+
+# Events occur at timestamps 2.5s and 9.5s.
+# After event collection happens at intervals [2.5s; 7.5s] and [9.5s; 14.5s],
+# and before event collection happens at intervals [0s; 2.5s] and [4.5s; 9.5s]
+
+_delay_before_publishing,event
+2500,1
+7000,1

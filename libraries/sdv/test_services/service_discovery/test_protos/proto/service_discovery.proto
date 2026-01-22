@@ -1,0 +1,76 @@
+/*
+ * Copyright (C) 2026 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// This proto defines the Service Discovery Test Service.
+// It is also used to generate the gRPC service definition for Service Discovery
+// Test Client. So, if this proto is updated, generate the test client again to
+// reflect the changes.
+syntax = "proto3";
+
+package com.android.sdv.test_service.service_discovery;
+
+message ServiceFqin {
+  string sdvVmName = 1;
+  string sdvPackageName = 2;
+  string serviceBundleName = 3;
+  string serviceInstanceName = 4;
+}
+
+message CreateIdentityRequest {
+  string public_key = 1;
+  ServiceFqin service_fqin = 2;
+}
+
+message UnitTypeRequest {
+  string sdvPackageName = 1;
+  string serviceBundleName = 2;
+  string typeName = 3;
+}
+
+message AppMetadata {
+  int32 version = 1;
+  string valueHolder = 2;
+}
+
+message RegisterServiceUnitRequest {
+  UnitTypeRequest unit_type = 1;
+  AppMetadata app_metadata = 2;
+  string service_unit_name = 3;
+}
+
+message AddTransportMetadataRequest { string value_holder = 1; }
+
+message UnitNameRequest {
+  string sdvVmName = 1;
+  string sdvPackageName = 2;
+  string serviceBundleName = 3;
+  string unitName = 4;
+}
+
+message ServiceDiscoveryResponse { string response_message = 1; }
+
+service ServiceDiscovery {
+  rpc CreateIdentity(CreateIdentityRequest) returns (ServiceDiscoveryResponse) {
+  }
+  rpc RegisterServiceUnit(RegisterServiceUnitRequest)
+      returns (ServiceDiscoveryResponse) {}
+  rpc AddTransportMetadata(AddTransportMetadataRequest)
+      returns (ServiceDiscoveryResponse) {}
+  rpc GetServiceUnitsByType(UnitTypeRequest)
+      returns (ServiceDiscoveryResponse) {}
+  rpc GetServiceUnitsByName(UnitNameRequest)
+      returns (ServiceDiscoveryResponse) {}
+}
