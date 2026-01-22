@@ -117,9 +117,9 @@ object WindowUtils {
             }
 
         // Find visible insets from status bar and navigation bar (equivalent to taskbar)
-        display.insetsSourceProviders.forEach {
+        display.insetsStateController?.insetsSourceProviders?.forEach {
             val insetsSource: InsetsSource = it.source ?: return@forEach
-            val insets: Rect = it.frame ?: return@forEach
+            val insets: Rect = insetsSource.frame
             if (!insetsSource.visible) return@forEach
 
             when (insetsSource.type) {
