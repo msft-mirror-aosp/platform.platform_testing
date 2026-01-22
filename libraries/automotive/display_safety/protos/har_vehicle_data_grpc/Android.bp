@@ -1,0 +1,16 @@
+// Copyright 2025 Google LLC
+
+package {
+    default_team: "trendy_team_auto_engprod",
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+filegroup {
+    name: "har_vehicle_data_protos_for_testing",
+    srcs: [
+        "proto/vehicledata_grpc_service.proto",
+        "proto/vehicle_tire.proto",
+        "proto/vehicledata.proto",
+        "proto/debug.proto",
+    ],
+}
