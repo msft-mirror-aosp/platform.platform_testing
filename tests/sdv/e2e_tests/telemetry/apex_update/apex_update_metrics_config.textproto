@@ -1,0 +1,104 @@
+# Copyright (C) 2026 The Android Open Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+uuid: "aa27883c-96a5-4a67-adad-d15e00c0f12a"
+version: 1
+
+descriptor_protos {
+  message_type {
+    name: "Report"
+    field { type: TYPE_DOUBLE name: "tire_pressure_fl" label: LABEL_OPTIONAL number: 1 }
+  }
+}
+
+publishers {
+  name: "dt_tire_pressure_fl_publisher"
+  service_publisher {
+    service_name: "com.sdv.google.sample.apex.provider.Provider#TirePressure|"
+                  "com-sdv-google-sample-apex-provider-tire-pressure-front-"
+                  "left"
+  }
+}
+
+publishers {
+  name: "rpc_tire_pressure_fl_publisher"
+  service_publisher {
+    service_name: "com.sdv.google.sample.apex.provider.Provider#TireStatus|"
+                  "com-sdv-google-sample-apex-provider-tire-status"
+    configuration {
+      type_url: "type.googleapis.com/"
+                "com.sdv.google.sample.apex.provider.GetTireStatusRequest"
+      value: "\x08\x00"
+    }
+    # Middleware does not currently support Streaming RPC, hence we fall
+    # back to GETTER for now.
+    connection_type: GETTER
+  }
+}
+
+triggers {
+  name: "dt_report_trigger"
+  data_trigger { publisher_name: "dt_tire_pressure_fl_publisher" }
+}
+
+# Middleware does not currently support Streaming RPC, hence we fall back to a
+# periodic trigger for now.
+triggers {
+  name: "rpc_report_trigger"
+  periodic_trigger { interval { seconds: 2 nanos: 0 } }
+}
+
+triggers {
+  name: "finish_trigger"
+  periodic_trigger { interval { seconds: 10 nanos: 0 } }
+}
+
+# index 0
+expression_nodes {
+  field_leaf_node { publisher_name: "dt_tire_pressure_fl_publisher" field_names: "pressure" }
+}
+
+# index 1
+expression_nodes {
+  field_leaf_node { publisher_name: "rpc_tire_pressure_fl_publisher" field_names: "pressure" }
+}
+
+finish_trigger_name: "finish_trigger"
+
+metrics_report_configs {
+  name: "dt_tire_pressure"
+  trigger_names: "dt_report_trigger"
+  report_incomplete: false
+
+  message_builder {
+    message_type: ".Report"
+    field_assignments {
+      field_name: "tire_pressure_fl"
+      no_aggregation { expression_node_index: 0 }
+    }
+  }
+}
+
+metrics_report_configs {
+  name: "rpc_tire_pressure"
+  trigger_names: "rpc_report_trigger"
+  report_incomplete: false
+
+  message_builder {
+    message_type: ".Report"
+    field_assignments {
+      field_name: "tire_pressure_fl"
+      no_aggregation { expression_node_index: 1 }
+    }
+  }
+}

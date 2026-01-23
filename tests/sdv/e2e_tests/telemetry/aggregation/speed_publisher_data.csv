@@ -1,0 +1,5 @@
+_delay_before_publishing,speed,unit,sample_int,sample_float
+100,30.0,METRIC,30,30.0
+100,10.0,METRIC,10,10.0
+100,-10.0,METRIC,-10,-10.0
+100,-20.0,METRIC,-20,-20.0

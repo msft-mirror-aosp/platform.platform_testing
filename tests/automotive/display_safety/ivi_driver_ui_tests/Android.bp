@@ -1,0 +1,43 @@
+// Copyright 2025 Google LLC
+
+package {
+    default_team: "trendy_team_auto_engprod",
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+filegroup {
+    name: "ivi_driver_ui_test_resources",
+    srcs: [
+        "golden_images/**/*.jpg",
+    ],
+}
+
+python_library_host {
+    name: "ivi_driver_ui_test_resources_library",
+    pkg_path: "ivi_driver_ui_test_resources",
+    data: [
+        ":ivi_driver_ui_test_resources",
+    ],
+}
+
+python_test_host {
+    name: "IVIDriverUIScreenshotTest",
+    main: "ivi_driver_ui_screenshot_test.py",
+    srcs: [
+        "ivi_driver_ui_screenshot_test.py",
+    ],
+    data: [
+        ":spectatio_host_device_configs",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "spectatio_host_tf_defaults",
+    ],
+    libs: [
+        "ivi_driver_ui_test_resources_library",
+        "display_safety_test_lib",
+    ],
+    test_config_template: ":display_safety_test_config_one_device",
+}

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2025 Google LLC -->
+<configuration description="One Device Test: {MODULE}">
+  <!--
+      Template for One Device Test.
+      This is common for all tests.
+  -->
+  <option name="test-suite-tag" value="catbox-display-safety" />
+
+  <device name="device1">
+    <!-- Python Dependencies -->
+    <target_preparer class="com.android.tradefed.targetprep.PythonVirtualenvPreparer">
+      <option name="disable" value="false" />
+      <option name="dep-module" value="mobly==1.13" />
+      <!-- Required for Parameterization -->
+      <option name="dep-module" value="absl-py==2.1.0" />
+      <!-- Required for Display Safety -->
+      <option name="dep-module" value="grpcio==1.74.0"/>
+      <option name="dep-module" value="protobuf" />
+      <option name="dep-module" value="importlib-resources" />
+      <option name="dep-module" value="opencv-python" />
+      <option name="dep-module" value="numpy" />
+      <option name="dep-module" value="Pillow" />
+      <option name="dep-module" value="google-genai" />
+      <option name="dep-module" value="httplib2" />"
+    </target_preparer>
+
+    <!-- ADB Root -->
+    <target_preparer class="com.android.tradefed.targetprep.RootTargetPreparer" />
+  </device>
+
+  <!-- Mobly test defaults for one device -->
+  <test class="com.android.tradefed.testtype.mobly.MoblyBinaryHostTest">
+      <option name="mobly-par-file-name" value="{MODULE}" />
+      <!-- Timeout limit in milliseconds -->
+      <option name="mobly-test-timeout" value="300000" />
+      <!-- Testbed config file -->
+      <option name="mobly-config-file-name" value="automotive_one_device_config.yaml" />
+  </test>
+</configuration>

@@ -1,0 +1,43 @@
+// Copyright 2025 Google LLC
+
+package {
+    default_team: "trendy_team_auto_engprod",
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+filegroup {
+    name: "display_safety_har_test_resources",
+    srcs: [
+        "golden_images/**/*.jpg",
+    ],
+}
+
+python_library_host {
+    name: "display_safety_har_test_resources_library",
+    pkg_path: "display_safety_har_test_resources",
+    data: [
+        ":display_safety_har_test_resources",
+    ],
+}
+
+python_test_host {
+    name: "DisplaySafetyHarScreenshotTest",
+    main: "display_safety_har_screenshot_test.py",
+    srcs: [
+        "display_safety_har_screenshot_test.py",
+    ],
+    data: [
+        ":spectatio_host_device_configs",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "spectatio_host_tf_defaults",
+    ],
+    libs: [
+        "display_safety_har_test_resources_library",
+        "display_safety_test_lib",
+    ],
+    test_config_template: ":display_safety_test_config_one_device",
+}

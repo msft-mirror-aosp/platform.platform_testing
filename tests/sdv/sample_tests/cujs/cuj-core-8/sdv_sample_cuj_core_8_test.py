@@ -42,7 +42,8 @@ class SdvCujCore8Test(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
     STARTING_TEXT = 'Starting {vm_instance}:{package}.{bundle_name}/instance'
     SENT_MESSAGE = 'Sent.*FooMessage.*42'
     RECEIVED_MESSAGE = 'Received.*FooMessage.*42'
-    LIFECYCLE_STARTED = '{bundle_name} state is STARTED'
+    # The " symbol needs to be escaped to \" to work with grep
+    LIFECYCLE_STARTED = 'serviceBundleName: \\"{bundle_name}\\", serviceInstanceName: \\"instance\\" }} is started'
     # Test Parameters - error messages.
     ERROR_MESSAGE_LIFECYCLE_BUNDLE_NOT_STARTED = \
         '\n[FAILURE]: Lifecycle manager did not report {bundle_name} to be started.'

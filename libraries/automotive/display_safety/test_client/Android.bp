@@ -1,0 +1,49 @@
+// Copyright 2025 Google LLC
+
+package {
+    default_team: "trendy_team_auto_engprod",
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+genrule {
+    name: "display_safety_har_vehicle_data_grpc_src",
+    tools: [
+        "aprotoc",
+        "protoc-gen-grpc-python-plugin",
+    ],
+    cmd: "$(location aprotoc)" +
+        "    -Ipackages/services/display_safety/reference/harry-vehicle-data-grpc/proto" +
+        "    --plugin=protoc-gen-grpc=$(location protoc-gen-grpc-python-plugin)" +
+        "    --python_out=$(genDir)" +
+        "    --grpc_out=$(genDir)" +
+        "    $(locations :harry_vehicle_data_protos)",
+    srcs: [
+        ":harry_vehicle_data_protos",
+    ],
+    out: [
+        "vehicle_tire_pb2.py",
+        "vehicle_tire_pb2_grpc.py",
+        "vehicledata_pb2.py",
+        "vehicledata_pb2_grpc.py",
+        "vehicledata_grpc_service_pb2.py",
+        "vehicledata_grpc_service_pb2_grpc.py",
+    ],
+}
+
+python_library_host {
+    name: "py_libdisplay_safety_test_service_proto",
+    srcs: [
+        ":display_safety_har_vehicle_data_grpc_src",
+    ],
+}
+
+python_library_host {
+    name: "display_safety_test_client",
+    pkg_path: "display_safety_test_client",
+    srcs: [
+        "client/display_safety_client.py",
+    ],
+    libs: [
+        "py_libdisplay_safety_test_service_proto",
+    ],
+}
