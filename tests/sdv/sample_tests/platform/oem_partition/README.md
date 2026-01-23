@@ -15,21 +15,20 @@
 
 ## Sample
 
-This test automates the [OEM partition manual test](https://testtracker.googleplex.com/tc/98e9b476-6276-4591-ada7-608cab2e73b5).
-The additional partition is defined under [device/google/sdv/sdv_core_cf/oem](https://source.corp.google.com/h/googleplex-android/platform/superproject/main/+/main:device/google/sdv/sdv_core_cf/oem/).
+This test automates the
+[OEM partition manual test](https://testtracker.googleplex.com/tc/98e9b476-6276-4591-ada7-608cab2e73b5).
+The additional partition is defined under
+[device/google/sdv/sdv_core_base/oem](https://source.corp.google.com/h/googleplex-android/platform/superproject/main/+/main:device/google/sdv/sdv_core_base/oem/).
 
 ## Test Execution
 
-The `oem.img`  and `oem_metadata.img` files can be pulled either from ab/ or built locally:
-
-```sh
-m custom_images
-```
+The `oem_ab.img` and `oem_metadata.img` files can be pulled either from ab/ or
+built locally with `m`.
 
 Create 1 VM and mount the additional OEM partition:
 
 ```sh
-cvd create --custom_partition_path=$OUT/oem.img;$OUT/oem_metadata.img --config=sdv_core_instance1
+cvd create --custom_partition_path=$OUT/oem_ab.img;$OUT/oem_metadata.img --config=sdv_core_instance1
 ```
 
 ### atest
