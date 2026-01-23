@@ -21,7 +21,7 @@ from typing import List
 
 from sdv_perfetto import collector_config
 from sdv_perfetto import perfetto_collector, perfetto_trace_processor
-from sdv_test_fw.device import sdv_device
+from sdv_test_fw.device import sdv_adb
 from sdv_test_fw.test_execution import sdv_base_test
 from sdv_test_fw.test_execution import sdv_test_runner
 from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
@@ -178,14 +178,14 @@ class SdvServiceBundleMemLeakTest(sdv_base_test.SdvBaseTestClass):
     super().teardown_class()
 
   def set_sys_property(
-      self, device: sdv_device.SdvDeviceAdb, sys_property: str, value: str
+      self, device: sdv_adb.SdvAdb, sys_property: str, value: str
   ):
     """Set the system property."""
     device.execute_shell_command(f'setprop {sys_property} {value}')
 
   def manage_service_bundle(
       self,
-      device: sdv_device.SdvDeviceAdb,
+      device: sdv_adb.SdvAdb,
       service_bundle_name: str,
       command: str,
       ignore_errors: bool = False,

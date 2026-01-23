@@ -25,7 +25,7 @@ import time
 from dataclasses import dataclass
 from enum import Enum
 
-from sdv_test_fw.device import sdv_device
+from sdv_test_fw.device import sdv_adb
 from sdv_test_fw.test_execution import sdv_base_test
 from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
 
@@ -34,7 +34,7 @@ from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
 class ServiceBundle:
     """Data class for service bundles."""
 
-    adb_device: sdv_device.SdvDeviceAdb
+    adb_device: sdv_adb.SdvAdb
     name: str
     package: str
     fqin: str

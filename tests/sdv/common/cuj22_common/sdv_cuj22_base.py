@@ -207,7 +207,7 @@ class SdvCuj22Base():
         until 3 matching log entries with a later timestamp are found.
 
         Args:
-            device_adb: The SdvDeviceAdb object for the device.
+            device_adb: The SdvAdb object for the device.
             grep_text: The text/regex to search for in logcat.
             n_occurrences: The number of new log entries to wait for.
             timeout: The maximum time to wait in seconds.
