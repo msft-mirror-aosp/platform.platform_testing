@@ -12,13 +12,21 @@ genrule {
         "protoc-gen-grpc-python-plugin",
     ],
     cmd: "$(location aprotoc)" +
-        "    -Ipackages/services/display_safety/reference/harry-vehicle-data-grpc/proto" +
+        // TODO(schinchalkar): b/477786821 - Update package to use protos from
+        // display safety repo once it is available in
+        // Open Source and Partner PDKs.
+        //"    -Ipackages/services/display_safety/reference/harry-vehicle-data-grpc/proto" +
+        "    -Iplatform_testing/libraries/automotive/display_safety/protos/har_vehicle_data_grpc/proto" +
         "    --plugin=protoc-gen-grpc=$(location protoc-gen-grpc-python-plugin)" +
         "    --python_out=$(genDir)" +
         "    --grpc_out=$(genDir)" +
-        "    $(locations :harry_vehicle_data_protos)",
+        "    $(locations :har_vehicle_data_protos_for_testing)",
     srcs: [
-        ":harry_vehicle_data_protos",
+        // TODO(schinchalkar): b/477786821 - Remove testing protos and use the
+        // ones for display safety repo once display safety repo is available in
+        // Open Source and Partner PDKs.
+        // ":harry_vehicle_data_protos",
+        ":har_vehicle_data_protos_for_testing",
     ],
     out: [
         "vehicle_tire_pb2.py",
