@@ -185,7 +185,16 @@ public final class MediaInstrumentation {
      */
     public MediaController getMediaNotification() {
         UiObject2 notification = scrollToMediaNotification();
-        return new MediaController(this, notification);
+        MediaMetadata source = mMediaSources.stream().findFirst().orElseThrow();
+        final BySelector mediaTitleSelector =
+                By.res(PKG, "header_title")
+                        .text(source.getString(MediaMetadata.METADATA_KEY_TITLE));
+        final BySelector umoSelector =
+                By.res(PKG, MEDIA_CONTROLLER_RES_ID).hasDescendant(mediaTitleSelector);
+        final BySelector carouselSelector =
+                By.res(PKG, "media_carousel").hasDescendant(umoSelector);
+        UiObject2 carousel = mDevice.wait(Until.findObject(carouselSelector), WAIT_TIME_MILLIS);
+        return new MediaController(this, notification, carousel);
     }
 
     /**
@@ -201,12 +210,15 @@ public final class MediaInstrumentation {
                 .text(source.getString(MediaMetadata.METADATA_KEY_TITLE));
         final BySelector umoSelector = By.res(PKG, MEDIA_CONTROLLER_RES_ID)
                 .hasDescendant(mediaTitleSelector);
+        final BySelector carouselSelector =
+                By.res(PKG, "media_carousel").hasDescendant(umoSelector);
+        UiObject2 carousel = mDevice.wait(Until.findObject(carouselSelector), WAIT_TIME_MILLIS);
         UiObject2 notification = mDevice.wait(Until.findObject(umoSelector), WAIT_TIME_MILLIS);
         assertNotNull("Unable to find UMO.", notification);
         mDevice.waitForIdle();
         HealthTestingUtils.waitForValueToSettle(
                 () -> "UMO isn't settle after timeout.", notification::getVisibleBounds);
-        return new MediaController(this, notification);
+        return new MediaController(this, notification, carousel);
     }
 
     /**
