@@ -133,6 +133,19 @@ public final class MediaInstrumentation {
      * @return UiObject2 of the media notification.
      */
     public UiObject2 scrollToMediaNotification() {
+        return scrollToMediaNotification(true);
+    }
+
+    /**
+     * Scrolls the QS container to find the media notification.
+     *
+     * @param scrollQs If true, attempt to scroll inside quick settings after carousel is located,
+     *     to ensure the carousel is fully visible. Note that if quick settings has already been
+     *     fully scrolled (e.g. from calling this method earlier), this may dismiss quick settings
+     *     instead.
+     * @return UiObject2 of the media notification.
+     */
+    public UiObject2 scrollToMediaNotification(boolean scrollQs) {
         MediaMetadata meta = mMediaSources.stream().findFirst().orElseThrow();
         final BySelector qsScrollViewSelector = By.res(PKG, "expanded_qs_scroll_view");
         final BySelector mediaTitleSelector = By.res(PKG, "header_title")
@@ -151,8 +164,10 @@ public final class MediaInstrumentation {
                 notification = mDevice.wait(Until.findObject(umoSelector), WAIT_TIME_MILLIS);
             }
             assertNotNull("Unable to find UMO.", notification);
-            // The UMO may still not be fully visible, double check it's visibility.
-            notification = ensureUMOFullyVisible(notification);
+            if (scrollQs) {
+                // The UMO may still not be fully visible, double check its visibility.
+                notification = ensureUMOFullyVisible(notification);
+            }
         }
         assertNotNull("UMO isn't fully visible.", notification);
         mDevice.waitForIdle();
@@ -171,21 +186,42 @@ public final class MediaInstrumentation {
         if (distance < 0) {
             return umo;
         }
-        UiObject2 scrollable = mDevice.wait(Until.findObject(By.scrollable(true)), WAIT_TIME_MILLIS);
+        UiObject2 scrollable =
+                mDevice.wait(Until.findObject(By.scrollable(true)), WAIT_TIME_MILLIS);
         scrollable.scroll(Direction.DOWN, 0.50f, 100);
         InstrumentationRegistry.getInstrumentation().getUiAutomation().clearCache();
         return mDevice.wait(Until.findObject(By.res(umo.getResourceName())), WAIT_TIME_MILLIS);
     }
 
     /**
-     * Find the UMO that belongs to the current MediaInstrumentation (Media Session).
-     * If the UMO can't be found, the function will raise an assertion error.
+     * Find the UMO that belongs to the current MediaInstrumentation (Media Session). If the UMO
+     * can't be found, the function will raise an assertion error.
      *
      * @return MediaController
      */
     public MediaController getMediaNotification() {
-        UiObject2 notification = scrollToMediaNotification();
-        return new MediaController(this, notification);
+        return getMediaNotification(true);
+    }
+
+    /**
+     * Find the UMO that belongs to the current MediaInstrumentation (Media Session). If the UMO
+     * can't be found, the function will raise an assertion error.
+     *
+     * @param scrollQs If true, try to scroll down in quick settings if necessary
+     * @return MediaController
+     */
+    public MediaController getMediaNotification(boolean scrollQs) {
+        UiObject2 notification = scrollToMediaNotification(scrollQs);
+        MediaMetadata source = mMediaSources.stream().findFirst().orElseThrow();
+        final BySelector mediaTitleSelector =
+                By.res(PKG, "header_title")
+                        .text(source.getString(MediaMetadata.METADATA_KEY_TITLE));
+        final BySelector umoSelector =
+                By.res(PKG, MEDIA_CONTROLLER_RES_ID).hasDescendant(mediaTitleSelector);
+        final BySelector carouselSelector =
+                By.res(PKG, "media_carousel").hasDescendant(umoSelector);
+        UiObject2 carousel = mDevice.wait(Until.findObject(carouselSelector), WAIT_TIME_MILLIS);
+        return new MediaController(this, notification, carousel);
     }
 
     /**
@@ -201,12 +237,15 @@ public final class MediaInstrumentation {
                 .text(source.getString(MediaMetadata.METADATA_KEY_TITLE));
         final BySelector umoSelector = By.res(PKG, MEDIA_CONTROLLER_RES_ID)
                 .hasDescendant(mediaTitleSelector);
+        final BySelector carouselSelector =
+                By.res(PKG, "media_carousel").hasDescendant(umoSelector);
+        UiObject2 carousel = mDevice.wait(Until.findObject(carouselSelector), WAIT_TIME_MILLIS);
         UiObject2 notification = mDevice.wait(Until.findObject(umoSelector), WAIT_TIME_MILLIS);
         assertNotNull("Unable to find UMO.", notification);
         mDevice.waitForIdle();
         HealthTestingUtils.waitForValueToSettle(
                 () -> "UMO isn't settle after timeout.", notification::getVisibleBounds);
-        return new MediaController(this, notification);
+        return new MediaController(this, notification, carousel);
     }
 
     /**

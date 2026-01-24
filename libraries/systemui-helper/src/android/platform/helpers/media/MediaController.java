@@ -53,15 +53,18 @@ public class MediaController {
     private static final long UI_WAIT_TIMEOUT = 3_000;
 
     private final UiObject2 mUiObject;
+
+    private final UiObject2 mCarousel;
     private final Instrumentation mInstrumentation = InstrumentationRegistry.getInstrumentation();
     private final UiDevice mDevice = UiDevice.getInstance(mInstrumentation);
     private final List<Integer> mStateChanges;
     private Runnable mStateListener;
     private static final Object sStateListenerLock = new Object();
 
-    MediaController(MediaInstrumentation media, UiObject2 uiObject) {
+    MediaController(MediaInstrumentation media, UiObject2 uiObject, UiObject2 carouselObject) {
         media.addMediaSessionStateChangedListeners(this::onMediaSessionStageChanged);
         mUiObject = uiObject;
+        mCarousel = carouselObject;
         mStateChanges = new ArrayList<>();
     }
 
@@ -184,7 +187,7 @@ public class MediaController {
     }
 
     public boolean swipe(Direction direction) {
-        Rect bound = mUiObject.getVisibleBounds();
+        Rect bound = mCarousel.getVisibleBounds();
         final int startX;
         final int endX;
         switch (direction) {
