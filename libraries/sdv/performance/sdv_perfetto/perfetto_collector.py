@@ -95,7 +95,7 @@ from mobly import utils
 from mobly.controllers.android_device_lib import adb
 from mobly.controllers.android_device_lib import errors
 from sdv_perfetto import collector_config
-from sdv_test_fw.device import sdv_device
+from sdv_test_fw.device import sdv_adb
 from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 
 
@@ -145,12 +145,12 @@ class PerfettoCollector:
 
     def __init__(
             self,
-            device: sdv_device.SdvDeviceAdb,
+            device: sdv_adb.SdvAdb,
             config: collector_config.CollectorConfig = collector_config.CollectorConfig()):
         """Create a PerfettoCollector.
 
         Args:
-          device: sdv_test_fw.test_execution.sdv_device.SdvDeviceAdb
+          device: sdv_test_fw.test_execution.sdv_adb.SdvAdb
           config: CollectorConfig
         """
         self._config = config

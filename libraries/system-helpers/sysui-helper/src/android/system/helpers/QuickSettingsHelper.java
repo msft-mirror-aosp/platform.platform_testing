@@ -59,6 +59,7 @@ public class QuickSettingsHelper {
             Flags.qsSplitInternetTileRw()
                     ? "quick_settings_tiles_default_split"
                     : "quick_settings_tiles_default";
+    private static final String QS_DEFAULT_HSU_TILES_RES = "hsu_allow_list_qs_tiles";
     private static final BySelector FOOTER_SELECTOR = By.res(SYSTEMUI_PACKAGE, "qs_footer");
     private static final String SYSUI_QS_TILES_SETTING = "sysui_qs_tiles";
     private static final String SET_QS_TILES_COMMAND = "cmd statusbar set-tiles ";
@@ -66,6 +67,7 @@ public class QuickSettingsHelper {
     @NonNull private final UiDevice mDevice;
     @NonNull private final Instrumentation mInstrumentation;
     private List<String> mDefaultQSTileList = null;
+    private List<String> mDefaultHsuQSTileList = null;
     private List<String> mPreviousQSTileList = null;
     private final CommandsHelper mCommandsHelper;
 
@@ -74,33 +76,47 @@ public class QuickSettingsHelper {
         mInstrumentation = inst;
         mCommandsHelper = CommandsHelper.getInstance(mInstrumentation);
         try {
-            obtainDefaultQSTiles();
+            Context sysUIContext =
+                    mInstrumentation
+                            .getContext()
+                            .createPackageContext(SYSTEMUI_PACKAGE, CONTEXT_IGNORE_SECURITY);
+            mDefaultQSTileList = obtainDefaultQSTiles(sysUIContext);
+            mDefaultHsuQSTileList = obtainDefaultHsuQSTiles(sysUIContext);
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e(LOG_TAG, "Getting package context fails!", e);
         } catch (Exception e) {
             Log.e(LOG_TAG, "obtainDefaultQSTiles fails!", e);
         }
     }
 
-    private void obtainDefaultQSTiles() throws PackageManager.NameNotFoundException {
-        final Context sysUIContext =
-                mInstrumentation
-                        .getContext()
-                        .createPackageContext(SYSTEMUI_PACKAGE, CONTEXT_IGNORE_SECURITY);
-        final int qsTileListResId =
-                sysUIContext
-                        .getResources()
-                        .getIdentifier(QS_DEFAULT_TILES_RES, "string", SYSTEMUI_PACKAGE);
+    private List<String> obtainDefaultHsuQSTiles(Context sysUIContext) {
+        final int qsHsuTileListResId = getResId(sysUIContext, QS_DEFAULT_HSU_TILES_RES, "array");
+        String[] defaultHsuQSTiles = sysUIContext.getResources().getStringArray(qsHsuTileListResId);
+        return handleSplitInternetTile(defaultHsuQSTiles);
+    }
+
+    private List<String> obtainDefaultQSTiles(Context sysUIContext) {
+        final int qsTileListResId = getResId(sysUIContext, QS_DEFAULT_TILES_RES, "string");
         final String defaultQSTiles = sysUIContext.getString(qsTileListResId);
         final String[] splitList = defaultQSTiles.split(",");
+        return handleSplitInternetTile(splitList);
+    }
+
+    private int getResId(Context sysUIContext, String res, String type) {
+        return sysUIContext.getResources().getIdentifier(res, type, SYSTEMUI_PACKAGE);
+    }
+
+    private List<String> handleSplitInternetTile(String[] tiles) {
         // Migration from internet to wifi tile and viceversa
-        for (int i = 0; i < splitList.length; i++) {
-            String tile = splitList[i];
+        for (int i = 0; i < tiles.length; i++) {
+            String tile = tiles[i];
             if ("internet".equals(tile) && qsSplitInternetTileRw()) {
-                splitList[i] = "wifi";
+                tiles[i] = "wifi";
             } else if ("wifi".equals(tile) && !qsSplitInternetTileRw()) {
-                splitList[i] = "internet";
+                tiles[i] = "internet";
             }
         }
-        mDefaultQSTileList = Arrays.asList(splitList);
+        return Arrays.asList(tiles);
     }
 
     /** Deprecated. Use classes in systemui-tapl and tiles in QSBase */
@@ -192,6 +208,11 @@ public class QuickSettingsHelper {
     /** Gets the default list of QuickSettings */
     public List<String> getQSDefaultTileList() {
         return mDefaultQSTileList;
+    }
+
+    /** Gets the default list of QuickSettings */
+    public List<String> getQSDefaultHsuTileList() {
+        return mDefaultHsuQSTileList;
     }
 
     /**

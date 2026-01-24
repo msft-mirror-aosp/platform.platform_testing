@@ -91,12 +91,18 @@ private val UiDevice.stableOrientation: Orientation
 sealed class BaseOrientationRule constructor(private val expectedOrientation: Orientation) :
     TestWatcher() {
 
+    private val launcherInstrumentationAvailable =
+        LauncherInstrumentation.isAvailable(uiDevice.getLauncherPackageName())
+
     override fun starting(description: Description) {
-        setOrientationOverride(expectedOrientation)
+        setOrientationOverride(
+            expectedOrientation,
+            launcherInstrumentationAvailable = launcherInstrumentationAvailable,
+        )
     }
 
     override fun finished(description: Description) {
-        clearOrientationOverride()
+        clearOrientationOverride(launcherInstrumentationAvailable)
     }
 }
 
@@ -118,8 +124,11 @@ object RotationUtils {
     fun setOrientationOverride(
         orientation: Orientation,
         timeoutDuration: Duration = Duration.ofSeconds(10),
+        launcherInstrumentationAvailable: Boolean = true,
     ) {
-        setEnableLauncherRotation(true)
+        if (launcherInstrumentationAvailable) {
+            setEnableLauncherRotation(true)
+        }
         val presentOrientation = device.stableOrientation
         val expectedOrientation =
             if (orientation == NATURAL) {
@@ -159,9 +168,11 @@ object RotationUtils {
         return device.stableOrientation
     }
 
-    fun clearOrientationOverride() {
+    fun clearOrientationOverride(launcherInstrumentationAvailable: Boolean = true) {
         device.setOrientationNatural()
-        setEnableLauncherRotation(false)
+        if (launcherInstrumentationAvailable) {
+            setEnableLauncherRotation(false)
+        }
         device.unfreezeRotation()
         log("Rotation override cleared.")
     }

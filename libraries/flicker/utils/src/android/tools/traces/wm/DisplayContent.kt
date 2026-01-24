@@ -51,7 +51,7 @@ class DisplayContent(
     val rotation: Rotation,
     val lastOrientation: Int,
     val cutout: DisplayCutout?,
-    val insetsSourceProviders: Array<InsetsSourceProvider>,
+    val insetsStateController: InsetsStateController?,
     private val windowContainer: WindowContainer,
 ) : WindowContainer by windowContainer {
     override val name: String = displayId.toString()
@@ -141,6 +141,7 @@ class DisplayContent(
         if (singleTaskInstance != other.singleTaskInstance) return false
         if (surfaceSize != other.surfaceSize) return false
         if (windowContainer != other.windowContainer) return false
+        if (insetsStateController != other.insetsStateController) return false
 
         return true
     }
@@ -168,6 +169,7 @@ class DisplayContent(
         result = 31 * result + name.hashCode()
         result = 31 * result + isVisible.hashCode()
         result = 31 * result + windowContainer.hashCode()
+        result = 31 * result + insetsStateController.hashCode()
         return result
     }
 

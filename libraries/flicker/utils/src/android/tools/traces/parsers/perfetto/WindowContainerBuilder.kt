@@ -31,6 +31,7 @@ import android.tools.traces.wm.DisplayContent
 import android.tools.traces.wm.DisplayCutout
 import android.tools.traces.wm.InsetsSource
 import android.tools.traces.wm.InsetsSourceProvider
+import android.tools.traces.wm.InsetsStateController
 import android.tools.traces.wm.KeyguardControllerState
 import android.tools.traces.wm.PixelFormat
 import android.tools.traces.wm.RootWindowContainer
@@ -217,9 +218,9 @@ class WindowContainerBuilder {
                 buildDisplayCutout(
                     displayContentProto?.getChild("display_info")?.getChild("cutout")
                 ),
-            insetsSourceProviders =
-                buildInsetsSourceProviders(
-                    displayContentProto?.getChildren("insets_source_providers")
+            insetsStateController =
+                buildInsetsStateController(
+                displayContentProto?.getChild("insets_state_controller")
                 ),
             windowContainer =
                 buildWindowContainer(
@@ -228,6 +229,19 @@ class WindowContainerBuilder {
                             ?.getChild("root_display_area")
                             ?.getChild("window_container")
                 ),
+        )
+    }
+
+    private fun buildInsetsStateController(insetsStateControllerProto: Args?): InsetsStateController? {
+        if (insetsStateControllerProto == null) {
+            return null
+        }
+
+        return InsetsStateController(
+            insetsSourceProviders =
+                buildInsetsSourceProviders(
+                    insetsStateControllerProto?.getChildren("insets_source_providers")
+                )
         )
     }
 
@@ -529,7 +543,6 @@ class WindowContainerBuilder {
         return insetsProvidersProto
             ?.map {
                 InsetsSourceProvider(
-                    buildRect(it.getChild("frame")),
                     buildInsetsSource(it.getChild("source")),
                 )
             }

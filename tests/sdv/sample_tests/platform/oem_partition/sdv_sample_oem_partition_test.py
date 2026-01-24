@@ -22,10 +22,10 @@ from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 
 class SdvSampleOemPartitionTest(sdv_base_test.SdvBaseTestClass):
 
-    OEM_PARTITION_MOUNT_POINT = "/oem"
-    EXPECTED_OEM_PARTITION_DEVICE_REGEX = r"\/dev\/block\/vda\d* on \/oem type f2fs \(.*lookup_mode=perf\)"
-    EXPECTED_OEM_PARTITION_CONTENT_1 = "/oem/hello_oem.txt"
-    EXPECTED_OEM_PARTITION_CONTENT_2 = "/oem/oem.prop"
+    OEM_PARTITION_MOUNT_POINT = "/oem_ab"
+    EXPECTED_OEM_PARTITION_DEVICE_REGEX = r"\/dev\/block\/vda\d* on \/oem_ab type f2fs \(.*lookup_mode=perf\)"
+    EXPECTED_OEM_PARTITION_CONTENT_1 = "/oem_ab/hello_oem.txt"
+    EXPECTED_OEM_PARTITION_CONTENT_2 = "/oem_ab/oem.prop"
 
     OEM_METADATA_PARTITION_MOUNT_POINT = "/oem_metadata"
     EXPECTED_OEM_METADATA_PARTITION_CONTENT = "total 0"

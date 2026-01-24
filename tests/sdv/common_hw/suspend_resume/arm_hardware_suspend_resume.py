@@ -17,7 +17,7 @@ import time
 import logging
 from pexpect import pxssh
 
-from sdv_test_fw.device.sdv_device import SdvDeviceAdb
+from sdv_test_fw.device import sdv_adb
 from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 
 KEEP_TTYS_ALIVE_COMMAND = "on -d -t /dev/null sh -c '(while true; do sleep 99999; done) > /dev/ttyp6'; on -d -t /dev/null sh -c '(while true; do sleep 99999; done) > /dev/ttyp7';"
@@ -121,7 +121,7 @@ class SdvQnxDevice:
     A SDV instance with adb connectivity, hosted by a QNX hypervisor.
     qnx_device_id: corresponds to qvm config used to start the Device: eg: 1 <-> sdv-1.conf 2 <-> sdv-2.conf
     """
-    adb_device: SdvDeviceAdb
+    adb_device: sdv_adb.SdvAdb
     qnx_guest_id: int
 
 
