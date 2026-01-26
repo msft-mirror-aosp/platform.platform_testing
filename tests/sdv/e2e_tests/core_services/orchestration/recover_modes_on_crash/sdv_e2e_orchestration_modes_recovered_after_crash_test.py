@@ -134,12 +134,12 @@ class SdvE2EOrchestrationModesRecoveredAfterCrashTest(
         # This is not enough though, because the values could have been stored but not triggered through the Default mode.
         # That's why we need to verify the enforcement and the dumpsys.
         expected_dump = [
-            'Vehicle\s+PARK\s+-',
-            'Power\s+ON\s+-',
-            'Custom\("E2E-TESTS"\)\s+recover-custom-mode\s+\d+ \(scs\) \d+ \(ns\)',
-            'Started\s+com.sdv.google.sample.lifecycle.apex/LifecycleCppSampleServiceBundle/recover-custom-mode',
-            'Started\s+com.sdv.google.sample.lifecycle.apex/LifecycleCppSampleServiceBundle/recover-vehicle-mode',
-            'Started\s+com.sdv.google.sample.lifecycle.apex/LifecycleCppSampleServiceBundle/recover-power-mode',
+            r'Vehicle\s+PARK\s+-',
+            r'Power\s+ON\s+-',
+            r'Custom\("E2E-TESTS"\)\s+recover-custom-mode\s+\d+ \(scs\) \d+ \(ns\)',
+            r'Started\s+com.sdv.google.sample.lifecycle.apex/LifecycleCppSampleServiceBundle/recover-custom-mode',
+            r'Started\s+com.sdv.google.sample.lifecycle.apex/LifecycleCppSampleServiceBundle/recover-vehicle-mode',
+            r'Started\s+com.sdv.google.sample.lifecycle.apex/LifecycleCppSampleServiceBundle/recover-power-mode',
         ]
         dump_report = self.sdv_device.execute_shell_command(
             "dumpsys com.google.sdv.ISdvAgent/orch"
