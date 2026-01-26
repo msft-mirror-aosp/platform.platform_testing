@@ -40,7 +40,7 @@ ADB_TARGET="${2}"
 
 # Host
 SSH_HOST="${1}"
-SSH_PARAMS=(-F "${HOME}/.ssh/hardware.config")
+SSH_PARAMS=(-F "${HOME}/.ssh/sdv-shared-hw.config")
 
 # Sound parameters (also compare with QVM configuration for the guest)
 # Source: ag/36237010
