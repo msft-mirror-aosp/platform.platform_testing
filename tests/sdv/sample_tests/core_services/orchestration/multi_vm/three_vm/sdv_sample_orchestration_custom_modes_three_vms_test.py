@@ -34,7 +34,7 @@ class SdvSampleOrchestrationCustomModesThreeVmsTest(
     OFF_COMMAND = 'OFF'
     IDLE_COMMAND = 'IDLE'
     SUCCESS_CUSTOM_MODE_LOGCAT_GREP_TEXT_TEMPLATE = (
-        'Finished enforcing mode \'Custom\("{mode_name}"\)\' with state'
+        'Finished enforcing mode \'Custom\\("{mode_name}"\\)\' with state'
         ' \'"{state}"\'. successfully'
     )
 
