@@ -21,6 +21,7 @@ import android.os.DropBoxManager;
 import androidx.test.InstrumentationRegistry;
 
 import org.junit.Assert;
+import org.junit.AssumptionViolatedException;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -44,7 +45,9 @@ public class SystemHealthRule implements TestRule {
                 try {
                     base.evaluate();
                 } catch (Throwable t) {
-                    tryRethrowingWithSystemHealth(t);
+                    if (!(t instanceof AssumptionViolatedException)) {
+                        tryRethrowingWithSystemHealth(t);
+                    }
                     throw t;
                 }
             }
