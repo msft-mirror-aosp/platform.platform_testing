@@ -31,6 +31,6 @@
       <!-- Note: Currently, only 10 hours of execution is possible in CI/CD (b/431979898) -->
       <option name="mobly-test-timeout" value="108000000" />
       <!-- Testbed config file -->
-      <option name="mobly-config-file-name" value="sdv_one_device_config.yaml" />
+      <option name="mobly-config-file-name" value="sdv_one_device_config_local.yaml" />
   </test>
 </configuration>

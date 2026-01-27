@@ -39,6 +39,6 @@
     <!-- For 3VMs is 7min to take into consideration the extra VM -->
     <option name="mobly-test-timeout" value="420000" />
     <!-- Testbed config file -->
-    <option name="mobly-config-file-name" value="sdv_three_devices_config.yaml" />
+    <option name="mobly-config-file-name" value="sdv_three_devices_config_local.yaml" />
   </test>
 </configuration>
