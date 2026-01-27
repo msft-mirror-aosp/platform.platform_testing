@@ -1103,36 +1103,36 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
 
     /** {@inheritDoc} */
     @Override
-    public boolean isNewsDisplayedInMediaSourceHistory() {
+    public boolean isRadioDisplayedInMediaSourceHistory() {
         BySelector newsSelector =
-                getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_SOURCE_NEWS_BUTTON);
+                getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_SOURCE_RADIO_BUTTON);
         return getSpectatioUiUtil().hasUiElement(newsSelector);
     }
 
     /** {@inheritDoc} */
     @Override
-    public String getNewsChannelNameFromMediaSourceHistory() {
+    public String getRadioChannelNameFromMediaSourceHistory() {
         UiObject2 mediaSourceHistoryParentObject =
                 getSpectatioUiUtil()
                         .waitForUiObject(
                                 getUiElementFromConfig(
-                                        AutomotiveConfigConstants.MEDIA_SOURCE_HISTORY_NEWS));
-        BySelector newsChannelNameSelector =
+                                        AutomotiveConfigConstants.MEDIA_SOURCE_HISTORY_RADIO));
+        BySelector radioChannelNameSelector =
                 getUiElementFromConfig(
                         AutomotiveConfigConstants.MEDIA_SOURCE_HISTORY_ACTIVE_TITTLE);
-        UiObject2 newsChannelNameObject =
+        UiObject2 radioChannelNameObject =
                 getSpectatioUiUtil()
                         .findUiObjectInGivenElement(
-                                mediaSourceHistoryParentObject, newsChannelNameSelector);
+                                mediaSourceHistoryParentObject, radioChannelNameSelector);
         getSpectatioUiUtil()
                 .validateUiObject(
-                        newsChannelNameObject,
-                        String.format("News in Media Source is not displayed"));
-        String newsChannelName = getSpectatioUiUtil().getTextForUiElement(newsChannelNameObject);
-        if (newsChannelName != null) {
-            return newsChannelName;
+                        radioChannelNameObject,
+                        String.format("Radio in Media Source is not displayed"));
+        String radioChannelName = getSpectatioUiUtil().getTextForUiElement(radioChannelNameObject);
+        if (radioChannelName != null) {
+            return radioChannelName;
         } else {
-            throw new IllegalArgumentException("News Channel Name is not displayed");
+            throw new IllegalArgumentException("Radio Channel Name is not displayed");
         }
     }
 
