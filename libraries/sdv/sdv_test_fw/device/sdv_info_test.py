@@ -75,6 +75,17 @@ class SdvInfoProperties(unittest.TestCase):
         self.info._target = target
         self.info._vm = vm
 
+    def test_instance_number(self):
+        self.assertEqual(self.info.instance_number, 1)
+
+    @mock.patch("logging.error")
+    def test_instance_number_invalid(self, mock_logging_error):
+        self.info.instance_name = "invalid"
+        with self.assertRaises(sdv_info.SdvDeviceInfoError):
+            _ = self.info.instance_number
+
+        mock_logging_error.assert_called()
+
     def test_when_vm_is_cf(self):
         self.set_info_members(vm=sdv_info.SdvVm.CF)
 

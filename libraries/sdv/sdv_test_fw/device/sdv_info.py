@@ -13,8 +13,16 @@
 # limitations under the License.
 
 import enum
+import logging
 
+from mobly import signals
 from sdv_test_fw.device import sdv_property
+
+
+class SdvDeviceInfoError(signals.ControllerError):
+    """Raised when there is an issue reading or parsing SDV device information."""
+
+    pass
 
 
 class SdvTarget(enum.Enum):
@@ -33,7 +41,7 @@ class SdvTarget(enum.Enum):
             if target.value in device_flavor:
                 return target
 
-        raise NotImplementedError(f'Device target not found in {device_flavor}')
+        raise SdvDeviceInfoError(f'Device target not found in {device_flavor}')
 
 
 class SdvVm(enum.Enum):
@@ -62,6 +70,8 @@ class SdvInfo:
     critical when accessing the system properties via adb is not possible.
     """
 
+    INSTANCE_NAME_PREFIX = 'instance'
+
     def __init__(self, adb_device):
         """Initialize with all relevant device information for SDV.
 
@@ -80,6 +90,25 @@ class SdvInfo:
         )
         self._target = SdvTarget.from_flavor(device_flavor)
         self._vm = SdvVm.from_flavor(device_flavor)
+
+    @property
+    def instance_number(self):
+        """Returns the instance number derived from the instance name.
+
+        Returns:
+          int: Instance number (i.e. 1, 2, 3)
+        """
+        if not self.instance_name.startswith(self.INSTANCE_NAME_PREFIX):
+            logging.error(
+                'Not possible to parse instance number. Unexpected instance'
+                f' name {self.instance_name}. Expected format:'
+                f' {self.INSTANCE_NAME_PREFIX}<number>'
+            )
+            raise SdvDeviceInfoError(
+                f'Invalid instance name format: {self.instance_name}. Expected'
+                f' format: {self.INSTANCE_NAME_PREFIX}<number>'
+            )
+        return int(self.instance_name[len(self.INSTANCE_NAME_PREFIX) :])
 
     @property
     def is_cuttlefish(self):
