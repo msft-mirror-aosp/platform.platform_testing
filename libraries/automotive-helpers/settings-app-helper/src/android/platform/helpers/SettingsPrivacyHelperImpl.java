@@ -140,7 +140,7 @@ public class SettingsPrivacyHelperImpl extends AbstractStandardAppHelper
         // To check if any mic chip is present on screen
         BySelector microPhoneChipSelector =
                 getUiElementFromConfig(AutomotiveConfigConstants.MICRO_PHONE_CHIP_STATUS_BAR);
-        return getSpectatioUiUtil().hasUiElement(microPhoneChipSelector);
+        return getSpectatioUiUtil().hasUiElement(microPhoneChipSelector, WAIT_TIME_MS);
     }
     /** {@inheritDoc} */
     @Override
