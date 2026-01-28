@@ -20,7 +20,8 @@ package com.android.compatibility.common.util;
  */
 public enum TestStatus {
     PASS("pass"),
-    FAIL("fail");
+    FAIL("fail"),
+    INCOMPLETE("incomplete");
 
     private final String mValue;
 
