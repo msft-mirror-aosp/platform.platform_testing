@@ -37,6 +37,7 @@ import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.Direction
 import androidx.test.uiautomator.UiSelector
 import java.util.regex.Pattern
+import android.platform.systemui_tapl.ui.Taskbar
 
 /** System UI test automation object representing quick settings in the notification shade. */
 class QuickSettings internal constructor(val displayId: Int = DEFAULT_DISPLAY) {
@@ -121,8 +122,11 @@ class QuickSettings internal constructor(val displayId: Int = DEFAULT_DISPLAY) {
     private fun swipeUp() {
         val displayWidth = uiDevice.getDisplayWidth(displayId)
         val displayHeight = uiDevice.getDisplayHeight(displayId)
+
+        // Avoid triggering Overview mode by swiping from just above the Taskbar. If the Taskbar is
+        // not present, the bottom of the screen is used.
         BetterSwipe.swipe(
-            PointF((displayWidth / 2).toFloat(), displayHeight.toFloat() - 1f),
+            PointF((displayWidth / 2).toFloat(), displayHeight.toFloat() - Taskbar.getTaskbarHeight(displayId) - 1f),
             PointF((displayWidth / 2).toFloat(), 0f),
             displayId = displayId,
         )
