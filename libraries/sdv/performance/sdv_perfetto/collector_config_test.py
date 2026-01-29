@@ -100,35 +100,44 @@ class CollectorConfigTest(unittest.TestCase):
     def test_multi_vm_tracing_config_errors(self):
         with self.assertRaises(ValueError):
             collector_config.CollectorConfig(multi_vm_tracing=True)
-            collector_config.CollectorConfig(multi_vm_tracing=True, multi_vm_tracing_vsock=True)
-            collector_config.CollectorConfig(multi_vm_tracing=True, multi_vm_tracing_center=True)
-            collector_config.CollectorConfig(multi_vm_tracing=True, multi_vm_tracing_center=False)
-            collector_config.CollectorConfig(multi_vm_tracing=True, multi_vm_tracing_center=False, multi_vm_tracing_vsock=True, multi_vm_tracing_center_address=TEST_INET_ADDRESS)
-            collector_config.CollectorConfig(multi_vm_tracing=True, multi_vm_tracing_center=False, multi_vm_tracing_vsock=False, multi_vm_tracing_center_address=TEST_VSOCK_ADDRESS)
+        with self.assertRaises(ValueError):
+            collector_config.CollectorConfig(
+                multi_vm_tracing=True, multi_vm_tracing_vsock=True
+            )
+        with self.assertRaises(ValueError):
+            collector_config.CollectorConfig(
+                multi_vm_tracing=True, secondary_devices=[]
+            )
 
-    def test_multi_vm_tracing_config_center_vm_success(self):
-        config = collector_config.CollectorConfig(multi_vm_tracing=True, multi_vm_tracing_vsock=True, multi_vm_tracing_center=True)
+    def test_multi_vm_tracing_config_success(self):
+        mock_device = mock.MagicMock()
+        config = collector_config.CollectorConfig(
+            multi_vm_tracing=True,
+            multi_vm_tracing_vsock=True,
+            secondary_devices=[mock_device],
+        )
         self.assertTrue(config.multi_vm_tracing)
         self.assertTrue(config.multi_vm_tracing_vsock)
-        self.assertTrue(config.multi_vm_tracing_center)
+        self.assertEqual(config.secondary_devices, [mock_device])
 
-    def test_multi_vm_tracing_config_client_vm_vsock_success(self):
-        config = collector_config.CollectorConfig(
-                multi_vm_tracing=True,
-                multi_vm_tracing_center=False,
-                multi_vm_tracing_vsock=True,
-                multi_vm_tracing_center_address=TEST_VSOCK_ADDRESS)
+    def test_check_vsock_id(self):
+        self.assertIsNone(collector_config.check_vsock_id(TEST_VSOCK_ADDRESS))
+        with self.assertRaises(ValueError):
+            collector_config.check_vsock_id('12a')
 
-        self.assertEqual(config.multi_vm_tracing_center_address, TEST_VSOCK_ADDRESS)
+    def test_check_inet_address(self):
+        self.assertIsNone(
+            collector_config.check_inet_address(TEST_INET_ADDRESS)
+        )
+        with self.assertRaises(ValueError):
+            collector_config.check_inet_address('192.168.1.1a')
 
-    def test_multi_vm_tracing_config_client_vm_inet_success(self):
-        config = collector_config.CollectorConfig(
-                multi_vm_tracing=True,
-                multi_vm_tracing_center=False,
-                multi_vm_tracing_vsock=False,
-                multi_vm_tracing_center_address=TEST_INET_ADDRESS)
-
-        self.assertEqual(config.multi_vm_tracing_center_address, TEST_INET_ADDRESS)
+    def test_check_string_format(self):
+        self.assertIsNone(
+            collector_config.check_string_format('abc', r'[a-z]+')
+        )
+        with self.assertRaises(ValueError):
+            collector_config.check_string_format('123', r'[a-z]+')
 
 if __name__ == '__main__':
     unittest.main()

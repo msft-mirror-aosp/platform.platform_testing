@@ -32,7 +32,7 @@ Read [SDV Testing instructions](/vendor/google_testing/software_defined_vehicle/
 Replace `<REPLACE_THIS_BY_REPO_ROOT>` with your repo root in file `config.json`, then run following command
 
 ```bash
-cvd create --config_file=vendor/google_testing/software_defined_vehicle/tests/sample_tests/comm_stack/two_vm/config.json
+cvd create --config_file=platform_testing/tests/sdv/sample_tests/core_services/comm_stack/two_vm/config.json
 ```
 
 ### Mobly
