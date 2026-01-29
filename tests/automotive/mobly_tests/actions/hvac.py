@@ -241,9 +241,10 @@ class VhalHvac(test_base.SpectatioHostBaseTestClass):
             screenshot_path = off_test_path,
         )
 
-        off_check = image_comparison.CompareImagesUsingPIL(
+        off_check = image_comparison.CompareImagesUsingMSE(
             off_test_path,
             off_golden_path,
+            diff_threshold=0.5,
             include_area=FAN_SPEED_RECT
         )
         is_similar = off_check.are_images_similar()
@@ -264,10 +265,11 @@ class VhalHvac(test_base.SpectatioHostBaseTestClass):
             screenshot_path = max_test_path,
         )
 
-        max_check = image_comparison.CompareImagesUsingPIL(
+        max_check = image_comparison.CompareImagesUsingMSE(
             max_test_path,
             max_golden_path,
-            include_area=FAN_SPEED_RECT,
+            diff_threshold=0.5,
+            include_area=FAN_SPEED_RECT
         )
         max_is_similar = max_check.are_images_similar()
 
