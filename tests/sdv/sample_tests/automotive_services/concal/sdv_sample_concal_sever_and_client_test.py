@@ -18,16 +18,16 @@ from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
 
+
 class SdvSampleConCalServerAndClientTest(sdv_base_test.SdvBaseTestClass):
 
     ASSERT_ERROR_MESSAGE = (
         '[{actual_result}] is not one of the expected results'
         ' [{expected_result}]'
     )
-    SERVICE_EXPECTED_LOG=['ConCal service bundle is running']
+    SERVICE_EXPECTED_LOG = ['ConCal service bundle is running']
     CLIENT_EXPECTED_LOG = [
-        "Context for Sample ConCal Client is created.",
-        "Sample ConCal RPC Client started.",
+        "Initialised MW ConCal RPC bindings.",
         "Registering config:",
         "RearViewCamera \\{",
         "    model: \\\"model 1\\\",",
@@ -56,9 +56,9 @@ class SdvSampleConCalServerAndClientTest(sdv_base_test.SdvBaseTestClass):
         "                    service_fqin: MessageField(",
         "                        Some(",
         "                            ServiceFqin \\{",
-        "                                vm_name: \\\"local-vm\\\",",
+        "                                vm_name: \\\"instance1\\\",",
         "                                package_name: \\\"com.sdv.oem.sample.concal\\\",",
-        "                                service_name: \\\"ConCalClientServiceBundle\\\",",
+        "                                service_name: \\\"SampleOemConCalClientServiceBundle\\\",",
         "                                instance_name: \\\"sample\\\",",
         "                                special_fields: SpecialFields \\{",
         "                                    unknown_fields: UnknownFields \\{",
@@ -211,7 +211,7 @@ class SdvSampleConCalServerAndClientTest(sdv_base_test.SdvBaseTestClass):
         "\\}",
         "",
         "Rolling back previous changes",
-        "",
+        "Config after rollback:",
         "RearViewCamera \\{",
         "    model: \\\"model 1\\\",",
         "    horizontal_resolution: 720,",
@@ -236,14 +236,16 @@ class SdvSampleConCalServerAndClientTest(sdv_base_test.SdvBaseTestClass):
         self.sdv_device.root_device()
 
         # Save the current value of sdv.authz.enable
-        self.sdv_authz_enable_value = self.sdv_device.prop.get(SdvDeviceProperty.AUTHZ_ENABLE)
+        self.sdv_authz_enable_value = self.sdv_device.prop.get(
+            SdvDeviceProperty.AUTHZ_ENABLE)
 
         # Enforce SDV Comm Stack authorization
         self.sdv_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, "true")
 
     def teardown_class(self):
         # Reset SDV Comm Stack authorization
-        self.sdv_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, self.sdv_authz_enable_value)
+        self.sdv_device.prop.set(
+            SdvDeviceProperty.AUTHZ_ENABLE, self.sdv_authz_enable_value)
         super().teardown_class()
 
     def _wait_and_verify_expected_logs(self, log_entries_to_find):
@@ -259,7 +261,8 @@ class SdvSampleConCalServerAndClientTest(sdv_base_test.SdvBaseTestClass):
             )
 
     def test_concal_service_client(self):
-        self.sdv_device.prop.set(SdvDeviceProperty.ORCHESTRATOR_CONFIG_PATH, '/etc/orch/vm_concal_sample_orch_config.textproto')
+        self.sdv_device.prop.set(SdvDeviceProperty.ORCHESTRATOR_CONFIG_PATH,
+                                 '/etc/orch/vm_concal_sample_orch_config.textproto')
         self.sdv_device.reboot_device()
         self.sdv_device.wait_for_device_online()
 

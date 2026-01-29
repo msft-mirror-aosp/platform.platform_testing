@@ -60,10 +60,13 @@ public class VerifyDockOnNewUser {
 
     private final Instrumentation mInstrumentation = InstrumentationRegistry.getInstrumentation();
     private final UiAutomation mUiAutomation = mInstrumentation.getUiAutomation();
-
+    private UserInfo mNewUser;
+    private UserInfo mInitialUser;
+    private static final String DRIVER = AutomotiveConfigConstants.HOME_DRIVER_BUTTON;
     @Rule public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
 
     private final MultiUserHelper mMultiUserHelper = MultiUserHelper.getInstance();
+
     private HelperAccessor<IAutoUserHelper> mUsersHelper;
     private HelperAccessor<IAutoSettingHelper> mSettingHelper;
 
@@ -79,6 +82,11 @@ public class VerifyDockOnNewUser {
 
     @After
     public void goBackToHomeScreen() {
+
+        Log.i(LOG_TAG, "ACT: Switch to Initial User");
+        mUsersHelper.get().switchUsingUserIcon(DRIVER);
+        Log.i(LOG_TAG, "Act: Remove User");
+        mMultiUserHelper.removeUser(mNewUser);
         Log.i(LOG_TAG, "Act: Go back to Home Screen");
         mSettingHelper.get().exit();
     }
@@ -87,11 +95,11 @@ public class VerifyDockOnNewUser {
     @ConditionalIgnore(condition = IgnoreOnPortrait.class)
     public void testDockAndAllAppsOnNewUser() throws Exception {
         Log.i(LOG_TAG, "Act: Create new user");
-        UserInfo initialUser = mMultiUserHelper.getCurrentForegroundUserInfo();
-        mUsersHelper.get().addUserQuickSettings(initialUser.name);
+        mInitialUser = mMultiUserHelper.getCurrentForegroundUserInfo();
+        mUsersHelper.get().addUserQuickSettings(mInitialUser.name);
 
         Log.i(LOG_TAG, "Act: Switch to new user");
-        UserInfo newUser = mMultiUserHelper.getCurrentForegroundUserInfo();
+        mNewUser = mMultiUserHelper.getCurrentForegroundUserInfo();
 
         Log.i(LOG_TAG, "Assert: Google Maps App is Present on DOCK");
         assertTrue(
@@ -117,7 +125,5 @@ public class VerifyDockOnNewUser {
         Log.i(LOG_TAG, "Assert: Appgrid is exit");
         assertFalse("App Grid is open even after exit.", mAppGridHelper.get().isAppInForeground());
 
-        Log.i(LOG_TAG, "Act: Remove User");
-        mMultiUserHelper.removeUser(newUser);
     }
 }
