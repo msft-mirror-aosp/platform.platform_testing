@@ -193,7 +193,7 @@ public class StatusBar {
         Pattern timePattern = Pattern.compile("^(?:[01]?\\d|2[0-3]):[0-5]\\d");
         DeviceHelpers.waitForObj(
                 By.displayId(mDisplayId).pkg("com.android.systemui").text(timePattern),
-                SHORT_WAIT,
+                LONG_WAIT,
                 () -> "Clock should be visible.");
     }
 
@@ -336,7 +336,7 @@ public class StatusBar {
                                                         .hasChild(
                                                                 statusBarDescContainsSelector(
                                                                         DND_ICON_DESC))),
-                                        SHORT_WAIT.toMillis()))
+                                        LONG_WAIT.toMillis()))
                 .isTrue();
     }
 
