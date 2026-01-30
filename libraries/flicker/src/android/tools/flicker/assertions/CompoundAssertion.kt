@@ -17,11 +17,14 @@
 package android.tools.flicker.assertions
 
 import android.tools.function.AssertionPredicate
+import kotlin.time.Duration
 
 /** Utility class to store assertions composed of multiple individual assertions */
 class CompoundAssertion<T>(assertion: AssertionPredicate<T>, name: String, optional: Boolean) :
     Assertion<T> {
     private val assertions = mutableListOf<NamedAssertion<T>>()
+    var minDuration: Duration = Duration.ZERO
+    var maxDuration: Duration? = null
 
     init {
         add(assertion, name, optional)

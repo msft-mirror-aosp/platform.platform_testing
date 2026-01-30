@@ -21,6 +21,7 @@ import android.tools.flicker.assertions.AssertionsChecker
 import android.tools.flicker.subject.exceptions.ExceptionMessageBuilder
 import android.tools.flicker.subject.exceptions.SubjectAssertionError
 import android.tools.function.AssertionPredicate
+import kotlin.time.Duration
 
 /** Base subject for flicker trace assertions */
 abstract class FlickerTraceSubject<EntrySubject : FlickerSubject> : FlickerSubject() {
@@ -53,6 +54,24 @@ abstract class FlickerTraceSubject<EntrySubject : FlickerSubject> : FlickerSubje
             assertionsChecker.append(name, isOptional, assertion)
         }
         newAssertionBlock = false
+    }
+
+    /**
+     * Asserts that the last added assertion block is true for at least [duration].
+     *
+     * @param duration Minimum duration
+     */
+    open fun forAtLeast(duration: Duration): FlickerTraceSubject<EntrySubject> = apply {
+        assertionsChecker.setLastAssertionMinDuration(duration)
+    }
+
+    /**
+     * Asserts that the last added assertion block is true for at most [duration].
+     *
+     * @param duration Maximum duration
+     */
+    open fun forAtMost(duration: Duration): FlickerTraceSubject<EntrySubject> = apply {
+        assertionsChecker.setLastAssertionMaxDuration(duration)
     }
 
     /** Run the assertions for all trace entries */

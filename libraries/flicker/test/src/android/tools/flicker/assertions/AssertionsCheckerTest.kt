@@ -22,6 +22,7 @@ import android.tools.TraceEntry
 import android.tools.flicker.subject.FlickerSubject
 import android.tools.testutils.CleanFlickerEnvironmentRule
 import android.tools.testutils.assertFail
+import kotlin.time.Duration.Companion.nanoseconds
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
 import org.junit.Test
@@ -130,14 +131,49 @@ class AssertionsCheckerTest {
     }
 
     @Test
-    fun canFailCheckChangingAssertionsIfUsingCompoundAssertion() {
+    fun canCheckMinDurationPass() {
         val checker = AssertionsChecker<SimpleEntrySubject>()
-        checker.add("isData42/0") { it.isData42().isData0() }
-        assertFail("data is 42") { checker.test(getTestEntries(0, 0, 0, 0, 0)) }
+        checker.add("isData42") { it.isData42() }
+        checker.setLastAssertionMinDuration(2.nanoseconds)
+        checker.add("isData0") { it.isData0() }
+        checker.test(getTestEntries(42, 42, 42, 0, 0))
+    }
+
+    @Test
+    fun canCheckMinDurationFail() {
+        val checker = AssertionsChecker<SimpleEntrySubject>()
+        checker.add("isData42") { it.isData42() }
+        checker.setLastAssertionMinDuration(5.nanoseconds)
+        checker.add("isData0") { it.isData0() }
+        assertFail("did not meet min duration") { checker.test(getTestEntries(42, 42, 42, 0, 0)) }
+    }
+
+    @Test
+    fun canCheckMaxDurationPass() {
+        val checker = AssertionsChecker<SimpleEntrySubject>()
+        checker.add("isData42") { it.isData42() }
+        checker.setLastAssertionMaxDuration(5.nanoseconds)
+        checker.add("isData0") { it.isData0() }
+        checker.test(getTestEntries(42, 42, 42, 0, 0))
+    }
+
+    @Test
+    fun canCheckMaxDurationFail() {
+        val checker = AssertionsChecker<SimpleEntrySubject>()
+        checker.add("isData42") { it.isData42() }
+        checker.setLastAssertionMaxDuration(1.nanoseconds)
+        checker.add("isData0") { it.isData0() }
+        assertFail("exceeded max duration") { checker.test(getTestEntries(42, 42, 42, 0, 0)) }
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun cannotSetDurationWithoutAssertion() {
+        val checker = AssertionsChecker<SimpleEntrySubject>()
+        checker.setLastAssertionMinDuration(1.nanoseconds)
     }
 
     private class SimpleEntrySubject(private val entry: SimpleEntry) : FlickerSubject() {
-        override val timestamp = Timestamps.empty()
+        override val timestamp = entry.timestamp
 
         fun isData42() = apply { check { "data is 42" }.that(entry.mData).isEqual(42) }
 
