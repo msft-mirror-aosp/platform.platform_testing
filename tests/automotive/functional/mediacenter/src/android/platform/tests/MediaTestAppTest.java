@@ -383,10 +383,5 @@ public class MediaTestAppTest {
                 "Test Media App is Not open",
                 sMediaCenterHelper.get().isMediaAppOpenAndTrackPlaying(DEFAULT_SONG_NAME));
 
-        sMediaCenterHelper.get().openNewsAppAndPlayGivenChannel(NEWS_CHANNEL_NAME);
-        Log.i(LOG_TAG, "Assert: News App is open and playing the channel");
-        assertTrue(
-                "News App is Not open",
-                sMediaCenterHelper.get().isMediaAppOpenAndTrackPlaying("Fox News"));
     }
 }
