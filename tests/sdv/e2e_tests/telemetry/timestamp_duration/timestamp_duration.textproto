@@ -1,0 +1,113 @@
+# Copyright (C) 2026 The Android Open Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+uuid: "d1ecd19e-42bc-4da7-99fa-847205015503"
+version: 3758096386
+descriptor_protos {
+  name: "adhoc.proto"
+  package: "aaos.sdv.telemetry.adhoc"
+  message_type {
+    name: "timestamp_6s"
+    field { name: "timestamp" number: 1 type: TYPE_DOUBLE }
+  }
+  message_type {
+    name: "timestamp_5s"
+    field { name: "timestamp" number: 1 type: TYPE_DOUBLE }
+  }
+  message_type {
+    name: "time_report"
+    field { name: "timestamp_start" number: 1 type: TYPE_DOUBLE }
+    field { name: "timestamp_end" number: 2 type: TYPE_DOUBLE }
+    field { name: "duration_plain" number: 3 type: TYPE_DOUBLE }
+    field { name: "duration_rounded" number: 4 type: TYPE_INT64 }
+  }
+  syntax: "proto2"
+}
+triggers {
+  name: "periodic_5s"
+  periodic_trigger { interval { seconds: 5 } }
+}
+triggers {
+  name: "periodic_6s"
+  periodic_trigger { interval { seconds: 6 } }
+}
+triggers {
+  name: "periodic_7s"
+  periodic_trigger { interval { seconds: 7 } }
+}
+sources {
+  name: "timestamp_6s"
+  aggregator {
+    trigger_names: "periodic_6s"
+    message_builder {
+      message_type: ".aaos.sdv.telemetry.adhoc.timestamp_6s"
+      field_assignments {
+        field_name: "timestamp"
+        no_aggregation { expression_node_index: 2 }
+      }
+    }
+  }
+}
+sources {
+  name: "timestamp_5s"
+  aggregator {
+    trigger_names: "periodic_5s"
+    message_builder {
+      message_type: ".aaos.sdv.telemetry.adhoc.timestamp_5s"
+      field_assignments {
+        field_name: "timestamp"
+        no_aggregation { expression_node_index: 2 }
+      }
+    }
+  }
+}
+# Expression Node 0
+expression_nodes { function_leaf_node { get_current_timestamp { time_source: REALTIME_CLOCK } } }
+# Expression Node 1
+expression_nodes { constant_leaf_node { int32_value: 1000 } }
+# Expression Node 2
+expression_nodes { combination_node { left_index: 0 right_index: 1 arithmetic_operator: DIVIDE } }
+# Expression Node 3
+expression_nodes { field_leaf_node { source_name: "timestamp_5s" field_names: "timestamp" } }
+# Expression Node 4
+expression_nodes { field_leaf_node { source_name: "timestamp_6s" field_names: "timestamp" } }
+# Expression Node 5
+expression_nodes { combination_node { left_index: 4 right_index: 3 arithmetic_operator: SUBTRACT } }
+# Expression Node 6
+expression_nodes { combination_node { left_index: 5 right_index: 1 arithmetic_operator: DIVIDE } }
+# Expression Node 7
+expression_nodes { combination_node { left_index: 6 rounding_operator: ROUND } }
+metrics_report_configs {
+  name: "time_report"
+  trigger_names: "periodic_7s"
+  report_incomplete: true
+  message_builder {
+    message_type: ".aaos.sdv.telemetry.adhoc.time_report"
+    field_assignments {
+      field_name: "timestamp_start"
+      no_aggregation { expression_node_index: 3 }
+    }
+    field_assignments {
+      field_name: "timestamp_end"
+      no_aggregation { expression_node_index: 4 }
+    }
+    field_assignments {
+      field_name: "duration_plain"
+      no_aggregation { expression_node_index: 6 }
+    }
+    field_assignments {
+      field_name: "duration_rounded"
+      no_aggregation { expression_node_index: 7 }
+    }
+  }
+}

@@ -1,0 +1,45 @@
+// Copyright (C) 2026 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package {
+    default_team: "trendy_team_connectivity_telemetry",
+    default_applicable_licenses: ["Android-Apache-2.0"],
+    default_visibility: ["//visibility:private"],
+}
+
+python_library_host {
+    name: "sdv_telemetry_test_execution_library",
+    visibility: [
+        // keep-sorted start
+        "//platform_testing/tests/sdv/e2e_tests/telemetry:__subpackages__",
+        "//platform_testing/tests/sdv/hardware/telemetry:__subpackages__",
+        "//platform_testing/tests/sdv/long_running_tests/telemetry:__subpackages__",
+        "//platform_testing/tests/sdv/sample_tests/telemetry:__subpackages__",
+        "//platform_testing/tests/sdv/tests/performance_tests/telemetry:__subpackages__",
+        // keep-sorted end
+    ],
+    // `pkg_path` SHOULD match the folder name, otherwise autocomplete in IDEs
+    // will not work.
+    pkg_path: "sdv_telemetry_test_execution",
+    srcs: [
+        "**/*.py",
+    ],
+    libs: [
+        // keep-sorted start
+        "libprotobuf-python",
+        "libsdv_telemetry_proto_python",
+        "sdv_test_fw_lib",
+        // keep-sorted end
+    ],
+}
