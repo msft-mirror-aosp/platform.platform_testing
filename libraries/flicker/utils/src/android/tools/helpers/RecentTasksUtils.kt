@@ -20,13 +20,29 @@ import android.app.Instrumentation
 import androidx.test.uiautomator.UiDevice
 
 object RecentTasksUtils {
+    private val recentTaskCountRegex = Regex("""Visible recent tasks: (\d+)""")
+
     @JvmStatic
     fun clearAllVisibleRecentTasks(instrumentation: Instrumentation) {
-        UiDevice.getInstance(instrumentation).executeShellCommand(
-            "dumpsys activity service SystemUIService WMShell recents clearAll"
-        )
-        UiDevice.getInstance(instrumentation).executeShellCommand(
-            "dumpsys activity service SystemUIService WMShell bubbles removeAll"
-        )
+        UiDevice.getInstance(instrumentation)
+            .executeShellCommand(
+                "dumpsys activity service SystemUIService WMShell recents clearAll"
+            )
+        UiDevice.getInstance(instrumentation)
+            .executeShellCommand(
+                "dumpsys activity service SystemUIService WMShell bubbles removeAll"
+            )
+    }
+
+    @JvmStatic
+    fun getRecentTasksCount(instrumentation: Instrumentation): Int {
+        val commandOutput =
+            UiDevice.getInstance(instrumentation)
+                .executeShellCommand(
+                    "dumpsys activity service SystemUIService WMShell recents visibleCount"
+                )
+
+        val outputCount = recentTaskCountRegex.find(commandOutput)?.groupValues?.get(1)
+        return outputCount?.toInt() ?: throw NumberFormatException("Did not find count in output")
     }
 }
