@@ -523,7 +523,7 @@ public interface IAutoMediaHelper extends IAppHelper, Scrollable {
      * <p>This method is used to verify News displayed in Media Source history folder on Media Card
      * Widget.
      */
-    boolean isNewsDisplayedInMediaSourceHistory();
+    boolean isRadioDisplayedInMediaSourceHistory();
 
     /**
      * Setup expectations: on Media card
@@ -531,7 +531,7 @@ public interface IAutoMediaHelper extends IAppHelper, Scrollable {
      * <p>This method is used to get the text of News channel displayed in Media Source history
      * folder on Media Card Widget.
      */
-    String getNewsChannelNameFromMediaSourceHistory();
+    String getRadioChannelNameFromMediaSourceHistory();
 
     /**
      * Setup expectations: on Media card

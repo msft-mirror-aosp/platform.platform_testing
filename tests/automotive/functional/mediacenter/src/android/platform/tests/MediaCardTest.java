@@ -50,6 +50,7 @@ public class MediaCardTest {
     private static final String DEFAULT_SONG_NAME = "NPV links";
 
     private static final String RADIO_STATION = "99.7 Now!";
+    private static final String RADIO_STATION_ON_MEDIACARD = "99.7 FM";
     private static final String ANOTHER_RADIO_STATION = "87.9";
     private static final String CUSTOM_SONG_NAME = "Custom Actions overflow";
     private static final String LOG_TAG = MediaCardTest.class.getSimpleName();
@@ -237,31 +238,31 @@ public class MediaCardTest {
 
     @Test
     public void testSwitchMediaAppsFromMediaSource() {
-        Log.i(LOG_TAG, "Act: Open News from all launcher as pre- condition");
-        openNewsFromGrid();
+        Log.i(LOG_TAG, "Act: Open Radio from all launcher as pre- condition");
+        mMediaCenterHelper.get().openRadioAppAndPlayGivenStation(RADIO_STATION);
 
         Log.i(LOG_TAG, "Act: Open Media Source History from Media card Widget");
         mMediaCenterHelper.get().openMediaSource();
 
-        Log.i(LOG_TAG, "Assert: Media Source history displayed News App");
+        Log.i(LOG_TAG, "Assert: Media Source history displayed Radio App");
         assertTrue(
-                "Media Source History do not show news",
-                mMediaCenterHelper.get().isNewsDisplayedInMediaSourceHistory());
+                "Media Source History do not show Radio",
+                mMediaCenterHelper.get().isRadioDisplayedInMediaSourceHistory());
 
-        Log.i(LOG_TAG, "Assert: Media Source history displayed News channel Name");
+        Log.i(LOG_TAG, "Assert: Media Source history displayed Radio channel Name");
         assertEquals(
-                "News Channel Name doesn't match ",
-                mNewsChannelName,
-                mMediaCenterHelper.get().getNewsChannelNameFromMediaSourceHistory());
+                "Radio Channel Name doesn't match ",
+                RADIO_STATION_ON_MEDIACARD,
+                mMediaCenterHelper.get().getRadioChannelNameFromMediaSourceHistory());
 
         Log.i(LOG_TAG, "Assert: Media Source history displayed Test media App");
         assertTrue(
-                "Media Source History do not show news",
+                "Media Source History do not show Radio",
                 mMediaCenterHelper.get().isTestMediaAppDisplayedInMediaSourceHistory());
 
         Log.i(LOG_TAG, "Assert: Media Source history displayed Song Name");
         assertEquals(
-                "News Channel Name does't match ",
+                "Radio Channel Name does't match ",
                 mDefaultSongName,
                 mMediaCenterHelper.get().getTestMediaAppSongNameFromMediaSourceHistory());
 

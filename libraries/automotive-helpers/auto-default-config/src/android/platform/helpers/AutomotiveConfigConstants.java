@@ -384,7 +384,9 @@ public class AutomotiveConfigConstants {
     public static final String TRACK_NAME_HOME_SCREEN = "TRACK_NAME_HOME_SCREEN";
     public static final String MEDIA_SOURCE_BUTTON = "MEDIA_SOURCE_BUTTON";
     public static final String MEDIA_SOURCE_NEWS_BUTTON = "MEDIA_SOURCE_NEWS_BUTTON";
+    public static final String MEDIA_SOURCE_RADIO_BUTTON = "MEDIA_SOURCE_RADIO_BUTTON";
     public static final String MEDIA_SOURCE_HISTORY_NEWS = "MEDIA_SOURCE_HISTORY_NEWS";
+    public static final String MEDIA_SOURCE_HISTORY_RADIO = "MEDIA_SOURCE_HISTORY_RADIO";
     public static final String MEDIA_SOURCE_HISTORY_ACTIVE_TITTLE =
             "MEDIA_SOURCE_HISTORY_ACTIVE_TITTLE";
     public static final String MEDIA_SOURCE_HISTORY_CARD = "MEDIA_SOURCE_HISTORY_CARD";
