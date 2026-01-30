@@ -1,0 +1,397 @@
+// Copyright (C) 2026 The Android Open Source Project
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package {
+    default_team: "trendy_team_automotive",
+    default_applicable_licenses: ["sdv_tests_license"],
+}
+
+python_test_host {
+    name: "SdvE2EUMDroppedSubscriberTest",
+    main: "sdv_e2e_um_dropped_subscriber_test.py",
+    srcs: [
+        "sdv_e2e_um_dropped_subscriber_test.py",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    device_first_data: [
+        ":com.sdv.google.sample.apex.provider.v2",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: ":sdv_one_device",
+}
+
+python_test_host {
+    name: "SdvE2EUMServiceBundleActivatePostRebootRollbackTest",
+    main: "sdv_e2e_um_service_bundle_activate_post_reboot_rollback_test.py",
+    srcs: [
+        "sdv_e2e_um_service_bundle_activate_post_reboot_rollback_test.py",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    device_first_data: [
+        ":com.sdv.google.sample.apex.provider.v2",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: ":sdv_one_device",
+}
+
+python_test_host {
+    name: "SdvE2EUMServiceBundleActivatePreRebootRollbackTest",
+    main: "sdv_e2e_um_service_bundle_activate_pre_reboot_rollback_test.py",
+    srcs: [
+        "sdv_e2e_um_service_bundle_activate_pre_reboot_rollback_test.py",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    device_first_data: [
+        ":com.sdv.google.sample.apex.provider.v2",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: ":sdv_one_device",
+}
+
+python_test_host {
+    name: "SdvE2EUMServiceBundleCommitAndUninstallTest",
+    main: "sdv_e2e_um_service_bundle_commit_and_uninstall_test.py",
+    srcs: [
+        "sdv_e2e_um_service_bundle_commit_and_uninstall_test.py",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    device_first_data: [
+        ":com.sdv.google.sample.apex.provider.v2",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: ":sdv_one_device",
+}
+
+python_test_host {
+    name: "SdvE2EUMServiceBundlePrepareRollbackTest",
+    main: "sdv_e2e_um_service_bundle_prepare_rollback_test.py",
+    srcs: [
+        "sdv_e2e_um_service_bundle_prepare_rollback_test.py",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    device_first_data: [
+        ":com.sdv.google.sample.apex.provider.v2",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: ":sdv_one_device",
+}
+
+python_test_host {
+    name: "SdvE2EUMServiceBundleRollbackTriggeredFromTooManyRebootsTest",
+    main: "sdv_e2e_um_service_bundle_rollback_triggered_from_too_many_reboots_test.py",
+    srcs: [
+        "sdv_e2e_um_service_bundle_rollback_triggered_from_too_many_reboots_test.py",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    device_first_data: [
+        ":com.sdv.google.sample.apex.provider.v2",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: ":sdv_one_device",
+}
+
+python_test_host {
+    name: "SdvE2EUMSystemActivatePostRebootRollbackTest",
+    main: "sdv_e2e_um_system_activate_post_reboot_rollback_test.py",
+    srcs: [
+        "sdv_e2e_um_system_activate_post_reboot_rollback_test.py",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    device_first_data: [
+        ":com.sdv.google.sample.apex.provider.v2",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: ":sdv_one_device",
+}
+
+python_test_host {
+    name: "SdvE2EUMSystemActivatePreRebootRollbackTest",
+    main: "sdv_e2e_um_system_activate_pre_reboot_rollback_test.py",
+    srcs: [
+        "sdv_e2e_um_system_activate_pre_reboot_rollback_test.py",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    device_first_data: [
+        ":com.sdv.google.sample.apex.provider.v2",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: ":sdv_one_device",
+}
+
+python_test_host {
+    name: "SdvE2EUMSystemCommitPrepareArgumentsSuppliedTest",
+    main: "sdv_e2e_um_system_commit_prepare_arguments_supplied_test.py",
+    srcs: [
+        "sdv_e2e_um_system_commit_prepare_arguments_supplied_test.py",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    device_first_data: [
+        ":com.sdv.google.sample.apex.provider.v2",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: ":sdv_one_device",
+}
+
+python_test_host {
+    name: "SdvE2EUMSystemCommitTest",
+    main: "sdv_e2e_um_system_commit_test.py",
+    srcs: [
+        "sdv_e2e_um_system_commit_test.py",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    device_first_data: [
+        ":com.sdv.google.sample.apex.provider.v2",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: ":sdv_one_device",
+}
+
+python_test_host {
+    name: "SdvE2EUMSystemPrepareCancelTest",
+    main: "sdv_e2e_um_system_prepare_cancel_test.py",
+    srcs: [
+        "sdv_e2e_um_system_prepare_cancel_test.py",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    device_first_data: [
+        ":com.sdv.google.sample.apex.provider.v2",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: ":sdv_one_device",
+}
+
+python_test_host {
+    name: "SdvE2EUMSystemPrepareRollbackTest",
+    main: "sdv_e2e_um_system_prepare_rollback_test.py",
+    srcs: [
+        "sdv_e2e_um_system_prepare_rollback_test.py",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    device_first_data: [
+        ":com.sdv.google.sample.apex.provider.v2",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: ":sdv_one_device",
+}
+
+python_test_host {
+    name: "SdvE2EUMSystemPrepareSuspendRebootResumeTest",
+    main: "sdv_e2e_um_system_prepare_suspend_reboot_resume_test.py",
+    srcs: [
+        "sdv_e2e_um_system_prepare_suspend_reboot_resume_test.py",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    device_first_data: [
+        ":com.sdv.google.sample.apex.provider.v2",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: ":sdv_one_device",
+}
+
+python_test_host {
+    name: "SdvE2EUMSystemPrepareSuspendResumeTest",
+    main: "sdv_e2e_um_system_prepare_suspend_resume_test.py",
+    srcs: [
+        "sdv_e2e_um_system_prepare_suspend_resume_test.py",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    device_first_data: [
+        ":com.sdv.google.sample.apex.provider.v2",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: ":sdv_one_device",
+}
+
+python_test_host {
+    name: "SdvE2EUMSystemPrepareSuspendRollbackTest",
+    main: "sdv_e2e_um_system_prepare_suspend_rollback_test.py",
+    srcs: [
+        "sdv_e2e_um_system_prepare_suspend_rollback_test.py",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    device_first_data: [
+        ":com.sdv.google.sample.apex.provider.v2",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: ":sdv_one_device",
+}
+
+python_test_host {
+    name: "SdvE2EUMSystemPrepareSuspendVpmTest",
+    main: "sdv_e2e_um_system_prepare_suspend_vpm_test.py",
+    srcs: [
+        "sdv_e2e_um_system_prepare_suspend_vpm_test.py",
+        "sdv_vepsm_session.py",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    device_first_data: [
+        ":com.sdv.google.sample.apex.provider.v2",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: ":sdv_one_device",
+}
+
+python_test_host {
+    name: "SdvE2EUMSystemRollbackTriggeredFromTooManyRebootsTest",
+    main: "sdv_e2e_um_system_rollback_triggered_from_too_many_reboots_test.py",
+    srcs: [
+        "sdv_e2e_um_system_rollback_triggered_from_too_many_reboots_test.py",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    device_first_data: [
+        ":com.sdv.google.sample.apex.provider.v2",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: ":sdv_one_device",
+}
+
+python_test_host {
+    name: "SdvE2EUMApexCleanupTest",
+    main: "sdv_e2e_um_apex_cleanup_test.py",
+    srcs: [
+        "sdv_e2e_um_apex_cleanup_test.py",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    device_first_data: [
+        ":com.sdv.google.sample.apex.provider.v2",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: ":sdv_one_device",
+}

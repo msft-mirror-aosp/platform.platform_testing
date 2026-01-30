@@ -1,0 +1,17 @@
+# Copyright 2025 Google LLC
+
+# Events occur at timestamps 0.5s, 3.5s, 6.5s, 12.5s and 13.5s.
+
+# Events at timestamps 0.5s, 3.5s, 6.5s form a `series of events` since adjacent
+# events happen close to each other, i.e. within the data collection timeframe
+# of 5 seconds. For a series of events, current Telemetry mechanisms only allow
+# performing an After Event Collection for its first and last events.
+#
+# Events at timestamps 12.5s, 13.5s form the second series.
+
+_delay_before_publishing,event
+500,1
+3000,1
+3000,1
+6000,1
+1000,1
