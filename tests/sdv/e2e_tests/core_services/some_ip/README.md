@@ -23,6 +23,13 @@ Read [SDV Testing instructions](/vendor/google_testing/software_defined_vehicle/
 
 This test launches 2 instances of a SDV service bundle that publish to a multipub publication. The test launches a vSomeIp binary that subscribes to the corresponding SOME/IP event translated by the broker and verifies that the binary is able to receive messages from both instances.
 
+
+The SDV instance should be run with SOME/IP agent and stack enabled. To do this, locally:
+
+```bash
+cvd create --extra_kernel_cmdline="androidboot.sdv.someip.enable=true"
+```
+
 ### Mobly
 
 ```bash
@@ -42,6 +49,12 @@ Name: `sdv/sample/someip_multipub_test`
 ## SOME/IP Benchmark Test
 
 The test launches a benchmark sample that performs several throughput tests for different types of messages.
+
+SDV instance should be run with SOME/IP agent and stack enabled. To do this, locally:
+
+```bash
+cvd create --extra_kernel_cmdline="androidboot.sdv.someip.enable=true"
+```
 
 ### Mobly
 

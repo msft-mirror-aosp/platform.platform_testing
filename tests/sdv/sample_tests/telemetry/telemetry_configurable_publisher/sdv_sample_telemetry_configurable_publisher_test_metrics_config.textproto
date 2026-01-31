@@ -1,0 +1,60 @@
+# Copyright (C) 2026 The Android Open Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+uuid: "c6005cea-8fde-436a-9f29-c12f06a10c10"
+version: 01
+descriptor_protos {
+  name: "metrics.proto"
+  package: "android.automotive.telemetry.messages"
+
+  message_type {
+    name: "SampleReport"
+    field {
+      label: LABEL_OPTIONAL
+      type: TYPE_INT32
+      name: "sample_data"
+
+      number: 1
+    }
+  }
+}
+
+sources {
+  name: "TestPublisher"
+  data_source { source_identifier: "SampleService" }
+}
+
+expression_nodes { field_leaf_node { source_name: "TestPublisher" field_names: "sample_data" } }
+
+triggers {
+  name: "StartTrigger"
+  periodic_trigger { interval { seconds: 2 } }
+}
+triggers {
+  name: "TestPublisherTrigger"
+  data_trigger { source_name: "TestPublisher" }
+}
+
+start_trigger_name: "StartTrigger"
+metrics_report_configs {
+  name: "SampleReport"
+  trigger_names: "TestPublisherTrigger"
+  message_builder {
+    message_type: ".android.automotive.telemetry.messages.SampleReport"
+    field_assignments {
+      field_name: "sample_data"
+      no_aggregation { expression_node_index: 0 }
+    }
+  }
+}

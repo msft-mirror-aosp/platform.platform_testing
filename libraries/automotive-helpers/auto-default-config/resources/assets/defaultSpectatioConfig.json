@@ -2216,6 +2216,19 @@
         }
       ]
     },
+    "MEDIA_SOURCE_RADIO_BUTTON": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "TEXT_CONTAINS",
+          "VALUE": "Radio"
+        },
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.TextView"
+        }
+      ]
+    },
     "MEDIA_SOURCE_TEST_MEDIA_BUTTON": {
       "TYPE": "MULTIPLE",
       "SPECIFIERS": [
@@ -2255,6 +2268,21 @@
           "DESCENDANT": {
             "TYPE": "TEXT",
             "VALUE": "News"
+          }
+        }]
+    },
+    "MEDIA_SOURCE_HISTORY_RADIO": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.view.ViewGroup"
+        },
+        {
+          "TYPE": "HAS_DESCENDANT",
+          "DESCENDANT": {
+            "TYPE": "TEXT",
+            "VALUE": "Radio"
           }
         }]
     },
