@@ -54,20 +54,11 @@ class SdvSampleCommStackTwoVMTest(sdv_base_test.SdvBaseTestClass):
             config=collector_config.CollectorConfig(
                 config_path='comm_stack_trace_cfg.pbtx',
                 multi_vm_tracing=True,
-                multi_vm_tracing_center=True,
-                multi_vm_tracing_vsock=False)
-        )
-    )
-    self.perfetto_collector_2 = (
-        perfetto_collector.PerfettoCollector(
-            device=self.sdv_device_2,
-            config=collector_config.CollectorConfig(
-                multi_vm_tracing=True,
-                multi_vm_tracing_center=False,
                 multi_vm_tracing_vsock=False,
-                multi_vm_tracing_center_address= self.perfetto_collector_1.get_inet_address())
+                secondary_devices=[self.sdv_device_2])
         )
     )
+
     self.perfetto_collector_1.start_trace(start_trace_delay=5)
 
   def stop_trace(self):

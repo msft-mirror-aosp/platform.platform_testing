@@ -42,6 +42,10 @@ python_library_host {
     data: [
         ":sdv_default_trace_config",
     ],
+    libs: [
+        "mobly",
+        "sdv_test_fw_lib",
+    ],
 }
 
 python_library_host {

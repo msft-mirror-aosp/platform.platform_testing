@@ -28,6 +28,9 @@
 
  flush_period_ms: 5000
 
+ # Enable merged trace from all machines.
+ trace_all_machines: true
+
 
 # If data sources are writing at different rates, it may be beneficial to direct them to different
 # buffers. The target_buffer property of a source config determines the used buffer.

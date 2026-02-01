@@ -56,23 +56,16 @@ Notes:
 
 For multi-vm tracing, use the following API to start/stop trace.
 # Create collector for center VM and client VM:
+
 self.center_vm_collector = perfetto_collector.PerfettoCollector(
-    device=self.sdv_device,
+    device=self.sdv_device1,
     config=collector_config.CollectorConfig(
         multi_vm_tracing=True,
-        multi_vm_tracing_center=True,
         multi_vm_tracing_vsock=True,
+        secondarry_devices=[self.device2, self.device3],
     ),
 )
-self.client_vm_collector = perfetto_collector.PerfettoCollector(
-    device=self.sdv_device,
-    config=collector_config.CollectorConfig(
-        multi_vm_tracing=True,
-        multi_vm_tracing_center=False,
-        multi_vm_tracing_vsock=True,
-        multi_vm_tracing_center_address=self.center_vm_collector.get_vsock_id(),
-    ),
-)
+
 
 # Start trace
 self.center_vm_collector.start_trace()
@@ -120,10 +113,6 @@ DEVICE_TRACE_CONFIG_FILENAME = 'trace_config'
 DEVICE_ON_BOOT_TRACE_CONFIG_FILENAME = 'boottrace.pbtxt'
 DEVICE_ON_BOOT_TRACE_OUTPUT_FILENAME = 'boottrace.perfetto-trace'
 
-MULTI_VM_TRACING_ADDRESS_VSOOCK_CLIENT_TEMPLATE = 'vsock://{}:30001'
-MULTI_VM_TRACING_ADDRESS_VSOOCK_CENTER = []
-MULTI_VM_TRACING_ADDRESS_INET_CLIENT_TEMPLATE = '{}:8080'
-MULTI_VM_TRACING_ADDRESS_INET_CENTER = ['--address', '0.0.0.0:8080']
 ARCH_TO_INET_INTERFACE = {
     'x86_64': 'eth1',  # Cuttlefish
     'arm64-v8a': 'eth0',  # Raspberry Pi
@@ -172,29 +161,29 @@ class PerfettoCollector:
         self._torq_binary_path = os.path.join(
             os.path.dirname(__file__), 'torq')
         os.chmod(self._torq_binary_path, 0o777)
-        role = 'relay-producer' if config.multi_vm_tracing_center else 'traced-relay'
-        # set address for vsock client as default value
-        address = [MULTI_VM_TRACING_ADDRESS_VSOOCK_CLIENT_TEMPLATE.format(
-            self._config.multi_vm_tracing_center_address)]
-        if config.multi_vm_tracing_vsock:
-            if config.multi_vm_tracing_center:
-                address = MULTI_VM_TRACING_ADDRESS_VSOOCK_CENTER
-        else:  # inet
-            if config.multi_vm_tracing_center:
-                address = MULTI_VM_TRACING_ADDRESS_INET_CENTER
-            else:
-                address = [MULTI_VM_TRACING_ADDRESS_INET_CLIENT_TEMPLATE.format(
-                    config.multi_vm_tracing_center_address)]
-
+        host_mode = '--primary-cid' if config.multi_vm_tracing_vsock else '--primary-ip'
+        host_id = self.get_vsock_id() if config.multi_vm_tracing_vsock else self.get_inet_address()
+        secondary_devices = []
+        for device in config.secondary_devices:
+            secondary_devices.append('--secondary')
+            secondary_devices.append(device.get_device_serial())
+        # Using VSOCK
+        # torq vm configure --primary <android-serial-1> --primary-cid <HOST_VM_CID> \
+        #          --secondary <android-serial-2> \
+        #          --secondary <android-serial-3>
+        # Using TCP
+        #torq vm configure --primary <serial-1> --primary-ip <PRIMARY_VM_IP> \
+        #          --secondary <serial-2>
         cmd = [
             self._torq_binary_path,
-            '--serial',
-            self._device.get_device_serial(),
             'vm',
-            role,
-            'enable',
+            'configure',
+            '--primary',
+            self._device.get_device_serial(),
+            host_mode,
+            host_id
         ]
-        cmd.extend(address)
+        cmd.extend(secondary_devices)
         logging.info(f'Config vm for multi-vm tracing: {cmd}')
         utils.run_command(cmd)
 
@@ -270,7 +259,7 @@ class PerfettoCollector:
         return self._device.get_vsock_local_cid()
 
     # TODO: move this function to test_framework
-    def get_inet_address(self) -> int:
+    def get_inet_address(self) -> str:
         """Returns the inet address of the device.
         Parses the inet address of eth1 from ifconfig output.
         '''
@@ -308,10 +297,6 @@ class PerfettoCollector:
         """
           Starts multi vm tracing via torq. go/sdv-tracing#unified-tracing-with-torq
         """
-        if not self._config.multi_vm_tracing_center:
-            raise PerfettoCollectorError(
-                self._device, 'Failed to start Torq trace. Multi vm tracing center is not set.'
-            )
         self._torq_binary_path = os.path.join(
             os.path.dirname(__file__), 'torq')
         cmd = [
@@ -617,9 +602,10 @@ class PerfettoCollector:
 
         try:
             self._adb_shell('rm', self.device_trace_output)
-        except adb.Error:
+        except adb.Error as e:
             raise PerfettoCollectorError(
-                self._device, 'Failed to clean up trace file %s.', self.device_trace_output
+                self._device,
+                f'Failed to clean up trace file {self.device_trace_output}.',
             ) from e
         finally:
             self.device_trace_output = None
