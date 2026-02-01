@@ -19,6 +19,9 @@ from pathlib import Path
 
 from sdv_telemetry_scenario_generator.generate import generate
 
+DATA_COLLECTION_TIME = timedelta(minutes=2)
+SIMULATION_TIME = DATA_COLLECTION_TIME + timedelta(seconds=20)
+
 
 def main() -> None:
     parser = ArgumentParser()
@@ -28,7 +31,9 @@ def main() -> None:
     if not os.path.isdir(args.output_directory):
         os.makedirs(args.output_directory)
 
-    generate(Path(args.output_directory), timedelta(minutes=2))
+    generate(
+        Path(args.output_directory), DATA_COLLECTION_TIME, SIMULATION_TIME,
+    )
 
 
 if __name__ == '__main__':

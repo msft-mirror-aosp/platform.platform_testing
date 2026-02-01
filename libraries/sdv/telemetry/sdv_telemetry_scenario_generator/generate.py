@@ -14,6 +14,7 @@
 
 import csv
 from datetime import timedelta
+from enum import Enum
 import io
 from pathlib import Path
 import random
@@ -26,7 +27,7 @@ from sdv_telemetry_scenario_generator.generator_utils import CSV_DELIMITER, as_t
 from system.software_defined_vehicle.telemetry.proto.metrics_configuration.expression_pb2 import CombinationNode, Node as ExpressionNode
 from system.software_defined_vehicle.telemetry.proto.metrics_configuration.metrics_configuration_pb2 import ConditionalTrigger, MetricsConfig, DataSource
 from system.software_defined_vehicle.telemetry.simulator.proto.simulation_actions_pb2 import MetricsConfigAction, SimulationAction, SimulationActions
-from system.software_defined_vehicle.telemetry.simulator.proto.simulation_publisher_pb2 import SimulationPublisher
+from system.software_defined_vehicle.telemetry.simulator.proto.simulation_publisher_pb2 import PublishingStrategy, SimulationPublisher
 
 WORST_CASE_SCENARIO = {
     'METRICS_CONFIGS': 150,
@@ -78,6 +79,30 @@ REPORT_MESSAGE_DESCRIPTOR = make_report_file_descriptor(
 
 FILE_DESCRIPTORS_COUNT = 30
 
+class PublisherType(Enum):
+    DT = 1
+    RPC = 2
+    CONFIGURABLE = 3
+
+
+DT_MESSAGE_COUNT = 200
+DT_MESSAGE_SIZE = 2048
+
+# TODO: b/466363305: Increase number of DT and RPC publishers in KPI Scenario Test
+PUBLISHER_TYPE_DISTRIBUTION = {
+    'DT': 50,
+    'RPC': 50,
+    'CONFIGURABLE': 900,
+}
+
+assert (
+    WORST_CASE_SCENARIO['SUBSCRIBED_TOPICS']
+    + WORST_CASE_SCENARIO['GETTER_TOPICS']
+    == PUBLISHER_TYPE_DISTRIBUTION['DT']
+    + PUBLISHER_TYPE_DISTRIBUTION['RPC']
+    + PUBLISHER_TYPE_DISTRIBUTION['CONFIGURABLE']
+)
+
 
 # A thin wrapper around a publisher topic name.
 class Topic:
@@ -90,11 +115,13 @@ class Topic:
 def make_topics() -> Tuple[List[Topic], List[Topic]]:
     getter_topics = list()
     for i in range(WORST_CASE_SCENARIO['GETTER_TOPICS']):
-        getter_topics.append(Topic(f'getter_topic_{i:0=4}'))
+        getter_topics.append(Topic(f'com.google.sdv.telemetry.Getter{i:0=4}'))
 
     subscribed_topics = list()
     for i in range(WORST_CASE_SCENARIO['SUBSCRIBED_TOPICS']):
-        subscribed_topics.append(Topic(f'subscribed_topic_{i:0=4}'))
+        subscribed_topics.append(
+            Topic(f'com.google.sdv.telemetry.Subscribed{i:0=4}')
+        )
 
     return [getter_topics, subscribed_topics]
 
@@ -293,15 +320,31 @@ def make_simulation_publishers(
     ctx: Context,
     topic_descriptors: Dict[str, TopicDescriptorData],
 ) -> List[Tuple[SimulationPublisher, str]]:
+    publisher_types = (
+        [PublisherType.DT] * PUBLISHER_TYPE_DISTRIBUTION['DT']
+        + [PublisherType.RPC] * PUBLISHER_TYPE_DISTRIBUTION['RPC']
+        + [PublisherType.CONFIGURABLE]
+        * PUBLISHER_TYPE_DISTRIBUTION['CONFIGURABLE']
+    )
+    random.shuffle(publisher_types)
+    assert len(publisher_types) == len(ctx.subscribed_topics) + len(
+        ctx.getter_topics
+    )
+
     return [
-        make_simulation_publisher(topic.name, topic_descriptors[topic.name])
-        for topic in ctx.subscribed_topics + ctx.getter_topics
+        make_simulation_publisher(
+            topic.name, topic_descriptors[topic.name], publisher_type
+        )
+        for topic, publisher_type in zip(
+            ctx.subscribed_topics + ctx.getter_topics, publisher_types
+        )
     ]
 
 
 def make_simulation_publisher(
     topic_name: str,
     topic_descriptor_data: TopicDescriptorData,
+    publisher_type: PublisherType,
 ) -> Tuple[SimulationPublisher, str]:
     publisher = SimulationPublisher()
     publisher.service_name = topic_name
@@ -309,6 +352,19 @@ def make_simulation_publisher(
     publisher.data_format_message_name = (
         f'.{topic_descriptor_data.message_type_name}'
     )
+
+    match publisher_type:
+        case PublisherType.DT:
+            publisher.publishing_strategy.sdv_comms_data_tunnel.message_count = (
+                DT_MESSAGE_COUNT
+            )
+            publisher.publishing_strategy.sdv_comms_data_tunnel.message_size = (
+                DT_MESSAGE_SIZE
+            )
+        case PublisherType.RPC:
+            publisher.publishing_strategy.sdv_comms_rpc.SetInParent()
+        case PublisherType.CONFIGURABLE:
+            publisher.publishing_strategy.configurable_publisher_registry.SetInParent()
 
     average_topic_changes_per_second_per_subscribed_publisher = (
         WORST_CASE_SCENARIO['AVERAGE_TOPIC_CHANGES_PER_SECOND']
@@ -715,15 +771,19 @@ def make_simulation_action(
 
 
 def make_simulation_actions(
-    metrics_configs: List[MetricsConfig], simulation_time: timedelta
+    metrics_configs: List[MetricsConfig],
+    data_collection_time: timedelta,
+    simulation_time: timedelta,
 ) -> SimulationActions:
     uuids = [config.uuid for config in metrics_configs]
 
     # Add all metrics config at start
     simulation_actions = SimulationActions()
-    for uuid in uuids:
+
+    for i, uuid in enumerate(uuids):
+        delay = timedelta(seconds=5) if i == 0 else timedelta(seconds=0)
         action = make_simulation_action(
-            timedelta(seconds=0), uuid, MetricsConfigAction.ActionType.ADD
+            delay, uuid, MetricsConfigAction.ActionType.ADD
         )
         simulation_actions.actions.append(action)
 
@@ -731,7 +791,7 @@ def make_simulation_actions(
     schedule = generate_schedule(
         WORST_CASE_SCENARIO['ACTIVE_METRICS_CONFIGS'],
         WORST_CASE_SCENARIO['METRICS_CONFIGS'],
-        simulation_time,
+        data_collection_time,
     )
 
     def get_action_priority(action_type: SimulationAction) -> int:
@@ -753,11 +813,11 @@ def make_simulation_actions(
     schedule = sorted(
         [
             (uuids[i], start, MetricsConfigAction.ActionType.ACTIVATE)
-            for (i, start, _) in schedule
+            for i, start, _ in schedule
         ]
         + [
             (uuids[i], end, MetricsConfigAction.ActionType.DEACTIVATE)
-            for (i, _, end) in schedule
+            for i, _, end in schedule
         ],
         key=lambda k: (k[1], get_action_priority(k[2])),
     )
@@ -778,12 +838,25 @@ def make_simulation_actions(
         )
         simulation_actions.actions.append(action)
 
+    last_action_timestamp = sum(
+        (action.delay.ToTimedelta() for action in simulation_actions.actions),
+        timedelta(),
+    )
+
+    assert (
+        last_action_timestamp <= simulation_time
+    ), 'Last action timestamp exceeds simulation time'
+
     return simulation_actions
 
 
 # Generates a sample scenario in the provided output directory. The output
 # directory must exist.
-def generate(output_directory: Path, simulation_time: timedelta) -> None:
+def generate(
+    output_directory: Path,
+    data_collection_time: timedelta,
+    simulation_time: timedelta,
+) -> None:
     ctx = Context()
 
     topic_descriptors = make_topic_descriptors(ctx)
@@ -791,7 +864,7 @@ def generate(output_directory: Path, simulation_time: timedelta) -> None:
     metrics_configs = make_metrics_configs(ctx, topic_descriptors)
     simulation_publishers = make_simulation_publishers(ctx, topic_descriptors)
     simulation_actions = make_simulation_actions(
-        metrics_configs, simulation_time
+        metrics_configs, data_collection_time, simulation_time
     )
 
     for i, metrics_config in enumerate(metrics_configs):

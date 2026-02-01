@@ -17,13 +17,13 @@
 Tests Telemetry KPI Scenario on one SDV VM
 """
 
-from mobly import asserts
 from datetime import timedelta
 from itertools import chain
 from pathlib import Path
 import tempfile
 from typing import List
 from metrics import calculate_metrics
+from mobly import asserts
 from sdv_perfetto import perfetto_collector, perfetto_trace_processor
 from sdv_telemetry_scenario_generator.generate import WORST_CASE_SCENARIO, generate
 from sdv_telemetry_test_execution import telemetry_base_test
@@ -35,7 +35,19 @@ from sdv_test_fw.test_execution import sdv_test_runner
 class SdvE2ETelemetryKpiScenarioTest(
     telemetry_base_test.SdvTelemetryBaseTestClass
 ):
-    SIMULATION_TIME = timedelta(minutes=2)
+    # Data collection time is the total duration while Metrics Configs are
+    # active.
+    DATA_COLLECTION_TIME = timedelta(minutes=2)
+
+    # Simulation time is longer than data collection time as some additional
+    # time is given before the data collection for publisher initializations and
+    # after it for the last simulation actions to be performed.
+    # TODO: b/466363305: the extra time was not needed until DT and RPC
+    # publishers started to be used in the test. Figure out whether the addition
+    # is necessary, or some improvements should be done on Telemetry or Comms
+    # Stack side.
+    SIMULATION_TIME = DATA_COLLECTION_TIME + timedelta(seconds=10)
+
     EXPECTED_REPORT_COUNT = (
         SIMULATION_TIME.total_seconds()
         * WORST_CASE_SCENARIO['AVERAGE_REPORTS_PER_SECOND']
@@ -76,12 +88,15 @@ class SdvE2ETelemetryKpiScenarioTest(
         super().setup_class()
         self.sdv_device = self.get_device('device1')
         self.sdv_device.adb().root_device()
+        self.sdv_device.adb().execute_shell_command('setprop persist.log.tag I')
         self.perfetto_collector = perfetto_collector.PerfettoCollector(
             device=self.sdv_device.adb()
         )
 
     def setup_test(self):
         super().setup_test()
+
+        self.enter_context(self.disable_authz(self.sdv_device))
 
         self._simulation_config_dir = self.enter_context(
             self.create_temp_dir(self.sdv_device)
@@ -93,7 +108,9 @@ class SdvE2ETelemetryKpiScenarioTest(
             self.sdv_device.adb().log().info(
                 f'Generating sample scenario in {host_temp_dir}'
             )
-            generate(host_temp_dir, self.SIMULATION_TIME)
+            generate(
+                host_temp_dir, self.DATA_COLLECTION_TIME, self.SIMULATION_TIME
+            )
 
             self.sdv_device.adb().log().info(
                 f'Uploading sample scenario to {self._simulation_config_dir}'
