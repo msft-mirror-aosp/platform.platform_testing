@@ -29,10 +29,12 @@ def calculate_metrics(
 ) -> Dict[str, Any]:
     cpu_mem_metrics = _calc_cpu_and_memory_metrics(trace)
     api_latency_metrics = _calc_api_latency_metrics(trace)
+    comms_stack_metrics = _calc_comms_stack_latency(trace)
 
     metrics = dict()
     metrics.update(cpu_mem_metrics)
     metrics.update(api_latency_metrics)
+    metrics.update(comms_stack_metrics)
     return metrics
 
 
@@ -130,9 +132,96 @@ def _calc_api_latency_metrics(
     }
 
 
+def _calc_comms_stack_latency(
+    trace: perfetto_trace_processor.PerfettoTraceProcessor,
+) -> Dict[str, Any]:
+    """Extracts latency related to create_subscription and get_latest_message calls"""
+
+    create_subscription_dt, create_subscription_rpc = _calc_create_subscription(
+        trace
+    )
+    get_latest_message_dt, get_latest_message_rpc = _calc_get_latest_message(
+        trace
+    )
+
+    return {
+        'create-subscription-dt(ms)': create_subscription_dt,
+        'create-subscription-rpc(ms)': create_subscription_rpc,
+        'get-latest-message-dt(ms)': get_latest_message_dt,
+        'get-latest-message-rpc(ms)': get_latest_message_rpc,
+    }
+
+
+def _calc_create_subscription(trace):
+    """Returns latency statistics for create_subscription calls.
+
+    Calculates the latency between Telemetry Service receives a message
+    from a publisher with SUBSCRIPTION connection type and it is being
+    received by its internal publisher representation.
+    """
+
+    # Extract create_subscription-related tracing events. DT and RPC events
+    # represent the timestamp a message has been received by Telemetry Service.
+    # Service Publisher events represent the timestamp the message processing
+    # has been started. Each event contains a message id which is used to match
+    # these two timestamps for latency calculation.
+    query_dt = """SELECT * FROM slice WHERE name LIKE 'New message(s) by DT Publisher%'"""
+    timestamps_dt = _extract_timestamps(trace, query_dt)
+
+    query_rpc = """SELECT * FROM slice WHERE name LIKE 'New message by RPC Publisher%'"""
+    timestamps_rpc = _extract_timestamps(trace, query_rpc)
+
+    query_sp = """SELECT * FROM slice WHERE name LIKE 'Message processed by Service Publisher%'"""
+    timestamps_sp = _extract_timestamps(trace, query_sp)
+
+    # Match Service Publisher events with DT/RPC events and get the latency.
+    dt_lat, rpc_lat = [], []
+    for uuid, ts in timestamps_sp.items():
+        if uuid in timestamps_dt:
+            dt_lat.append(ts - timestamps_dt[uuid])
+        if uuid in timestamps_rpc:
+            rpc_lat.append(ts - timestamps_rpc[uuid])
+
+    # Calc avg, median, p95 and max statistics
+    dt_stats = _calc_statistics(dt_lat)
+    dt_stats = _ns_to_ms(dt_stats)
+
+    rpc_stats = _calc_statistics(rpc_lat)
+    rpc_stats = _ns_to_ms(rpc_stats)
+    return dt_stats, rpc_stats
+
+
+def _extract_timestamps(
+    trace: perfetto_trace_processor.PerfettoTraceProcessor, query: str
+):
+    results = trace.query(query)
+
+    timestamps = dict()
+    for r in results:
+        uuid = r.name.split('message_id = ', 1)[1]
+        timestamps[uuid] = r.ts
+    return timestamps
+
+
+def _calc_get_latest_message(
+    trace: perfetto_trace_processor.PerfettoTraceProcessor,
+) -> Dict[str, Any]:
+    """Returns latency statistics for get_latest_message calls"""
+
+    query_dt = """SELECT * FROM slice WHERE name LIKE 'get_latest_message, publisher_type = "dt"%'"""
+    latency_dt = _calc_latency_stats(trace, query_dt)
+
+    query_rpc = """SELECT * FROM slice WHERE name LIKE 'get_latest_message, publisher_type = "rpc"%'"""
+    latency_rpc = _calc_latency_stats(trace, query_rpc)
+
+    return latency_dt, latency_rpc
+
+
 def _calc_latency_stats(
     trace: perfetto_trace_processor.PerfettoTraceProcessor, query: str
 ) -> Dict[str, int]:
+    """Returns latency statistics for a given query"""
+
     results = trace.query(query)
     poll_durations = (
         {
@@ -154,20 +243,25 @@ def _calc_latency_stats(
     ]
 
     stats = _calc_statistics(async_fn_durations)
-
-    # Convert nanoseconds to milliseconds for all stats
-    return {
-        key: float(round(value / 1000000.0, 2)) for key, value in stats.items()
-    }
+    return _ns_to_ms(stats)
 
 
 def _calc_statistics(
     values: List[int],
 ) -> Dict[str, float]:
+    """Returns avg, median, p95, max statistics for a given list of durations"""
+
     d_array = np.array(values)
     return {
         'avg': np.mean(d_array),
         'median': np.median(d_array),
         'p95': np.percentile(d_array, 95),
         'max': np.max(d_array),
+    }
+
+
+def _ns_to_ms(stats: Dict[str, float]):
+    # Convert nanoseconds to milliseconds for all stats
+    return {
+        key: float(round(value / 1000000.0, 2)) for key, value in stats.items()
     }
