@@ -16,6 +16,8 @@ import os
 import re
 from typing import Optional
 
+from sdv_test_fw.device import sdv_adb
+
 
 DEFAULT_TRACE_CONFIG_NAME = 'default_trace_cfg.pbtx'
 
@@ -83,8 +85,7 @@ class CollectorConfig:
         background_wait: bool = False,
         multi_vm_tracing: bool = False,
         multi_vm_tracing_vsock: Optional[bool] = None,
-        multi_vm_tracing_center: Optional[bool] = None,
-        multi_vm_tracing_center_address: Optional[str] = None):
+        secondary_devices: Optional[list[sdv_adb.SdvAdb]] = None):
         """Create a CollectorConfig.
 
          Args:
@@ -96,8 +97,7 @@ class CollectorConfig:
                 before returning.
            multi_vm_tracing: bool, enables multi-vm tracing.
            multi_vm_tracing_vsock: Optional[bool], enables multi-vm tracing over vsock, otherwise over inet. Valid only if multi_vm_tracing is True.
-           multi_vm_tracing_center: Optional[bool], enables multi-vm tracing as center vm, otherwise as client vm. Valid only if multi_vm_tracing is True.
-           multi_vm_tracing_center_address: Optional[str], inet address or vsock id of the center vm. Valid only if multi_vm_tracing_center is False.
+           secondary_devices: Optional[list[sdv_adb.SdvAdb]], list of secondary devices to trace. Valid only if multi_vm_tracing is True.
         """
         self.config_path = build_config_path(config_path)
         self.config_txt = config_txt
@@ -107,20 +107,13 @@ class CollectorConfig:
                 raise ValueError(
                     'multi_vm_tracing_vsock must be specified if multi_vm_tracing is True.'
                 )
-            if multi_vm_tracing_center is None:
+            if secondary_devices is None:
                 raise ValueError(
-                    'multi_vm_tracing_center must be specified if multi_vm_tracing is True.'
+                    'secondary_devices must be specified if multi_vm_tracing is True.'
                 )
-            if multi_vm_tracing_center is False:
-              if multi_vm_tracing_vsock:
-                check_vsock_id(multi_vm_tracing_center_address)
-              else:
-                check_inet_address(multi_vm_tracing_center_address)
-
         self.multi_vm_tracing = multi_vm_tracing
         self.multi_vm_tracing_vsock = multi_vm_tracing_vsock
-        self.multi_vm_tracing_center = multi_vm_tracing_center
-        self.multi_vm_tracing_center_address = multi_vm_tracing_center_address
+        self.secondary_devices = secondary_devices
 
 def check_vsock_id(vsock_id: str):
   """Check if the id is valid for vsock."""
