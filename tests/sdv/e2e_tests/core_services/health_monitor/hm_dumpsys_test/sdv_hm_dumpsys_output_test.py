@@ -65,7 +65,7 @@ class SdvHmDumpsysOutputTest(sdv_base_test.SdvBaseTestClass):
             "background_thread running: true\n"
             "should_run: true",
 
-            "MONITORING INTERNAL STATE:\n"
+            "HEARTBEAT MONITORING:\n"
             "NO ACTIVE MONITORS",
 
             "RECOVERY MONITORING:\n"
@@ -97,7 +97,7 @@ class SdvHmDumpsysOutputTest(sdv_base_test.SdvBaseTestClass):
             "background_thread running: true\n"
             "should_run: true",
 
-            "MONITORING INTERNAL STATE:\n",
+            "HEARTBEAT MONITORING:\n",
 
             f"ID: FQIN: {self.monitored_service_1_fqin}\n"
             "is_healthy: Healthy\n",
