@@ -30,6 +30,7 @@ import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule as createComposeRuleV2
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -80,12 +81,45 @@ data class FixedConfiguration(
  * is run as part of the [MotionTestRule].
  */
 @OptIn(ExperimentalTestApi::class)
+@Deprecated(
+    message =
+        "Migrate to use the v2 APIs for creating the ComposeTestRule, which use " +
+            "`StandardTestDispatcher` by default to better simulate production behavior " +
+            " where coroutines are queued rather than executed immediately.",
+    replaceWith = ReplaceWith("createFixedConfigurationComposeMotionTestRuleV2()"),
+)
 fun createFixedConfigurationComposeMotionTestRule(
     goldenPathManager: GoldenPathManager,
     testScope: TestScope = TestScope(),
     configuration: FixedConfiguration = FixedConfiguration(),
 ): MotionTestRule<ComposeToolkit> {
     val composeRule = createComposeRule(testScope.coroutineContext + Dispatchers.Main)
+
+    return MotionTestRule(
+        ComposeToolkit(composeRule, testScope, configuration),
+        goldenPathManager,
+        extraRules = RuleChain.outerRule(composeRule),
+    )
+}
+
+/**
+ * Convenience to create a [MotionTestRule], including the required setup.
+ *
+ * NOTE: The [configuration] applies to the complete content, EXCEPT the root node returned by the
+ * `isRoot()` [SemanticMatcher]. This can produce unexpected results when dispatching gestures on
+ * the root node. To work around this, dispatch the gestures on a node owned by the composable under
+ * test.
+ *
+ * In addition to the [MotionTestRule], this function also creates a [ComposeContentTestRule] (using
+ * the new v2 implementation, that relies on the [StandardDispatcher]), which is run as part of the
+ * [MotionTestRule].
+ */
+fun createFixedConfigurationComposeMotionTestRuleV2(
+    goldenPathManager: GoldenPathManager,
+    testScope: TestScope = TestScope(),
+    configuration: FixedConfiguration = FixedConfiguration(),
+): MotionTestRule<ComposeToolkit> {
+    val composeRule = createComposeRuleV2(testScope.coroutineContext + Dispatchers.Main)
 
     return MotionTestRule(
         ComposeToolkit(composeRule, testScope, configuration),
