@@ -55,6 +55,7 @@ class DeviceEmulationRule(private val spec: DeviceEmulationSpec) : TestRule {
         var prevWidth: Int? = -1
         var prevHeight: Int? = -1
         var prevNightMode: Int? = UiModeManager.MODE_NIGHT_AUTO
+        var prevFontScale: Float? = -1f
         var initialized: Boolean = false
     }
 
@@ -76,9 +77,10 @@ class DeviceEmulationRule(private val spec: DeviceEmulationSpec) : TestRule {
     }
 
     private fun beforeTest() {
-        // Emulate the display size and density.
+        // Emulate the display size, density and font scale.
         val display = spec.display
         val density = display.densityDpi
+        val fontScale = spec.fontScale
         val (width, height) = getEmulatedDisplaySize()
 
         if (isRoblectric) {
@@ -126,6 +128,9 @@ class DeviceEmulationRule(private val spec: DeviceEmulationSpec) : TestRule {
                 if (prevNightMode != curNightMode) {
                     setNightMode(curNightMode)
                 }
+                if (prevFontScale != fontScale) {
+                    setFontScale(fontScale)
+                }
             } else {
                 // Make sure that we are in natural orientation (rotation 0) before we set the
                 // screen size.
@@ -133,6 +138,7 @@ class DeviceEmulationRule(private val spec: DeviceEmulationSpec) : TestRule {
 
                 setDisplayDensity(density)
                 setDisplaySize(width, height)
+                setFontScale(fontScale)
 
                 // Force the dark/light theme.
                 setNightMode(curNightMode)
@@ -183,6 +189,11 @@ class DeviceEmulationRule(private val spec: DeviceEmulationSpec) : TestRule {
         uiModeManager.setApplicationNightMode(nightMode)
         prevNightMode = nightMode
     }
+
+    private fun setFontScale(fontScale: Float) {
+        uiAutomation.executeShellCommand("settings put system font_scale $fontScale")
+        prevFontScale = fontScale
+    }
 }
 
 /** The specification of a device display to be used in a screenshot test. */
@@ -193,6 +204,7 @@ data class DeviceEmulationSpec
 @JvmOverloads
 constructor(
     val display: DisplaySpec,
+    val fontScale: Float = 1.0f,
     val isDarkTheme: Boolean = false,
     val isLandscape: Boolean = false,
     val locale: Locale? = null,
@@ -212,6 +224,7 @@ constructor(
          */
         fun forDisplays(
             vararg displays: DisplaySpec,
+            fontScale: Float = 1.0f,
             isDarkTheme: Boolean? = null,
             isLandscape: Boolean? = null,
         ): List<DeviceEmulationSpec> {
@@ -219,11 +232,25 @@ constructor(
                 buildList {
                     fun addDisplay(isLandscape: Boolean) {
                         if (isDarkTheme != true) {
-                            add(DeviceEmulationSpec(display, isDarkTheme = false, isLandscape))
+                            add(
+                                DeviceEmulationSpec(
+                                    display,
+                                    fontScale,
+                                    isDarkTheme = false,
+                                    isLandscape,
+                                )
+                            )
                         }
 
                         if (isDarkTheme != false) {
-                            add(DeviceEmulationSpec(display, isDarkTheme = true, isLandscape))
+                            add(
+                                DeviceEmulationSpec(
+                                    display,
+                                    fontScale,
+                                    isDarkTheme = true,
+                                    isLandscape,
+                                )
+                            )
                         }
                     }
 
@@ -242,6 +269,7 @@ constructor(
     override fun toString(): String = buildString {
         // This string is appended to PNGs stored in the device, so let's keep it simple.
         append(display.name)
+        if (fontScale != 1.0f) append("_${fontScale.toString().replace(".", "_")}")
         if (isDarkTheme) append("_dark")
         if (isLandscape) append("_landscape")
         if (locale != null) append("_${locale.toLanguageTag()}")
