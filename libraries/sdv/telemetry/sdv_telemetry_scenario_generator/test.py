@@ -166,11 +166,12 @@ class TestGenerate(unittest.TestCase):
     def test_generate(self):
         metrics_config_count = 0
         simulation_publisher_count = 0
-        simulation_duration = timedelta(seconds=120)
+        data_collection_duration = timedelta(seconds=120)
+        simulation_duration = timedelta(seconds=140)
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_dir = Path(temp_dir)
 
-            generate(temp_dir, simulation_duration)
+            generate(temp_dir, data_collection_duration, simulation_duration)
 
             for file in os.listdir(temp_dir):
                 file_path = temp_dir / file
@@ -204,7 +205,10 @@ class TestGenerate(unittest.TestCase):
                     simulation_publisher = self.parse_proto(
                         file_path, ext, SimulationPublisher
                     )
-                    self.assertIn("_topic_", simulation_publisher.service_name)
+                    self.assertIn(
+                        "com.google.sdv.telemetry.",
+                        simulation_publisher.service_name,
+                    )
                 elif file.startswith("simulation_actions"):
                     actions = self.parse_proto(
                         file_path, ext, SimulationActions
@@ -261,7 +265,7 @@ class TestGenerate(unittest.TestCase):
         # at each timestamp
         active_configs = 0
         for idx, action in enumerate(actions.actions):
-            if action.delay.ToTimedelta() != timedelta(seconds=0):
+            if idx > 0 and action.delay.ToTimedelta() != timedelta(seconds=0):
                 # new timestamp comes - there were no actions on the interval
                 # between this timestamp and the previous one, so this interval
                 # can be validated as a whole
@@ -278,26 +282,6 @@ class TestGenerate(unittest.TestCase):
                 self.fail(
                     f"Too many active metrics configs, action index: {idx}"
                 )
-
-        # Validate the very last interval, except that it is allowed to have
-        # less than `ACTIVE_CONFIGS` configs if the last action timestamp is
-        # equal to `time_horizon`.
-        #
-        # This check is needed if, for instance, we have actions
-        # (activate, 0) and (deactivate, time_horizon) - the number of active
-        # configs after all events are processed is zero, which is fine.
-        # On the contrast, it is not forced to explicitly specify the
-        # deactivation action, but then one has to validate that config was
-        # active until the very end.
-        last_timestamp = sum(
-            (action.delay.ToTimedelta() for action in actions.actions),
-            timedelta(seconds=0),
-        )
-        if last_timestamp < time_horizon and active_configs != ACTIVE_CONFIGS:
-            self.fail(
-                f"Not enough active metrics configs between last action"
-                f" timestamp and time horizon"
-            )
 
 
 if __name__ == "__main__":
