@@ -72,13 +72,24 @@ class SdvProperty:
           utilize the updated property must be executed after this method.
 
         Args:
+            self (SdvProperty): ignored.
             sdv_property (SdvDeviceProperty): The specific device property to
               update.
-            value (str): The value to set the property to.
+            value (str): The value to set the property to. If
+            empty string, system property is cleared.
 
         Raises:
-            Exception: If the property value is not set correctly.
+            Exception:
+                If value is None.
+                If the property value is not set correctly.
         """
+        if value is None:
+            raise Exception("Value should not be None.")
+
+        if value == "":
+            self.clear(sdv_property)
+            return
+
         self._device.log.info(
             f"Setting device system property: {sdv_property.value} = '{value}'"
         )
@@ -98,17 +109,29 @@ class SdvProperty:
             sdv_property (SdvDeviceProperty): The Android device property.
 
         Returns:
-            str: The value of the property.
+            str: The value of the property. Empty string if property does
+            not exist, or is empty.
 
-        Raises:
-            Exception: If the device property does not exist.
         """
+        # adb.getprop returns None both if property does not exist, or
+        # if it is empty.
         value = self._device.adb.getprop(sdv_property.value)
-        if value is None:
-            raise Exception(f"Property '{sdv_property.value}' does not exist.")
-
         self._device.log.info(
-            f"Device system property: {sdv_property.value} = '{value}'"
-        )
+            f"Device system property: {sdv_property.value} = '{value}'")
+
+        if not value:
+            value = ""
 
         return value
+
+    def clear(self, sdv_property: SdvDeviceProperty) -> str:
+        """Clears the value of an Android device property.
+        Args:
+            sdv_property (SdvDeviceProperty): Property to be cleared.
+        """
+
+        self._device.log.info(
+            f"Clearing device system property: {sdv_property.value}"
+        )
+
+        self._device.adb.shell(f"setprop {sdv_property.value} \"\"")
