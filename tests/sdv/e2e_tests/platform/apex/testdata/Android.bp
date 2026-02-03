@@ -28,20 +28,20 @@ apex_key {
 
 apex_test {
     name: "com.android.sdv.test.preinstalled_untrusted_v2",
-    defaults: [
-        "com.sdv.google.sample.hello.apex.defaults",
-    ],
     manifest: "apex_manifest_preinstalled_untrusted_v2.json",
     key: "com.android.sdv.test.untrusted.key",
     installable: false,
+    updatable: false,
+    file_contexts: "file_contexts",
+    product_specific: true,
 }
 
 apex_test {
     name: "com.android.sdv.test.untrusted_brand_new",
-    defaults: [
-        "com.sdv.google.sample.hello.apex.defaults",
-    ],
     manifest: "apex_manifest_untrusted_brand_new.json",
     key: "com.android.sdv.test.untrusted.key",
     installable: false,
+    updatable: false,
+    file_contexts: "file_contexts",
+    product_specific: true,
 }
