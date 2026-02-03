@@ -20,6 +20,7 @@ import android.tools.flicker.subject.FlickerSubject
 import android.tools.flicker.subject.exceptions.ExceptionMessageBuilder
 import android.tools.flicker.subject.exceptions.SubjectAssertionError
 import android.tools.function.AssertionPredicate
+import kotlin.time.Duration
 
 /**
  * Runs sequences of assertions on sequences of subjects.
@@ -42,7 +43,18 @@ class AssertionsChecker<T : FlickerSubject> {
 
     /** Append [assertion] to the last existing set of assertions. */
     fun append(name: String, isOptional: Boolean = false, assertion: AssertionPredicate<T>) {
-        assertions.last().add(assertion, name, isOptional)
+        val lastAssertion = assertions.last()
+        lastAssertion.add(assertion, name, isOptional)
+    }
+
+    fun setLastAssertionMinDuration(duration: Duration) {
+        require(assertions.isNotEmpty()) { "No assertions added to the checker" }
+        assertions.last().minDuration = duration
+    }
+
+    fun setLastAssertionMaxDuration(duration: Duration) {
+        require(assertions.isNotEmpty()) { "No assertions added to the checker" }
+        assertions.last().maxDuration = duration
     }
 
     /**
@@ -69,6 +81,7 @@ class AssertionsChecker<T : FlickerSubject> {
         var assertionIndex = 0
         var lastPassedAssertionIndex = -1
         val assertionTrace = mutableListOf<String>()
+        var currentBlockStartEntry = entries.first()
         while (assertionIndex < assertions.size && entryIndex < entries.size) {
             val currentAssertion = assertions[assertionIndex]
             val currEntry = entries[entryIndex]
@@ -78,6 +91,11 @@ class AssertionsChecker<T : FlickerSubject> {
                         "Entry: ${entryIndex + 1}/${entries.size} $currEntry"
                 assertionTrace.add(log)
                 currentAssertion.invoke(currEntry)
+
+                if (lastPassedAssertionIndex < assertionIndex) {
+                    currentBlockStartEntry = currEntry
+                }
+
                 lastPassedAssertionIndex = assertionIndex
                 entryIndex++
             } catch (e: AssertionError) {
@@ -87,6 +105,16 @@ class AssertionsChecker<T : FlickerSubject> {
                     entryIndex++
                     continue
                 }
+
+                // Check duration constraints before moving to next assertion
+                if (lastPassedAssertionIndex == assertionIndex) {
+                    this.checkAssertionDurationConstraints(
+                        currentAssertion,
+                        currentBlockStartEntry,
+                        entries[entryIndex - 1],
+                    )
+                }
+
                 // failure is an optional assertion, just consider it passed skip it
                 if (currentAssertion.isOptional) {
                     lastPassedAssertionIndex = assertionIndex
@@ -101,6 +129,15 @@ class AssertionsChecker<T : FlickerSubject> {
                     throw e
                 }
             }
+        }
+
+        // Check duration constraints for the last assertion if it was the last thing checked
+        if (lastPassedAssertionIndex == assertions.size - 1) {
+            this.checkAssertionDurationConstraints(
+                assertions[lastPassedAssertionIndex],
+                currentBlockStartEntry,
+                entries[entryIndex - 1],
+            )
         }
         // Didn't pass any assertions
         if (lastPassedAssertionIndex == -1 && assertions.isNotEmpty()) {
@@ -157,5 +194,36 @@ class AssertionsChecker<T : FlickerSubject> {
             }
         }
         return true
+    }
+
+    private fun checkAssertionDurationConstraints(
+        assertion: CompoundAssertion<T>,
+        startEntry: T,
+        endEntry: T,
+    ) {
+        val durationNanos = endEntry.timestamp.elapsedNanos - startEntry.timestamp.elapsedNanos
+
+        val minDuration = assertion.minDuration
+        if (minDuration > Duration.ZERO && durationNanos < minDuration.inWholeNanoseconds) {
+            val errorMsg =
+                ExceptionMessageBuilder()
+                    .forSubject(endEntry)
+                    .setMessage(
+                        "Assertion [${assertion.name}] did not meet min " +
+                            "duration of $minDuration"
+                    )
+            throw SubjectAssertionError(errorMsg)
+        }
+
+        val maxDuration = assertion.maxDuration
+        if (maxDuration != null && durationNanos > maxDuration.inWholeNanoseconds) {
+            val errorMsg =
+                ExceptionMessageBuilder()
+                    .forSubject(endEntry)
+                    .setMessage(
+                        "Assertion [${assertion.name}] exceeded max duration " + "of $maxDuration"
+                    )
+            throw SubjectAssertionError(errorMsg)
+        }
     }
 }

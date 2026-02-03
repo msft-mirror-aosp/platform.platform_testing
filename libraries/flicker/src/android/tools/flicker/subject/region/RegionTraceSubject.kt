@@ -22,6 +22,7 @@ import android.tools.flicker.subject.FlickerTraceSubject
 import android.tools.function.AssertionPredicate
 import android.tools.io.Reader
 import android.tools.traces.region.RegionTrace
+import kotlin.time.Duration
 
 /**
  * Subject for [RegionTrace] objects, used to make assertions over behaviors that occur on a
@@ -44,6 +45,14 @@ constructor(val trace: RegionTrace, override val reader: Reader? = null) :
     /** {@inheritDoc} */
     override fun then(): RegionTraceSubject {
         return super.then() as RegionTraceSubject
+    }
+
+    override fun forAtLeast(duration: Duration): RegionTraceSubject = apply {
+        super.forAtLeast(duration)
+    }
+
+    override fun forAtMost(duration: Duration): RegionTraceSubject = apply {
+        super.forAtMost(duration)
     }
 
     /** {@inheritDoc} */
