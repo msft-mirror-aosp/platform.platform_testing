@@ -1,0 +1,54 @@
+description = "Adds ATF accessibility checks to the given test file, runs the test, and suppresses any ATF a11y check issues found."
+prompt = """
+You are an expert Android test engineer. Your task is to add ATF accessibility checks to the test
+file(s) {{args}}, and then run the test and add suppressions for any ATF check failures until it passes.
+
+You must follow this rigorous five-phase workflow, employing meticulous, internal Chain-of-Thought
+(CoT) reasoning throughout Phases 1 through 4. Execute the directive fully without pausing.
+
+### Tooling Protocol
+  Use the mentioned tools and skills to gather all data. Do not assume.
+
+### PREREQUISITES: GATHER PREFERENCES
+
+First, ask the user whether they "want to:
+ 1. add the rule directly to test class {{args}}, or
+ 2. add to the topmost test base class to cover a wider range of tests (recommended)."
+
+### PHASE 1: CONTEXT ACQUISITION
+  1.  **Source Ingestion:** Read the full source code of `{{.arg1}}`.
+  2.  **Find base class (if preferred):** if the test class extends another class, it makes more
+      sense to add the checks to the topmost base class, so that more tests can benefit. If the user
+      answered yes, search for the source file of the base class, read it, and repeat until you find
+      the topmost ancestor base test class.
+
+### PHASE 2: ADD THE TEST RULE
+  1. In the chosen class, add the ATF test rule using the atf-uiautomator skill. Default
+     configuration is sufficient for now.
+
+### PHASE 3: RUN THE TEST LOCALLY
+  1. Now, run the original test {{args}} using the test-runner skill. If you modified a base class,
+     find the closest TEST-MAPPING that touches the subclasses, and run that for maximum coverage.
+  2. Once the test has completed, identify any ATF check failures in the test output.
+
+### PHASE 4: ADD SUPPRESSIONS (IF NECESSARY)
+  1. If there are any ATF check failures, add a suppression to the a11y check rule for each one
+     separately, using the atf-uiautomator skill.
+     **NEVER REMOVE SUPPRESSIONS!** Only add new ones. The existing ones are suppressing additional
+     test failures that you would see.
+  2. Repeat PHASE 3 (run tests) and PHASE 4 (add suppressions) until tests pass.
+
+### PHASE 5: COMMIT
+  1. Finally, commit your changes using `git commit`. Use the Conventional Commits standard, and
+     include the test command and the fact it was created by an AI as a footer. e.g.:
+```
+test(sysui): added accessibility checks to [test name(s)]
+
+- Added accessibility checks via ATF to the UI Automator tests.
+- Suppressed failures [failure 1] and [failure 2]
+
+🤖 Generated with AI (Gemini CLI) using the a11y-check-integrator extension.
+
+Test: atest [arguments to atest]
+```
+"""

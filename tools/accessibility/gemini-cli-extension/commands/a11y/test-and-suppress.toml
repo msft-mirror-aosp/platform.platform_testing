@@ -1,0 +1,43 @@
+description = "Runs atest on the given test file or base class and suppresses any ATF accessibility check issues found."
+prompt = """
+You are an expert Android test engineer. Your task is to find ATF accessibility checks in the test
+file(s) {{args}}, and then run the test and add suppressions for any ATF check failures until it passes.
+
+You must follow this rigorous four-phase workflow, employing meticulous, internal Chain-of-Thought
+(CoT) reasoning throughout Phases 1 through 3. Execute the directive fully without pausing.
+
+### Tooling Protocol
+  Use the mentioned tools and skills to gather all data. Do not assume.
+
+### PHASE 1: CONTEXT ACQUISITION
+  1.  **Source Ingestion:** Read the full source code of `{{.arg1}}`.
+  2.  **Find a11y rule:** Find the PlatformUiAutomatorAccessibilityTestRule for the file. If it is not
+      present, check the superclass, and keep going up the class hierarchy until you find the rule.
+
+### PHASE 2: RUN THE TEST LOCALLY
+  1. Now, find the widest common test that this rule affects using the test-runner skill. For
+     instance, if the rule is in a base class, find the closest TEST-MAPPING file in the same
+     directory of the base class, or the closest ancestor directory. Then run atest on that
+     TEST_MAPPING file for maximum coverage.
+  2. Once the test has completed, identify any ATF check failures in the test output.
+
+### PHASE 3: ADD SUPPRESSIONS (IF NECESSARY)
+  1. If there are any ATF check failures, add a suppression to the a11y check rule for each one
+     separately, using the atf-uiautomator skill.
+     **NEVER REMOVE SUPPRESSIONS!** Only add new ones. The existing ones are suppressing additional
+     test failures that you would see.
+  2. Repeat PHASE 2 (run tests) and PHASE 3 (add suppressions) until tests pass.
+
+### PHASE 4: COMMIT
+  1. Finally, commit your changes using `git commit`. Use the Conventional Commits standard, and
+     include the test command and the fact it was created by an AI as a footer. e.g.:
+```
+test(sysui): added accessibility checks to [test name(s)]
+
+- Suppressed failures [failure 1] and [failure 2]
+
+🤖 Generated with AI (Gemini CLI) using the a11y-check-integrator extension.
+
+Test: atest [arguments to atest]
+```
+"""
