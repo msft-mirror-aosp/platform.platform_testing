@@ -23,7 +23,7 @@ if [[ "${RUNNER}" == "atest" ]]; then
 	TEST_SUFFIX="-- --test-arg com.android.tradefed.testtype.mobly.MoblyBinaryHostTest:mobly-config-file-name:sdv_one_device_local_only_config.yaml"
 elif [[ "${RUNNER}" == "catbox" ]]; then
 	# Use catbox
-	TESTS=$(find ${SCRIPT_DIR}/../../../tools/sdv_catbox/res/config -name 'sdv-e2e-um*' -printf '%f\n' | xargs -I{} -n 1 basename {} .xml)
+	TESTS=$(find ${SCRIPT_DIR}/../../../../libraries/sdv/sdv_catbox/res/config -name 'sdv-e2e-um*' -printf '%f\n' | xargs -I{} -n 1 basename {} .xml)
 	# Required for catbox to run correctly
 	NOTIFY_AS_NATIVE="0.0.0.0:6520"
 	TEST_PREFIX="./out/host/linux-x86/catbox/android-catbox/tools/catbox-tradefed run commandAndExit"
