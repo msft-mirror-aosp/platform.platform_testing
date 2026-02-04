@@ -20,15 +20,6 @@
      <!-- Test: mobly-par-file-name should match the module name -->
      <option name="mobly-host:mobly-par-file-name" value="SdvE2ETelemetryKpiScenarioTest" />
 
-    <!-- Test specific dependencies -->
-    <!-- TODO(b/448843336): Use Android build libraries instead -->
-    <!-- TODO(b/449630628): Remove when numpy import is replaced by AOSP library -->
-    <device name="device1">
-      <target_preparer class="com.android.tradefed.targetprep.PythonVirtualenvPreparer">
-        <option name="dep-module" value="numpy" />
-      </target_preparer>
-    </device>
-
     <!-- Test requires higher timeout as it runs for a bit longer and metrics
          calculation takes some time. -->
     <option name="mobly-test-timeout" value="600000" />
