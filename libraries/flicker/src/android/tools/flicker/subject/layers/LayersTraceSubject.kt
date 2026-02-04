@@ -31,6 +31,7 @@ import android.tools.traces.region.RegionTrace
 import android.tools.traces.surfaceflinger.Layer
 import android.tools.traces.surfaceflinger.LayersTrace
 import java.util.function.Predicate
+import kotlin.time.Duration
 
 /**
  * Subject for [LayersTrace] objects, used to make assertions over behaviors that occur throughout a
@@ -69,6 +70,14 @@ constructor(val trace: LayersTrace, override val reader: Reader? = null) :
 
     /** {@inheritDoc} */
     override fun then(): LayersTraceSubject = apply { super.then() }
+
+    override fun forAtLeast(duration: Duration): LayersTraceSubject = apply {
+        super.forAtLeast(duration)
+    }
+
+    override fun forAtMost(duration: Duration): LayersTraceSubject = apply {
+        super.forAtMost(duration)
+    }
 
     override fun skipUntilFirstAssertion(): LayersTraceSubject = apply {
         super.skipUntilFirstAssertion()

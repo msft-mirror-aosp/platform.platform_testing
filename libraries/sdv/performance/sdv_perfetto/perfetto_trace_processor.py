@@ -87,6 +87,7 @@ from perfetto import trace_processor
 from perfetto.common.query_result_iterator import QueryResultIterator
 from protos.perfetto.metrics import metrics_pb2
 from sdv_perf_dashboard import crystalball_exporter
+from sdv_perf_common.timer import log_exec_time
 
 # Crystalball results file name
 CB_FILENAME = 'test_results.txt'
@@ -139,6 +140,7 @@ class PerfettoTraceProcessor:
     )
     return self
 
+@log_exec_time
 def query_iterator_to_dict(query_iter: Iterator, keys: List[str]) -> Dict[str, List[Any]]:
     """
     Converts the {@link QueryResultIterator} returned by a Perfetto query into a dictionary
@@ -164,7 +166,7 @@ def query_iterator_to_dict(query_iter: Iterator, keys: List[str]) -> Dict[str, L
         logging.info(f"Query result contains {num_rows_query_result} row(s)")
     return out
 
-
+@log_exec_time
 def query_iterator_to_dict_split_by_value(column_to_split_by_value: str, rows_iter: Iterator, cols: List[str]) -> Dict[str, Dict[str, List[Any]]]:
     """
     Converts the {@link QueryResultIterator} returned by a Perfetto query into a dictionary

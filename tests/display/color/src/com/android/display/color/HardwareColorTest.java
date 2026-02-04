@@ -72,6 +72,9 @@ public class HardwareColorTest extends BaseHostJUnit4Test {
         ITestDevice device = testInfo.getDevice();
         device.enableAdbRoot();
         device.setProperty("vendor.hwc.drm.ctm", "DRM_OR_IGNORE");
+        device.setProperty("vendor.hwc.drm.enable_color_pipeline", "0");
+        // Disable settings that force client composition
+        device.setSetting("secure", "sysui_rounded_size", "0");
         device.executeShellCommand("stop && start");
         device.waitForDeviceAvailable();
     }
@@ -89,6 +92,8 @@ public class HardwareColorTest extends BaseHostJUnit4Test {
         disableSecureSetting(NIGHT_LIGHT_SETTING);
         disableSecureSetting(COLOR_ACCESSIBILITY_SETTING);
         disableSecureSetting(COLOR_INVERSION_SETTING);
+        // com.google.common.time.Sleeper is unavailable in Android
+        // Use Thread.sleep instead
         Thread.sleep(TRANSITION_DURATION);
         mDevice.waitForDeviceAvailable();
     }
@@ -154,16 +159,18 @@ public class HardwareColorTest extends BaseHostJUnit4Test {
     }
 
     @Test
-    public void testSetColorCorrection() throws DeviceNotAvailableException {
+    public void testSetColorCorrection() throws DeviceNotAvailableException, InterruptedException {
         enableSecureSetting(COLOR_ACCESSIBILITY_SETTING);
+        Thread.sleep(TRANSITION_DURATION);
         populateCtmValues(mDevice.executeShellCommand("modetest -p"));
         assertThat(mCtmValues.size()).isGreaterThan(0);
         for (String value : mCtmValues) assertThat(value).isNotEqualTo(CTM_IDENTITY);
     }
 
     @Test
-    public void testSetColorInversion() throws DeviceNotAvailableException {
+    public void testSetColorInversion() throws DeviceNotAvailableException, InterruptedException {
         enableSecureSetting(COLOR_INVERSION_SETTING);
+        Thread.sleep(TRANSITION_DURATION);
         populateCtmValues(mDevice.executeShellCommand("modetest -p"));
         assertThat(mCtmValues.size()).isGreaterThan(0);
         // TODO(406267714): Color inversion is not supported in DRM HWC and must be performed by the
