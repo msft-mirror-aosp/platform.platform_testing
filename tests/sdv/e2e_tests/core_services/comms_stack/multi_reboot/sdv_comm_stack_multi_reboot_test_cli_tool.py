@@ -46,7 +46,7 @@ class SdvCommsStackMultiRebootTest(
 
         self.adb_device_server.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, 'false')
 
-        self.adb_device_server.execute_shell_command_in_subprocess('pub', 'sdv_comms_client_rs publish --package-name com.sdv.google.sample.foo --bundle-name ServiceBundleFoo --instance-name instance --service-unit-name com-sdv-google-sample-foo-foo-message-unique --service-unit-type FooMessage --quantity 100000 --interval-msec 500')
+        self.adb_device_server.execute_shell_command_in_subprocess('pub', 'sdv_comms_client_rs publish --package-name com.android.sdv.sample.foo --bundle-name ServiceBundleFoo --instance-name instance --service-unit-name com-android-sdv-sample-foo-foo-message-unique --service-unit-type FooMessage --quantity 100000 --interval-msec 500')
 
         # Wait to ensure the publisher has started and published some messages
         time.sleep(5)
@@ -60,7 +60,7 @@ class SdvCommsStackMultiRebootTest(
             self.adb_device_client.reboot_device()
             self.adb_device_client.wait_for_device_online()
             self.adb_device_client.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, 'false')
-            sub_command_output = self.adb_device_client.execute_shell_command('sdv_comms_client_rs subscribe --package-name com.sdv.google.sample.foo --bundle-name ServiceBundleFoo --instance-name instance --service-unit-name com-sdv-google-sample-foo-foo-message-unique --quantity 1')
+            sub_command_output = self.adb_device_client.execute_shell_command('sdv_comms_client_rs subscribe --package-name com.android.sdv.sample.foo --bundle-name ServiceBundleFoo --instance-name instance --service-unit-name com-android-sdv-sample-foo-foo-message-unique --quantity 1')
             asserts.assert_in('"Status":"Ok"', sub_command_output)
 
         self.adb_device_server.terminate_subprocess('pub')

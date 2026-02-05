@@ -33,9 +33,9 @@ from sdv_test_fw.waiting_methods import waiting_methods
 class SdvSampleCujCore27Test(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
 
     # Logcat arguments tailored for CUJ27 components
-    SAMPLES_LOGCAT_ARGS_ALL = '*:F com_sdv_google_sample_foo_ServiceBundleFoo_instance:* com_sdv_google_sample_qux_ServiceBundleQux_instance:*'
+    SAMPLES_LOGCAT_ARGS_ALL = '*:F com_android_sdv_sample_foo_ServiceBundleFoo_instance:* com_sdv_google_sample_qux_ServiceBundleQux_instance:*'
     SAMPLES_LOGCAT_ARGS_LIFECYCLE_MANAGER = '*:F lifecycle_manager:*'
-    SAMPLES_LOGCAT_ARGS_FOO = '*:F com_sdv_google_sample_foo_ServiceBundleFoo_instance:*'
+    SAMPLES_LOGCAT_ARGS_FOO = '*:F com_android_sdv_sample_foo_ServiceBundleFoo_instance:*'
     SAMPLES_LOGCAT_ARGS_QUX = '*:F com_sdv_google_sample_qux_ServiceBundleQux_instance:*'
     SAMPLES_LOGCAT_ARGS_ACLS = '*:F SdvServiceManagerServer:*' # Assuming ACL logs are here as per CUJ22
 
@@ -44,7 +44,7 @@ class SdvSampleCujCore27Test(sdv_base_test.SdvBaseTestClass, parameterized.TestC
 
     # Test Parameters - logcat messages based on README-Core-27 and examples
     STARTING_TEXT = 'Starting {vm_instance}:{package}.{bundle_name}/instance'
-    LIFECYCLE_STARTED_FOO = 'Service bundle.*com.sdv.google.sample.foo.*ServiceBundleFoo.*is started'
+    LIFECYCLE_STARTED_FOO = 'Service bundle.*com.android.sdv.sample.foo.*ServiceBundleFoo.*is started'
     LIFECYCLE_STARTED_QUX = 'Service bundle.*com.sdv.google.sample.qux.*ServiceBundleQux.*is started'
     SENT_MESSAGE = 'Sent.*QuxMessage.*42'
     RECEIVED_MESSAGE = 'Received.*QuxMessage.*42'
@@ -157,7 +157,7 @@ class SdvSampleCujCore27Test(sdv_base_test.SdvBaseTestClass, parameterized.TestC
             'testcase_name': 'foo_vm3',
             'device_key': 'foo_vm3',
             'vm_instance': 'instance3',
-            'package_name': 'com.sdv.google.sample.foo',
+            'package_name': 'com.android.sdv.sample.foo',
             'bundle_name' : 'ServiceBundleFoo',
             'lifecycle_grep': LIFECYCLE_STARTED_FOO
         },

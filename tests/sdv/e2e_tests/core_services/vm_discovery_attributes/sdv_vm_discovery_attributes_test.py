@@ -52,15 +52,15 @@ class SdvVmDiscoveryAttributeTest(sdv_base_test.SdvBaseTestClass):
 
     def setup_foo_props(self, device, value):
         # Set publishing interval to 1 second
-        self.set_property(device, 'persist.com.sdv.google.sample.foo.pub_interval_ms', '50')
+        self.set_property(device, 'persist.com.android.sdv.sample.foo.pub_interval_ms', '50')
         # Set publishing amount to 10
-        self.set_property(device, 'persist.com.sdv.google.sample.foo.pub_amount', '3')
+        self.set_property(device, 'persist.com.android.sdv.sample.foo.pub_amount', '3')
         # Set published value
-        self.set_property(device, 'persist.com.sdv.google.sample.foo.pub_message_value', value)
+        self.set_property(device, 'persist.com.android.sdv.sample.foo.pub_message_value', value)
         # Set RPC response value
-        self.set_property(device, 'persist.com.sdv.google.sample.foo.rpc_response', value)
+        self.set_property(device, 'persist.com.android.sdv.sample.foo.rpc_response', value)
         # Set publishing load size to 200 KBytes
-        self.set_property(device, 'persist.com.sdv.google.sample.foo.load_size', '200')
+        self.set_property(device, 'persist.com.android.sdv.sample.foo.load_size', '200')
 
     def setup_foo(self, device, value):
         # Set orchestrator configuration
@@ -111,7 +111,7 @@ class SdvVmDiscoveryAttributeTest(sdv_base_test.SdvBaseTestClass):
         return False
 
     def publishes_message_logs(self, device, value):
-        return self.wait_for_logcat(device, grep_text='Sent.*FooMessage.*' + value, logcat_args='*:F com_sdv_google_sample_foo_ServiceBundleFoo_instance:*')
+        return self.wait_for_logcat(device, grep_text='Sent.*FooMessage.*' + value, logcat_args='*:F com_android_sdv_sample_foo_ServiceBundleFoo_instance:*')
 
     def receives_message_logs(self, device, value):
         return self.wait_for_logcat(device, grep_text='Received.*FooMessage.*' + value, logcat_args='*:F com_sdv_google_sample_bar_ServiceBundleBar_instance:*')

@@ -32,18 +32,18 @@ from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
 
 class SdvCujCore25Test(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
 
-    SAMPLES_LOGCAT_ARGS_ALL_BUNDLES = '*:F com_sdv_google_sample_foo_ServiceBundleFoo_instance:* com_sdv_google_sample_bar_ServiceBundleBar_instance:* com_sdv_google_sample_baz_ServiceBundleBaz_instance:*'
+    SAMPLES_LOGCAT_ARGS_ALL_BUNDLES = '*:F com_android_sdv_sample_foo_ServiceBundleFoo_instance:* com_sdv_google_sample_bar_ServiceBundleBar_instance:* com_sdv_google_sample_baz_ServiceBundleBaz_instance:*'
     SAMPLES_LOGCAT_ARGS_LIFECYCLE_MANAGER = '*:F lifecycle_manager:*'
-    SAMPLES_LOGCAT_ARGS_FOO = '*:F com_sdv_google_sample_foo_ServiceBundleFoo_instance:*'
+    SAMPLES_LOGCAT_ARGS_FOO = '*:F com_android_sdv_sample_foo_ServiceBundleFoo_instance:*'
     SAMPLES_LOGCAT_ARGS_BAR = '*:F com_sdv_google_sample_bar_ServiceBundleBar_instance:*'
     SAMPLES_LOGCAT_ARGS_BAZ = '*:F com_sdv_google_sample_baz_ServiceBundleBaz_instance:*'
 
     # Foo VM properties
-    SYS_PROP_FOO_PUB_INTERVAL = "persist.com.sdv.google.sample.foo.pub_interval_ms"
+    SYS_PROP_FOO_PUB_INTERVAL = "persist.com.android.sdv.sample.foo.pub_interval_ms"
     SYS_PROP_FOO_PUB_INTERVAL_VALUE = 1000
-    SYS_PROP_FOO_LOAD_SIZE = "persist.com.sdv.google.sample.foo.load_size"
+    SYS_PROP_FOO_LOAD_SIZE = "persist.com.android.sdv.sample.foo.load_size"
     SYS_PROP_FOO_LOAD_SIZE_VALUE = 200000
-    SYS_PROP_FOO_PUB_AMOUNT = "persist.com.sdv.google.sample.foo.pub_maximum_amount"
+    SYS_PROP_FOO_PUB_AMOUNT = "persist.com.android.sdv.sample.foo.pub_maximum_amount"
     SYS_PROP_FOO_PUB_AMOUNT_VALUE = 10
 
     # Bar VM properties
@@ -164,7 +164,7 @@ class SdvCujCore25Test(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
             'testcase_name': 'foo',
             'device_name': 'foo_device',
             'vm_instance': 'instance1',
-            'package_name': 'com.sdv.google.sample.foo',
+            'package_name': 'com.android.sdv.sample.foo',
             'bundle_name' : 'ServiceBundleFoo'
         },
         {

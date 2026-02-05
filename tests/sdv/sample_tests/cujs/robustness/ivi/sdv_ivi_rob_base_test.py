@@ -46,11 +46,11 @@ class SdvIviRobBaseTest(
     RESUME_IVI_SIGNAL_CMD = "cmd car_service resume"
     DT_PUBLISHER_START_CMD = (
         "sdv_service_bundle start"
-        " local-vm:com.sdv.google.sample.foo.ServiceBundleFoo/instance"
+        " local-vm:com.android.sdv.sample.foo.ServiceBundleFoo/instance"
     )
     DT_PUBLISHER_STOP_CMD = (
         "sdv_service_bundle stop"
-        " local-vm:com.sdv.google.sample.foo.ServiceBundleFoo/instance"
+        " local-vm:com.android.sdv.sample.foo.ServiceBundleFoo/instance"
     )
     DT_SUBSCRIBER_START_CMD = (
         "sdv_service_bundle start"
