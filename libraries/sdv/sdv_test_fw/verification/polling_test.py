@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import logging
 import time
-from mobly import asserts
+import unittest
 from unittest import mock
 
-
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from mobly import asserts
+from sdv_test_fw.verification import polling
 
 
 class TestWaitForCondition(unittest.TestCase):
@@ -30,7 +29,7 @@ class TestWaitForCondition(unittest.TestCase):
             # Simulate a successful condition
             return 1
 
-        result = WaitingMethods().wait_and_return_result(condition_func)
+        result = polling.wait_and_return_result(condition_func)
         self.assertEqual(result, 1)
 
     def test_wait_for_result_timeout(self):
@@ -40,7 +39,7 @@ class TestWaitForCondition(unittest.TestCase):
             return None
 
         start_time = time.time()
-        result = WaitingMethods().wait_and_return_result(condition_func, timeout=0.5)
+        result = polling.wait_and_return_result(condition_func, timeout=0.5)
         end_time = time.time()
         self.assertIsNone(result)
         # Check that the timeout was respected
@@ -50,11 +49,12 @@ class TestWaitForCondition(unittest.TestCase):
         def condition_func(arg1, arg2):
             return arg1 + arg2
 
-        result = WaitingMethods().wait_and_return_result(condition_func, 2, 3)
+        result = polling.wait_and_return_result(condition_func, 2, 3)
         self.assertEqual(result, 5)
 
     def test_wait_for_result_eventually_true(self):
         counter = 0
+
         def condition_func():
             nonlocal counter
             counter += 1
@@ -62,11 +62,13 @@ class TestWaitForCondition(unittest.TestCase):
                 return True
             return None
 
-        result = WaitingMethods().wait_and_return_result(condition_func, timeout=5)
+        result = polling.wait_and_return_result(condition_func, timeout=5)
         self.assertTrue(result)
 
     @mock.patch('time.sleep')
-    def test_wait_and_return_result_respects_poll_interval_after_first_poll(self, mock_sleep):
+    def test_wait_and_return_result_respects_poll_interval_after_first_poll(
+        self, mock_sleep
+    ):
         first_call = True
 
         def condition_func():
@@ -76,7 +78,7 @@ class TestWaitForCondition(unittest.TestCase):
                 return None
             return 'done'
 
-        result = WaitingMethods().wait_and_return_result(
+        result = polling.wait_and_return_result(
             condition_func, poll_interval=0.2
         )
 
@@ -87,41 +89,81 @@ class TestWaitForCondition(unittest.TestCase):
         def test_function():
             return True
 
-        self.assertTrue(WaitingMethods().wait_for_true(test_function))
+        self.assertTrue(polling.wait_for_true(test_function))
 
     def test_wait_for_true_default_assert_message(self):
         def test_function():
             return False
-        with self.assertRaisesRegex(asserts.signals.TestFailure, 'Timeout for waiting is reached'):
-            WaitingMethods().wait_for_true(test_function, timeout=1)
+
+        with self.assertRaisesRegex(
+            asserts.signals.TestFailure, 'Timeout for waiting is reached'
+        ):
+            polling.wait_for_true(test_function, timeout=1)
 
     def test_wait_for_true_custom_assert_message(self):
         def test_function():
             return False
 
         custom_message = 'Custom failure message'
-        with self.assertRaisesRegex(asserts.signals.TestFailure, custom_message):
-            WaitingMethods().wait_for_true(test_function, timeout=1, assert_msg=custom_message)
+        with self.assertRaisesRegex(
+            asserts.signals.TestFailure, custom_message
+        ):
+            polling.wait_for_true(
+                test_function, timeout=1, assert_msg=custom_message
+            )
 
     def test_wait_for_true_with_args(self):
         def test_function_with_args(arg1, arg2):
             return arg1 == arg2
 
-        self.assertTrue(WaitingMethods().wait_for_true(test_function_with_args, 5, 5))
+        self.assertTrue(polling.wait_for_true(test_function_with_args, 5, 5))
         with self.assertRaises(asserts.signals.TestFailure):
-             WaitingMethods().wait_for_true(test_function_with_args, 5, 6, timeout=1)
+            polling.wait_for_true(test_function_with_args, 5, 6, timeout=1)
 
     @mock.patch('time.time')
     @mock.patch('time.sleep')
     def test_wait_for_true_timeout(self, mock_sleep, mock_time):
 
-        mock_time.side_effect = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+        mock_time.side_effect = [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+        ]
 
         def test_function():
             return False
 
         with self.assertRaises(asserts.signals.TestFailure):
-            WaitingMethods().wait_for_true(test_function, timeout=30)
+            polling.wait_for_true(test_function, timeout=30)
 
         mock_sleep.assert_called()
 
@@ -129,17 +171,51 @@ class TestWaitForCondition(unittest.TestCase):
     @mock.patch('time.sleep')
     def test_wait_for_true_success_after_few_tries(self, mock_sleep, mock_time):
 
-        mock_time.side_effect = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]
+        mock_time.side_effect = [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+        ]
 
         call_count = 0
+
         def test_function():
             nonlocal call_count
-            call_count+=1
+            call_count += 1
             if call_count > 5:
                 return True
             return False
 
-        self.assertTrue(WaitingMethods().wait_for_true(test_function, timeout=30))
+        self.assertTrue(polling.wait_for_true(test_function, timeout=30))
         mock_sleep.assert_called()
 
     @mock.patch('time.sleep')
@@ -153,8 +229,11 @@ class TestWaitForCondition(unittest.TestCase):
                 return False
             return True
 
-        self.assertTrue(WaitingMethods().wait_for_true(condition_func, poll_interval=0.2))
+        self.assertTrue(
+            polling.wait_for_true(condition_func, poll_interval=0.2)
+        )
         mock_sleep.assert_called_once_with(0.2)
+
 
 if __name__ == '__main__':
     unittest.main()
