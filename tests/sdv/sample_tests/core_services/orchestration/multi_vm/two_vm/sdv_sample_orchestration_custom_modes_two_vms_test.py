@@ -18,7 +18,7 @@ Tests is on two SDV VM
 """
 import logging
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 class SdvSampleOrchestrationCustomModesTwoVmsTest(
     sdv_base_test.SdvBaseTestClass
@@ -56,7 +56,7 @@ class SdvSampleOrchestrationCustomModesTwoVmsTest(
             ),
         )
         # Verify CHARGING ON mode was received by the two VMs
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device_vm1,
             grep_text="sdv_orchestration_agent",
             expected_result=self.SUCCESS_CUSTOM_MODE_LOGCAT_GREP_TEXT_TEMPLATE.format(
@@ -64,7 +64,7 @@ class SdvSampleOrchestrationCustomModesTwoVmsTest(
             ),
             assert_msg="VM1 did not enforce CHARGING ON custom mode",
         )
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device_vm2,
             grep_text="sdv_orchestration_agent",
             expected_result=self.SUCCESS_CUSTOM_MODE_LOGCAT_GREP_TEXT_TEMPLATE.format(
@@ -85,7 +85,7 @@ class SdvSampleOrchestrationCustomModesTwoVmsTest(
             ),
         )
         # Verify CHARGING OFF mode was received by the two VMs
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device_vm1,
             grep_text="sdv_orchestration_agent",
             expected_result=self.SUCCESS_CUSTOM_MODE_LOGCAT_GREP_TEXT_TEMPLATE.format(
@@ -93,7 +93,7 @@ class SdvSampleOrchestrationCustomModesTwoVmsTest(
             ),
             assert_msg="VM1 did not enforce CHARGING OFF custom mode",
         )
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device_vm2,
             grep_text="sdv_orchestration_agent",
             expected_result=self.SUCCESS_CUSTOM_MODE_LOGCAT_GREP_TEXT_TEMPLATE.format(

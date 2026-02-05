@@ -19,7 +19,7 @@ Tests is on one SDV VM
 from mobly import asserts
 import logging
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 class SdvE2EOrchestrationRestartBundleCrashedTest(
     sdv_base_test.SdvBaseTestClass
@@ -47,7 +47,7 @@ class SdvE2EOrchestrationRestartBundleCrashedTest(
             res_timestamp, _ = sdv_device.advance_logcat().find_message_after_timestamp(expected_result, timestamp)
             return res_timestamp
 
-        result = WaitingMethods().wait_and_return_result(grep_with_timestamp, self.sdv_device, expected_result, timestamp)
+        result = polling.wait_and_return_result(grep_with_timestamp, self.sdv_device, expected_result, timestamp)
         asserts.assert_is_not_none(result)
         return result
 
@@ -98,7 +98,7 @@ class SdvE2EOrchestrationRestartBundleCrashedTest(
         # Start the bundle that will be killed later in the test
         self.custom_modes_session.send_command('orch_custom_mode_sample E2E-TESTS crash-notify')
         # Wait until the bundle was started before killing
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text="sdv_orchestration_agent",
             expected_result=self.FINISHED_STARTING_SERVICE_BUNDLE,
@@ -109,7 +109,7 @@ class SdvE2EOrchestrationRestartBundleCrashedTest(
         self.kill_bundle("crashed-notification")
 
         # THEN verify that the crash notification from LM was received
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text="sdv_orchestration_agent",
             expected_result=self.BUNDLE_CRASH_NOTIFICATION_LOGCAT_TEXT,

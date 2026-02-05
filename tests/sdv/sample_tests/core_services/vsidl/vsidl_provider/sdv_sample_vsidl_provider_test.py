@@ -21,7 +21,7 @@ import logging
 import time
 from absl.testing import parameterized
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 
 class SdvSampleVsidlProviderTest(
@@ -152,7 +152,7 @@ class SdvSampleVsidlProviderTest(
         super().teardown_class()
 
     def check_vsidl_provider_agent_started(self, device):
-        WaitingMethods.wait_for_true(
+        polling.wait_for_true(
             self.is_vsidl_provider_agent_started,
             device,
         )

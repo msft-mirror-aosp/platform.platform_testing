@@ -25,7 +25,7 @@ import re
 from typing import List
 from absl.testing import parameterized
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 class SdvSampleLoggingAPITest(
     sdv_base_test.SdvBaseTestClass, parameterized.TestCase
@@ -557,15 +557,15 @@ class SdvSampleLoggingAPITest(
 
         # Verifies log after creating the service bundle
         self.sdv_device.execute_shell_command(f'sdv_service_bundle create {service_bundle_fqin}')
-        WaitingMethods.wait_and_verify_expected_logs(self.sdv_device, expected_tag, expected_log.format('created'))
+        polling.wait_and_verify_expected_logs(self.sdv_device, expected_tag, expected_log.format('created'))
 
         # Verifies log after starting the service bundle
         self.sdv_device.execute_shell_command(f'sdv_service_bundle start {service_bundle_fqin}')
-        WaitingMethods.wait_and_verify_expected_logs(self.sdv_device, expected_tag, expected_log.format('started'))
+        polling.wait_and_verify_expected_logs(self.sdv_device, expected_tag, expected_log.format('started'))
 
         # Verifies log after stopping the service bundle
         self.sdv_device.execute_shell_command(f'sdv_service_bundle stop {service_bundle_fqin}')
-        WaitingMethods.wait_and_verify_expected_logs(self.sdv_device, expected_tag, expected_log.format('stopped'))
+        polling.wait_and_verify_expected_logs(self.sdv_device, expected_tag, expected_log.format('stopped'))
 
     @parameterized.named_parameters(
         {
@@ -589,15 +589,15 @@ class SdvSampleLoggingAPITest(
 
         # Verifies log after creating the service bundle
         self.sdv_device.execute_shell_command(f'sdv_service_bundle create {service_bundle_fqin}')
-        WaitingMethods.wait_and_verify_expected_logs(self.sdv_device, expected_tag, expected_log.format('created'))
+        polling.wait_and_verify_expected_logs(self.sdv_device, expected_tag, expected_log.format('created'))
 
         # Verifies log after starting the service bundle
         self.sdv_device.execute_shell_command(f'sdv_service_bundle start {service_bundle_fqin}')
-        WaitingMethods.wait_and_verify_expected_logs(self.sdv_device, expected_tag, expected_log.format('started'))
+        polling.wait_and_verify_expected_logs(self.sdv_device, expected_tag, expected_log.format('started'))
 
         # Verifies log after stopping the service bundle
         self.sdv_device.execute_shell_command(f'sdv_service_bundle stop {service_bundle_fqin}')
-        WaitingMethods.wait_and_verify_expected_logs(self.sdv_device, expected_tag, expected_log.format('stopped'))
+        polling.wait_and_verify_expected_logs(self.sdv_device, expected_tag, expected_log.format('stopped'))
 
     def test_service_bundle_log_tag_consistency(self):
         """
@@ -610,7 +610,7 @@ class SdvSampleLoggingAPITest(
         with self.property_override('persist.log.tag', 'V'):
             # Collect all verbose logs until the device fully boots.
             self.sdv_device.reboot_device()
-            WaitingMethods.wait_and_verify_expected_logs(self.sdv_device, 'Finished processing mode update Power', 'POWER_OFF_EXIT', poll_interval=1, timeout=120)
+            polling.wait_and_verify_expected_logs(self.sdv_device, 'Finished processing mode update Power', 'POWER_OFF_EXIT', poll_interval=1, timeout=120)
             service_bundle_logs = self.sdv_device.execute_shell_command('logcat -d -v brief -s SdvServiceManagerServer | grep ServiceFqin.*serviceBundleName.*UID.*PID.*')
 
         # The regex pattern looks for the literal strings 'serviceBundleName: ' followed by string enclosed in double quotes and 'PID ' followed by one or

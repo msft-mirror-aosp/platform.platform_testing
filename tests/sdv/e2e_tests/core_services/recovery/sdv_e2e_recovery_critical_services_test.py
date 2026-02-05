@@ -28,7 +28,7 @@ import logging
 
 from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 
 class SdvE2ERecoveryCriticalServicesTest(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
@@ -105,7 +105,7 @@ class SdvE2ERecoveryCriticalServicesTest(sdv_base_test.SdvBaseTestClass, paramet
         health_listener_session = self.sdv_device.interactive_session()
         health_listener_session.send_command("test_vm_health_subscriber")
 
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.VM_HEALTHY_EXPECTED_LOG,
             assert_msg="VM is not healthy",
@@ -115,7 +115,7 @@ class SdvE2ERecoveryCriticalServicesTest(sdv_base_test.SdvBaseTestClass, paramet
             self.KILL_COMMAND.format(agent=agent))
         self.verify_kill(agent)
 
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.KILL_EXPECTED_LOG.format(agent=agent),
             assert_msg="Can't find the log that agent has been killed",
@@ -124,7 +124,7 @@ class SdvE2ERecoveryCriticalServicesTest(sdv_base_test.SdvBaseTestClass, paramet
         self.sdv_device.clear_logcat()
         self.sdv_device.verify_logcat_is_running()
 
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.VM_UNHEALTHY_EXPECTED_LOG,
             assert_msg="VM is still healthy after killing the agent",
@@ -136,7 +136,7 @@ class SdvE2ERecoveryCriticalServicesTest(sdv_base_test.SdvBaseTestClass, paramet
         # After reboot the VM should be in a healthy state again.
         health_listener_new_session = self.sdv_device.interactive_session()
         health_listener_new_session.send_command("test_vm_health_subscriber")
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.VM_HEALTHY_EXPECTED_LOG,
             assert_msg="VM is not healthy",
@@ -157,7 +157,7 @@ class SdvE2ERecoveryCriticalServicesTest(sdv_base_test.SdvBaseTestClass, paramet
         health_listener_session = self.sdv_device.interactive_session()
         health_listener_session.send_command("test_vm_health_subscriber")
 
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.VM_HEALTHY_EXPECTED_LOG,
             assert_msg="VM is not healthy",
@@ -185,7 +185,7 @@ class SdvE2ERecoveryCriticalServicesTest(sdv_base_test.SdvBaseTestClass, paramet
         health_listener_new_session = self.sdv_device.interactive_session()
         health_listener_new_session.send_command("test_vm_health_subscriber")
 
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.VM_HEALTHY_EXPECTED_LOG,
             assert_msg="VM is not healthy",

@@ -21,7 +21,7 @@ Tests is on two SDV VM
 """
 import logging
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 class SdvE2EOrchestrationUnregistersReconnectsCustomModeTest(
     sdv_base_test.SdvBaseTestClass
@@ -64,19 +64,19 @@ class SdvE2EOrchestrationUnregistersReconnectsCustomModeTest(
         self.sdv_device_vm1.wait_for_device_online()
 
         # Wait until both VMs have initialised correctly by checking custom modes subscription.
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device_vm1,
             grep_text="sdv_orchestration_agent",
             expected_result=self.SUBSCRIBED_CUSTOM_MODE_LOGCAT_TEXT.format(vm_name=self.VM_INSTANCE_2),
             assert_msg="VM1 did not subscribe to custom modes from VM2",
         )
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device_vm2,
             grep_text="sdv_orchestration_agent",
             expected_result=self.UNREGISTERED_CUSTOM_MODE_LOGCAT_TEXT.format(vm_name=self.VM_INSTANCE_1),
             assert_msg="VM2 did not unregister to custom modes from VM1",
         )
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device_vm2,
             grep_text="sdv_orchestration_agent",
             expected_result=self.SUBSCRIBED_CUSTOM_MODE_LOGCAT_TEXT.format(vm_name=self.VM_INSTANCE_1),
@@ -91,7 +91,7 @@ class SdvE2EOrchestrationUnregistersReconnectsCustomModeTest(
             ),
         )
         # Verify that the custom mode is still received by both VMs
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device_vm1,
             grep_text="sdv_orchestration_agent",
             expected_result=self.SUCCESS_CUSTOM_MODE_LOGCAT_GREP_TEXT_TEMPLATE.format(
@@ -99,7 +99,7 @@ class SdvE2EOrchestrationUnregistersReconnectsCustomModeTest(
             ),
             assert_msg="VM1 did not enforce CHARGING OFF custom mode",
         )
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device_vm2,
             grep_text="sdv_orchestration_agent",
             expected_result=self.SUCCESS_CUSTOM_MODE_LOGCAT_GREP_TEXT_TEMPLATE.format(
@@ -116,7 +116,7 @@ class SdvE2EOrchestrationUnregistersReconnectsCustomModeTest(
             ),
         )
         # Verify that the custom mode is still received by both VMs
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device_vm1,
             grep_text="sdv_orchestration_agent",
             expected_result=self.SUCCESS_CUSTOM_MODE_LOGCAT_GREP_TEXT_TEMPLATE.format(
@@ -124,7 +124,7 @@ class SdvE2EOrchestrationUnregistersReconnectsCustomModeTest(
             ),
             assert_msg="VM1 did not enforce CHARGING ON custom mode",
         )
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device_vm2,
             grep_text="sdv_orchestration_agent",
             expected_result=self.SUCCESS_CUSTOM_MODE_LOGCAT_GREP_TEXT_TEMPLATE.format(

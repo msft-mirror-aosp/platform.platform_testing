@@ -17,7 +17,7 @@
 import logging
 
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 
 class SdvCujCore22OneVMTest(sdv_base_test.SdvBaseTestClass):
@@ -43,7 +43,7 @@ class SdvCujCore22OneVMTest(sdv_base_test.SdvBaseTestClass):
         logging.info('Start test CUJ-CORE-22 one VM')
 
         logging.info("Verifying Foo message sent.")
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.adb_device,
             grep_text=self.GREP_FOO_MESSAGE_SENT,
             logcat_args=self.SAMPLES_LOGCAT_ARGS,
@@ -53,7 +53,7 @@ class SdvCujCore22OneVMTest(sdv_base_test.SdvBaseTestClass):
         )
 
         logging.info("Verifying Foo message received.")
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.adb_device,
             grep_text=self.GREP_FOO_MESSAGE_RECEIVED,
             logcat_args=self.SAMPLES_LOGCAT_ARGS,
@@ -63,7 +63,7 @@ class SdvCujCore22OneVMTest(sdv_base_test.SdvBaseTestClass):
         )
 
         logging.info("Verifying GetFooRequest.")
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.adb_device,
             grep_text=self.GREP_GET_FOO_REQUEST,
             logcat_args=self.SAMPLES_LOGCAT_ARGS,
@@ -73,7 +73,7 @@ class SdvCujCore22OneVMTest(sdv_base_test.SdvBaseTestClass):
         )
 
         logging.info("Verifying GetFooResponse.")
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.adb_device,
             grep_text=self.GREP_GET_FOO_RESPONSE,
             logcat_args=self.SAMPLES_LOGCAT_ARGS,

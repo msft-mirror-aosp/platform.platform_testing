@@ -18,7 +18,7 @@ import re
 import time
 import logging
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 
 class SdvHmConfigurationIntegrationTest(sdv_base_test.SdvBaseTestClass):
@@ -71,7 +71,7 @@ class SdvHmConfigurationIntegrationTest(sdv_base_test.SdvBaseTestClass):
         self.set_hm_config_property(invalid_config_path)
 
         expected_log = f"Error parsing textproto or invalid config"
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.device.adb(),
             grep_text=expected_log,
             assert_msg="Failed to find parsing error for health configuration",
@@ -84,7 +84,7 @@ class SdvHmConfigurationIntegrationTest(sdv_base_test.SdvBaseTestClass):
         non_existent_path = "/data/non_existent_config.textproto"
         self.set_hm_config_property(non_existent_path)
         expected_log = f"Error parsing textproto or invalid config"
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.device.adb(),
             grep_text=expected_log,
             assert_msg="Failed to find parsing error due to 'No such file error' for health configuration",
@@ -99,7 +99,7 @@ class SdvHmConfigurationIntegrationTest(sdv_base_test.SdvBaseTestClass):
         self.set_hm_config_property(
             self.hm_config_path_property_original_value)
         expected_log = f"Successfully parsed health monitor config proto. Reporting timeout is {expected_period_ms} ms"
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.device.adb(),
             grep_text=expected_log,
             assert_msg="Failed to find message: '" + expected_log + "'",

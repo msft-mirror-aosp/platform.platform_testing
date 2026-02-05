@@ -16,7 +16,7 @@
 
 from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 
 class SdvSampleConCalServerAndClientTest(sdv_base_test.SdvBaseTestClass):
@@ -253,7 +253,7 @@ class SdvSampleConCalServerAndClientTest(sdv_base_test.SdvBaseTestClass):
         for log_entry in log_entries_to_find:
             # Use a lambda function to define the check that wait_for_true
             # will poll. The check returns True if grep finds the log entry.
-            WaitingMethods.wait_for_true(
+            polling.wait_for_true(
                 func=lambda: len(
                     self.sdv_device.grep_from_logcat(log_entry)
                 ) != 0,

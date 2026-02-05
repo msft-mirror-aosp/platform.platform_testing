@@ -19,7 +19,7 @@ import logging
 import time
 
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 
 class SdvHmDeviceIntegrationTest(sdv_base_test.SdvBaseTestClass):
@@ -87,13 +87,13 @@ class SdvHmDeviceIntegrationTest(sdv_base_test.SdvBaseTestClass):
         self.assert_successful_execution(self.HEALTH_COMMAND.format(
             action=self.START, service=self.MONITORED))
 
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.MONITORED_EXPECTED_LOG,
             assert_msg="Monitored service didn't start",
         )
 
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.HEARTBEAT_EXPECTED_LOG,
             assert_msg="Heartbeat was not published",
@@ -103,7 +103,7 @@ class SdvHmDeviceIntegrationTest(sdv_base_test.SdvBaseTestClass):
         self.assert_successful_execution(self.HEALTH_COMMAND.format(
             action=self.START, service=self.MONITORING))
 
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.HEALTHY_EXPECTED_LOG,
             assert_msg="VM is not healthy",
@@ -123,13 +123,13 @@ class SdvHmDeviceIntegrationTest(sdv_base_test.SdvBaseTestClass):
         self.assert_successful_execution(self.HEALTH_COMMAND.format(
             action=self.START, service=self.MONITORED))
 
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.MONITORED_EXPECTED_LOG,
             assert_msg="Monitored service didn't start",
         )
 
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.HEARTBEAT_EXPECTED_LOG,
             assert_msg="Heartbeat was not published",
@@ -139,7 +139,7 @@ class SdvHmDeviceIntegrationTest(sdv_base_test.SdvBaseTestClass):
         self.assert_successful_execution(self.HEALTH_COMMAND.format(
             action=self.START, service=self.MONITORING))
 
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.HEALTHY_EXPECTED_LOG,
             assert_msg="VM is not healthy",
@@ -148,7 +148,7 @@ class SdvHmDeviceIntegrationTest(sdv_base_test.SdvBaseTestClass):
 
         self.assert_successful_execution(self.KILL_COMMAND)
         self.assert_successful_execution(self.PS_COMMAND)
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.UNHEALTHY_EXPECTED_LOG,
             assert_msg="VM is unexpectedly healthy",
@@ -158,13 +158,13 @@ class SdvHmDeviceIntegrationTest(sdv_base_test.SdvBaseTestClass):
         self.assert_successful_execution(self.HEALTH_COMMAND.format(
             action=self.START, service=self.MONITORED))
 
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.MONITORED_EXPECTED_LOG,
             assert_msg="Monitored service didn't start",
         )
 
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.HEALTHY_EXPECTED_LOG,
             assert_msg="VM is not healthy",
@@ -192,13 +192,13 @@ class SdvHmDeviceIntegrationTest(sdv_base_test.SdvBaseTestClass):
             f"sdv_service_bundle start {monitored_fqin2}"
         )
 
-        WaitingMethods.wait_for_true(
+        polling.wait_for_true(
             lambda: self._dump_report_contains(
                 f"{monitored_fqin1}\nis_healthy: Healthy"),
             timeout=5,
             assert_msg="HM dump report does not report a healthy instance1"
         )
-        WaitingMethods.wait_for_true(
+        polling.wait_for_true(
             lambda: self._dump_report_contains(
                 f"{monitored_fqin2}\nis_healthy: Healthy"),
             timeout=5,
@@ -208,14 +208,14 @@ class SdvHmDeviceIntegrationTest(sdv_base_test.SdvBaseTestClass):
         self.sdv_device.execute_shell_command(
             f"pkill -f {monitored_fqin2}")
 
-        WaitingMethods.wait_for_true(
+        polling.wait_for_true(
             lambda: self._dump_report_contains(
                 f"{monitored_fqin1}\nis_healthy: Healthy"),
             timeout=5,
             assert_msg="HM dump report does not report a healthy instance1,"
             " although was healthy before"
         )
-        WaitingMethods.wait_for_true(
+        polling.wait_for_true(
             lambda: self._dump_report_contains(
                 f"{monitored_fqin2}\nis_healthy: Unhealthy"),
             timeout=5,
