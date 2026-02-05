@@ -4,9 +4,25 @@
 # Bug component: 1308123
 include platform/system/software_defined_vehicle/automotive_services:main:/OWNERS
 
-# Core services
-# Bug component: 1307790
-include platform/system/software_defined_vehicle/core_services:main:/OWNERS
+# Health monitor
+# Bug component: 1308123
+include platform/system/software_defined_vehicle/health_monitor:main:/OWNERS
+
+# Some IP
+# Bug component: 2004323
+include platform/system/software_defined_vehicle/some_ip:main:/OWNERS
+
+# Update Manager
+# Bug component: 1543633
+include platform/system/software_defined_vehicle/update_manager:main:/OWNERS
+
+# Lifecycle Manager
+# Bug component: 1543636
+include platform/system/software_defined_vehicle/lifecycle_management:main:/OWNERS
+
+# VSIDL
+# Bug component: 1542965
+include platform/system/software_defined_vehicle/vsidl:main:/OWNERS
 
 # Platform:
 # Bug component: 1307789
