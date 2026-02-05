@@ -20,7 +20,7 @@ import logging
 import re
 
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 class SdvVhalProxySdvPublisherIviSubscriberTest(
     sdv_base_test.SdvBaseTestClass
@@ -59,7 +59,7 @@ class SdvVhalProxySdvPublisherIviSubscriberTest(
 
         # Wait for and verify that the VhalProxy on the IVI VM receives new
         # events.
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             self.ivi_vm_device,
             logcat_args=f'{self.VHAL_PROXY_LOG_TAG}:V *:S',
             grep_text=self.EXPECTED_VHAL_PROXY_LOG,

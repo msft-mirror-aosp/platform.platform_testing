@@ -24,7 +24,7 @@ import mobly.utils as utils
 from sdv_sb_lifecycle_robustness import sdv_sb_lifecycle_robustness_base_test
 from sdv_test_fw.device import sdv_adb
 from sdv_test_fw.device.sdv_property import SdvDeviceProperty
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 from vpm.sdv_vpm import SdvVpm
 
 
@@ -152,7 +152,7 @@ class SdvIviRobBaseTest(
 
     def verify_core_pub_ivi_sub_work(self):
         self.clear_ivi_logcat_buffer()
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.ivi_vm_device,
             grep_text=self.CAR_MONITOR_APP_LOG_TAG,
             expected_result=r"Foo message \(Observer\) received:",
@@ -284,7 +284,7 @@ class SdvIviRobBaseTest(
         """Verifies that a message was or was not received."""
         adb_device.clear_logcat()
         if expect_message:
-            WaitingMethods.wait_and_verify_expected_logs(
+            polling.wait_and_verify_expected_logs(
                 sdv_device=adb_device,
                 logcat_args=self.LOGCAT_ARGS.format(tag=log_tag),
                 grep_text=grep_text,
@@ -399,26 +399,26 @@ class SdvIviRobBaseTest(
 
     def verify_ivi_publisher_functioning(self):
         self.ivi_vm_device.execute_shell_command(self.PUBLISH_FOO_MESSAGE_CMD)
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.core_vm_device,
             grep_text=self.DT_SUBSCRIBER_LOG_TAG,
             expected_result=r"sample: Received: x1 FooMessage\(s\)",
         )
 
     def wait_for_ivi_app_ready(self):
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.ivi_vm_device,
             grep_text=self.SDVGATEWAY_CLIENT_LOG_TAG,
             expected_result="Registered service unit, name = tire-pressure",
         )
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.ivi_vm_device,
             grep_text=self.CAR_MONITOR_APP_LOG_TAG,
             expected_result="IntentReceiver registered.",
         )
 
     def wait_for_ivi_ready_from_suspend(self):
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.ivi_vm_device,
             grep_text=self.CAR_MONITOR_APP_LOG_TAG,
             expected_result="IntentReceiver registered.",

@@ -15,7 +15,7 @@
 from enum import Enum
 import logging
 import time
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 #TODO(b/430276649): improve the library to the current status quo.
 class SdvVpm:
@@ -226,7 +226,7 @@ class SdvVpm:
           Exception: If the timeout is reached before the resume confirmation
             message is found in logcat.
         """
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device = self.__device_adb,
             grep_text = self.__SDV_RESUME_GREP_TEXT,
             expected_result = self.__SDV_RESUME_EXPECTED_LINE,

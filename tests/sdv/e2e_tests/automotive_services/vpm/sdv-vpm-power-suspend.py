@@ -17,7 +17,7 @@
 import logging
 
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 from vpm.sdv_vpm import SdvVpm
 
 class SdvVpmSuspendTest(sdv_base_test.SdvBaseTestClass):
@@ -48,7 +48,7 @@ class SdvVpmSuspendTest(sdv_base_test.SdvBaseTestClass):
         service_tag = f"sdv_vpm_agent"
         expected_logs = f"sdv_vpm_agent has resumed successfully"
 
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             self.adb_device,
             grep_text=service_tag,
             expected_result=expected_logs,

@@ -28,7 +28,7 @@ from sdv_test_fw.test_execution import sdv_test_runner
 
 from sdv_someip_robustness import sdv_someip_robustness_base_test
 
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 CHECKER_MODE_PROP = "persist.com.sdv.google.sample.checker_mode"
 CHECKER_CUJ_PROP = "persist.com.sdv.google.sample.checker_cuj"
@@ -53,7 +53,7 @@ class SdvSampleCujRob033Test(sdv_someip_robustness_base_test.SdvSomeIpRobBaseTes
 
         ROBUSTNESS_CHECKER_LOGCAT_TAG = "*:F sdv_vsomeip_robustness_tester:*"
 
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             self.sdv_device1,
             logcat_args=ROBUSTNESS_CHECKER_LOGCAT_TAG,
             grep_text="RPC robustness test ended, passed = 1",

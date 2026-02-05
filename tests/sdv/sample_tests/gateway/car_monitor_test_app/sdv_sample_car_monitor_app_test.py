@@ -20,7 +20,7 @@ import logging
 import time
 
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 from mobly.controllers.android_device_lib.adb import AdbError
 
 class SdvSampleCarMonitorAppTest(sdv_base_test.SdvBaseTestClass):
@@ -397,8 +397,8 @@ class SdvSampleCarMonitorAppTest(sdv_base_test.SdvBaseTestClass):
         logcat_args=None,
         grep_args=None,
         assert_msg=None,
-        poll_interval=WaitingMethods.POLL_INTERVAL,
-        timeout=WaitingMethods.DEFAULT_TIMEOUT,
+        poll_interval=polling.POLL_INTERVAL,
+        timeout=polling.DEFAULT_TIMEOUT,
     ):
         """Polls the logcat output for a specific text until found or timeout.
 
@@ -424,7 +424,7 @@ class SdvSampleCarMonitorAppTest(sdv_base_test.SdvBaseTestClass):
         """
         if assert_msg is None:
             assert_msg = f'Failed after {timeout} seconds, logcat expected_result not found: {expected_result}'
-        WaitingMethods.wait_for_true(
+        polling.wait_for_true(
             SdvSampleCarMonitorAppTest.__grep_expected_result,
             sdv_device,
             grep_text,

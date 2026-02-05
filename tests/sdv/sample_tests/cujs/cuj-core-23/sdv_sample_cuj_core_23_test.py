@@ -17,7 +17,7 @@
 import logging
 
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 SD_AGENT_FQIN = 'google.sdv.service_discovery.discovery.IServiceDiscoveryAgent/default'
 LC_AGENT_FQIN = 'google.sdv.lifecycle.ILifecycleManager/default'
@@ -30,7 +30,7 @@ CUJ23_UNIT_TYPE_PAYLOAD = 'com.sdv.google.sample.someip.Cuj23SdvPayload'
 CUJ23_SERVICE_UNIT_PAYLOAD = 'com-sdv-google-sample-someip-cuj23-sdv-payload-unique'
 
 def _wait_and_verify_expected_logs(adb_device, log_entry_to_find):
-    WaitingMethods.wait_and_verify_expected_logs(
+    polling.wait_and_verify_expected_logs(
         adb_device,
         grep_text=log_entry_to_find,
         expected_result=log_entry_to_find,
@@ -72,7 +72,7 @@ class SdvSampleCujCore23Test(sdv_base_test.SdvBaseTestClass):
         )
 
         for string_to_check in CHECK_STRINGS_IN_LOG_FILE:
-            WaitingMethods.wait_for_true(
+            polling.wait_for_true(
                 lambda: self._check_string_in_broker_file(someip_tester_log_file, string_to_check),
                 assert_msg=f'"{string_to_check}" not found in {someip_tester_log_file}'
             )
@@ -91,23 +91,23 @@ class SdvSampleCujCore23Test(sdv_base_test.SdvBaseTestClass):
         """CUJ-CORE-23 test."""
         logging.info('Start test CUJ-CORE-23')
 
-        #WaitingMethods.wait_for_true(
+        #polling.wait_for_true(
         #    lambda: self._check_service_bundle_online(CUJ23_FQIN_FOO, CUJ23_FQIN_BAR, CUJ23_UNIT_TYPE_INTERFACE, CUJ23_SERVICE_UNIT_INTERFACE, CUJ23_UNIT_TYPE_PAYLOAD, CUJ23_SERVICE_UNIT_PAYLOAD),
         #    assert_msg=f"{CUJ23_SERVICE_UNIT_INTERFACE} has not started"
         #)
-        WaitingMethods.wait_for_true(
+        polling.wait_for_true(
             lambda: self._check_fqin_online(CUJ23_FQIN_FOO),
             assert_msg=f"{CUJ23_SERVICE_UNIT_INTERFACE} is not online"
         )
-        WaitingMethods.wait_for_true(
+        polling.wait_for_true(
             lambda: self._check_fqin_online(CUJ23_FQIN_BAR),
             assert_msg=f"{CUJ23_FQIN_BAR} is not online"
         )
-        WaitingMethods.wait_for_true(
+        polling.wait_for_true(
             lambda: self._check_service_bundle_online(CUJ23_FQIN_FOO, CUJ23_UNIT_TYPE_INTERFACE, CUJ23_SERVICE_UNIT_INTERFACE),
             assert_msg=f"{CUJ23_SERVICE_UNIT_INTERFACE} is not online"
         )
-        WaitingMethods.wait_for_true(
+        polling.wait_for_true(
             lambda: self._check_service_bundle_online(CUJ23_FQIN_FOO, CUJ23_UNIT_TYPE_PAYLOAD, CUJ23_SERVICE_UNIT_PAYLOAD),
             assert_msg=f"{CUJ23_SERVICE_UNIT_PAYLOAD} is not online"
         )
