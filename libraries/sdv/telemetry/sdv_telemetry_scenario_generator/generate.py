@@ -90,9 +90,9 @@ DT_MESSAGE_SIZE = 2048
 
 # TODO: b/466363305: Increase number of DT and RPC publishers in KPI Scenario Test
 PUBLISHER_TYPE_DISTRIBUTION = {
-    'DT': 50,
-    'RPC': 50,
-    'CONFIGURABLE': 900,
+    'DT': 3,
+    'RPC': 3,
+    'CONFIGURABLE': 994,
 }
 
 assert (
