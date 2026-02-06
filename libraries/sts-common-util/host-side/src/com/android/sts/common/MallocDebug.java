@@ -168,7 +168,7 @@ public class MallocDebug implements AutoCloseable {
         if (processName == null || processName.isEmpty()) {
             throw new IllegalArgumentException("processName can't be empty");
         }
-        if (ProcessUtil.pidsOf(device, processName).isPresent()) {
+        if (ProcessUtil.pidsOf(device, "^\\S*" + processName).isPresent()) {
             throw new IllegalArgumentException(processName + " is already running!");
         }
         return new MallocDebug(device, mallocDebugOptions, processName, false);

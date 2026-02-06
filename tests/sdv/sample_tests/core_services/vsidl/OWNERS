@@ -1,1 +1,2 @@
-include platform/system/software_defined_vehicle/core_services:main:/vsidl/OWNERS
+# Bug component: 1542965
+include platform/system/software_defined_vehicle/vsidl:main:/OWNERS

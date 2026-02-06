@@ -685,11 +685,27 @@ public class NotificationController {
      */
     public NotificationIdentity postMetricStyleNotification(
             String pkg, List<Notification.Metric> metrics) {
+        return postMetricStyleNotification(pkg, metrics, /* allowAutogrouping= */ false);
+    }
+
+    /**
+     * Posts a Notification.MetricStyle.
+     *
+     * @param pkg The application that will be launched by notifications.
+     * @param metrics to be shown in the Notification content.
+     * @param allowAutogrouping Whether to allow autogrouping of the notification.
+     */
+    public NotificationIdentity postMetricStyleNotification(
+            String pkg, List<Notification.Metric> metrics, boolean allowAutogrouping) {
         final Builder builder = getBuilder(pkg);
         builder.setContentTitle(NOTIFICATION_TITLE_TEXT)
                 .setStyle(new Notification.MetricStyle().setMetrics(metrics));
 
-        postNotificationSync(getNextNotificationId(), builder, null);
+        if (allowAutogrouping) {
+            postNotificationSync(getNextNotificationId(), builder, null);
+        } else {
+            postNotificationSync(getNextNotificationId(), builder);
+        }
 
         return new NotificationIdentity(
                 /* type= */ NotificationIdentity.Type.BY_ALT_TITLE,

@@ -20,6 +20,7 @@ import android.tools.flicker.subject.FlickerTraceSubject
 import android.tools.flicker.subject.exceptions.ExceptionMessageBuilder
 import android.tools.flicker.subject.exceptions.InvalidElementException
 import android.tools.flicker.subject.exceptions.InvalidPropertyException
+import android.tools.flicker.subject.exceptions.SubjectAssertionError
 import android.tools.flicker.subject.region.RegionTraceSubject
 import android.tools.function.AssertionPredicate
 import android.tools.io.Reader
@@ -123,13 +124,59 @@ constructor(val trace: LayersTrace, override val reader: Reader? = null) :
     fun visibleLayersShownMoreThanOneConsecutiveEntry(
         ignoreLayers: List<IComponentMatcher> = VISIBLE_FOR_MORE_THAN_ONE_ENTRY_IGNORE_LAYERS
     ): LayersTraceSubject = apply {
-        visibleEntriesShownMoreThanOneConsecutiveTime { subject ->
-            subject.entry.visibleLayers
-                .filter { visibleLayer ->
-                    ignoreLayers.none { matcher -> matcher.layerMatchesAnyOf(visibleLayer) }
+        if (subjects.isEmpty()) {
+            return@apply
+        }
+
+        val firstState = subjects.first()
+        val lastState = subjects.last()
+        val paddedSubjects =
+            subjects.toMutableList().also {
+                it.add(0, firstState)
+                it.add(lastState)
+            }
+
+        val vsyncToVisibleLayerNames: Map<Long, Set<String>> =
+            subjects.associate { subject ->
+                subject.entry.vSyncId to
+                    subject.entry.visibleLayers
+                        .filter { visibleLayer ->
+                            ignoreLayers.none { matcher -> matcher.layerMatchesAnyOf(visibleLayer) }
+                        }
+                        .map { it.name }
+                        .toSet()
+            }
+
+        paddedSubjects.windowed(3).forEach { window ->
+            val prevSubject = window[0]
+            val currSubject = window[1]
+            val nextSubject = window[2]
+
+            val prevVisible = vsyncToVisibleLayerNames[prevSubject.entry.vSyncId] ?: emptySet()
+            val currVisible = vsyncToVisibleLayerNames[currSubject.entry.vSyncId] ?: emptySet()
+            val nextVisible = vsyncToVisibleLayerNames[nextSubject.entry.vSyncId] ?: emptySet()
+
+            val newVisible = currVisible - prevVisible
+
+            if (newVisible.isNotEmpty()) {
+                val disappearedByNext = newVisible - nextVisible
+
+                if (disappearedByNext.isNotEmpty()) {
+                    val currVsyncId = currSubject.entry.vSyncId
+                    val nextVsyncId = nextSubject.entry.vSyncId
+
+                    if (nextVsyncId - currVsyncId == 1L) {
+                        val errorMsgBuilder =
+                            ExceptionMessageBuilder()
+                                .forSubject(currSubject)
+                                .setMessage(
+                                    "$disappearedByNext became invisible after being visible for only one frame. " +
+                                        "Appeared at Vsync $currVsyncId and disappeared by $nextVsyncId"
+                                )
+                        throw SubjectAssertionError(errorMsgBuilder)
+                    }
                 }
-                .map { it.name }
-                .toSet()
+            }
         }
     }
 

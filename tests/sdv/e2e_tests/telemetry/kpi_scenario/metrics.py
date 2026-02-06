@@ -251,6 +251,9 @@ def _calc_statistics(
 ) -> Dict[str, float]:
     """Returns avg, median, p95, max statistics for a given list of durations"""
 
+    if not values:
+        return {}
+
     d_array = np.array(values)
     return {
         'avg': np.mean(d_array),

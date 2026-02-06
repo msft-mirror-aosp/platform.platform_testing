@@ -33,6 +33,9 @@ import android.tools.testutils.assertThrows
 import android.tools.testutils.getLayerTraceReaderFromAsset
 import android.tools.traces.component.ComponentNameMatcher
 import android.tools.traces.io.IResultData
+import android.tools.traces.surfaceflinger.Layer
+import android.tools.traces.surfaceflinger.LayerTraceEntry
+import android.tools.traces.surfaceflinger.LayersTrace
 import androidx.test.filters.FlakyTest
 import com.google.common.truth.Truth
 import org.junit.Before
@@ -155,24 +158,6 @@ class LayersTraceSubjectTest {
             )
     }
 
-    @Test
-    fun testCanDetectInvalidVisibleLayerForMoreThanOneConsecutiveEntry() {
-        val reader =
-            getLayerTraceReaderFromAsset("layers_trace_invalid_visible_layers.perfetto-trace")
-        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
-        val error =
-            assertThrows<AssertionError> {
-                LayersTraceSubject(trace, reader)
-                    .visibleLayersShownMoreThanOneConsecutiveEntry()
-                    .forAllEntries()
-                error("Assertion should not have passed")
-            }
-
-        Truth.assertThat(error).hasMessageThat().contains("2d18h35m56s397ms")
-        Truth.assertThat(error).hasMessageThat().contains("StatusBar#0")
-        Truth.assertThat(error).hasMessageThat().contains("is not visible for 2 entries")
-    }
-
     private fun testCanDetectVisibleLayersMoreThanOneConsecutiveEntry(reader: Reader) {
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         LayersTraceSubject(trace, reader)
@@ -195,6 +180,95 @@ class LayersTraceSubjectTest {
         LayersTraceSubject(trace, reader)
             .visibleLayersShownMoreThanOneConsecutiveEntry(listOf(ComponentNameMatcher.STATUS_BAR))
             .forAllEntries()
+    }
+
+    fun createLayersTrace(vsyncToVisibleLayers: Map<Long, Set<String>>): LayersTrace {
+        val allUniqueLayerNames = vsyncToVisibleLayers.values.flatten().toSet()
+
+        val entries =
+            vsyncToVisibleLayers.entries
+                .sortedBy { it.key }
+                .map { (vSyncId, visibleLayerNames) ->
+                    val allLayers = mutableListOf<Layer>()
+
+                    allUniqueLayerNames.forEach { name ->
+                        val isLayerVisible = visibleLayerNames.contains(name)
+
+                        val layer =
+                            Layer.from(
+                                name = name,
+                                id = name.hashCode(),
+                                parentId = -1,
+                                isVisible = isLayerVisible,
+                            )
+                        allLayers.add(layer)
+                    }
+
+                    LayerTraceEntry(
+                        bootTimestamp = vSyncId * 16_666_666L,
+                        monotonicTimestamp = vSyncId * 16_666_666L,
+                        clockTimestamp = null,
+                        hwcBlob = "",
+                        where = "",
+                        displays = emptyList(),
+                        vSyncId = vSyncId,
+                        _rootLayers = allLayers,
+                    )
+                }
+
+        return LayersTrace(entries)
+    }
+
+    @Test
+    fun testCanDetectFlickeringLayerIfVisibleForOnlyOneVsyncId() {
+        val flickeringLayerName = "FlickeringApp#42"
+        val otherLayerName = "OtherApp#0"
+
+        val traceData =
+            mapOf(
+                100L to setOf(otherLayerName),
+                101L to setOf(otherLayerName, flickeringLayerName),
+                102L to setOf(otherLayerName),
+            )
+
+        val layersTrace = createLayersTrace(traceData)
+
+        val layerTraceSubject = LayersTraceSubject(layersTrace)
+
+        val error =
+            assertThrows<AssertionError> {
+                layerTraceSubject.visibleLayersShownMoreThanOneConsecutiveEntry().forAllEntries()
+                error("Assertion should not have passed")
+            }
+
+        Truth.assertThat(error)
+            .hasMessageThat()
+            .contains(
+                "[$flickeringLayerName] became invisible after being visible for only one frame"
+            )
+        Truth.assertThat(error)
+            .hasMessageThat()
+            .contains("Appeared at Vsync 101 and disappeared by 102")
+    }
+
+    @Test
+    fun testCanDetectNotFlickeringLayerIfVisibleForTwoConsecutiveVsyncIds() {
+        val notFlickeringLayerName = "NotFlickeringApp#42"
+        val otherLayerName = "OtherApp#0"
+
+        val traceData =
+            mapOf(
+                100L to setOf(otherLayerName),
+                101L to setOf(otherLayerName, notFlickeringLayerName),
+                102L to setOf(otherLayerName, notFlickeringLayerName),
+                103L to setOf(otherLayerName),
+            )
+
+        val layersTrace = createLayersTrace(traceData)
+
+        val layerTraceSubject = LayersTraceSubject(layersTrace)
+
+        layerTraceSubject.visibleLayersShownMoreThanOneConsecutiveEntry().forAllEntries()
     }
 
     @Test

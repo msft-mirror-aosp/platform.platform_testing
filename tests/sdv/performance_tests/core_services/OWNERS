@@ -1,2 +1,2 @@
 # Bug component: 1307790
-include platform/system/software_defined_vehicle/core_services:main:/OWNERS
+include platform/system/software_defined_vehicle/common:main:/OWNERS
