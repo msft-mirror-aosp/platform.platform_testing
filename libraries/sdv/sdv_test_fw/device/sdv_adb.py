@@ -40,7 +40,7 @@ class SdvAdb:
         self.__temp_files = []
         self.prop = sdv_property.SdvProperty(android_device)
 
-    def interactive_session(self):
+    def interactive_session(self, label=None):
         """Returns an interactive session to the device.
 
         This method creates and returns a `Session` object, which provides an
@@ -49,7 +49,7 @@ class SdvAdb:
         Returns:
             Session: An interactive session object for the device.
         """
-        session = Session(self.get_device_serial())
+        session = Session(self.get_device_serial(), session_label=label)
         session.expect_outputs([r'[#\$]'])
         return session
 
