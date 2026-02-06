@@ -299,6 +299,7 @@ internal constructor(
 
             expectedWithHighlight.recycle()
             expected.recycle()
+            comparisonResult.diff?.recycle()
 
             throw AssertionError(
                 "Image mismatch! Comparison stats: '${comparisonResult.comparisonStatistics}'"
