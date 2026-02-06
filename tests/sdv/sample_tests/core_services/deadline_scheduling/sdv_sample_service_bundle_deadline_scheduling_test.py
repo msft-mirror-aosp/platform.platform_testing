@@ -71,39 +71,38 @@ class SdvSampleServiceBundleDeadlineSchedulingTest(sdv_base_test.SdvBaseTestClas
         """ Verifies that the deadline scheduling configuration was successfully applied. """
 
         logcat_grep_result = self.wait_for_logcat(grep_text)
-        if logcat_grep_result != "":
-            pid = logcat_grep_result.split()[2]
-            logging.info(f"Scheduling configuration applied to the process with id: {pid}")
-            sched_output = self.sdv_device.adb().execute_shell_command(self.PROCESS_SCHEDULING_COMMAND.format(pid = pid))
-            logging.info(f"Scheduling configuration for the process {pid}: {sched_output}")
-            if "SCHED_DEADLINE" in sched_output:
-                logging.info("Deadline scheduling configuration was successfully applied")
-                return
-
-        asserts.fail(
+        asserts.assert_not_equal(logcat_grep_result, "", 'Failed to find logcat entry')
+        pid = logcat_grep_result.split()[2]
+        logging.info(f"Scheduling configuration applied to the process with id: {pid}")
+        sched_output = self.sdv_device.adb().execute_shell_command(self.PROCESS_SCHEDULING_COMMAND.format(pid = pid))
+        logging.info(f"Scheduling configuration for the process {pid}: {sched_output}")
+        asserts.assert_in(
+            "SCHED_DEADLINE",
+            sched_output,
             'Failed to verify that scheduling configuration was set'
         )
+        logging.info("Deadline scheduling configuration was successfully applied")
 
     def verify_cpu_affinity(self, grep_text, timeout=30, poll_interval=0.1):
         """ Verifies that the CPU affinity was successfully applied. """
 
         logcat_grep_result = self.wait_for_logcat(grep_text)
-        if logcat_grep_result != "":
-            pid = logcat_grep_result.split()[2]
-            logging.info(f"CPU Affinity service bundle has process id {pid}")
-            process_threads_output = self.sdv_device.adb().execute_shell_command(self.GET_PROCESS_THREADS_COMMAND.format(pid = pid))
-            tid = process_threads_output.split()[2]
-            logging.info(f"CPU affinity applied to the thread {tid} that belongs to the process {pid}")
-            cpu_affinity_output = self.sdv_device.adb().execute_shell_command(self.PROCESS_CPU_AFFINITY_COMMAND.format(tid = tid))
-            logging.info(f"CPU affinity for the thread {tid}: {cpu_affinity_output}")
-            desired_thread_affinity_output = self.DESIRED_THREAD_AFFINITY_OUTPUT.format(tid = tid)
-            if desired_thread_affinity_output == cpu_affinity_output:
-                logging.info("CPU affinity was successfully applied")
-                return
+        asserts.assert_not_equal(logcat_grep_result, "", 'Failed to find logcat entry')
 
-        asserts.fail(
+        pid = logcat_grep_result.split()[2]
+        logging.info(f"CPU Affinity service bundle has process id {pid}")
+        process_threads_output = self.sdv_device.adb().execute_shell_command(self.GET_PROCESS_THREADS_COMMAND.format(pid = pid))
+        tid = process_threads_output.split()[2]
+        logging.info(f"CPU affinity applied to the thread {tid} that belongs to the process {pid}")
+        cpu_affinity_output = self.sdv_device.adb().execute_shell_command(self.PROCESS_CPU_AFFINITY_COMMAND.format(tid = tid))
+        logging.info(f"CPU affinity for the thread {tid}: {cpu_affinity_output}")
+        desired_thread_affinity_output = self.DESIRED_THREAD_AFFINITY_OUTPUT.format(tid = tid)
+        asserts.assert_equal(
+            desired_thread_affinity_output,
+            cpu_affinity_output,
             'Failed to verify that CPU affinity was set'
         )
+        logging.info("CPU affinity was successfully applied")
 
     def setup_class(self):
         super().setup_class()
