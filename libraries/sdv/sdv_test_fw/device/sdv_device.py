@@ -16,20 +16,27 @@
 
 from sdv_test_fw.device import sdv_info
 from sdv_test_fw.device.dhi import hardware_dhi
+from sdv_test_fw.device.dhi import local_cuttlefish_dhi
 from sdv_test_fw.device.dhi import remote_cuttlefish_dhi
 from sdv_test_fw.device.sdv_adb import SdvAdb
 
 
 class SdvDevice:
 
-    def _device_controller(self):
+    def _device_controller(self, is_local_run):
         # The controller instantiation depends on the architecture of the device.
         # We consider two scenarios:
         # 1) It is a CF VM
         # 2) It is a HW VM
         if self.info.is_cuttlefish:
-            # TODO(467096715): add distinction beetwen local and remote controllers
-            # for CF once we have a way of identifying tests execution environment.
+            # CF VMs are managed differently locally and in CI/CD. We need to
+            # instantiate the right controller.
+            if is_local_run:
+                self.__adb.log().info('Local Cuttlefish DHI controller')
+                return local_cuttlefish_dhi.LocalCuttlefishDHI(
+                    self.__adb, self.info
+                )
+
             self.__adb.log().info('Remote Cuttlefish DHI controller')
             return remote_cuttlefish_dhi.RemoteCuttlefishDHI(
                 self.__adb, self.info
@@ -38,7 +45,7 @@ class SdvDevice:
         self.__adb.log().info('Hardware DHI controller')
         return hardware_dhi.HardwareDHI(self.__adb, self.info)
 
-    def __init__(self, android_device):
+    def __init__(self, android_device, is_local_run=False):
         self.__adb = SdvAdb(android_device)
         self.__services = android_device.services
 
@@ -46,7 +53,7 @@ class SdvDevice:
         self.info = sdv_info.SdvInfo(self.__adb)
 
         # Device Host Controller (DHI) set as VM member for familiarity.
-        self.vm = self._device_controller()
+        self.vm = self._device_controller(is_local_run)
 
     # Get ADB
     def adb(self):

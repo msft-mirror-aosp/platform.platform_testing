@@ -30,7 +30,7 @@
     <!-- Long test. Timeout limit in milliseconds -->
     <option name="mobly-test-timeout" value="36000000" />
     <!-- Testbed config file -->
-    <option name="mobly-config-file-name" value="sdv_two_devices_config.yaml" />
+    <option name="mobly-config-file-name" value="sdv_two_devices_config_local.yaml" />
     <!-- Test args passed to the test  -->
     <option name="mobly-options" value="--test_args=trace_config=service_bundle_mem_trace.pbtxt" />
      <option name="mobly-options" value="--test_args=start_stop_repeated_times=100" />

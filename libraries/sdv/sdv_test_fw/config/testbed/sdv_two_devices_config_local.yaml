@@ -12,11 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# For local test run only
+
 TestBeds:
-  - Name: OneDeviceTestBed
+  - Name: TwoDevicesTestBedLocal
     Controllers:
       AndroidDevice:
         - serial: serial_number
           label: device1
+        - serial: serial_number
+          label: device2
     TestParams:
-      number_of_devices: 1
+      number_of_devices: 2
+      env: local

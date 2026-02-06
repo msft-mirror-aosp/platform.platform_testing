@@ -37,6 +37,6 @@
     <!-- Timeout limit in milliseconds for all test cases of the python binary -->
     <option name="mobly-test-timeout" value="180000" />
     <!-- Testbed config file -->
-    <option name="mobly-config-file-name" value="sdv_one_device_config.yaml" />
+    <option name="mobly-config-file-name" value="sdv_one_device_config_local.yaml" />
   </test>
 </configuration>
