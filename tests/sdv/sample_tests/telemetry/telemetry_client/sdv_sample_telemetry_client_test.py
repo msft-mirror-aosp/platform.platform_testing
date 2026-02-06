@@ -58,11 +58,6 @@ class SdvSampleTelemetryClientTest(
         self.sdv_device = self.get_device('device1')
         self.sdv_device.adb().root_device()
 
-    def setup_test(self):
-        super().setup_test()
-
-        self.start_telemetry_service_if_ivi(self.sdv_device)
-
     def test_run_telemetry_rust_client(self):
         with self.create_temp_dir(self.sdv_device) as simulator_out_dir:
             self.sdv_device.adb().log().info('Starting Simulator Client')

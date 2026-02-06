@@ -39,7 +39,6 @@ T = TypeVar('T')
 
 class SdvTelemetryBaseTestClass(sdv_base_test.SdvBaseTestClass):
     TELEMETRY_SERVICE_LOG_TAG = 'SdvTelemetryService'
-    IVI_TELEMETRY_SERVICE_COMMAND = 'sdv_ivi_telemetry_service_agent'
 
     CORE_SIMULATOR_BINARY = 'sdv_telemetry_simulator'
     IVI_SIMULATOR_BINARY = 'sdv_ivi_telemetry_simulator'
@@ -159,16 +158,6 @@ class SdvTelemetryBaseTestClass(sdv_base_test.SdvBaseTestClass):
             return self.IVI_SIMULATOR_BINARY
         else:
             return self.CORE_SIMULATOR_BINARY
-
-    def start_telemetry_service_if_ivi(
-        self, device: sdv_device.SdvDevice
-    ) -> None:
-        """Starts the Telemetry Service if the device is IVI."""
-        if self.is_ivi(device):
-            device.adb().execute_shell_command_in_subprocess(
-                'IVI SDV Telemetry Service',
-                self.IVI_TELEMETRY_SERVICE_COMMAND,
-            )
 
     @lru_cache(maxsize=None)
     def is_ivi(self, device: sdv_device.SdvDevice):
