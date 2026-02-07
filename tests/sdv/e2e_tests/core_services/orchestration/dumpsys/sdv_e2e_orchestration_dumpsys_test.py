@@ -19,7 +19,7 @@ Test is on one SDV VM
 from mobly import asserts
 import logging
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 class SdvE2EOrchestrationDumpsysTest(
     sdv_base_test.SdvBaseTestClass
@@ -65,7 +65,7 @@ class SdvE2EOrchestrationDumpsysTest(
         self.vpm_session.send_command('vepsm vehicle-state park')
 
         # Wait until orch finished transition the park (this means that the initial power and custom more were set)
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text="sdv_orchestration_agent",
             expected_result='Finished processing mode update Vehicle: "PARK"',

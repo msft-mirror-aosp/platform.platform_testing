@@ -19,7 +19,7 @@ post resume from ram
 
 from mobly import asserts
 import logging
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 
 
@@ -63,7 +63,7 @@ class SdvHmRamSuspendResumeTest(sdv_base_test.SdvBaseTestClass):
             self.sdv_device_adb.clear_logcat()
             self.suspend_resume_device()
 
-            WaitingMethods.wait_and_verify_expected_logs(
+            polling.wait_and_verify_expected_logs(
                 self.sdv_device_adb,
                 grep_re,
                 expected_result=healthy_log,

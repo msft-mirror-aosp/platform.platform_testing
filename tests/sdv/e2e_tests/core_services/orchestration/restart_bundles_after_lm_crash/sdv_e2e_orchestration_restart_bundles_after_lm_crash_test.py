@@ -19,7 +19,7 @@ Tests is on one SDV VM
 from mobly import asserts
 import logging
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 
 class SdvE2EOrchestrationBundlesRestartedAfterLMCrashTest(
@@ -51,7 +51,7 @@ class SdvE2EOrchestrationBundlesRestartedAfterLMCrashTest(
             ).find_message_after_timestamp(expected_result, timestamp)
             return res_timestamp
 
-        result = WaitingMethods().wait_and_return_result(
+        result = polling.wait_and_return_result(
             grep_with_timestamp, self.sdv_device, expected_result, timestamp)
         if result is None:
             asserts.fail(

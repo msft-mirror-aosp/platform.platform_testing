@@ -22,7 +22,7 @@ from pathlib import Path
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 
 from sdv_test_fw.update.update_manager_base_class import UpdateManagerBaseClass
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 class SdvIviSampleApexUpdateTest(sdv_base_test.SdvBaseTestClass, UpdateManagerBaseClass):
   SDV_APEX_NAME = 'com.sdv.google.sample.apex.provider'
@@ -93,14 +93,14 @@ class SdvIviSampleApexUpdateTest(sdv_base_test.SdvBaseTestClass, UpdateManagerBa
   def test_v1_services_talk(self):
     # Validates version and log for SDV APEX V1
     self.validate_apex_present(self.sdv_core_device, f'{self.SDV_APEX_NAME}@1')
-    WaitingMethods.wait_and_verify_expected_logs(self.sdv_core_device, self.RPC_SERVER_LOG_KEYWORD, self.EXPECTED_RPC_SERVER_LOG_V1)
-    WaitingMethods.wait_and_verify_expected_logs(self.sdv_core_device, self.DT_PUBLISHER_LOG_KEYWORD, self.EXPECTED_DT_PUBLISHER_LOG_V1)
+    polling.wait_and_verify_expected_logs(self.sdv_core_device, self.RPC_SERVER_LOG_KEYWORD, self.EXPECTED_RPC_SERVER_LOG_V1)
+    polling.wait_and_verify_expected_logs(self.sdv_core_device, self.DT_PUBLISHER_LOG_KEYWORD, self.EXPECTED_DT_PUBLISHER_LOG_V1)
 
     # Validates version and log for IVI APEX V1 that talks to SDV APEX V1
     self.validate_apex_present(self.ivi_device, f'{self.IVI_APEX_NAME}@1')
     self.ivi_device.execute_shell_command_in_subprocess(self.RUN_IVI_SERVICE_CMD, self.RUN_IVI_SERVICE_CMD)
-    WaitingMethods.wait_and_verify_expected_logs(self.ivi_device, self.IVI_SERVICE_LOG_KEYWORD, self.EXPECTED_DT_SUBSCRIBER_LOG_V1)
-    WaitingMethods.wait_and_verify_expected_logs(self.ivi_device, self.IVI_SERVICE_LOG_KEYWORD, self.EXPECTED_RPC_CLIENT_LOG_V1)
+    polling.wait_and_verify_expected_logs(self.ivi_device, self.IVI_SERVICE_LOG_KEYWORD, self.EXPECTED_DT_SUBSCRIBER_LOG_V1)
+    polling.wait_and_verify_expected_logs(self.ivi_device, self.IVI_SERVICE_LOG_KEYWORD, self.EXPECTED_RPC_CLIENT_LOG_V1)
 
   def test_v1_service_talk_to_v2_service(self):
     # Updates SDV APEX and reboots which is necessary for the update to take effect
@@ -112,15 +112,15 @@ class SdvIviSampleApexUpdateTest(sdv_base_test.SdvBaseTestClass, UpdateManagerBa
     self.client.commit()
     # Validates version and log for SDV APEX V2
     self.validate_apex_present(self.sdv_core_device, f'{self.SDV_APEX_NAME}@2')
-    WaitingMethods.wait_and_verify_expected_logs(self.sdv_core_device, self.RPC_SERVER_LOG_KEYWORD, self.EXPECTED_RPC_SERVER_LOG_V2)
-    WaitingMethods.wait_and_verify_expected_logs(self.sdv_core_device, self.DT_PUBLISHER_LOG_KEYWORD, self.EXPECTED_DT_PUBLISHER_LOG_V2)
+    polling.wait_and_verify_expected_logs(self.sdv_core_device, self.RPC_SERVER_LOG_KEYWORD, self.EXPECTED_RPC_SERVER_LOG_V2)
+    polling.wait_and_verify_expected_logs(self.sdv_core_device, self.DT_PUBLISHER_LOG_KEYWORD, self.EXPECTED_DT_PUBLISHER_LOG_V2)
 
     # Validates log for IVI APEX V1 that talks to SDV APEX V2
     self.ivi_device.execute_shell_command_in_subprocess(self.RUN_IVI_SERVICE_CMD, self.RUN_IVI_SERVICE_CMD)
     # The IVI Service Bundle is already processing the updated Data Tunnel message because it parses the data via reflection
-    WaitingMethods.wait_and_verify_expected_logs(self.ivi_device, self.IVI_SERVICE_LOG_KEYWORD, self.EXPECTED_DT_SUBSCRIBER_LOG_V1)
-    WaitingMethods.wait_and_verify_expected_logs(self.ivi_device, self.IVI_SERVICE_LOG_KEYWORD, self.EXPECTED_DT_SUBSCRIBER_LOG_V2)
-    WaitingMethods.wait_and_verify_expected_logs(self.ivi_device, self.IVI_SERVICE_LOG_KEYWORD, self.EXPECTED_RPC_CLIENT_LOG_V1)
+    polling.wait_and_verify_expected_logs(self.ivi_device, self.IVI_SERVICE_LOG_KEYWORD, self.EXPECTED_DT_SUBSCRIBER_LOG_V1)
+    polling.wait_and_verify_expected_logs(self.ivi_device, self.IVI_SERVICE_LOG_KEYWORD, self.EXPECTED_DT_SUBSCRIBER_LOG_V2)
+    polling.wait_and_verify_expected_logs(self.ivi_device, self.IVI_SERVICE_LOG_KEYWORD, self.EXPECTED_RPC_CLIENT_LOG_V1)
 
   def test_v2_services_talk(self):
     # Updates SDV APEX and reboots which is necessary for the update to take effect
@@ -141,9 +141,9 @@ class SdvIviSampleApexUpdateTest(sdv_base_test.SdvBaseTestClass, UpdateManagerBa
     # Validates version and log for IVI APEX V2 that talks to SDV APEX V2
     self.validate_apex_present(self.ivi_device, f'{self.IVI_APEX_NAME}@2')
     self.ivi_device.execute_shell_command_in_subprocess(self.RUN_IVI_SERVICE_CMD, self.RUN_IVI_SERVICE_CMD)
-    WaitingMethods.wait_and_verify_expected_logs(self.ivi_device, self.IVI_SERVICE_LOG_KEYWORD, self.EXPECTED_DT_SUBSCRIBER_LOG_V1)
-    WaitingMethods.wait_and_verify_expected_logs(self.ivi_device, self.IVI_SERVICE_LOG_KEYWORD, self.EXPECTED_DT_SUBSCRIBER_LOG_V2)
-    WaitingMethods.wait_and_verify_expected_logs(self.ivi_device, self.IVI_SERVICE_LOG_KEYWORD, self.EXPECTED_RPC_CLIENT_LOG_V2)
+    polling.wait_and_verify_expected_logs(self.ivi_device, self.IVI_SERVICE_LOG_KEYWORD, self.EXPECTED_DT_SUBSCRIBER_LOG_V1)
+    polling.wait_and_verify_expected_logs(self.ivi_device, self.IVI_SERVICE_LOG_KEYWORD, self.EXPECTED_DT_SUBSCRIBER_LOG_V2)
+    polling.wait_and_verify_expected_logs(self.ivi_device, self.IVI_SERVICE_LOG_KEYWORD, self.EXPECTED_RPC_CLIENT_LOG_V2)
 
 if __name__ == '__main__':
   sdv_test_runner.run()

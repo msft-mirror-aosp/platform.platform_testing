@@ -143,8 +143,12 @@ class SdvBaseTestClass(base_test.BaseTestClass):
     for index in range(self.__num_of_devices):
       device_tag = f'device{index+1}'
 
+      # The Device Host Interaction (DHI) strategy depends on the execution environment.
+      # We explicitly pass the environment context (local vs. remote) because the
+      # device object cannot infer it otherwise.
       device = sdv_device.SdvDevice(
-          android_device.get_device(self.__ads, label=device_tag)
+          android_device.get_device(self.__ads, label=device_tag),
+          is_local_run=self.is_local_run()
       )
 
       default_device_list[device_tag] = device
@@ -288,3 +292,15 @@ class SdvBaseTestClass(base_test.BaseTestClass):
 
   def get_suite_name(self):
     return self.__suite_name
+
+  def is_local_run(self):
+    """Checks if the test execution environment is local.
+
+    Relies on the 'env' user parameter existing and being set to 'local'.
+    When running tests locally, ensure that the test uses the testbed that
+    sets this parameter: "*_local.yaml"
+
+    Returns:
+      bool: True if the test is running locally, False otherwise.
+    """
+    return self.user_params.get("env") == "local"

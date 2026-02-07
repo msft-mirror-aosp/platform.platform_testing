@@ -17,7 +17,7 @@ Native SDV Gateway Sample Test
 """
 
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 class SdvSampleNativeSdvGatewayTest(sdv_base_test.SdvBaseTestClass):
 
@@ -85,7 +85,7 @@ class SdvSampleNativeSdvGatewayTest(sdv_base_test.SdvBaseTestClass):
             self.RUN_CLUSTER_SERVER_COMMAND,
             self.RUN_CLUSTER_SERVER_COMMAND
         )
-        WaitingMethods.wait_for_true(
+        polling.wait_for_true(
           self.check_logcat_for_expected_lines,
           self.core_vm_device,
           self.CLUSTER_SERVER_LOG_TAG,
@@ -98,12 +98,12 @@ class SdvSampleNativeSdvGatewayTest(sdv_base_test.SdvBaseTestClass):
             self.RUN_NATIVE_SDV_GATEWAY_COMMAND,
             self.RUN_NATIVE_SDV_GATEWAY_COMMAND
         )
-        WaitingMethods.wait_for_true(
+        polling.wait_for_true(
           self.check_logcat_for_expected_lines,
           self.ivi_vm_device,
           self.NATIVE_SDV_GATEWAY_LOG_TAG,
           self.EXPECTED_NATIVE_SDV_GATEWAY_LOG)
-        WaitingMethods.wait_for_true(
+        polling.wait_for_true(
           self.check_logcat_for_expected_lines,
           self.core_vm_device,
           self.CLUSTER_SERVER_LOG_TAG,
@@ -113,7 +113,7 @@ class SdvSampleNativeSdvGatewayTest(sdv_base_test.SdvBaseTestClass):
             self.RUN_SUNROOF_CLIENT_COMMAND,
             self.RUN_SUNROOF_CLIENT_COMMAND
         )
-        WaitingMethods.wait_for_true(
+        polling.wait_for_true(
           self.check_logcat_for_expected_lines,
           self.core_vm_device,
           self.SUNROOF_CLIENT_LOG_TAG,
@@ -123,7 +123,7 @@ class SdvSampleNativeSdvGatewayTest(sdv_base_test.SdvBaseTestClass):
             self.RUN_SUBSCRIBER_COMMAND,
             self.RUN_SUBSCRIBER_COMMAND
         )
-        WaitingMethods.wait_for_true(
+        polling.wait_for_true(
           self.check_logcat_for_expected_lines,
           self.ivi_vm_device,
           self.NATIVE_SDV_GATEWAY_LOG_TAG,

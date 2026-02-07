@@ -24,7 +24,7 @@ from sdv_perfetto import perfetto_trace_processor
 from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 from sdv_test_fw.test_execution import sdv_base_test
 from sdv_test_fw.test_execution import sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 
 class SdvSomeIpBenchmarkTest(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
@@ -103,7 +103,7 @@ class SdvSomeIpBenchmarkTest(sdv_base_test.SdvBaseTestClass, parameterized.TestC
             "com.sdv.google.sample.someip.SomeIpBenchmark",
             "instance1")
 
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             self.sdv_device,
             grep_text="someip_benchmark",
             expected_result=r"Finished test \- messages received",
@@ -127,7 +127,7 @@ class SdvSomeIpBenchmarkTest(sdv_base_test.SdvBaseTestClass, parameterized.TestC
             f"VSOMEIP_CONFIGURATION={SOMEIP_CONFIG_FILE} VSOMEIP_BASE_PATH={SOMEIP_BASE_PATH} {SOMEIP_TESTER_COMMAND}"
         )
 
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             self.sdv_device,
             grep_text="sdv_vsomeip_pubsub_benchmark",
             expected_result=r"\(pubsub_benchmark\) is registered",

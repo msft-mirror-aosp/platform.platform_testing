@@ -19,7 +19,7 @@ import logging
 import re
 
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 class SdvSomeIpStackLoadIndicatorsTest(sdv_base_test.SdvBaseTestClass):
     GREP_TEXT = r"""someip_load_indicators value"""
@@ -34,7 +34,7 @@ class SdvSomeIpStackLoadIndicatorsTest(sdv_base_test.SdvBaseTestClass):
             f'{self.get_suite_name()}#{self.current_test_info.name} started'
         )
 
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.GREP_TEXT,
             expected_result=self.EXPECTED_LOG,

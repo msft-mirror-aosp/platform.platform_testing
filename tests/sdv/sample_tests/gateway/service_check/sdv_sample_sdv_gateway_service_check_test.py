@@ -18,7 +18,7 @@ SDV Gateway Service Check Test
 
 from mobly import asserts
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 class SdvSampleSdvGatewayServiceCheckTest(sdv_base_test.SdvBaseTestClass):
     SDV_GATEWAY_QUERY_COMMAND = "service check google.sdv.gateway.ISdvGateway/default"
@@ -46,14 +46,14 @@ class SdvSampleSdvGatewayServiceCheckTest(sdv_base_test.SdvBaseTestClass):
         self.ivi_vm_device.execute_shell_command(
             "cmd car_service suspend --simulate --wakeup-after 5")
 
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.ivi_vm_device,
             grep_text=self.SDV_GATEWAY_NETWORKING_LOG_TAG,
             expected_result=self.EXPECTED_POWER_STATE_SUSPEND_LOG,
             assert_msg="Log not found for power state change to 2",
         )
 
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.ivi_vm_device,
             grep_text=self.SDV_GATEWAY_NETWORKING_LOG_TAG,
             expected_result=self.EXPECTED_POWER_STATE_POWER_ON_LOG,

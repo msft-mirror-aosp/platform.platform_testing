@@ -20,7 +20,7 @@ from mobly import asserts
 import logging
 from absl.testing import parameterized
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 
 class SdvE2EOrchestrationBinderReconnectTest(
@@ -37,7 +37,7 @@ class SdvE2EOrchestrationBinderReconnectTest(
 
     def verify_agent_reconnected(self, name):
         expected_result = "Successfully fetched " + name + " binder"
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text="sdv_orchestration_agent",
             expected_result=expected_result,
@@ -47,7 +47,7 @@ class SdvE2EOrchestrationBinderReconnectTest(
     # Verify that after reconnecting to VPM, orch sets the current power state
     def verify_power_state_updated(self):
         expected_result = 'Setting current power state "POWER_OFF_EXIT".'
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text="sdv_orchestration_agent",
             expected_result=expected_result,

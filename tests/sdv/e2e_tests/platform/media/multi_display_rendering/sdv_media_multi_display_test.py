@@ -27,7 +27,7 @@ from pathlib import Path
 from PIL import Image
 
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 class SdvMediaMultiDisplayTest(sdv_base_test.SdvBaseTestClass):
 
@@ -74,12 +74,12 @@ class SdvMediaMultiDisplayTest(sdv_base_test.SdvBaseTestClass):
 
         # Wait until first FPS counter is reported - this should serve as a guarantee that rendering
         # loop went through at least one iteration
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.RENDERING_STARTED_LOG,
             assert_msg="Failed to detect rendering loop start.",
         )
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.FPS_LOG,
             assert_msg="Failed to detect FPS report.",

@@ -24,7 +24,7 @@ from sdv_perfetto import perfetto_collector, perfetto_trace_processor
 from sdv_test_fw.device import sdv_adb
 from sdv_test_fw.test_execution import sdv_base_test
 from sdv_test_fw.test_execution import sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 SERVICE_BUNDLE_FOO_FQN = 'com.sdv.google.sample.foo.ServiceBundleFoo'
 SERVICE_BUNDLE_QUX_FQN = 'com.sdv.google.sample.qux.ServiceBundleQux'
@@ -209,7 +209,7 @@ class SdvServiceBundleMemLeakTest(sdv_base_test.SdvBaseTestClass):
         device, service_bundle_name, SERVICE_BUNDLE_CREATE
     )
     # Wait for service bundle to be created.
-    # WaitingMethods.wait_and_verify_expected_logs seems not blocking the test,
+    # polling.wait_and_verify_expected_logs seems not blocking the test,
     # and the test will go to the next step to clear catlog and fail the
     # waiting.
     time.sleep(2)
@@ -254,12 +254,12 @@ class SdvServiceBundleMemLeakTest(sdv_base_test.SdvBaseTestClass):
     self.create_service_bundle(self.sdv_device_foo, SERVICE_BUNDLE_FOO_FQN)
     self.create_service_bundle(self.sdv_device_qux, SERVICE_BUNDLE_QUX_FQN)
     # Wait for service bundle to be created.
-    WaitingMethods.wait_and_verify_expected_logs(
+    polling.wait_and_verify_expected_logs(
         sdv_device=self.sdv_device_foo,
         grep_text=SERVICE_BUNDLE_FOO_CREATE_MESSAGE,
         assert_msg=f'Message: {SERVICE_BUNDLE_FOO_CREATE_MESSAGE} not found',
     )
-    WaitingMethods.wait_and_verify_expected_logs(
+    polling.wait_and_verify_expected_logs(
         sdv_device=self.sdv_device_qux,
         grep_text=SERVICE_BUNDLE_QUX_CREATE_MESSAGE,
         assert_msg=f'Message: {SERVICE_BUNDLE_QUX_CREATE_MESSAGE} not found',
@@ -276,22 +276,22 @@ class SdvServiceBundleMemLeakTest(sdv_base_test.SdvBaseTestClass):
           self.sdv_device_qux, SERVICE_BUNDLE_QUX_FQN, SERVICE_BUNDLE_START
       )
       # Wait for service bundle to be started n times.
-      WaitingMethods.wait_and_verify_expected_logs(
+      polling.wait_and_verify_expected_logs(
           sdv_device=self.sdv_device_foo,
           grep_text=SERVICE_BUNDLE_FOO_START_MESSAGE,
           assert_msg=f'Message: {SERVICE_BUNDLE_FOO_START_MESSAGE} not found',
       )
-      WaitingMethods.wait_and_verify_expected_logs(
+      polling.wait_and_verify_expected_logs(
           sdv_device=self.sdv_device_foo,
           grep_text=FOO_SEND_MESSAGE,
           assert_msg=f'Message: {FOO_SEND_MESSAGE} not found',
       )
-      WaitingMethods.wait_and_verify_expected_logs(
+      polling.wait_and_verify_expected_logs(
           sdv_device=self.sdv_device_qux,
           grep_text=SERVICE_BUNDLE_QUX_START_MESSAGE,
           assert_msg=f'Message: {SERVICE_BUNDLE_QUX_START_MESSAGE} not found',
       )
-      WaitingMethods.wait_and_verify_expected_logs(
+      polling.wait_and_verify_expected_logs(
           sdv_device=self.sdv_device_qux,
           grep_text=QUX_SEND_MESSAGE,
           assert_msg=f'Message: {QUX_SEND_MESSAGE} not found',
@@ -306,12 +306,12 @@ class SdvServiceBundleMemLeakTest(sdv_base_test.SdvBaseTestClass):
       self.manage_service_bundle(
           self.sdv_device_qux, SERVICE_BUNDLE_QUX_FQN, SERVICE_BUNDLE_STOP
       )
-      WaitingMethods.wait_and_verify_expected_logs(
+      polling.wait_and_verify_expected_logs(
           sdv_device=self.sdv_device_foo,
           grep_text=SERVICE_BUNDLE_FOO_STOP_MESSAGE,
           assert_msg=f'Message: {SERVICE_BUNDLE_FOO_STOP_MESSAGE} not found',
       )
-      WaitingMethods.wait_and_verify_expected_logs(
+      polling.wait_and_verify_expected_logs(
           sdv_device=self.sdv_device_qux,
           grep_text=SERVICE_BUNDLE_QUX_STOP_MESSAGE,
           assert_msg=f'Message: {SERVICE_BUNDLE_QUX_STOP_MESSAGE} not found',

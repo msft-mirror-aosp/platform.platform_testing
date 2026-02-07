@@ -28,7 +28,7 @@ import time
 
 from absl.testing import parameterized
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods import waiting_methods
+from sdv_test_fw.verification import polling
 
 class SdvSampleCujCore27Test(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
 
@@ -124,7 +124,7 @@ class SdvSampleCujCore27Test(sdv_base_test.SdvBaseTestClass, parameterized.TestC
 
     def assert_logcat(self, sdv_device, grep_text, logcat_args, assert_msg):
         """Assert-like validator to grep logcat with the `grep_text`."""
-        waiting_methods.WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
               sdv_device=sdv_device,
               grep_text=grep_text,
               logcat_args=logcat_args,

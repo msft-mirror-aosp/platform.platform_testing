@@ -18,7 +18,7 @@ import logging
 import time
 
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 class SdvSampleApexDiscoveryTest(sdv_base_test.SdvBaseTestClass):
 
@@ -40,7 +40,7 @@ class SdvSampleApexDiscoveryTest(sdv_base_test.SdvBaseTestClass):
         logging.info(
             f'{self.get_suite_name()}#{self.current_test_info.name} started'
         )
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             self.sdv_device,
             self.APEX_LOGCAT_GREP_TEXT,
             self.EXPECTED_APEX_DISCOVERY_RESULT,

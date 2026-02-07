@@ -16,9 +16,12 @@
 
 package platform.test.screenshot
 
+import android.app.UiModeManager
+import android.content.Context
 import android.os.UserHandle
 import android.view.Display
 import android.view.WindowManagerGlobal
+import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
@@ -52,12 +55,17 @@ class ResetDeviceEmulationRule : TestRule {
                     base?.evaluate()
                 } finally {
                     clearForcedDisplaySettings()
+                    restoreDefaultFontScale()
+                    restoreDefaultNightMode()
 
                     // Reset the DeviceEmulationRule's in-memory cache about display setting have
                     // been set.
                     DeviceEmulationRule.prevDensity = -1
                     DeviceEmulationRule.prevWidth = -1
                     DeviceEmulationRule.prevHeight = -1
+
+                    DeviceEmulationRule.prevNightMode = -1
+                    DeviceEmulationRule.prevFontScale = -1f
                 }
             }
         }
@@ -68,5 +76,19 @@ class ResetDeviceEmulationRule : TestRule {
                 ?: error("Unable to acquire WindowManager")
         wm.clearForcedDisplaySize(Display.DEFAULT_DISPLAY)
         wm.clearForcedDisplayDensityForUser(Display.DEFAULT_DISPLAY, UserHandle.myUserId())
+    }
+
+    private fun restoreDefaultFontScale() {
+        InstrumentationRegistry.getInstrumentation()
+            .uiAutomation
+            .executeShellCommand("settings put system font_scale 1")
+    }
+
+    private fun restoreDefaultNightMode() {
+        val uiModeManager =
+            InstrumentationRegistry.getInstrumentation()
+                .targetContext
+                .getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+        uiModeManager.setApplicationNightMode(UiModeManager.MODE_NIGHT_NO)
     }
 }

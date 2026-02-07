@@ -28,7 +28,7 @@ import time
 
 from absl.testing import parameterized
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 class SdvCujCore25Test(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
 
@@ -185,7 +185,7 @@ class SdvCujCore25Test(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
     def test_service_bundle(self, device_name, vm_instance, package_name, bundle_name):
         self.log_enter()
         # Lifecycle manager reports that the bundle was started.
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             self.adb_devices[device_name],
             logcat_args = self.SAMPLES_LOGCAT_ARGS_LIFECYCLE_MANAGER,
             grep_text = self.LIFECYCLE_STARTED.format(bundle_name = bundle_name),
@@ -193,7 +193,7 @@ class SdvCujCore25Test(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
         )
 
         # Service bundle itself reports starting.
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             self.adb_devices[device_name],
             logcat_args = self.SAMPLES_LOGCAT_ARGS_ALL_BUNDLES,
             grep_text = self.STARTING_TEXT.format(
@@ -213,21 +213,21 @@ class SdvCujCore25Test(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
     def test_pub_sub_messages(self):
         self.log_enter()
         # FooMessage sent by ServiceBundleFoo
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device = self.adb_devices['foo_device'],
             logcat_args = self.SAMPLES_LOGCAT_ARGS_FOO,
             grep_text = self.SENT_MESSAGE,
             assert_msg = self.ERROR_MESSAGE_FOO_MESSAGE_SEND_GREP,
         )
         # FooMessage received by ServiceBundleBaz
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device = self.adb_devices['baz_device'],
             logcat_args = self.SAMPLES_LOGCAT_ARGS_BAZ,
             grep_text = self.RECEIVED_MESSAGE,
             assert_msg = self.ERROR_MESSAGE_FOO_MESSAGE_RECEIVE_GREP,
         )
         # FooMessage received by ServiceBundleBar
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device = self.adb_devices['bar_device'],
             logcat_args = self.SAMPLES_LOGCAT_ARGS_BAR,
             grep_text = self.RECEIVED_MESSAGE,
@@ -242,14 +242,14 @@ class SdvCujCore25Test(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
     def test_rpc(self):
         self.log_enter()
         # FooRPC::foo(GetFooRequest) and GetFooResponse are received.
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device = self.adb_devices['bar_device'],
             grep_text = self.RPC_REQUEST_RESPONSE,
             assert_msg = self.ERROR_MESSAGE_FOO_RPC_GREP,
         )
 
         # FooRPC::foo(GetFooRequest) and GetFooResponse are received.
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device = self.adb_devices['baz_device'],
             grep_text = self.RPC_REQUEST_RESPONSE,
             assert_msg = self.ERROR_MESSAGE_FOO_RPC_GREP,

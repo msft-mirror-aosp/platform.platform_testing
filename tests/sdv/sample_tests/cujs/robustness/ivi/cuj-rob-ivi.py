@@ -20,7 +20,6 @@ import time
 from absl.testing import parameterized
 from robustness import sdv_ivi_rob_base_test
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
 
 
 SHUTDOWN_POWER_ON_DELAY_SECONDS = 60

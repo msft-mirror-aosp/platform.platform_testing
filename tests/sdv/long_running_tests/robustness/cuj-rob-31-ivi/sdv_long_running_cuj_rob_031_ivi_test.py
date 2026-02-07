@@ -19,7 +19,7 @@ SDV sample 'CUJ-Rob-031-IVI' test.
 import logging
 
 from sdv_test_fw.test_execution import sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 from robustness import sdv_ivi_rob_base_test
 
 CHECKER_MODE_PROP = "persist.com.sdv.google.sample.checker_mode"
@@ -38,7 +38,7 @@ class SdvLongRunningCujRob031IviTest(
 
         # AND GIVEN the SdvCarMonitorTestApp is listening for the SOME/IP variant of the Foo message
         self.ivi_vm_device.execute_shell_command(self.ENABLE_SOMEIP_OBSERVER_CMD)
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=self.ivi_vm_device,
             grep_text=self.CAR_MONITOR_APP_LOG_TAG,
             expected_result="Foo message listener ready",

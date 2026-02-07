@@ -69,15 +69,27 @@ import platform.test.screenshot.TimeZoneRule
 import platform.test.screenshot.UnitTestBitmapMatcher
 import platform.test.screenshot.captureToBitmapAsync
 import platform.test.screenshot.dialogScreenshotTest
+import platform.test.screenshot.matchers.BitmapMatcher
 
 /** A rule for Compose screenshot diff tests. */
 class ComposeScreenshotTestRule(
     private val emulationSpec: DeviceEmulationSpec,
-    pathManager: GoldenPathManager,
-    enforcePerfectPixelMatch: Boolean = false,
-    private val screenshotRule: ScreenshotTestRule = ScreenshotTestRule(pathManager),
+    private val screenshotRule: ScreenshotTestRule,
     effectContext: CoroutineContext = EmptyCoroutineContext,
+    customMatcher: BitmapMatcher? = null,
 ) : TestRule, BitmapDiffer by screenshotRule, ScreenshotAsserterFactory by screenshotRule {
+    constructor(
+        emulationSpec: DeviceEmulationSpec,
+        pathManager: GoldenPathManager,
+        enforcePerfectPixelMatch: Boolean = false,
+        effectContext: CoroutineContext = EmptyCoroutineContext,
+    ) : this(
+        emulationSpec,
+        ScreenshotTestRule(pathManager),
+        effectContext,
+        if (enforcePerfectPixelMatch) PerfectMatcher else null,
+    )
+
     private val timeZoneRule = TimeZoneRule()
     private val colorsRule = MaterialYouColorsRule()
     private val fontsRule = FontsRule()
@@ -86,24 +98,25 @@ class ComposeScreenshotTestRule(
     private val activityRule =
         ActivityScenarioRule(
             ScreenshotActivity::class.java,
-            ActivityOptions.makeBasic().apply {
-                launchWindowingMode = WindowConfiguration.WINDOWING_MODE_FULLSCREEN
-            }.toBundle(),
+            ActivityOptions.makeBasic()
+                .apply { launchWindowingMode = WindowConfiguration.WINDOWING_MODE_FULLSCREEN }
+                .toBundle(),
         )
 
     @OptIn(ExperimentalTestApi::class)
-    val composeRule = AndroidComposeTestRule(
-        activityRule = activityRule,
-        effectContext = effectContext,
-        activityProvider = {
-            var activity: ScreenshotActivity? = null
-            activityRule.scenario.onActivity { activity = it }
-            if (activity == null) {
-                throw IllegalStateException("Activity was not set in the ActivityScenarioRule!")
-            }
-            return@AndroidComposeTestRule activity
-        }
-    )
+    val composeRule =
+        AndroidComposeTestRule(
+            activityRule = activityRule,
+            effectContext = effectContext,
+            activityProvider = {
+                var activity: ScreenshotActivity? = null
+                activityRule.scenario.onActivity { activity = it }
+                if (activity == null) {
+                    throw IllegalStateException("Activity was not set in the ActivityScenarioRule!")
+                }
+                return@AndroidComposeTestRule activity
+            },
+        )
 
     private val commonRule =
         RuleChain.outerRule(deviceEmulationRule).around(screenshotRule).around(composeRule)
@@ -116,12 +129,7 @@ class ComposeScreenshotTestRule(
             .around(colorsRule)
             .around(hardwareRenderingRule)
             .around(commonRule)
-    private val matcher =
-        if (enforcePerfectPixelMatch) {
-            PerfectMatcher
-        } else {
-            UnitTestBitmapMatcher
-        }
+    private val matcher = customMatcher ?: UnitTestBitmapMatcher
 
     private val isRobolectric = Build.FINGERPRINT.contains("robolectric")
 

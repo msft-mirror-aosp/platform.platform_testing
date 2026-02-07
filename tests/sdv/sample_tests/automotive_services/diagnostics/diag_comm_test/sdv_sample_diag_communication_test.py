@@ -25,7 +25,7 @@ from absl.testing import parameterized
 from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 from sdv_test_fw.test_execution import sdv_base_test
 from sdv_test_fw.test_execution import sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 
 class SdvSampleDiagCommunicationTest(
@@ -566,7 +566,7 @@ class SdvSampleDiagCommunicationTest(
                 f'Timeout waiting for dumpsys chunks: {lines}.'
                 ' Check debug logs for the last dumpsys report.'
             )
-            WaitingMethods.wait_for_true(
+            polling.wait_for_true(
                 self._check_dumpsys,
                 self.sdv_device_server,
                 lines,
@@ -608,7 +608,7 @@ class SdvSampleDiagCommunicationTest(
                 f'Timeout waiting for dumpsys chunks: {lines}.'
                 ' Check debug logs for the last dumpsys report.'
             )
-            WaitingMethods.wait_for_true(
+            polling.wait_for_true(
                 self._check_dumpsys,
                 self.sdv_device_server,
                 lines,

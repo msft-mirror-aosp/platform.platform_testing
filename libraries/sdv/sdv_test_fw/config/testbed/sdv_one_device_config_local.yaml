@@ -12,17 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Two devices with fixed ports
 # For local test run only
 
 TestBeds:
-  - Name: TwoDevicesTestBedLocal
+  - Name: OneDeviceTestBedLocal
     Controllers:
       AndroidDevice:
-        - serial: 0.0.0.0:6520
+        - serial: serial_number
           label: device1
-        - serial: 0.0.0.0:6521
-          label: device2
     TestParams:
-      number_of_devices: 2
+      number_of_devices: 1
       env: local

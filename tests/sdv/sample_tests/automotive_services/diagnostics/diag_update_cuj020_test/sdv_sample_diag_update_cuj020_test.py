@@ -22,7 +22,7 @@ import time
 import os
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 from sdv_test_fw.update.update_manager_base_class import UpdateManagerBaseClass
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 
 class SdvSampleDiagUpdateTest(sdv_base_test.SdvBaseTestClass, UpdateManagerBaseClass):
@@ -62,7 +62,7 @@ class SdvSampleDiagUpdateTest(sdv_base_test.SdvBaseTestClass, UpdateManagerBaseC
         self.adb_shell(self.START_BUNDLE_COMMAND)
 
         # wait for diagnostic agent reporting correct routine response from bundle v1:
-        WaitingMethods.wait_and_verify_expected_logs(self.sdv_device.adb(),
+        polling.wait_and_verify_expected_logs(self.sdv_device.adb(),
                                                      grep_text=self.DIAG_AGENT_TAG,
                                                      expected_result=self.RE_WHEN_BUNDLE_V1)
 
@@ -72,11 +72,11 @@ class SdvSampleDiagUpdateTest(sdv_base_test.SdvBaseTestClass, UpdateManagerBaseC
         self.adb_shell(self.START_BUNDLE_COMMAND)
 
         # wait for diag agent logs reporting new rotuine and modified routine:
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             self.sdv_device.adb(),
             grep_text=self.DIAG_AGENT_TAG,
             expected_result=self.RE_WHEN_BUNDLE_V2_1)
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             self.sdv_device.adb(),
             grep_text=self.DIAG_AGENT_TAG,
             expected_result=self.RE_WHEN_BUNDLE_V2_1)

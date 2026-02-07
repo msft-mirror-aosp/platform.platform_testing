@@ -27,7 +27,7 @@ from enum import Enum
 
 from sdv_test_fw.device import sdv_adb
 from sdv_test_fw.test_execution import sdv_base_test
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 
 @dataclass
@@ -172,7 +172,7 @@ class SdvSBLifecycleRobustnessTestBase(sdv_base_test.SdvBaseTestClass):
 
     def verify_bundle_lifecycle(self, service_bundle, transition):
         """Verifies that a service bundle has reached a specific lifecycle state."""
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             service_bundle.adb_device,
             logcat_args=self.LOGCAT_ARGS.format(tag="lifecycle_manager"),
             grep_args="-E",
@@ -194,7 +194,7 @@ class SdvSBLifecycleRobustnessTestBase(sdv_base_test.SdvBaseTestClass):
         # Ensure no old messages are picked up
         service_bundle.adb_device.clear_logcat()
         # FooMessage received by service_bundle
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device=service_bundle.adb_device,
             logcat_args=self.LOGCAT_ARGS.format(tag=service_bundle.tag),
             grep_text=self.RECEIVED_MESSAGE,

@@ -17,7 +17,7 @@ SDV VHAL Proxy SDV Subscriber IVI Publisher Test
 """
 
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 
 class SdvVhalProxySdvSubscriberIviPublisherTest(
@@ -70,7 +70,7 @@ class SdvVhalProxySdvSubscriberIviPublisherTest(
         expected_log = self.EXPECTED_VHAL_PROXY_LOG.format(
             expect_value=self.TEST_VALUE
         )
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             self.core_vm_device,
             grep_text=expected_log,
             timeout=60,

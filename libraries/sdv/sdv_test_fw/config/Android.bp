@@ -40,8 +40,10 @@ filegroup {
     srcs: ["test_config/sdv-three-devices.xml"],
 }
 
-// SDV test config exception templates. Only use in special circumstances.
+// SDV test config templates to use only in special circumstances.
 // TODO(b/339164406): Use templates extension instead once we figure out how.
+
+// SDV tests that require slightly longer execution time
 filegroup {
     name: "sdv_one_device_long_test",
     srcs: ["test_config/exceptions/sdv-one-device-long.xml"],
@@ -52,7 +54,7 @@ filegroup {
     srcs: ["test_config/exceptions/sdv-two-devices-long.xml"],
 }
 
-// for SDV long running tests (over 10 hours)
+// for SDV robustness and long-running tests (over 10 hours)
 filegroup {
     name: "sdv_one_device_long_running_test",
     srcs: ["test_config/long_running/sdv-one-device-long-running.xml"],
@@ -67,6 +69,8 @@ filegroup {
     name: "sdv_three_devices_long_running_test",
     srcs: ["test_config/long_running/sdv-three-devices-long-running.xml"],
 }
+
+// SDV userbuild templates
 
 // SDV configuration file for 2 no root devices.
 filegroup {

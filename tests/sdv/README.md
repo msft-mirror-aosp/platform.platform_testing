@@ -66,11 +66,11 @@ Ensure you are sync and have built most recent version.
 ### CATBox tests
 
 1. Build catbox: `m catbox`
-1. Navigate to CATbox location: `cd out/host/linux-x86/catbox/android-catbox/`
+1. The following commands assume you are at the root of the repo
 1. Check available test plans for SDV
 
     ```bash
-    ./tools/catbox-tradefed l p | grep sdv
+    ./out/host/linux-x86/catbox/android-catbox/tools/catbox-tradefed l p | grep sdv
     ```
 
 1. Execute test
@@ -78,13 +78,17 @@ Ensure you are sync and have built most recent version.
    - One device:
 
     ```bash
-    NOTIFY_AS_NATIVE=0.0.0.0:6520 ./tools/catbox-tradefed run commandAndExit \
-        <test_name> --{device1}serial 0.0.0.0:6520
+    NOTIFY_AS_NATIVE=0.0.0.0:6520 ./out/host/linux-x86/catbox/android-catbox/tools/catbox-tradefed run commandAndExit <test_name> --{device1}serial 0.0.0.0:6520 --mobly-config-file-name sdv_one_device_config_local.yaml
     ```
 
     - Two devices:
 
     ```bash
-    NOTIFY_AS_NATIVE=0.0.0.0:6520,0.0.0.0:6521 ./tools/catbox-tradefed run commandAndExit \
-        <test_name> --{device1}serial 0.0.0.0:6520 --{device2}serial 0.0.0.0:6521
+    NOTIFY_AS_NATIVE=0.0.0.0:6520,0.0.0.0:6521 ./out/host/linux-x86/catbox/android-catbox/tools/catbox-tradefed run commandAndExit <test_name> --{device1}serial 0.0.0.0:6520 --{device2}serial 0.0.0.0:6521 --mobly-config-file-name sdv_two_devices_config_local.yaml
+    ```
+
+    - Three devices:
+
+    ```bash
+    NOTIFY_AS_NATIVE=0.0.0.0:6520,0.0.0.0:6521,0.0.0.0:6522 ./out/host/linux-x86/catbox/android-catbox/tools/catbox-tradefed run commandAndExit <test_name> --{device1}serial 0.0.0.0:6520 --{device2}serial 0.0.0.0:6521 --{device3}serial 0.0.0.0:6522 --mobly-config-file-name sdv_three_devices_config_local.yaml
     ```

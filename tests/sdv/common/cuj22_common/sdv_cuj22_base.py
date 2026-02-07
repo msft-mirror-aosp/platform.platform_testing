@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 from vpm.sdv_vpm import SdvVpm
 
 # This base class should be started with two VMs.
@@ -73,7 +73,7 @@ class SdvCuj22Base():
         error_message_creation_grep = \
         '\n[FAILURE]: Service Bundle expected to be started.'
 
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device = device,
             grep_text = starting_text.format(
                 vm_instance = vm_instance,
@@ -94,13 +94,13 @@ class SdvCuj22Base():
             '\n[FAILURE]: Service Bundle expected to send/receive Foo Message.'
 
         # FooMessage sent by ServiceBundleFoo
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device = self.adb_device_server,
             grep_text = sent_message,
             assert_msg = error_message_foo_message_grep,
         )
         # FooMessage received by ServiceBundleBar
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device = self.adb_device_client,
             grep_text = received_message,
             assert_msg = error_message_foo_message_grep,
@@ -117,7 +117,7 @@ class SdvCuj22Base():
 
 
         # FooRPC::foo(GetFooRequest) and GetFooResponse are received.
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device = self.adb_device_client,
             grep_text = rpc_request_response,
             assert_msg = error_message_foo_rpc_grep,
@@ -130,7 +130,7 @@ class SdvCuj22Base():
         authz_pubsub_unit_type_log = 'com.sdv.google.sample.foo.FooMessage allows access to instance.*:com.sdv.google.sample.foo.ServiceBundleFoo/instance'
 
         # Publisher is authorized to publish message.
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device = self.adb_device_server,
             grep_text = authz_pubsub_unit_type_log,
             assert_msg = self.ERROR_MESSAGE_AUTHZ_PUBLISHER_GREP,
@@ -145,7 +145,7 @@ class SdvCuj22Base():
 
         # Subscriber is authorized to discover and to subscribe
         # to the publisher.
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device = self.adb_device_client,
             grep_text = authz_pubsub_service_unit_log,
             assert_msg = self.ERROR_MESSAGE_AUTHZ_PUBLISHER_GREP,
@@ -160,13 +160,13 @@ class SdvCuj22Base():
             '\n[FAILURE]: Service Bundle expected to be authorized to implement RPC interface'
 
         # RPC server is authorized to implement RPC interface.
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device = self.adb_device_server,
             grep_text = authz_rpc_unit_type_log,
             assert_msg = error_message_authz_rpc_server_grep,
         )
         # RPC client is authorized to connect to the RPC server.
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device = self.adb_device_server,
             grep_text = self.AUTHZ_RPC_SERVICE_UNIT_LOG,
             assert_msg = self.ERROR_MESSAGE_AUTHZ_RPC_CLIENT_GREP,
@@ -177,7 +177,7 @@ class SdvCuj22Base():
         Verify logs that RPC client is authorized
         """
         # RPC client is authorized to discover the RPC server.
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             sdv_device = self.adb_device_client,
             grep_text = self.AUTHZ_RPC_SERVICE_UNIT_LOG,
             assert_msg = self.ERROR_MESSAGE_AUTHZ_RPC_CLIENT_GREP,
@@ -221,7 +221,7 @@ class SdvCuj22Base():
             )
             return log_message is not None
 
-        WaitingMethods.wait_for_true(
+        polling.wait_for_true(
             _check_for_new_log, device_adb, grep_text, initial_timestamp, n_occurrences, timeout=timeout
         )
 

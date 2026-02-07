@@ -52,7 +52,7 @@ import time
 
 from absl.testing import parameterized
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 class SdvAuthzNegativeTest(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
 
@@ -136,7 +136,7 @@ class SdvAuthzNegativeTest(sdv_base_test.SdvBaseTestClass, parameterized.TestCas
             assert_msg: The failure assertion message.
         """
 
-        if not WaitingMethods.wait_and_verify_expected_logs(sdv_device, grep_text):
+        if not polling.wait_and_verify_expected_logs(sdv_device, grep_text):
             logcat_grep_result = sdv_device.grep_from_logcat(grep_text, self.TESTING_SERVICES_LOGCAT_ARGS)
             asserts.assert_in(
                 grep_text,

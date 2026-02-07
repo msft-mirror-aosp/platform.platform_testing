@@ -17,7 +17,7 @@
 import logging
 
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 SD_AGENT_FQIN = 'google.sdv.service_discovery.discovery.IServiceDiscoveryAgent/default'
 LC_AGENT_FQIN = 'google.sdv.lifecycle.ILifecycleManager/default'
@@ -34,7 +34,7 @@ class SdvSampleCujCore26Test(sdv_base_test.SdvBaseTestClass):
         self.adb_device.wait_for_device_online()
 
     def _wait_and_verify_expected_logs(self, log_entry_to_find):
-        WaitingMethods.wait_and_verify_expected_logs(
+        polling.wait_and_verify_expected_logs(
             self.adb_device,
             grep_text=log_entry_to_find,
             expected_result=log_entry_to_find,
@@ -63,7 +63,7 @@ class SdvSampleCujCore26Test(sdv_base_test.SdvBaseTestClass):
         )
 
         for string_to_check in CHECK_STRINGS_IN_LOG_FILE:
-            WaitingMethods.wait_for_true(
+            polling.wait_for_true(
                 lambda: self._check_string_in_file(someip_tester_log_file, string_to_check),
                 assert_msg=f'"{string_to_check}" not found in {someip_tester_log_file}'
             )
@@ -80,7 +80,7 @@ class SdvSampleCujCore26Test(sdv_base_test.SdvBaseTestClass):
         """CUJ-CORE-26 test."""
         logging.info('Start test CUJ-CORE-26')
 
-        WaitingMethods.wait_for_true(
+        polling.wait_for_true(
             lambda: self._check_service_bundle_online(CUJ26_FQIN, CUJ26_UNIT_TYPE, CUJ26_SERVICE_UNIT),
             assert_msg="ServiceBundleCuj26 has not started"
         )

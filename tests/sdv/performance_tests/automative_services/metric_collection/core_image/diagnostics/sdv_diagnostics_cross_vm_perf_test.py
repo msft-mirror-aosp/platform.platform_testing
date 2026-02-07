@@ -18,7 +18,7 @@ Test runs two SDV Core instances, and collects metrics related to diagnostics cr
 
 import re
 import time
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 from sdv_perfetto import perfetto_collector, perfetto_trace_processor
 from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
@@ -59,7 +59,7 @@ class SdvDiagnosticsCrossVMPerfTest(
         self.device2.reboot_device()
         self.device2.wait_for_device_online()
 
-        WaitingMethods.wait_for_true(
+        polling.wait_for_true(
             self.dumpsys_diagnostics_found, assert_msg="Diagnostic agent dumpsys does not report that data item was read", poll_interval=0.5)
 
         traces = perfetto_trace_processor.PerfettoTraceProcessor(

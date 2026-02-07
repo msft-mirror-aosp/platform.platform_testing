@@ -24,7 +24,7 @@ import re
 import time
 
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 from mobly.controllers.android_device_lib.adb import AdbError
 
 class SdvE2EUdsCertsProvisionerTest(sdv_base_test.SdvBaseTestClass):
@@ -67,7 +67,7 @@ class SdvE2EUdsCertsProvisionerTest(sdv_base_test.SdvBaseTestClass):
 
     def wait_for_uds_certs_file(self):
         # wait for 500 ms maximum, creating the file should be instantaneous
-        WaitingMethods.wait_for_true(
+        polling.wait_for_true(
             func=self.uds_certs_file_exists,
             timeout=0.5,
         )
