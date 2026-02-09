@@ -66,7 +66,7 @@ class SdvSBLifecycleRobustnessTestBase(sdv_base_test.SdvBaseTestClass):
     LOGCAT_LIFECYCLE_REGEX = "Service bundle.*{bundle_package}.*{bundle_name}.*{regex}"
 
     # Foo VM properties
-    SYS_PROP_FOO_PUB_INTERVAL = "persist.com.sdv.google.sample.foo.pub_interval_ms"
+    SYS_PROP_FOO_PUB_INTERVAL = "persist.com.android.sdv.sample.foo.pub_interval_ms"
     FOO_PUB_INTERVAL_IN_MS = 200
 
     # Bar VM properties
@@ -111,9 +111,9 @@ class SdvSBLifecycleRobustnessTestBase(sdv_base_test.SdvBaseTestClass):
         self.foo_bundle = ServiceBundle(
             adb_device=foo_device,
             name="ServiceBundleFoo",
-            package="com.sdv.google.sample.foo",
-            fqin="local-vm:com.sdv.google.sample.foo.ServiceBundleFoo/instance",
-            tag="com_sdv_google_sample_foo_ServiceBundleFoo_instance",
+            package="com.android.sdv.sample.foo",
+            fqin="local-vm:com.android.sdv.sample.foo.ServiceBundleFoo/instance",
+            tag="com_android_sdv_sample_foo_ServiceBundleFoo_instance",
         )
 
         # Setup Bar ServiceBundle

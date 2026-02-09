@@ -32,9 +32,9 @@ from sdv_test_fw.verification import polling
 
 class SdvCujCore8Test(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
 
-    SAMPLES_LOGCAT_ARGS_ALL_BUNDLES = '*:F com_sdv_google_sample_foo_ServiceBundleFoo_instance:* com_sdv_google_sample_bar_ServiceBundleBar_instance:* com_sdv_google_sample_baz_ServiceBundleBaz_instance:*'
+    SAMPLES_LOGCAT_ARGS_ALL_BUNDLES = '*:F com_android_sdv_sample_foo_ServiceBundleFoo_instance:* com_sdv_google_sample_bar_ServiceBundleBar_instance:* com_sdv_google_sample_baz_ServiceBundleBaz_instance:*'
     SAMPLES_LOGCAT_ARGS_LIFECYCLE_MANAGER = '*:F lifecycle_manager:*'
-    SAMPLES_LOGCAT_ARGS_FOO = '*:F com_sdv_google_sample_foo_ServiceBundleFoo_instance:*'
+    SAMPLES_LOGCAT_ARGS_FOO = '*:F com_android_sdv_sample_foo_ServiceBundleFoo_instance:*'
     SAMPLES_LOGCAT_ARGS_BAR = '*:F com_sdv_google_sample_bar_ServiceBundleBar_instance:*'
     SAMPLES_LOGCAT_ARGS_BAZ = '*:F com_sdv_google_sample_baz_ServiceBundleBaz_instance:*'
 
@@ -112,7 +112,7 @@ class SdvCujCore8Test(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
             'testcase_name': 'foo',
             'device_name': 'foo_baz_device',
             'vm_instance': 'instance1',
-            'package_name': 'com.sdv.google.sample.foo',
+            'package_name': 'com.android.sdv.sample.foo',
             'bundle_name' : 'ServiceBundleFoo'
         },
         {

@@ -39,7 +39,7 @@ from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 
 class SdvCujCore22UserBuildTest(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
 
-    LOGCAT_ARGS = '*:F com_sdv_google_sample_foo_ServiceBundleFoo_instance:* com_sdv_google_sample_bar_ServiceBundleBar_instance:* SdvServiceManagerServer:*'
+    LOGCAT_ARGS = '*:F com_android_sdv_sample_foo_ServiceBundleFoo_instance:* com_sdv_google_sample_bar_ServiceBundleBar_instance:* SdvServiceManagerServer:*'
 
     # Test Parameters - logcat messages.
     RECEIVED_MESSAGE = 'Received.*FooMessage.*42'
