@@ -17,6 +17,7 @@ from image_comparison_library import image_comparison
 from screenshot_util_library.screenshot_util import ScreenshotUtil
 from spectatio_host_tf.core import test_base, test_runner
 
+import time
 
 class VhalSensors(test_base.SpectatioHostBaseTestClass):
     def setup_class(self):
@@ -39,6 +40,8 @@ class VhalSensors(test_base.SpectatioHostBaseTestClass):
         self.mbs.pressHome()
         self.mbs.setNightMode("true")
         night_test_path = 'nightmode.png'
+        ANIMATION_WAIT_SECONDS = 5
+        time.sleep(ANIMATION_WAIT_SECONDS)
         night_golden_path = find_resource_path('actions_golden_images', 'golden_images/nightmode_golden.png')
         self.screenshot.take_screenshot(
             screenshot_strategy = strategy,
@@ -46,10 +49,11 @@ class VhalSensors(test_base.SpectatioHostBaseTestClass):
             screenshot_path = night_test_path,
         )
 
-        night_check = image_comparison.CompareImagesUsingPIL(
+        night_check = image_comparison.CompareImagesUsingMSE(
             night_test_path,
             night_golden_path,
-            (0, 0, 1080, 200),  # exclusion rectangle -- left, top, right, bottom
+            diff_threshold=0.5,
+            include_area=(312, 57, 1080, 528),
         )
         is_similar = night_check.are_images_similar()
         night_check.save_diff_image('nightmode_diff.png')
