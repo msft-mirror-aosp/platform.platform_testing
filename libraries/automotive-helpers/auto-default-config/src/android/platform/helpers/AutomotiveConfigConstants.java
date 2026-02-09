@@ -203,6 +203,7 @@ public class AutomotiveConfigConstants {
     public static final String LOCK_SCREEN_COMMAND = "LOCK_SCREEN_COMMAND";
     public static final String LOCK_SCREEN_EDIT_TEXT = "LOCK_SCREEN_EDIT_TEXT";
     public static final String LOCK_SCREEN_CONFIRM_BUTTON = "LOCK_SCREEN_CONFIRM_BUTTON";
+    public static final String SET_LOCK_SCREEN = "SET_LOCK_SCREEN";
 
     // Notification App Constants
     public static final String OPEN_NOTIFICATIONS_COMMAND = "OPEN_NOTIFICATIONS_COMMAND";
@@ -580,7 +581,6 @@ public class AutomotiveConfigConstants {
     public static final String USER_SETTINGS_SCROLL_MARGIN = "USER_SETTINGS_SCROLL_MARGIN";
     public static final String USER_SETTINGS_SCROLL_WAIT_TIME = "USER_SETTINGS_SCROLL_WAIT_TIME";
     public static final String SKIP_SETUP_WIZARD = "SKIP_SETUP_WIZARD";
-
     // Account Settings Constants
     public static final String ACCOUNT_SETTINGS_SCROLL_ACTION = "ACCOUNT_SETTINGS_SCROLL_ACTION";
     public static final String ACCOUNT_SETTINGS_SCROLL_DIRECTION =
@@ -790,6 +790,9 @@ public class AutomotiveConfigConstants {
     public static final String PRIVACY_CALENDAR = "PRIVACY_CALENDAR";
     public static final String RECENT_PERMISSION_DECISIONS = "RECENT_PERMISSION_DECISIONS";
     public static final String MICROPHONE_PERMISSIONS_PAGE = "MICROPHONE_PERMISSIONS_PAGE";
+    public static final String LOCK_SCREEN_PIN = "LOCK_SCREEN_PIN";
+    public static final String LOCK_SCREEN_ON_PROFILES = "LOCK_SCREEN_ON_PROFILES";
+    public static final String CLEAR_SET_LOCK = "CLEAR_SET_LOCK";
 
     // BT related
     public static final String BT_CONNECTED_STATUS = "BT_CONNECTED_STATUS";

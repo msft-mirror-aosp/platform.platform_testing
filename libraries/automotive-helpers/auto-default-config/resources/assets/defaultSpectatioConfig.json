@@ -81,7 +81,10 @@
     "DATE_COMMAND": "date",
     "ADAPTIVE_BRIGHTNESS_COMMAND": "settings get system screen_brightness_mode",
     "LOCK_SCREEN_COMMAND": "input text %s",
-    "LOCATION_ENABLE_COMMAND": "cmd location set-location-enabled true"
+    "LOCATION_ENABLE_COMMAND": "cmd location set-location-enabled true",
+    "LOCK_SCREEN_PIN": "cmd lock_settings set-pin --user %s 1013",
+    "CLEAR_SET_LOCK": "cmd lock_settings clear --old 1013",
+    "SET_LOCK_SCREEN": "input text %s"
   },
   "UI_ELEMENTS": {
     "MAKE_CALL": {
@@ -985,6 +988,19 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "key_enter",
       "PACKAGE": "com.android.systemui"
+    },
+    "LOCK_SCREEN_PROFILE_EDIT": {
+      "TYPE": "MULTIPLE",
+      "SPECIFIERS": [
+        {
+          "TYPE": "CLASS",
+          "VALUE": "android.widget.EditText"
+        },
+        {
+              "TYPE": "DESCRIPTION",
+              "VALUE": "PIN area"
+        }
+      ]
     },
     "LOCK_TYPE_PASSWORD": {
       "TYPE": "TEXT",
@@ -2967,6 +2983,10 @@
     "PERMISSION_USED_BY_SYSTEM": {
       "TYPE": "TEXT",
       "VALUE": "Permission used by the system"
+    },
+    "LOCK_SCREEN_ON_PROFILES": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "pinEntry"
     }
   },
   "WORKFLOWS": {
