@@ -17,6 +17,7 @@
 package android.tools.flicker.subject.wm
 
 import android.tools.Rotation
+import android.tools.flicker.assertions.AssertionsChecker
 import android.tools.flicker.subject.FlickerTraceSubject
 import android.tools.flicker.subject.region.RegionTraceSubject
 import android.tools.function.AssertionPredicate
@@ -55,12 +56,48 @@ import java.util.function.Predicate
  */
 class WindowManagerTraceSubject
 @JvmOverloads
-constructor(val trace: WindowManagerTrace, override val reader: Reader? = null) :
-    FlickerTraceSubject<WindowManagerStateSubject>(),
+constructor(
+    val trace: WindowManagerTrace,
+    override val reader: Reader? = null,
+    val displayId: Int? = null,
+    assertionsChecker: AssertionsChecker<WindowManagerStateSubject> = AssertionsChecker(),
+) :
+    FlickerTraceSubject<WindowManagerStateSubject>(assertionsChecker),
     IWindowManagerSubject<WindowManagerTraceSubject, RegionTraceSubject> {
 
     override val subjects by lazy {
-        trace.entries.map { WindowManagerStateSubject(it, reader, this) }
+        trace.entries.map { WindowManagerStateSubject(it, reader, this, displayId = null) }
+    }
+
+    /** {@inheritDoc} */
+    override fun onDisplay(displayId: Int): WindowManagerTraceSubject =
+        WindowManagerTraceSubject(trace, reader, displayId, assertionsChecker)
+
+    /** {@inheritDoc} */
+    override fun addAssertion(
+        name: String,
+        isOptional: Boolean,
+        assertion: AssertionPredicate<WindowManagerStateSubject>,
+    ) {
+        val displayId = this.displayId
+        val scopedAssertion =
+            AssertionPredicate<WindowManagerStateSubject> {
+                val scopedSubject = if (displayId != null) it.onDisplay(displayId) else it
+                assertion.verify(scopedSubject)
+            }
+        super.addAssertion(name, isOptional, scopedAssertion)
+    }
+
+    /** {@inheritDoc} */
+    override fun first(): WindowManagerStateSubject {
+        val first = super.first()
+        return if (displayId != null) first.onDisplay(displayId) else first
+    }
+
+    /** {@inheritDoc} */
+    override fun last(): WindowManagerStateSubject {
+        val last = super.last()
+        return if (displayId != null) last.onDisplay(displayId) else last
     }
 
     /** {@inheritDoc} */
@@ -108,7 +145,10 @@ constructor(val trace: WindowManagerTrace, override val reader: Reader? = null) 
      * To search
      */
     fun windowStates(predicate: Predicate<WindowState>): List<WindowStateSubject> {
-        return subjects.mapNotNull { it.windowState { window -> predicate.test(window) } }
+        return subjects.mapNotNull {
+            val scopedSubject = if (displayId != null) it.onDisplay(displayId) else it
+            scopedSubject.windowState { window -> predicate.test(window) }
+        }
     }
 
     /** {@inheritDoc} */
@@ -360,7 +400,10 @@ constructor(val trace: WindowManagerTrace, override val reader: Reader? = null) 
         val regionTrace =
             RegionTrace(
                 componentMatcher,
-                subjects.map { it.visibleRegion(componentMatcher).regionEntry },
+                subjects.map {
+                    val scopedSubject = if (displayId != null) it.onDisplay(displayId) else it
+                    scopedSubject.visibleRegion(componentMatcher).regionEntry
+                },
             )
 
         return RegionTraceSubject(regionTrace, reader)
@@ -592,8 +635,10 @@ constructor(val trace: WindowManagerTrace, override val reader: Reader? = null) 
                 ComponentNameMatcher.EDGE_BACK_GESTURE_HANDLER,
             )
     ): WindowManagerTraceSubject = apply {
+        val displayId = this.displayId
         visibleEntriesShownMoreThanOneConsecutiveTime { subject ->
-            subject.wmState.windowStates
+            val scopedSubject = if (displayId != null) subject.onDisplay(displayId) else subject
+            scopedSubject.wmState.windowStates
                 .filter { it.isVisible }
                 .filter { window ->
                     ignoreWindows.none { matcher -> matcher.windowMatchesAnyOf(window) }
@@ -622,6 +667,8 @@ constructor(val trace: WindowManagerTrace, override val reader: Reader? = null) 
      *
      * @param timestamp of the entry
      */
-    fun getEntryByElapsedTimestamp(timestamp: Long): WindowManagerStateSubject =
-        subjects.first { it.wmState.timestamp.elapsedNanos == timestamp }
+    fun getEntryByElapsedTimestamp(timestamp: Long): WindowManagerStateSubject {
+        val entry = subjects.first { it.wmState.timestamp.elapsedNanos == timestamp }
+        return if (displayId != null) entry.onDisplay(displayId) else entry
+    }
 }

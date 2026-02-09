@@ -273,7 +273,7 @@ constructor(
             withAppTransitionIdle(displayId)
                 .withNavOrTaskBarVisible()
                 .withStatusBarVisible()
-                .add(ConditionsFactory.isHomeActivityVisible())
+                .add(ConditionsFactory.isHomeActivityVisible(displayId))
                 .add(ConditionsFactory.isLauncherLayerVisible())
 
         /**
@@ -324,7 +324,7 @@ constructor(
         @JvmOverloads
         fun withRecentsActivityVisible(displayId: Int = Display.DEFAULT_DISPLAY) =
             withAppTransitionIdle(displayId)
-                .add(ConditionsFactory.isRecentsActivityVisible())
+                .add(ConditionsFactory.isRecentsActivityVisible(displayId))
                 .add(ConditionsFactory.isLayerVisible(LAUNCHER))
 
         /**
@@ -377,8 +377,8 @@ constructor(
             displayId: Int = Display.DEFAULT_DISPLAY,
         ) =
             withAppTransitionIdle(displayId)
-                .add(ConditionsFactory.containsActivity(componentMatcher).negate())
-                .add(ConditionsFactory.containsWindow(componentMatcher).negate())
+                .add(ConditionsFactory.containsActivity(componentMatcher, displayId).negate())
+                .add(ConditionsFactory.containsWindow(componentMatcher, displayId).negate())
 
         /**
          * Wait until the splash screen and snapshot starting windows no longer exist, no layers are
@@ -540,16 +540,30 @@ constructor(
             add(ConditionsFactory.isLayerVisible(TRANSITION_SNAPSHOT).negate())
 
         /** Waits until the is no top visible app window in the [WindowManagerState] */
-        fun withoutTopVisibleAppWindows() =
-            add("noAppWindowsOnTop") { it.wmState.topVisibleAppWindow == null }
+        @JvmOverloads
+        fun withoutTopVisibleAppWindows(displayId: Int? = null) =
+            add("noAppWindowsOnTop[display=$displayId]") {
+                val topVisible =
+                    if (displayId == null) it.wmState.topVisibleAppWindow
+                    else it.wmState.getTopVisibleAppWindow(displayId)
+                topVisible == null
+            }
 
         /** Waits until the keyguard is showing */
         fun withKeyguardShowing() = add("withKeyguardShowing") { it.wmState.isKeyguardShowing }
 
         /** Waits until the given app is the top visible app window. */
-        fun withTopVisibleApp(componentMatcher: IComponentMatcher): StateSyncBuilder {
-            return add("withTopVisibleApp") {
-                val topVisible = it.wmState.topVisibleAppWindow
+        @JvmOverloads
+        fun withTopVisibleApp(
+            componentMatcher: IComponentMatcher,
+            displayId: Int? = null,
+        ): StateSyncBuilder {
+            return add(
+                "withTopVisibleApp[${componentMatcher.toWindowIdentifier()}, display=$displayId]"
+            ) {
+                val topVisible =
+                    if (displayId == null) it.wmState.topVisibleAppWindow
+                    else it.wmState.getTopVisibleAppWindow(displayId)
                 return@add topVisible != null && componentMatcher.windowMatchesAnyOf(topVisible)
             }
         }
@@ -563,10 +577,28 @@ constructor(
          * ensures there are enough visible windows and that each window matches its corresponding
          * matcher.
          */
-        fun withTopVisibleApps(vararg matchers: IComponentMatcher): StateSyncBuilder {
-            return add("withTopVisibleApps") {
+        fun withTopVisibleApps(vararg matchers: IComponentMatcher): StateSyncBuilder =
+            withTopVisibleApps(*matchers, displayId = null)
+
+        /**
+         * Adds a condition to check if the top visible application windows match the given matchers
+         * in order on a specific display.
+         *
+         * This function verifies that the top visible app windows match the provided
+         * `IComponentMatcher` instances in the order they are specified. It ensures there are
+         * enough visible windows and that each window matches its corresponding matcher.
+         */
+        fun withTopVisibleApps(
+            vararg matchers: IComponentMatcher,
+            displayId: Int? = null,
+        ): StateSyncBuilder {
+            return add("withTopVisibleApps[display=$displayId]") {
+                val visibleAppWindows =
+                    if (displayId == null) it.wmState.visibleAppWindows
+                    else it.wmState.getVisibleAppWindows(displayId)
+
                 val visibleApps =
-                    it.wmState.visibleAppWindows.filter { appWindow ->
+                    visibleAppWindows.filter { appWindow ->
                         TOP_APPS_IGNORE_MATCHERS.none { matcher ->
                             matcher.windowMatchesAnyOf(appWindow)
                         }
