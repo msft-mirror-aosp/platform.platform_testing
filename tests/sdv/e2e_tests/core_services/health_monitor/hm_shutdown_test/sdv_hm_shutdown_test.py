@@ -73,8 +73,7 @@ class SdvHmShutdownTest(sdv_base_test.SdvBaseTestClass):
             logging.info("Initiating VM shutdown. The device will go offline.")
             self.device_vpm.shutdown_vm()
 
-            if not os.path.isdir(log_dir):
-                asserts.fail(f"Log directory does not exist on the host machine: {log_dir}")
+            asserts.assert_true(os.path.isdir(log_dir), f"Log directory does not exist on the host machine: {log_dir}")
 
             # There should be one .txt file containing the logcat
             log_files = os.listdir(log_dir)

@@ -51,10 +51,11 @@ class SdvE2EOrchestrationModesResetOnRebootTest(
         grep_text = "sdv_orchestration_agent:"
 
         logcat_result = self.sdv_device.grep_from_logcat(grep_text)
-        if not_expected_result in logcat_result:
-            asserts.fail(
-                f"Not expected logcat result found: {not_expected_result}"
-            )
+        asserts.assert_not_in(
+            not_expected_result,
+            logcat_result,
+            f"Not expected logcat result found: {not_expected_result}",
+        )
 
     def test_modes_reset_on_reboot(
         self

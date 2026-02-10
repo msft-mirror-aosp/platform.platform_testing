@@ -59,10 +59,11 @@ class SdvSomeIpRobBaseTestClass(sdv_base_test.SdvBaseTestClass):
 
     def verify_robustness_bundle_output(self, cuj_num, run_vsomeip_counterpart = True):
         VALID_CUJ_NUMS = [30, 31, 33]
-        if cuj_num not in VALID_CUJ_NUMS:
-            asserts.fail(
-                f"Unknown SOME/IP CUJ number: {cuj_num}"
-            )
+        asserts.assert_in(
+            cuj_num,
+            VALID_CUJ_NUMS,
+            f"Unknown SOME/IP CUJ number: {cuj_num}"
+        )
 
         self.execute_and_verify_service_bundle_action(action="start")
 

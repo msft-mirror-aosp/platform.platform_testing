@@ -70,10 +70,9 @@ class SdvSampleServiceBundleLifecycleTest(
         fqin = self.SERVICE_BUNDLE_FQIN.format(lang = lang)
         dumpsys_output = self.sdv_device.adb().execute_shell_command(self.DUMPSYS_COMMAND.format(fqin = fqin))
         service_bundle_state = dumpsys_output.split()[1]
-        if service_bundle_state == expected_state:
-            return
-
-        asserts.fail(
+        asserts.assert_equal(
+            service_bundle_state,
+            expected_state,
             f"Service bundle current state {service_bundle_state} doesn't equal expected state {expected_state}"
         )
 

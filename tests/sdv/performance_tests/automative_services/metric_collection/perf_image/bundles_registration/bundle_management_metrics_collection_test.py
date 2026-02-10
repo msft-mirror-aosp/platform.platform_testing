@@ -269,13 +269,9 @@ class BundleManagementMetricsCollectionTest(sdv_base_test.SdvBaseTestClass):
         lines = BundleManagementMetricsCollectionTest._poll_fun(
             lambda: self.sdv_device_adb.grep_from_logcat(
                 re, logcat_args="-v time,monotonic", grep_args="-E"),)
-        if lines:
-            logging.info(
-                f'Found lines "{lines}" for regex "{re}"')
-            return lines
-        else:
-            asserts.fail(
-                f'Found no loglines for regex {re}!')
+        asserts.assert_is_not_none(lines, f'Found no loglines for regex {re}!')
+        logging.info(f'Found lines "{lines}" for regex "{re}"')
+        return lines
 
     def _poll_orch_dump_bundle_state(self, expected_state: BundleState):
         def is_expected_state() -> bool:
@@ -290,12 +286,11 @@ class BundleManagementMetricsCollectionTest(sdv_base_test.SdvBaseTestClass):
                     return False
             return True
 
-        if BundleManagementMetricsCollectionTest._poll_fun(is_expected_state):
-            logging.info(
-                f"Orch reports perf bundles in expected state: {expected_state}")
-        else:
-            asserts.fail(
-                "Orch reports perf bundles in unexpected state")
+        asserts.assert_true(
+            BundleManagementMetricsCollectionTest._poll_fun(is_expected_state),
+            "Orch reports perf bundles in unexpected state")
+        logging.info(
+            f"Orch reports perf bundles in expected state: {expected_state}")
 
     def _poll_fun(fun: Callable[[], str | bool | None], timeout: int = 30):
         deadline = time.perf_counter() + timeout

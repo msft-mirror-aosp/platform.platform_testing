@@ -53,12 +53,8 @@ class SdvE2EOrchestrationBundlesRestartedAfterLMCrashTest(
 
         result = polling.wait_and_return_result(
             grep_with_timestamp, self.sdv_device, expected_result, timestamp)
-        if result is None:
-            asserts.fail(
-                f"Logcat result not found within timeout: {expected_result}"
-            )
-        else:
-            return result
+        asserts.assert_is_not_none(result, f"Logcat result not found within timeout: {expected_result}")
+        return result
 
     def setup_class(self):
         super().setup_class()
