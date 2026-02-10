@@ -59,11 +59,6 @@ class SdvSampleTelemetryConfigurablePublisherTest(
         self.sdv_device = self.get_device('device1')
         self.sdv_device.adb().root_device()
 
-    def setup_test(self):
-        super().setup_test()
-
-        self.start_telemetry_service_if_ivi(self.sdv_device)
-
     def test_run_configurable_publisher(self):
         self.sdv_device.adb().log().info('Starting configurable publisher')
         configurable_publisher_log_file = (
