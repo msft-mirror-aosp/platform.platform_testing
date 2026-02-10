@@ -1740,6 +1740,11 @@
       "TYPE": "RESOURCE_ID",
       "VALUE": "media_card_panel_handlebar"
     },
+    "CLOSE_PROFILES_MENU_BUTTON": {
+      "TYPE": "RESOURCE_ID",
+      "VALUE": "user_name_text",
+      "PACKAGE": "com.android.systemui"
+    },
     "PLAYS_LIST_SLIDER": {
       "TYPE": "RESOURCE_ID",
       "VALUE": "media_card_panel_handlebar"

@@ -194,6 +194,18 @@ public class HomeHelperImpl extends AbstractStandardAppHelper implements IAutoHo
         getSpectatioUiUtil().clickAndWait(profileButtonLink);
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public void closeStatusBarProfiles() {
+        BySelector closeWidgetSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.CLOSE_PROFILES_MENU_BUTTON);
+        UiObject2 closeButton = getSpectatioUiUtil().findUiObject(closeWidgetSelector);
+        getSpectatioUiUtil()
+                .validateUiObject(
+                        closeButton, AutomotiveConfigConstants.CLOSE_PROFILES_MENU_BUTTON);
+        getSpectatioUiUtil().clickAndWait(closeButton);
+    }
+
     @Override
     public List<String> getProfileNamesFromQuickControls() {
         List<String> profileNamesText = new ArrayList<>();

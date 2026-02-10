@@ -121,6 +121,13 @@ public interface IAutoHomeHelper extends IAppHelper {
     void openStatusBarProfiles();
 
     /**
+     * Setup expectations: To close Profile Icon button.
+     *
+     * <p>Closes the Profile Icon button on status bar.
+     */
+    void closeStatusBarProfiles();
+
+    /**
      * Setup expectations: Open quick controls
      *
      * <p>Getting profile names displayin gin quick controls

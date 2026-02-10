@@ -121,6 +121,6 @@ public class AddUserQuickSettings {
                 profileNames.contains(mNewUser.name));
 
         Log.i(LOG_TAG, "Act: Close status bar profiles");
-        mHomeHelper.get().openStatusBarProfiles();
+        mHomeHelper.get().closeStatusBarProfiles();
     }
 }
