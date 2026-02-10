@@ -26,11 +26,11 @@ The test verifies:
      complex scenarios.
 """
 
+import dataclasses
 import logging
 import time
 from absl.testing import parameterized
 from mobly import asserts
-from mobly import expects
 from mobly.controllers.android_device_lib.adb import AdbError
 import pexpect
 from pexpect import pxssh
@@ -39,9 +39,25 @@ from sdv_test_fw.test_execution import sdv_test_runner
 from sdv_test_fw.verification import polling
 
 
+@dataclasses.dataclass(frozen=True)
+class QnxVmConfig:
+    dev_file: str
+    sdv_guest_id: str
+
+    @property
+    def sdv_guest_name(self) -> str:
+        return f"sdv-{self.sdv_guest_id}"
+
+    @property
+    def daemon_label(self) -> str:
+        return f"powerbtn-daemon-{self.sdv_guest_name}"
+
+
 class SdvBaselineHwSuspendResumeTest(
     sdv_base_test.SdvBaseTestClass, parameterized.TestCase
 ):
+    DEVICE1_VM_CONFIG = QnxVmConfig(dev_file="/dev/ttyp6", sdv_guest_id="1")
+
     LOCAL_PORT = "12222"
     LAB_PORT = "22"
     SSH_USERNAME = "root"
@@ -49,17 +65,16 @@ class SdvBaselineHwSuspendResumeTest(
 
     VERIFY_CONNECTION_TEXT = "Connection works"
 
-    FAKE_POWERBTN_DAEMON_VM1_ID = "PowerbtnDaemonVM1"
-    FAKE_POWERBTN_DAEMON_VM1 = (
-        "on -d -t /dev/null sh -c '(while true; do sleep 98765;"
-        f" done) > /dev/ttyp6' {FAKE_POWERBTN_DAEMON_VM1_ID}"
+    FAKE_POWERBTN_DAEMON = (
+        "on -d -t /dev/null sh -c '(while true; do sleep 98765; done) >"
+        " {dev_file}' {daemon_label}"
     )
 
-    ADDRESS_COMMAND_VM1 = (
+    ADDRESS_COMMAND = (
         'awk \'/vdev pl011/ {{s=1}} /^$/ {{s=0}} s==1 && $1 == "loc" {{print'
-        " $2}}' '/guests/android/sdv-1/sdv-1.conf'"
+        " $2}}' '/guests/android/sdv-{sdv_guest_id}/sdv-{sdv_guest_id}.conf'"
     )
-    ENABLE_WAKEUP_VM1 = (
+    ENABLE_WAKEUP = (
         "echo enabled >"
         " /sys/devices/platform/vdevs/{memory_address}.uart/tty/ttyAMA0/power/wakeup"
     )
@@ -72,11 +87,11 @@ class SdvBaselineHwSuspendResumeTest(
 
     # The absence of the env file indicates the VM may be rebooting or something
     # happened, so it is not possible to check its status. This is an edge case
-    # but we need to ensure the file exists before parsing it to acuurately
+    # but we need to ensure the file exists before parsing it to accurately
     # distinguish between 'Suspended' and 'Running' states.
     SDV_VM_STATUS = (
-        "[ -e /dev/qvm/{sdv_vm}/env ] && {{ "
-        "cat /dev/qvm/{sdv_vm}/env "
+        "[ -e /dev/qvm/{sdv_guest_name}/env ] && {{ "
+        "cat /dev/qvm/{sdv_guest_name}/env "
         "| grep 'last_known_ip' "
         "| awk 'NR > 1 {{ if ($5 != \"0\") exit 1 }}' "
         "&& echo 'Suspended' || echo 'Running'; "
@@ -86,7 +101,7 @@ class SdvBaselineHwSuspendResumeTest(
     VM_RUNNING = "Running"
     VM_STATUS_NOT_AVAILABLE = "Not available"
 
-    WAKE_UP_VM1 = "echo >> /dev/ttyp6"
+    WAKE_UP = "echo >> {dev_file}"
 
     SPAWNED_PROCESSES = "pidin -f aA | grep {process}"
 
@@ -122,39 +137,46 @@ class SdvBaselineHwSuspendResumeTest(
 
         logging.info(f"Connection to QNX successful")
 
-    def _start_fake_powerbtn_daemon(self):
+    def _start_fake_powerbtn_daemon(self, vm_config):
         # Only start the daemon if there is not one running already in the
         # hypervisor. This is to avoid spawning multiple processes in the QNX
         # that cannot be killed and have the same purpose. Minimize the number
         # of zombie processes we leave in the hypervisor after the test
         # finalizes.
-        logging.info(f"Start daemon in hypervisor")
+        logging.info(f"Start daemon {vm_config.daemon_label} in hypervisor")
 
-        if self._processes_are_running(self.FAKE_POWERBTN_DAEMON_VM1_ID):
+        if self._processes_are_running(vm_config.daemon_label):
             logging.info(
-                f"Daemon with tag {self.FAKE_POWERBTN_DAEMON_VM1_ID} already"
-                " running"
+                f"Daemon with tag {vm_config.daemon_label} already running"
             )
             return
 
-        self._host_command(self.FAKE_POWERBTN_DAEMON_VM1)
-
-    def _enable_fake_powerbtn(self):
-        logging.info(f"Prepare fake powerbtn in VM1")
-        self._start_fake_powerbtn_daemon()
-
-        self._host_command(self.ADDRESS_COMMAND_VM1)
-        # The output is with format 0x1c090000. We are only interested on
-        # the value after 0x
-        vdevs_vm1_memory_location = self._host_output_last_line()[2:]
-        logging.info(f"VM1 memory location: {vdevs_vm1_memory_location}")
-
-        self.sdv_device1.adb().execute_shell_command(
-            self.ENABLE_WAKEUP_VM1.format(
-                memory_address=vdevs_vm1_memory_location
+        self._host_command(
+            self.FAKE_POWERBTN_DAEMON.format(
+                dev_file=vm_config.dev_file,
+                daemon_label=vm_config.daemon_label,
             )
         )
-        logging.info("Fake powerbtn enabled in VM1")
+
+    def _enable_fake_powerbtn(self, device, vm_config):
+        logging.info(f"Prepare fake powerbtn for {vm_config.sdv_guest_name}")
+        self._start_fake_powerbtn_daemon(vm_config)
+
+        self._host_command(
+            self.ADDRESS_COMMAND.format(sdv_guest_id=vm_config.sdv_guest_id)
+        )
+        # The output is with format 0x1c090000. We are only interested on
+        # the value after 0x
+        vdevs_memory_location = self._host_output_last_line()[2:]
+        logging.info(
+            f"{vm_config.sdv_guest_name} memory location:"
+            f" {vdevs_memory_location}"
+        )
+
+        device.adb().execute_shell_command(
+            self.ENABLE_WAKEUP.format(memory_address=vdevs_memory_location)
+        )
+        logging.info(f"Fake powerbtn enabled in {vm_config.sdv_guest_name}")
 
     def _host_command(self, command, timeout=5):
         try:
@@ -201,29 +223,32 @@ class SdvBaselineHwSuspendResumeTest(
             return True
         return False
 
-    def _device_status(self):
-        self._host_command(self.SDV_VM_STATUS.format(sdv_vm="sdv-1"))
+    def _device_status(self, vm_config):
+        self._host_command(
+            self.SDV_VM_STATUS.format(sdv_guest_name=vm_config.sdv_guest_name)
+        )
         status = self._host_output_last_line()
-        logging.debug(f"VM status: {status}")
+        logging.debug(f"{vm_config.sdv_guest_name} VM status: {status}")
         asserts.assert_not_equal(
             status,
             self.VM_STATUS_NOT_AVAILABLE,
-            "Not possible to check status of the VM.",
+            "Not possible to check status of the"
+            f" {vm_config.sdv_guest_name} VM",
         )
         return status
 
-    def _device_is_suspended(self):
-        return self._device_status() == self.VM_SUSPENDED
+    def _device_is_suspended(self, vm_config):
+        return self._device_status(vm_config) == self.VM_SUSPENDED
 
-    def _device_is_running(self):
-        return self._device_status() == self.VM_RUNNING
+    def _device_is_running(self, vm_config):
+        return self._device_status(vm_config) == self.VM_RUNNING
 
     def setup_class(self):
         super().setup_class()
         self.sdv_device1 = self.get_device("device1")
 
         self._connect_to_hypervisor_qnx()
-        self._enable_fake_powerbtn()
+        self._enable_fake_powerbtn(self.sdv_device1, self.DEVICE1_VM_CONFIG)
 
     def setup_test(self):
         super().setup_test()
@@ -261,12 +286,15 @@ class SdvBaselineHwSuspendResumeTest(
 
     def test_powerbtn_daemon_is_running_in_host(self):
         asserts.assert_true(
-            self._processes_are_running(self.FAKE_POWERBTN_DAEMON_VM1_ID),
+            self._processes_are_running(self.DEVICE1_VM_CONFIG.daemon_label),
             "Daemon to wake up device is not running",
         )
 
     def test_device_is_responsive(self):
-        asserts.assert_true(self._device_is_running(), "Device is not running")
+        asserts.assert_true(
+            self._device_is_running(self.DEVICE1_VM_CONFIG),
+            "Device is not running",
+        )
 
         command = f'echo "{self.VERIFY_CONNECTION_TEXT}"'
         output = self.sdv_device1.adb().execute_shell_command(command)
@@ -310,6 +338,7 @@ class SdvBaselineHwSuspendResumeTest(
         logging.info("Waiting for device to suspend.")
         result = polling.wait_for_true(
             self._device_is_suspended,
+            self.DEVICE1_VM_CONFIG,
             timeout=30,
             assert_msg="Device did not suspend",
         )
@@ -319,11 +348,14 @@ class SdvBaselineHwSuspendResumeTest(
         logging.info(f"{idle_seconds} seconds passed.")
 
         logging.info("Waking up device from host")
-        self._host_command(self.WAKE_UP_VM1)
+        self._host_command(
+            self.WAKE_UP.format(dev_file=self.DEVICE1_VM_CONFIG.dev_file)
+        )
 
         logging.info("Waiting for device to wake up.")
         result = polling.wait_for_true(
             self._device_is_running,
+            self.DEVICE1_VM_CONFIG,
             timeout=30,
             assert_msg="Device did not resume",
         )
