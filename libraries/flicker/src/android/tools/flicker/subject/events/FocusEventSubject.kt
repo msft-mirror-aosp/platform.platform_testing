@@ -29,7 +29,7 @@ interface FocusEventSubject {
         val builder =
             exceptionMessageBuilder
                 .setExpected(windows.joinToString(" -> "))
-                .setActual(focusChanges.map { Fact("Focus change", it) })
+                .setActual(focusChanges.map { Fact("Focus change", it) }.joinToString("\n"))
 
         if (windows.isEmpty()) {
             val errorMsgBuilder =
