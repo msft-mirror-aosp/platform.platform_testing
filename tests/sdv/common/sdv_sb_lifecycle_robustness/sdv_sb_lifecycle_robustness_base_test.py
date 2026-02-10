@@ -70,7 +70,7 @@ class SdvSBLifecycleRobustnessTestBase(sdv_base_test.SdvBaseTestClass):
     FOO_PUB_INTERVAL_IN_MS = 200
 
     # Bar VM properties
-    SYS_PROP_BAZ_SUB_INTERVAL = "persist.com.sdv.google.sample.baz.sub_interval_ms"
+    SYS_PROP_BAZ_SUB_INTERVAL = "persist.com.android.sdv.sample.baz.sub_interval_ms"
     BAZ_SUB_INTERVAL_IN_MS = 100
 
     # Given the comms stack propagation delays used in other tests (500 ms), waiting
@@ -127,18 +127,18 @@ class SdvSBLifecycleRobustnessTestBase(sdv_base_test.SdvBaseTestClass):
         self.bar_bundle = ServiceBundle(
             adb_device=bar_baz_device,
             name="ServiceBundleBar",
-            package="com.sdv.google.sample.bar",
-            fqin="local-vm:com.sdv.google.sample.bar.ServiceBundleBar/instance",
-            tag="com_sdv_google_sample_bar_ServiceBundleBar_instance",
+            package="com.android.sdv.sample.bar",
+            fqin="local-vm:com.android.sdv.sample.bar.ServiceBundleBar/instance",
+            tag="com_android_sdv_sample_bar_ServiceBundleBar_instance",
         )
 
         # Setup Baz ServiceBundle
         self.baz_bundle = ServiceBundle(
             adb_device=bar_baz_device,
             name="ServiceBundleBaz",
-            package="com.sdv.google.sample.baz",
-            fqin="local-vm:com.sdv.google.sample.baz.ServiceBundleBaz/instance",
-            tag="com_sdv_google_sample_baz_ServiceBundleBaz_instance",
+            package="com.android.sdv.sample.baz",
+            fqin="local-vm:com.android.sdv.sample.baz.ServiceBundleBaz/instance",
+            tag="com_android_sdv_sample_baz_ServiceBundleBaz_instance",
         )
 
     def set_sys_property(self, adb_device, sys_property, value):

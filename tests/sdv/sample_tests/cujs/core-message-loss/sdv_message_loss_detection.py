@@ -31,14 +31,14 @@ from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 
 class SdvSampleCujMessageLossDetection(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
 
-    QUX_FQN = "com.sdv.google.sample.qux.ServiceBundleQux"
+    QUX_FQN = "com.android.sdv.sample.qux.ServiceBundleQux"
     FOO_FQN = "com.android.sdv.sample.foo.ServiceBundleFoo"
 
     SYS_PROP_INTERVAL = "persist.com.android.sdv.sample.foo.pub_interval_ms"
     SYS_PROP_LOAD_SIZE = "persist.com.android.sdv.sample.foo.load_size"
     SYS_PROP_AMOUNT = "persist.com.android.sdv.sample.foo.pub_maximum_amount"
 
-    SAMPLES_LOGCAT_ARGS = '*:F com_android_sdv_sample_foo_ServiceBundleFoo_instance-1:* com_sdv_google_sample_qux_ServiceBundleQux_instance-1:*'
+    SAMPLES_LOGCAT_ARGS = '*:F com_android_sdv_sample_foo_ServiceBundleFoo_instance-1:* com_android_sdv_sample_qux_ServiceBundleQux_instance-1:*'
 
     QUX_WAITING_FOO_LOG = "Waiting for publisher .*FooMessage"
     FOO_MESSAGES_SENT_LOG = 'Sent {amount} from {amount}'
@@ -99,7 +99,7 @@ class SdvSampleCujMessageLossDetection(sdv_base_test.SdvBaseTestClass, parameter
     def log_verification(log_messages, minimal_amount):
         """Verification of log messages containing the received value bigger than {minimal_amount}.
             Example of log string:
-                01-01 00:00:00.000  111  222 I com_sdv_google_sample_qux_ServiceBundleQux_instance-1: sample: Received in total 999 messages, 0 errors detected.
+                01-01 00:00:00.000  111  222 I com_android_sdv_sample_qux_ServiceBundleQux_instance-1: sample: Received in total 999 messages, 0 errors detected.
         Args:
             log: The logcat messages.
             minimal_amount: The minimal amount of messages to be detected.

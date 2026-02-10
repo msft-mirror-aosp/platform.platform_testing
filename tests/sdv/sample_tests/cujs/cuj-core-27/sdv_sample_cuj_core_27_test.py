@@ -33,10 +33,10 @@ from sdv_test_fw.verification import polling
 class SdvSampleCujCore27Test(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
 
     # Logcat arguments tailored for CUJ27 components
-    SAMPLES_LOGCAT_ARGS_ALL = '*:F com_android_sdv_sample_foo_ServiceBundleFoo_instance:* com_sdv_google_sample_qux_ServiceBundleQux_instance:*'
+    SAMPLES_LOGCAT_ARGS_ALL = '*:F com_android_sdv_sample_foo_ServiceBundleFoo_instance:* com_android_sdv_sample_qux_ServiceBundleQux_instance:*'
     SAMPLES_LOGCAT_ARGS_LIFECYCLE_MANAGER = '*:F lifecycle_manager:*'
     SAMPLES_LOGCAT_ARGS_FOO = '*:F com_android_sdv_sample_foo_ServiceBundleFoo_instance:*'
-    SAMPLES_LOGCAT_ARGS_QUX = '*:F com_sdv_google_sample_qux_ServiceBundleQux_instance:*'
+    SAMPLES_LOGCAT_ARGS_QUX = '*:F com_android_sdv_sample_qux_ServiceBundleQux_instance:*'
     SAMPLES_LOGCAT_ARGS_ACLS = '*:F SdvServiceManagerServer:*' # Assuming ACL logs are here as per CUJ22
 
     SET_VERBOSE_PROPERTY_COMMAND = 'setprop persist.log.tag V'
@@ -45,13 +45,13 @@ class SdvSampleCujCore27Test(sdv_base_test.SdvBaseTestClass, parameterized.TestC
     # Test Parameters - logcat messages based on README-Core-27 and examples
     STARTING_TEXT = 'Starting {vm_instance}:{package}.{bundle_name}/instance'
     LIFECYCLE_STARTED_FOO = 'Service bundle.*com.android.sdv.sample.foo.*ServiceBundleFoo.*is started'
-    LIFECYCLE_STARTED_QUX = 'Service bundle.*com.sdv.google.sample.qux.*ServiceBundleQux.*is started'
+    LIFECYCLE_STARTED_QUX = 'Service bundle.*com.android.sdv.sample.qux.*ServiceBundleQux.*is started'
     SENT_MESSAGE = 'Sent.*QuxMessage.*42'
     RECEIVED_MESSAGE = 'Received.*QuxMessage.*42'
     # ACL messages from README-Core-27
     AUTHZ_QUX_PUB_VM1 = 'QuxMessage allows access to instance1'
     AUTHZ_QUX_PUB_VM2 = 'QuxMessage allows access to instance2'
-    AUTHZ_FOO_SUB = 'ServiceBundleQux/instance#com-sdv-google-sample-qux-qux-message-unique allows access to instance3'
+    AUTHZ_FOO_SUB = 'ServiceBundleQux/instance#com-android-sdv-sample-qux-qux-message-unique allows access to instance3'
 
 
     # Test Parameters - error messages
@@ -141,7 +141,7 @@ class SdvSampleCujCore27Test(sdv_base_test.SdvBaseTestClass, parameterized.TestC
             'testcase_name': 'qux_vm1',
             'device_key': 'qux_vm1',
             'vm_instance': 'instance1',
-            'package_name': 'com.sdv.google.sample.qux',
+            'package_name': 'com.android.sdv.sample.qux',
             'bundle_name' : 'ServiceBundleQux',
             'lifecycle_grep': LIFECYCLE_STARTED_QUX
         },
@@ -149,7 +149,7 @@ class SdvSampleCujCore27Test(sdv_base_test.SdvBaseTestClass, parameterized.TestC
             'testcase_name': 'qux_vm2',
             'device_key': 'qux_vm2',
             'vm_instance': 'instance2',
-            'package_name': 'com.sdv.google.sample.qux',
+            'package_name': 'com.android.sdv.sample.qux',
             'bundle_name' : 'ServiceBundleQux',
             'lifecycle_grep': LIFECYCLE_STARTED_QUX
         },

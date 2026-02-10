@@ -34,12 +34,12 @@ class SdvSampleCujMemoryLeakDetection(
 ):
 
     FOO_FQN = 'com.android.sdv.sample.foo.ServiceBundleFoo'
-    QUX_FQN = 'com.sdv.google.sample.qux.ServiceBundleQux'
+    QUX_FQN = 'com.android.sdv.sample.qux.ServiceBundleQux'
 
     SYS_PROP_FOO_INTERVAL = 'persist.com.android.sdv.sample.foo.pub_interval_ms'
-    SYS_PROP_QUX_INTERVAL = 'persist.com.sdv.google.sample.qux.pub_interval_ms'
+    SYS_PROP_QUX_INTERVAL = 'persist.com.android.sdv.sample.qux.pub_interval_ms'
     SYS_PROP_FOO_LOAD_SIZE = 'persist.com.android.sdv.sample.foo.load_size'
-    SYS_PROP_QUX_LOAD_SIZE = 'persist.com.sdv.google.sample.qux.load_size'
+    SYS_PROP_QUX_LOAD_SIZE = 'persist.com.android.sdv.sample.qux.load_size'
 
     CREATED_LOG = 'Creating instance.*:{fqn}/instance'
     STARTED_LOG = 'Starting instance.*:{fqn}/instance'
@@ -48,7 +48,7 @@ class SdvSampleCujMemoryLeakDetection(
     ASSERT_MESSAGE_START = 'Failed to start service bundle'
     ASSERT_MESSAGE_STOP = 'Failed to stop service bundle'
 
-    SAMPLES_LOGCAT_ARGS = '*:F com_android_sdv_sample_foo_ServiceBundleFoo_instance:* com_sdv_google_sample_qux_ServiceBundleQux_instance:*'
+    SAMPLES_LOGCAT_ARGS = '*:F com_android_sdv_sample_foo_ServiceBundleFoo_instance:* com_android_sdv_sample_qux_ServiceBundleQux_instance:*'
     MSEC_TO_SEC = 0.001
     MEMORY_USAGE_ON_CREATE = 20000
     MEMORY_USAGE_ON_START = 95000

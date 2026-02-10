@@ -32,11 +32,11 @@ from sdv_test_fw.verification import polling
 
 class SdvCujCore25Test(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
 
-    SAMPLES_LOGCAT_ARGS_ALL_BUNDLES = '*:F com_android_sdv_sample_foo_ServiceBundleFoo_instance:* com_sdv_google_sample_bar_ServiceBundleBar_instance:* com_sdv_google_sample_baz_ServiceBundleBaz_instance:*'
+    SAMPLES_LOGCAT_ARGS_ALL_BUNDLES = '*:F com_android_sdv_sample_foo_ServiceBundleFoo_instance:* com_android_sdv_sample_bar_ServiceBundleBar_instance:* com_android_sdv_sample_baz_ServiceBundleBaz_instance:*'
     SAMPLES_LOGCAT_ARGS_LIFECYCLE_MANAGER = '*:F lifecycle_manager:*'
     SAMPLES_LOGCAT_ARGS_FOO = '*:F com_android_sdv_sample_foo_ServiceBundleFoo_instance:*'
-    SAMPLES_LOGCAT_ARGS_BAR = '*:F com_sdv_google_sample_bar_ServiceBundleBar_instance:*'
-    SAMPLES_LOGCAT_ARGS_BAZ = '*:F com_sdv_google_sample_baz_ServiceBundleBaz_instance:*'
+    SAMPLES_LOGCAT_ARGS_BAR = '*:F com_android_sdv_sample_bar_ServiceBundleBar_instance:*'
+    SAMPLES_LOGCAT_ARGS_BAZ = '*:F com_android_sdv_sample_baz_ServiceBundleBaz_instance:*'
 
     # Foo VM properties
     SYS_PROP_FOO_PUB_INTERVAL = "persist.com.android.sdv.sample.foo.pub_interval_ms"
@@ -47,15 +47,15 @@ class SdvCujCore25Test(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
     SYS_PROP_FOO_PUB_AMOUNT_VALUE = 10
 
     # Bar VM properties
-    SYS_PROP_BAR_RPC_INTERVAL = "persist.com.sdv.google.sample.bar.rpc_interval_ms"
+    SYS_PROP_BAR_RPC_INTERVAL = "persist.com.android.sdv.sample.bar.rpc_interval_ms"
     SYS_PROP_BAR_RPC_INTERVAL_VALUE = 1000
-    SYS_PROP_BAR_LOAD_SIZE = "persist.com.sdv.google.sample.bar.load_size"
+    SYS_PROP_BAR_LOAD_SIZE = "persist.com.android.sdv.sample.bar.load_size"
     SYS_PROP_BAR_LOAD_SIZE_VALUE = 200000
 
     # Baz VM properties
-    SYS_PROP_BAZ_RPC_INTERVAL = "persist.com.sdv.google.sample.baz.rpc_interval_ms"
+    SYS_PROP_BAZ_RPC_INTERVAL = "persist.com.android.sdv.sample.baz.rpc_interval_ms"
     SYS_PROP_BAZ_RPC_INTERVAL_VALUE = 1000
-    SYS_PROP_BAZ_LOAD_SIZE = "persist.com.sdv.google.sample.baz.load_size"
+    SYS_PROP_BAZ_LOAD_SIZE = "persist.com.android.sdv.sample.baz.load_size"
     SYS_PROP_BAZ_LOAD_SIZE_VALUE = 200000
 
     # Test Parameters - logcat messages.
@@ -171,14 +171,14 @@ class SdvCujCore25Test(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
             'testcase_name': 'bar',
             'device_name': 'bar_device',
             'vm_instance': 'instance2',
-            'package_name': 'com.sdv.google.sample.bar',
+            'package_name': 'com.android.sdv.sample.bar',
             'bundle_name' : 'ServiceBundleBar'
         },
         {
             'testcase_name': 'baz',
             'device_name': 'baz_device',
             'vm_instance': 'instance3',
-            'package_name': 'com.sdv.google.sample.baz',
+            'package_name': 'com.android.sdv.sample.baz',
             'bundle_name' : 'ServiceBundleBaz'
         },
     )
