@@ -21,14 +21,14 @@ These tests run through several update scenarios for both service bundle and sys
 
 Read [SDV Testing instructions](/vendor/google_testing/software_defined_vehicle/README.md) for detailed information.
 
-NOTE: Tests should be run from the Android project root because they require access to build artifacts in the ./dist folder
+NOTE: Tests should be run from the Android project root because they require access to build artifacts in the `out` folder
 
 ### Mobly
 
 To run an individual test case, execute it with `atest`. Insert the proper test name from `Android.bp`:
 
 ```
-m dist DIST_DIR=dist
+m dist
 atest <name> -- --test-arg com.android.tradefed.testtype.mobly.MoblyBinaryHostTest:mobly-config-file-name:sdv_one_device_local_only_config.yaml
 ```
 
@@ -41,7 +41,7 @@ To run all tests at once, execute the helper script `run_all.sh`
 To run an individual test case, execute it with `catbox`. Insert the proper test name from the list below:
 
 ```
-m dist DIST_DIR=dist
+m dist
 m catbox
 NOTIFY_AS_NATIVE=0.0.0.0:6520 ./out/host/linux-x86/catbox/android-catbox/tools/catbox-tradefed run commandAndExit <name> --{device1}serial 0.0.0.0:6520 --mobly-config-file-name sdv_one_device_local_only_config.yaml
 ```

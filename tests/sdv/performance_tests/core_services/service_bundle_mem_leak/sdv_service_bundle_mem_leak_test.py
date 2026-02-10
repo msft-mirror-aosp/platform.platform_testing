@@ -26,20 +26,20 @@ from sdv_test_fw.test_execution import sdv_base_test
 from sdv_test_fw.test_execution import sdv_test_runner
 from sdv_test_fw.verification import polling
 
-SERVICE_BUNDLE_FOO_FQN = 'com.sdv.google.sample.foo.ServiceBundleFoo'
+SERVICE_BUNDLE_FOO_FQN = 'com.android.sdv.sample.foo.ServiceBundleFoo'
 SERVICE_BUNDLE_QUX_FQN = 'com.sdv.google.sample.qux.ServiceBundleQux'
-SYS_PROP_FOO_INTERVAL = 'persist.com.sdv.google.sample.foo.pub_interval_ms'
+SYS_PROP_FOO_INTERVAL = 'persist.com.android.sdv.sample.foo.pub_interval_ms'
 SYS_PROP_QUX_INTERVAL = 'persist.com.sdv.google.sample.qux.pub_interval_ms'
-SYS_PROP_FOO_LOAD_SIZE = 'persist.com.sdv.google.sample.foo.load_size'
+SYS_PROP_FOO_LOAD_SIZE = 'persist.com.android.sdv.sample.foo.load_size'
 SYS_PROP_QUX_LOAD_SIZE = 'persist.com.sdv.google.sample.qux.load_size'
-SYS_PROP_FOO_PUB_AMOUNT = 'persist.com.sdv.google.sample.foo.pub_maximum_amount'
+SYS_PROP_FOO_PUB_AMOUNT = 'persist.com.android.sdv.sample.foo.pub_maximum_amount'
 SYS_PROP_QUX_PUB_AMOUNT = 'persist.com.sdv.google.sample.qux.pub_maximum_amount'
 FOO_APP_NAME = 'ServiceBundleFoo'
 QUX_APP_NAME = 'ServiceBundleQux'
 
 SERVICE_BUNDLE_FOO_CREATE_MESSAGE = (
     'Service bundle'
-    " 'local-vm:com.sdv.google.sample.foo.ServiceBundleFoo/instance' succeed to"
+    " 'local-vm:com.android.sdv.sample.foo.ServiceBundleFoo/instance' succeed to"
     " finished command 'Create'"
 )
 SERVICE_BUNDLE_QUX_CREATE_MESSAGE = (
@@ -49,7 +49,7 @@ SERVICE_BUNDLE_QUX_CREATE_MESSAGE = (
 )
 SERVICE_BUNDLE_FOO_START_MESSAGE = (
     'Service bundle'
-    " 'local-vm:com.sdv.google.sample.foo.ServiceBundleFoo/instance' succeed to"
+    " 'local-vm:com.android.sdv.sample.foo.ServiceBundleFoo/instance' succeed to"
     " finished command 'Start'"
 )
 SERVICE_BUNDLE_QUX_START_MESSAGE = (
@@ -59,7 +59,7 @@ SERVICE_BUNDLE_QUX_START_MESSAGE = (
 )
 SERVICE_BUNDLE_FOO_STOP_MESSAGE = (
     'Service bundle'
-    " 'local-vm:com.sdv.google.sample.foo.ServiceBundleFoo/instance' succeed to"
+    " 'local-vm:com.android.sdv.sample.foo.ServiceBundleFoo/instance' succeed to"
     " finished command 'Stop'"
 )
 SERVICE_BUNDLE_QUX_STOP_MESSAGE = (
@@ -68,7 +68,7 @@ SERVICE_BUNDLE_QUX_STOP_MESSAGE = (
     " finished command 'Stop'"
 )
 FOO_SEND_MESSAGE = (
-    'com_sdv_google_sample_foo_ServiceBundleFoo_instance: sample: Sent'
+    'com_android_sdv_sample_foo_ServiceBundleFoo_instance: sample: Sent'
 )
 QUX_SEND_MESSAGE = (
     'com_sdv_google_sample_qux_ServiceBundleQux_instance: sample: Sent'
@@ -81,7 +81,7 @@ CREATED_LOG = 'Creating instance.*:{fqn}/instance'
 STARTED_LOG = 'Starting instance.*:{fqn}/instance'
 STOPPED_LOG = 'Joined execution thread'
 SAMPLES_LOGCAT_ARGS = (
-    '*:F com_sdv_google_sample_foo_ServiceBundleFoo_instance:*'
+    '*:F com_android_sdv_sample_foo_ServiceBundleFoo_instance:*'
     ' com_sdv_google_sample_qux_ServiceBundleQux_instance:*'
 )
 

@@ -32,13 +32,13 @@ from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 class SdvSampleCujMessageLossDetection(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
 
     QUX_FQN = "com.sdv.google.sample.qux.ServiceBundleQux"
-    FOO_FQN = "com.sdv.google.sample.foo.ServiceBundleFoo"
+    FOO_FQN = "com.android.sdv.sample.foo.ServiceBundleFoo"
 
-    SYS_PROP_INTERVAL = "persist.com.sdv.google.sample.foo.pub_interval_ms"
-    SYS_PROP_LOAD_SIZE = "persist.com.sdv.google.sample.foo.load_size"
-    SYS_PROP_AMOUNT = "persist.com.sdv.google.sample.foo.pub_maximum_amount"
+    SYS_PROP_INTERVAL = "persist.com.android.sdv.sample.foo.pub_interval_ms"
+    SYS_PROP_LOAD_SIZE = "persist.com.android.sdv.sample.foo.load_size"
+    SYS_PROP_AMOUNT = "persist.com.android.sdv.sample.foo.pub_maximum_amount"
 
-    SAMPLES_LOGCAT_ARGS = '*:F com_sdv_google_sample_foo_ServiceBundleFoo_instance-1:* com_sdv_google_sample_qux_ServiceBundleQux_instance-1:*'
+    SAMPLES_LOGCAT_ARGS = '*:F com_android_sdv_sample_foo_ServiceBundleFoo_instance-1:* com_sdv_google_sample_qux_ServiceBundleQux_instance-1:*'
 
     QUX_WAITING_FOO_LOG = "Waiting for publisher .*FooMessage"
     FOO_MESSAGES_SENT_LOG = 'Sent {amount} from {amount}'
