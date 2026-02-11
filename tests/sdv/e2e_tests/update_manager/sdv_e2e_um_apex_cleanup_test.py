@@ -21,7 +21,7 @@ Check that inactive APEX is cleaned up as a result of apexservice::markBootCompl
 from mobly import asserts
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 from sdv_test_fw.update.update_manager_base_class import UpdateManagerBaseClass
-from sdv_test_fw.waiting_methods.waiting_methods import WaitingMethods
+from sdv_test_fw.verification import polling
 
 
 class SdvE2EUMApexCleanupTest(sdv_base_test.SdvBaseTestClass, UpdateManagerBaseClass):
@@ -29,7 +29,9 @@ class SdvE2EUMApexCleanupTest(sdv_base_test.SdvBaseTestClass, UpdateManagerBaseC
     APEX_FILE_NAME = f"{APEX_NAME}.apex"
     ACTIVE_APEX_DIR = "/data/apex/active"
     ACTIVE_APEX_PATH = f"{ACTIVE_APEX_DIR}/{APEX_FILE_NAME}"
-    PREPARE_ACTIVE_APEX_COMMAND = f"cp /product/apex/{APEX_FILE_NAME} {ACTIVE_APEX_PATH}"
+    PREPARE_ACTIVE_APEX_COMMAND = (
+        f"cp /product/apex/{APEX_FILE_NAME} {ACTIVE_APEX_PATH}"
+    )
     LIST_ACTIVE_APEX_COMMAND = f"ls {ACTIVE_APEX_DIR}"
     EXPECTED_APEX_CLEANUP_LOG = f"Removing inactive data APEX {ACTIVE_APEX_PATH}"
 
@@ -43,15 +45,25 @@ class SdvE2EUMApexCleanupTest(sdv_base_test.SdvBaseTestClass, UpdateManagerBaseC
 
     def test_apex_cleanup_on_ready(self):
         self.sdv_device.adb().execute_shell_command(self.PREPARE_ACTIVE_APEX_COMMAND)
-        res_before_reboot = self.sdv_device.adb().execute_shell_command(self.LIST_ACTIVE_APEX_COMMAND)
+        res_before_reboot = self.sdv_device.adb().execute_shell_command(
+            self.LIST_ACTIVE_APEX_COMMAND
+        )
         asserts.assert_in(self.APEX_FILE_NAME, res_before_reboot)
 
         self.sdv_device.adb().reboot_device()
         self.sdv_device.adb().root_device()
 
-        WaitingMethods.wait_and_verify_expected_logs(self.sdv_device.adb(), "apexd", self.EXPECTED_APEX_CLEANUP_LOG)
-        res_after_reboot = self.sdv_device.adb().execute_shell_command(self.LIST_ACTIVE_APEX_COMMAND, raise_exception=False)
-        asserts.assert_equal("", res_after_reboot, f"The non-mounted APEX {self.APEX_FILE_NAME} is not cleaned up from {self.ACTIVE_APEX_DIR}")
+        polling.wait_and_verify_expected_logs(
+            self.sdv_device.adb(), "apexd", self.EXPECTED_APEX_CLEANUP_LOG
+        )
+        res_after_reboot = self.sdv_device.adb().execute_shell_command(
+            self.LIST_ACTIVE_APEX_COMMAND, raise_exception=False
+        )
+        asserts.assert_equal(
+            "",
+            res_after_reboot,
+            f"The non-mounted APEX {self.APEX_FILE_NAME} is not cleaned up from {self.ACTIVE_APEX_DIR}",
+        )
 
     def test_apex_cleanup_on_activate_post_reboot_rollback_complete(self):
         self.upload_service_bundle_update_payload()
@@ -65,15 +77,26 @@ class SdvE2EUMApexCleanupTest(sdv_base_test.SdvBaseTestClass, UpdateManagerBaseC
 
         self.assert_in_status("ACTIVATE_POST_REBOOT_COMPLETE")
         self.sdv_device.adb().execute_shell_command(self.PREPARE_ACTIVE_APEX_COMMAND)
-        res_before_rollback = self.sdv_device.adb().execute_shell_command(self.LIST_ACTIVE_APEX_COMMAND)
+        res_before_rollback = self.sdv_device.adb().execute_shell_command(
+            self.LIST_ACTIVE_APEX_COMMAND
+        )
         asserts.assert_in(self.APEX_FILE_NAME, res_before_rollback)
 
         self.client.rollback()
         self.assert_in_status("ACTIVATE_POST_REBOOT_ROLLBACK_COMPLETE")
 
-        WaitingMethods.wait_and_verify_expected_logs(self.sdv_device.adb(), "apexd", self.EXPECTED_APEX_CLEANUP_LOG)
-        res_after_rollback = self.sdv_device.adb().execute_shell_command(self.LIST_ACTIVE_APEX_COMMAND, raise_exception=False)
-        asserts.assert_equal("", res_after_rollback, f"The non-mounted APEX {self.APEX_FILE_NAME} is not cleaned up from {self.ACTIVE_APEX_DIR}")
+        polling.wait_and_verify_expected_logs(
+            self.sdv_device.adb(), "apexd", self.EXPECTED_APEX_CLEANUP_LOG
+        )
+        res_after_rollback = self.sdv_device.adb().execute_shell_command(
+            self.LIST_ACTIVE_APEX_COMMAND, raise_exception=False
+        )
+        asserts.assert_equal(
+            "",
+            res_after_rollback,
+            f"The non-mounted APEX {self.APEX_FILE_NAME} is not cleaned up from {self.ACTIVE_APEX_DIR}",
+        )
+
 
 if __name__ == "__main__":
     # Start Test Execution Using SDV Test Framework ( STF )
