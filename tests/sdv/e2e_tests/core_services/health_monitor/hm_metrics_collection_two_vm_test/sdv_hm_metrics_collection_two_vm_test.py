@@ -40,7 +40,8 @@ class SdvHmMetricsCollectionTwoVMTest(
     def setup_class(self):
         super().setup_class()
         self.device1 = self.get_device('device1').adb()
-        self.device1_name = self.device1.prop.get(SdvDeviceProperty.INSTANCE_NAME)
+        self.device1_name = self.device1.prop.get(
+            SdvDeviceProperty.INSTANCE_NAME)
         self.perfetto_collector_device1 = perfetto_collector.PerfettoCollector(
             self.device1)
         self.metrics = {}
@@ -72,7 +73,7 @@ class SdvHmMetricsCollectionTwoVMTest(
             self._extract_cross_vm_dt_health_report_periodicity(trace_processor))
 
     def _extract_cross_vm_dt_health_report_periodicity(self, trace_processor):
-        QUERY = """SELECT * FROM slice WHERE name LIKE '%instance2:HM_PERF_TEST, DT_SUBSCRIBER: Received health report%' ORDER BY ts"""
+        QUERY = f"""SELECT * FROM slice WHERE name LIKE '%{self.device1_name}:HM_PERF_TEST, DT_SUBSCRIBER: Received health report%' ORDER BY ts"""
         r = trace_processor.query(QUERY)
 
         # processing events, thus ts=te, dur=0
