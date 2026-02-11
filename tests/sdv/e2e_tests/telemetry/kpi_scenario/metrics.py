@@ -16,8 +16,8 @@
 
 from itertools import groupby
 from typing import Any, Dict, List
+import statistics
 
-import numpy as np
 from sdv_perfetto import perfetto_trace_processor
 
 
@@ -246,20 +246,33 @@ def _calc_latency_stats(
     return _ns_to_ms(stats)
 
 
-def _calc_statistics(
-    values: List[int],
-) -> Dict[str, float]:
+def _calc_statistics(values: List[int]) -> Dict[str, float]:
     """Returns avg, median, p95, max statistics for a given list of durations"""
 
     if not values:
         return {}
 
-    d_array = np.array(values)
+    n = len(values)
+    sorted_values = sorted(values)
+
+    # Calculate 95th percentile.
+    # TODO: b/449630628 - Use AOSP library when available.
+    index = (n - 1) * 0.95
+    lower_idx = int(index)
+    remainder = index - lower_idx
+    if lower_idx + 1 < n:
+        p95 = (
+            sorted_values[lower_idx] * (1 - remainder)
+            + sorted_values[lower_idx + 1] * remainder
+        )
+    else:
+        p95 = sorted_values[lower_idx]
+
     return {
-        'avg': np.mean(d_array),
-        'median': np.median(d_array),
-        'p95': np.percentile(d_array, 95),
-        'max': np.max(d_array),
+        'avg': statistics.mean(sorted_values),
+        'median': statistics.median(sorted_values),
+        'p95': p95,
+        'max': sorted_values[-1],
     }
 
 

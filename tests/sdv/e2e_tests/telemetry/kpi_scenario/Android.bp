@@ -41,7 +41,4 @@ python_test_host {
         "sdv_perfetto_trace_processor_defaults",
         "sdv_test_fw_defaults",
     ],
-    // Required for PythonVirtualenvPreparer dependencies.
-    // TODO(b/449630628): Remove when numpy dep is replaced by AOSP library.
-    embedded_launcher: false,
 }
