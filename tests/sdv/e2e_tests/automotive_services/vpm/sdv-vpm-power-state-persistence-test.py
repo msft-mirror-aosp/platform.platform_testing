@@ -283,10 +283,10 @@ class SdvVpmPowerStatePersistenceTest(sdv_base_test.SdvBaseTestClass):
         self.vpm_manager.start_power_state_client()
 
         # assert vpm restart was successful:
-        if new_vpm_process_holder is None:
-            asserts.fail(
-                f'VPM not found to be alive until timeout={timeout}'
-            )
+        asserts.assert_is_not_none(
+            new_vpm_process_holder,
+            f'VPM not found to be alive until 30s timeout'
+        )
 
         # assert that state is still ON after agent restart:
         result = self.vpm_manager.wait_polling_for_power_state_report(

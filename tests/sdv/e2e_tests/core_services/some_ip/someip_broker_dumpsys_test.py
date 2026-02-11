@@ -17,7 +17,6 @@
 from mobly import asserts
 import time
 import logging
-import re
 
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 
@@ -65,10 +64,11 @@ com\.sdv\.someip\.BenchmarkInterface: [0-9]+ us"""
         )
 
         dumpsys_report = self.sdv_device.dumpsys(self.SOMEIP_BROKER_DUMP_BINDER_NAME)
-        if not re.search(re.compile(self.EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE), dumpsys_report):
-            asserts.fail(
-                f'Message not found [{self.EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE}] in dumpsys report: {dumpsys_report}',
-            )
+        asserts.assert_regex(
+            dumpsys_report,
+            self.EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE,
+            f'Message not found [{self.EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE}] in dumpsys report: {dumpsys_report}',
+        )
 
         self._start_someip_tester()
 
@@ -82,10 +82,11 @@ com\.sdv\.someip\.BenchmarkInterface: [0-9]+ us"""
         )
 
         dumpsys_report = self.sdv_device.dumpsys(self.SOMEIP_BROKER_DUMP_BINDER_NAME)
-        if not re.search(re.compile(self.EXPECTED_DUMPSYS_AFTER_EXECUTING_SAMPLE), dumpsys_report):
-            asserts.fail(
-                f'Message not found [{self.EXPECTED_DUMPSYS_AFTER_EXECUTING_SAMPLE}] in dumpsys report: {dumpsys_report}',
-            )
+        asserts.assert_regex(
+            dumpsys_report,
+            self.EXPECTED_DUMPSYS_AFTER_EXECUTING_SAMPLE,
+            f'Message not found [{self.EXPECTED_DUMPSYS_AFTER_EXECUTING_SAMPLE}] in dumpsys report: {dumpsys_report}',
+        )
 
         logging.info(
             f"{self.get_suite_name()}#{self.current_test_info.name} completed"
