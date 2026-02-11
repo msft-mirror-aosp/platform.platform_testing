@@ -12,30 +12,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Baseline test for verifying the hardware suspend/resume testing flow.
+"""Methods and data class for hardware suspend/resume baseline tests.
 
-This test ensures the reliability and stability of the suspend/resume testing
-infrastructure on hardware.
+This module centralizes shared logic and data structures to avoid code
+duplication between single and multiVM testing.
 
-The test verifies:
-  1. Connection to the hypervisor.
-  2. Responsiveness of the test environment.
-  3. Correct hypervisor setup for suspend/resume operations.
-  4. Basic suspend and resume functionality.
-  5. Suspend and resume with a short idle period to ensure CI/CD support of
-     complex scenarios.
+Usage:
+    The `SdvBaselineHwSuspendResumeMixin` class is intended to be used as a
+    mixin. It requires the consuming test class to also inherit from
+    `SdvBaseTestClass`, as it relies on specific methods and constants provided
+    by the base test environment.
+
+Note: This file a temporary solution to validate the reliability of the
+suspend/resume testing methodology for both single and multi-VM scenarios.
+
+The plan is to integrate this logic and solution into the HW library,
+addressing the limitations of the previous approach. Ultimately this logic will
+be provided by the framework directly to allow seamless VPM testing.
 """
 
 import dataclasses
 import logging
-import time
-from absl.testing import parameterized
+
 from mobly import asserts
-from mobly.controllers.android_device_lib.adb import AdbError
 import pexpect
 from pexpect import pxssh
-from sdv_test_fw.test_execution import sdv_base_test
-from sdv_test_fw.test_execution import sdv_test_runner
 from sdv_test_fw.verification import polling
 
 
@@ -53,17 +54,29 @@ class QnxVmConfig:
         return f"powerbtn-daemon-{self.sdv_guest_name}"
 
 
-class SdvBaselineHwSuspendResumeTest(
-    sdv_base_test.SdvBaseTestClass, parameterized.TestCase
-):
-    DEVICE1_VM_CONFIG = QnxVmConfig(dev_file="/dev/ttyp6", sdv_guest_id="1")
-
+class SdvBaselineHwSuspendResumeMixin:
+    # ==========================================================================
+    # Hypervisor and Devices Config
+    # ==========================================================================
     LOCAL_PORT = "12222"
     LAB_PORT = "22"
     SSH_USERNAME = "root"
     SSH_PASSWORD = "root"
 
-    VERIFY_CONNECTION_TEXT = "Connection works"
+    # Current logic assumes a static mapping:
+    #   device1 -> sdv-1
+    #   device2 -> sdv-2
+    # This holds true for CI/CD and CATBox environments but may not be
+    # guaranteed during local execution with `atest`.
+    # TODO(crisguerrero): Look into dynamically resolve configuration based on
+    # evice info (e.g., serial number, instance, etc). This is not important
+    # for verifying the functionality is stable in CI/CD.
+    DEVICE1_VM_CONFIG = QnxVmConfig(dev_file="/dev/ttyp6", sdv_guest_id="1")
+    DEVICE2_VM_CONFIG = QnxVmConfig(dev_file="/dev/ttyp7", sdv_guest_id="2")
+
+    # ==========================================================================
+    # Setup Commands
+    # ==========================================================================
 
     FAKE_POWERBTN_DAEMON = (
         "on -d -t /dev/null sh -c '(while true; do sleep 98765; done) >"
@@ -79,11 +92,21 @@ class SdvBaselineHwSuspendResumeTest(
         " /sys/devices/platform/vdevs/{memory_address}.uart/tty/ttyAMA0/power/wakeup"
     )
 
+    # ==========================================================================
+    # VPM Commands
+    # ==========================================================================
+
     VEPSM_POWER_STATE = "vepsm power-state {vpm_action}"
     VEPSM_POWER_STATE_OUTPUT = (
         "Received power-state-report from VPM {vpm_status} , reason"
         " HOST_REQUESTED"
     )
+
+    WAKE_UP = "echo >> {dev_file}"
+
+    # ==========================================================================
+    # Device Status
+    # ==========================================================================
 
     # The absence of the env file indicates the VM may be rebooting or something
     # happened, so it is not possible to check its status. This is an edge case
@@ -101,14 +124,21 @@ class SdvBaselineHwSuspendResumeTest(
     VM_RUNNING = "Running"
     VM_STATUS_NOT_AVAILABLE = "Not available"
 
-    WAKE_UP = "echo >> {dev_file}"
+    # ==========================================================================
+    # Other Commands
+    # ==========================================================================
 
     SPAWNED_PROCESSES = "pidin -f aA | grep {process}"
 
-    def _connect_to_hypervisor_qnx(self):
-        # Hypervisor QNX is common for all VMs, so it is only necessary
-        # to connect once. We take device1 serial it always exists independently
-        # of he number of VMs the test requires.
+    # ==========================================================================
+
+    # ==========================================================================
+    # Hypervisor QNX Interaction
+    # ==========================================================================
+
+    def connect_to_hypervisor_qnx(self):
+        # Hypervisor QNX is common for all VMs. We take device1 serial it always
+        # exists independently of the number of VMs the test requires.
         logging.info(f"Connect to QNX")
         sdv_device1_serial = self.sdv_device1.adb().get_device_serial()
         logging.info(f"device1 serial: {sdv_device1_serial}")
@@ -137,72 +167,31 @@ class SdvBaselineHwSuspendResumeTest(
 
         logging.info(f"Connection to QNX successful")
 
-    def _start_fake_powerbtn_daemon(self, vm_config):
-        # Only start the daemon if there is not one running already in the
-        # hypervisor. This is to avoid spawning multiple processes in the QNX
-        # that cannot be killed and have the same purpose. Minimize the number
-        # of zombie processes we leave in the hypervisor after the test
-        # finalizes.
-        logging.info(f"Start daemon {vm_config.daemon_label} in hypervisor")
-
-        if self._processes_are_running(vm_config.daemon_label):
-            logging.info(
-                f"Daemon with tag {vm_config.daemon_label} already running"
-            )
-            return
-
-        self._host_command(
-            self.FAKE_POWERBTN_DAEMON.format(
-                dev_file=vm_config.dev_file,
-                daemon_label=vm_config.daemon_label,
-            )
-        )
-
-    def _enable_fake_powerbtn(self, device, vm_config):
-        logging.info(f"Prepare fake powerbtn for {vm_config.sdv_guest_name}")
-        self._start_fake_powerbtn_daemon(vm_config)
-
-        self._host_command(
-            self.ADDRESS_COMMAND.format(sdv_guest_id=vm_config.sdv_guest_id)
-        )
-        # The output is with format 0x1c090000. We are only interested on
-        # the value after 0x
-        vdevs_memory_location = self._host_output_last_line()[2:]
-        logging.info(
-            f"{vm_config.sdv_guest_name} memory location:"
-            f" {vdevs_memory_location}"
-        )
-
-        device.adb().execute_shell_command(
-            self.ENABLE_WAKEUP.format(memory_address=vdevs_memory_location)
-        )
-        logging.info(f"Fake powerbtn enabled in {vm_config.sdv_guest_name}")
-
-    def _host_command(self, command, timeout=5):
+    def host_command(self, command, timeout=5):
         try:
             self.host_session.sendline(command)
             self.host_session.prompt(timeout=timeout)
 
             logging.debug("Host command sent:")
             logging.debug("START-------------------")
-            logging.debug(self._host_output())
+            logging.debug(self.host_output())
             logging.debug("-------------------END")
 
         except pexpect.TIMEOUT:
             logging.error(f"{command} timed out")
             raise
 
-    def _host_output(self):
+    def host_output(self):
         return self.host_session.before.decode("utf-8")
 
-    def _host_output_last_line(self):
-        return self._host_output().splitlines()[-1]
+    def host_output_last_line(self):
+        return self.host_output().splitlines()[-1]
 
     def _find_spawned_processes(self, process_identifier):
-        self._host_command(
+        self.host_command(
             self.SPAWNED_PROCESSES.format(process=process_identifier)
         )
-        output_lines = self._host_output().splitlines()
+        output_lines = self.host_output().splitlines()
 
         spawned_processes = []
         for line in output_lines:
@@ -223,11 +212,60 @@ class SdvBaselineHwSuspendResumeTest(
             return True
         return False
 
+    # ==========================================================================
+    # Power Button Emulation Setup
+    # ==========================================================================
+
+    def _start_fake_powerbtn_daemon(self, vm_config):
+        # Only start the daemon if there is not one running already in the
+        # hypervisor. This is to avoid spawning multiple processes in the QNX
+        # that cannot be killed and have the same purpose. Minimize the number
+        # of zombie processes we leave in the hypervisor after the test
+        # finalizes.
+        logging.info(f"Start daemon {vm_config.daemon_label} in hypervisor")
+
+        if self._processes_are_running(vm_config.daemon_label):
+            logging.info(
+                f"Daemon with tag {vm_config.daemon_label} already running"
+            )
+            return
+
+        self.host_command(
+            self.FAKE_POWERBTN_DAEMON.format(
+                dev_file=vm_config.dev_file,
+                daemon_label=vm_config.daemon_label,
+            )
+        )
+
+    def enable_fake_powerbtn(self, device, vm_config):
+        logging.info(f"Prepare fake powerbtn for {vm_config.sdv_guest_name}")
+        self._start_fake_powerbtn_daemon(vm_config)
+
+        self.host_command(
+            self.ADDRESS_COMMAND.format(sdv_guest_id=vm_config.sdv_guest_id)
+        )
+        # The output is with format 0x1c090000. We are only interested on
+        # the value after 0x
+        vdevs_memory_location = self.host_output_last_line()[2:]
+        logging.info(
+            f"{vm_config.sdv_guest_name} memory location:"
+            f" {vdevs_memory_location}"
+        )
+
+        device.adb().execute_shell_command(
+            self.ENABLE_WAKEUP.format(memory_address=vdevs_memory_location)
+        )
+        logging.info(f"Fake powerbtn enabled in {vm_config.sdv_guest_name}")
+
+    # ==========================================================================
+    # Device Status Verification
+    # ==========================================================================
+
     def _device_status(self, vm_config):
-        self._host_command(
+        self.host_command(
             self.SDV_VM_STATUS.format(sdv_guest_name=vm_config.sdv_guest_name)
         )
-        status = self._host_output_last_line()
+        status = self.host_output_last_line()
         logging.debug(f"{vm_config.sdv_guest_name} VM status: {status}")
         asserts.assert_not_equal(
             status,
@@ -243,81 +281,20 @@ class SdvBaselineHwSuspendResumeTest(
     def _device_is_running(self, vm_config):
         return self._device_status(vm_config) == self.VM_RUNNING
 
-    def setup_class(self):
-        super().setup_class()
-        self.sdv_device1 = self.get_device("device1")
+    # ==========================================================================
+    # Power Management
+    # ==========================================================================
 
-        self._connect_to_hypervisor_qnx()
-        self._enable_fake_powerbtn(self.sdv_device1, self.DEVICE1_VM_CONFIG)
-
-    def setup_test(self):
-        super().setup_test()
-
-        # Open session for Power Management
-        self.sdv_pwm_session = self.sdv_device1.adb().interactive_session(
-            label="PWM"
-        )
-
-    def teardown_test(self):
-        logging.info("Cleaning up after test case.")
-        # end Power Management session
-        self.sdv_pwm_session.close()
-        super().teardown_test()
-
-    def teardown_class(self):
-        logging.info("Cleaning up after test.")
-        # Concluding the sleep process makes adb connection to get lost
-        # because the device hangs. We cannot clean up the spawned processes
-        # in QNX. This is a known limitation of the current approach.
-
-        # End connection to QNX.,
-        self.host_session.logout()
-        super().teardown_class()
-
-    def test_verify_host_connection(self):
-        self._host_command(f"echo {self.VERIFY_CONNECTION_TEXT}")
-
+    def pwm_suspend_to_ram(self, pwm_session, vm_config):
         logging.info(
-            f"Verification echo output: {self._host_output_last_line()}"
-        )
-        asserts.assert_equal(
-            self._host_output_last_line(), self.VERIFY_CONNECTION_TEXT
+            f"Suspend {vm_config.sdv_guest_name} VM using Power Management"
         )
 
-    def test_powerbtn_daemon_is_running_in_host(self):
-        asserts.assert_true(
-            self._processes_are_running(self.DEVICE1_VM_CONFIG.daemon_label),
-            "Daemon to wake up device is not running",
-        )
-
-    def test_device_is_responsive(self):
-        asserts.assert_true(
-            self._device_is_running(self.DEVICE1_VM_CONFIG),
-            "Device is not running",
-        )
-
-        command = f'echo "{self.VERIFY_CONNECTION_TEXT}"'
-        output = self.sdv_device1.adb().execute_shell_command(command)
-        asserts.assert_equal(output, self.VERIFY_CONNECTION_TEXT)
-
-    @parameterized.named_parameters(
-        {
-            "testcase_name": "",
-            "idle_seconds": 0,
-        },
-        {
-            "testcase_name": "idle_15_secs",
-            "idle_seconds": 15,
-        },
-    )
-    def test_suspend_resume_hw(self, idle_seconds):
-        logging.info("Suspend VM using Power Management")
-
-        self.sdv_pwm_session.send_command_and_wait_for_outputs(
+        pwm_session.send_command_and_wait_for_outputs(
             self.VEPSM_POWER_STATE.format(vpm_action="power-on"),
             [self.VEPSM_POWER_STATE_OUTPUT.format(vpm_status="ON")],
         )
-        self.sdv_pwm_session.send_command_and_wait_for_outputs(
+        pwm_session.send_command_and_wait_for_outputs(
             self.VEPSM_POWER_STATE.format(vpm_action="prepare ram"),
             [
                 self.VEPSM_POWER_STATE_OUTPUT.format(
@@ -331,41 +308,44 @@ class SdvBaselineHwSuspendResumeTest(
 
         # The command is expected to hang the session as the device will
         # suspend.
-        self.sdv_pwm_session.send_command(
+        pwm_session.send_command(
             self.VEPSM_POWER_STATE.format(vpm_action="finish ram")
         )
 
-        logging.info("Waiting for device to suspend.")
+        # Waiting for the device to suspend before carrying out any other
+        # action is vital to avoid unexpected behavior and ensure reliability in
+        # suspend and resume testing.
+        logging.info(f"Waiting for {vm_config.sdv_guest_name} to suspend.")
         result = polling.wait_for_true(
             self._device_is_suspended,
-            self.DEVICE1_VM_CONFIG,
+            vm_config,
             timeout=30,
-            assert_msg="Device did not suspend",
+            assert_msg=f"{vm_config.sdv_guest_name} did not suspend",
         )
 
-        logging.info(f"Do nothing for {idle_seconds} seconds.")
-        time.sleep(idle_seconds)
-        logging.info(f"{idle_seconds} seconds passed.")
+        logging.info(f"{vm_config.sdv_guest_name} VM suspended successfully")
 
-        logging.info("Waking up device from host")
-        self._host_command(
-            self.WAKE_UP.format(dev_file=self.DEVICE1_VM_CONFIG.dev_file)
-        )
+    def pwm_resume(self, pwm_session, vm_config):
+        logging.info(f"Waking up {vm_config.sdv_guest_name} VM from host")
 
-        logging.info("Waiting for device to wake up.")
+        self.host_command(self.WAKE_UP.format(dev_file=vm_config.dev_file))
+
+        logging.info(f"Waiting for {vm_config.sdv_guest_name} to wake up.")
         result = polling.wait_for_true(
             self._device_is_running,
-            self.DEVICE1_VM_CONFIG,
+            vm_config,
             timeout=30,
-            assert_msg="Device did not resume",
+            assert_msg=f"{vm_config.sdv_guest_name} did not resume",
         )
 
-        self.sdv_pwm_session.expect_outputs([
+        # TODO(crisguerrero): This seems to be flaky sometimes when the device
+        # is idle for 15s, as the session is disconnected and we are not
+        # able to access the final output of the session.
+        # Verify session is active before attempting to read the output of PWM.
+        pwm_session.expect_outputs([
             self.VEPSM_POWER_STATE_OUTPUT.format(
                 vpm_status="SUSPEND_TO_RAM_EXIT"
             )
         ])
 
-
-if __name__ == "__main__":
-    sdv_test_runner.run()
+        logging.info(f"{vm_config.sdv_guest_name} VM resumed successfully")

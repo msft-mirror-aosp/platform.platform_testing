@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""One VM Baseline test for verifying the hardware suspend/resume testing flow.
+"""Two VM Baseline test for verifying the hardware suspend/resume testing flow.
 
 This test ensures the reliability and stability of the suspend/resume testing
-infrastructure on hardware for One VM.
+infrastructure on hardware for 2 VM.
 
 The test verifies:
   1. Connection to the hypervisor.
@@ -35,7 +35,7 @@ from sdv_test_fw.test_execution import sdv_base_test
 from sdv_test_fw.test_execution import sdv_test_runner
 
 
-class SdvBaselineHwSuspendResumeOneVMTest(
+class SdvBaselineHwSuspendResumeTwoVMTest(
     sdv_base_test.SdvBaseTestClass,
     hw_suspend_resume.SdvBaselineHwSuspendResumeMixin,
     test_verification.SdvBaselineHwSuspendResumeTestVerification,
@@ -45,25 +45,31 @@ class SdvBaselineHwSuspendResumeOneVMTest(
     def setup_class(self):
         super().setup_class()
         self.sdv_device1 = self.get_device("device1")
+        self.sdv_device2 = self.get_device("device2")
 
         # Hypervisor QNX is common for all VMs, so it is only necessary
         # to connect once. We use device1 serial as it always exists
         # independently of he number of VMs the test requires.
         self.connect_to_hypervisor_qnx()
         self.enable_fake_powerbtn(self.sdv_device1, self.DEVICE1_VM_CONFIG)
+        self.enable_fake_powerbtn(self.sdv_device2, self.DEVICE2_VM_CONFIG)
 
     def setup_test(self):
         super().setup_test()
 
-        # Open session for Power Management
+        # Open sessions for Power Management
         self.sdv_device1_pwm_session = (
             self.sdv_device1.adb().interactive_session(label="PWM")
+        )
+        self.sdv_device2_pwm_session = (
+            self.sdv_device2.adb().interactive_session(label="PWM")
         )
 
     def teardown_test(self):
         logging.info("Cleaning up after test case.")
         # end Power Management session
         self.sdv_device1_pwm_session.close()
+        self.sdv_device2_pwm_session.close()
         super().teardown_test()
 
     def teardown_class(self):
@@ -84,10 +90,14 @@ class SdvBaselineHwSuspendResumeOneVMTest(
 
     def test_powerbtn_daemon_is_running_in_host(self):
         self.verify_powerbtn_daemon_is_running_in_host(self.DEVICE1_VM_CONFIG)
+        self.verify_powerbtn_daemon_is_running_in_host(self.DEVICE2_VM_CONFIG)
 
     def test_device_is_responsive(self):
         self.verify_device_is_responsive(
             self.DEVICE1_VM_CONFIG, self.sdv_device1
+        )
+        self.verify_device_is_responsive(
+            self.DEVICE2_VM_CONFIG, self.sdv_device2
         )
 
     @parameterized.named_parameters(
@@ -103,6 +113,9 @@ class SdvBaselineHwSuspendResumeOneVMTest(
     def test_suspend_resume_hw(self, idle_seconds):
         self.verify_device_suspend_resume(
             self.DEVICE1_VM_CONFIG, self.sdv_device1_pwm_session, idle_seconds
+        )
+        self.verify_device_suspend_resume(
+            self.DEVICE2_VM_CONFIG, self.sdv_device2_pwm_session, idle_seconds
         )
 
 
