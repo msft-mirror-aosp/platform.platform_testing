@@ -26,11 +26,9 @@ class SdvE2EOrchestrationRestartBundleCrashedTest(
 ):
 
     BUNDLE_STARTED_SUCCESS_LOGCAT_TEXT = 'Request for moving service bundle Fqin { package_name: "com.sdv.google.sample.lifecycle.apex", service_bundle_name: "LifecycleCppSampleServiceBundle", instance_name: "crashed-restarted" } to STARTED state was Ok(())'
-
     BUNDLE_CRASH_NOTIFICATION_LOGCAT_TEXT = r'Service bundle crashed for fqin: ServiceFqin { sdvVmName: ".*?", sdvPackageName: "com.sdv.google.sample.lifecycle.apex", serviceBundleName: "LifecycleCppSampleServiceBundle", serviceInstanceName: "crashed-notification" }'
-
+    BUNDLE_NON_RESTARTABLE_LOGCAT_TEXT = 'Bundle with Fqin { package_name: "com.sdv.google.sample.lifecycle.apex", service_bundle_name: "LifecycleCppSampleServiceBundle", instance_name: "crashed-restarted" } has crashed, but it is not restartable.'
     FINISHED_STARTING_SERVICE_BUNDLE = 'Request for moving service bundle Fqin { package_name: "com.sdv.google.sample.lifecycle.apex", service_bundle_name: "LifecycleCppSampleServiceBundle", instance_name: "crashed-notification" } to STARTED state was Ok(())'
-
 
     def kill_bundle(self, instance_name):
         # Process name for service bundle is constructed as: bundle_name:instance_name
@@ -76,18 +74,19 @@ class SdvE2EOrchestrationRestartBundleCrashedTest(
 
         # Kill the service bundle
         self.kill_bundle("crashed-restarted")
+        # This bundle is not restartable, so we verify that it was not restarted.
+        transition_completed_timestamp = self.wait_for_logcat(self.BUNDLE_NON_RESTARTABLE_LOGCAT_TEXT, transition_completed_timestamp)
 
         # After setting any mode, the internal orchestrator state will be evaluated again and the bundle should be started again.
         # As we are in the same session, we just need to provide the name  and value of the mode, and not the full command.
         self.custom_modes_session.send_command('CHARGING ON')
 
         # Verify that the bundle is restarted
-        transition_completed_timestamp = self.wait_for_logcat(self.BUNDLE_STARTED_SUCCESS_LOGCAT_TEXT, transition_completed_timestamp)
+        self.wait_for_logcat(self.BUNDLE_STARTED_SUCCESS_LOGCAT_TEXT, transition_completed_timestamp)
 
         logging.info(
             f"{self.get_suite_name()}#{self.current_test_info.name} completed."
         )
-
 
     def test_bundle_restarted_after_crash_notification(self):
         logging.info(
@@ -97,13 +96,7 @@ class SdvE2EOrchestrationRestartBundleCrashedTest(
         # GIVEN
         # Start the bundle that will be killed later in the test
         self.custom_modes_session.send_command('orch_custom_mode_sample E2E-TESTS crash-notify')
-        # Wait until the bundle was started before killing
-        polling.wait_and_verify_expected_logs(
-            sdv_device=self.sdv_device,
-            grep_text="sdv_orchestration_agent",
-            expected_result=self.FINISHED_STARTING_SERVICE_BUNDLE,
-            assert_msg="Test bundle never started",
-        )
+        transition_completed_timestamp = self.wait_for_logcat(self.FINISHED_STARTING_SERVICE_BUNDLE)
 
         # WHEN the bundle is killed
         self.kill_bundle("crashed-notification")
@@ -116,7 +109,8 @@ class SdvE2EOrchestrationRestartBundleCrashedTest(
             assert_msg="Crash notification was not received",
         )
 
-        # TODO(b/419239856): Add checks that the bundle was restarted when logic is added
+        # THEN verify that the bundle was restarted
+        self.wait_for_logcat(self.FINISHED_STARTING_SERVICE_BUNDLE, transition_completed_timestamp)
 
         logging.info(
             f"{self.get_suite_name()}#{self.current_test_info.name} completed."
