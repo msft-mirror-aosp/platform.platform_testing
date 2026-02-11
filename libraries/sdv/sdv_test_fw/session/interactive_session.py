@@ -12,24 +12,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Create detachable sessions to interact using pexpect
-"""
-import pexpect
+"""Create detachable sessions to interact using pexpect"""
+
 import logging
 from mobly import asserts
+import pexpect
+
 
 class Session:
     """Represents an interactive session."""
 
-    def __init__(self, adb_serial=None):
+    def __init__(self, adb_serial=None, session_label=None):
         """Initializes and starts the session.
 
         Args:
-            adb_serial (str, optional): The serial number of the device to connect to.
-                If not provided, the session will be started in a shell.
+            adb_serial (str, optional): The serial number of the device to
+              connect to. If not provided, the session will be started in a
+              shell.
+            session_label (str, optional): Identifier of the session to be used
+              for logs with format [Session|adb_serial|session_label] <log>
         """
         self.session = self._create_session(adb_serial)
+        self._label = "|".join(
+            [s for s in ["Session", adb_serial, session_label] if s]
+        )
 
     def __del__(self):
         """Destructor to ensure session is closed."""
@@ -39,8 +45,9 @@ class Session:
         """Creates the interactive session.
 
         Args:
-            adb_serial (str, optional): The serial number of the device to connect to.
-            If this parameter is not provided, the ADB connection defaults to the shell.
+            adb_serial (str, optional): The serial number of the device to
+              connect to. If this parameter is not provided, the ADB connection
+              defaults to the shell.
 
          Returns:
             pexpect.spawn: The pexpect session object.
@@ -50,9 +57,9 @@ class Session:
         """
         try:
             if adb_serial:
-                return pexpect.spawn(f'adb -s {adb_serial} shell')
+                return pexpect.spawn(f"adb -s {adb_serial} shell")
             else:
-                return pexpect.spawn('/bin/bash')
+                return pexpect.spawn("/bin/bash")
         except pexpect.ExceptionPexpect as e:
             raise Exception(f"Error creating session: {e}")
 
@@ -63,9 +70,10 @@ class Session:
             command (str): The command to be sent to the session.
 
         Returns:
-            None: This method does not return any value. It sends the command and
-            handles the interaction with the session.
+            None: This method does not return any value. It sends the command
+            and handles the interaction with the session.
         """
+        logging.info(f"[{self._label}] Send command: {command}")
         self.session.sendline(command)
 
     def get_output(self):
@@ -75,11 +83,16 @@ class Session:
             str: This method decodes the output from the session's buffer
             and returns it as a string.
         """
-        return self.session.before.decode('utf-8')
+        return self.session.before.decode("utf-8")
 
-    def close(self):
-        """Closes the session."""
-        self.session.close()
+    def close(self, force=False):
+        """Closes the session
+
+        Args:
+            force (bool, optional): Force to close the session. False by
+              default.
+        """
+        self.session.close(force=force)
 
     def send_command_and_wait_for_outputs(self, command, outputs, timeout=30):
         """Sends a command and waits for expected output.
@@ -96,20 +109,27 @@ class Session:
         """Waits for all expected outputs in the session.
 
         This method searches for a list of patterns in the session's output.
-        If any pattern is not found within the specified timeout, the test fails.
+        If any pattern is not found within the specified timeout, the test
+        fails.
 
         Args:
-            outputs (list of str): A list of patterns to search for in the session output.
-                Each pattern can be a regular expression or a simple string.
-            timeout (int, optional): The timeout in seconds for each pattern search. Defaults to 30.
+            outputs (list of str): A list of patterns to search for in the
+              session output. Each pattern can be a regular expression or a
+              simple string.
+            timeout (int, optional): The timeout in seconds for each pattern
+              search. Defaults to 30.
 
         Raises:
-            AssertionError: If any pattern is not found in the output within the specified timeout.
+            AssertionError: If any pattern is not found in the output within the
+            specified timeout.
         """
         for text in outputs:
+            logging.info(f"[{self._label}] Waiting for output: {text}")
             try:
                 self.session.expect(text, timeout=timeout)
             except pexpect.TIMEOUT:
-                session_content = self.session.before.decode('utf-8')
-                asserts.fail(f'Text "{text}" was not found in the output within {timeout} seconds.\nSession content:\n{session_content}')
-
+                session_content = self.session.before.decode("utf-8")
+                asserts.fail(
+                    f"Expected output '{text}' was not found within {timeout}"
+                    f" seconds.\nSession content:\n{session_content}"
+                )
