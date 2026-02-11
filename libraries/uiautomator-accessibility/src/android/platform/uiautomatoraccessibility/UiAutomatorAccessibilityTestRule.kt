@@ -85,7 +85,8 @@ constructor(
      * If you want to suppress certain results, either modify this one or call
      * [configureSuppressions].
      */
-    val suppressor = Suppressor<AccessibilityHierarchyCheckResult>()
+    val suppressor =
+        Suppressor<AccessibilityHierarchyCheckResult>().also { GlobalSuppressions.addAll(it) }
 
     /**
      * If you want to customize Parameters, suppressions, etc, either modify this one or call
