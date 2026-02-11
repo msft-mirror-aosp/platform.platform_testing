@@ -144,18 +144,18 @@ class DisplayMonitor(caller: String, val allowDisablingDisplays: Boolean = false
      * @param isWaitingForCondition True while waiting for a state change, false if it's a check on
      *   an already established state.
      * @param peripherals The list of [DisplayPeripheral]s to match against the available displays.
-     * @param displayType The type of display to consider for matching, e.g. [Display.TYPE_OVERLAY].
+     * @param isSimulated Whether we need to match simulated peripherals or physical.
      * @return A list of [Pair]s where each [DisplayPeripheral] is matched to a [Display], or `null`
      *   if a complete match cannot be made or the topology is invalid.
      */
     fun matchPeripherals(
         isWaitingForCondition: Boolean,
         peripherals: List<DisplayPeripheral>,
-        displayType: Int,
+        isSimulated: Boolean,
     ): List<Pair<DisplayPeripheral, Display>>? {
         val allEnabledDisplays = getEnabledDisplays()
-        val enabledDisplays = allEnabledDisplays.filter { it.type == displayType }
-        val connectedDisplays = getConnectedDisplays().filter { it.type == displayType }
+        val enabledDisplays = allEnabledDisplays.filter { matchName(it.name, isSimulated) }
+        val connectedDisplays = getConnectedDisplays().filter { matchName(it.name, isSimulated) }
         val enabledDisplaysIds = enabledDisplays.map { it.displayId }
         val connectedDisplaysIds = connectedDisplays.map { it.displayId }
         if (enabledDisplaysIds.intersect(connectedDisplaysIds).size != enabledDisplaysIds.size) {
@@ -194,6 +194,10 @@ class DisplayMonitor(caller: String, val allowDisablingDisplays: Boolean = false
         }
         logD("matchPeripherals: matched! $matched")
         return matched
+    }
+
+    private fun matchName(name: String, isSimulated: Boolean): Boolean {
+        return name.startsWith(OVERLAY_DISPLAY_NAME_PREFIX) == isSimulated
     }
 
     fun startMonitoring(newCondition: Condition): Boolean {
@@ -535,6 +539,8 @@ class DisplayMonitor(caller: String, val allowDisablingDisplays: Boolean = false
         const val DEBUG = true
         const val MAX_SIZE_MISMATCH = 0.025
         val BACKOFF_DELAY = 50L.milliseconds
+        // Matches com.android.internal.R.string.display_manager_overlay_display_name.
+        const val OVERLAY_DISPLAY_NAME_PREFIX = "Overlay #"
 
         fun <T> SparseArray<T>.getKeys(): ArrayList<Int> {
             val res = ArrayList<Int>(this.size)
