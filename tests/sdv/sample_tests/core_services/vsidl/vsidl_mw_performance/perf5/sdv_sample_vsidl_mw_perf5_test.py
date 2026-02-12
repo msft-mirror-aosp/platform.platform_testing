@@ -87,8 +87,8 @@ class SdvSampleVsidlMwPerf5Test(sdv_base_test.SdvBaseTestClass):
         self.sdv_device.reboot_device()
         self.sdv_device.wait_for_device_online()
         self.sdv_device.root_device()
-        self.sdv_device.execute_shell_command("sdv_service_bundle start local-vm:com.sdv.google.sample.perf5.PerfFirst/instance")
-        self.sdv_device.execute_shell_command("sdv_service_bundle start local-vm:com.sdv.google.sample.perf5.PerfSecond/instance")
+        self.sdv_device.execute_shell_command("sdv_service_bundle start local-vm:com.android.sdv.sample.perf5.PerfFirst/instance")
+        self.sdv_device.execute_shell_command("sdv_service_bundle start local-vm:com.android.sdv.sample.perf5.PerfSecond/instance")
 
     def teardown_test(self):
         if self.current_test_info.name == 'test_record_perf5_traces':
@@ -160,7 +160,7 @@ class SdvSampleVsidlMwPerf5Test(sdv_base_test.SdvBaseTestClass):
                 f'{self.get_suite_name()} :: Found message {i+1} of 15' # i+1 because counting starts at 0
             )
             self.sdv_device.clear_logcat()
-            polling.wait_and_verify_expected_logs(self.sdv_device, grep_text="Read message.", logcat_args="*:F com_sdv_google_sample_perf5_PerfFirst_instance:*")
+            polling.wait_and_verify_expected_logs(self.sdv_device, grep_text="Read message.", logcat_args="*:F com_android_sdv_sample_perf5_PerfFirst_instance:*")
 
         logging.info(
             f'{self.get_suite_name()} :: End Test {self.current_test_info.name}'
