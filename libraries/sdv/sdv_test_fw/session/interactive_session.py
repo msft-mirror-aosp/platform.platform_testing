@@ -32,22 +32,19 @@ class Session:
             session_label (str, optional): Identifier of the session to be used
               for logs with format [Session|adb_serial|session_label] <log>
         """
-        self.session = self._create_session(adb_serial)
+        self.adb_serial = adb_serial
         self._label = "|".join(
             [s for s in ["Session", adb_serial, session_label] if s]
         )
 
+        self.session = self._create_session()
+
     def __del__(self):
         """Destructor to ensure session is closed."""
-        self.close()
+        self.close(force=True)
 
-    def _create_session(self, adb_serial=None):
+    def _create_session(self):
         """Creates the interactive session.
-
-        Args:
-            adb_serial (str, optional): The serial number of the device to
-              connect to. If this parameter is not provided, the ADB connection
-              defaults to the shell.
 
          Returns:
             pexpect.spawn: The pexpect session object.
@@ -55,13 +52,26 @@ class Session:
         Raises:
             Exception: If there is an error creating the session.
         """
+        logging.info(f"[{self._label}] Connect to session.")
         try:
-            if adb_serial:
-                return pexpect.spawn(f"adb -s {adb_serial} shell")
+            if self.adb_serial:
+                return pexpect.spawn(f"adb -s {self.adb_serial} shell")
             else:
                 return pexpect.spawn("/bin/bash")
         except pexpect.ExceptionPexpect as e:
             raise Exception(f"Error creating session: {e}")
+
+    def reconnect(self):
+        """Restarts the interactive session
+
+        Pexpect sessions are tied to the lifecycle of a specific child process.
+        To reconnect, the current process must be terminated and a new one
+        spawned. This method closes the existing session and replaces it with
+        a new instance.
+        """
+        logging.info(f"[{self._label}] Reconnect to session.")
+        self.session.close(force=True)
+        self.session = self._create_session()
 
     def send_command(self, command):
         """Sends a command to the session.
@@ -92,6 +102,7 @@ class Session:
             force (bool, optional): Force to close the session. False by
               default.
         """
+        logging.info(f"[{self._label}] Close session.")
         self.session.close(force=force)
 
     def send_command_and_wait_for_outputs(self, command, outputs, timeout=30):
