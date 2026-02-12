@@ -17,6 +17,7 @@
 package android.tools.flicker.subject.wm
 
 import android.graphics.Region
+import android.tools.PlatformConsts
 import android.tools.Rotation
 import android.tools.flicker.assertions.Fact
 import android.tools.flicker.subject.FlickerSubject
@@ -64,10 +65,15 @@ constructor(
     val wmState: WindowManagerState,
     override val reader: Reader? = null,
     val trace: WindowManagerTraceSubject? = null,
+    val displayId: Int? = null,
 ) : FlickerSubject(), IWindowManagerSubject<WindowManagerStateSubject, RegionSubject> {
     override val timestamp = wmState.timestamp
 
-    val subjects by lazy { wmState.windowStates.map { WindowStateSubject(timestamp, it, reader) } }
+    val subjects by lazy {
+        wmState.windowStates
+            .filter { displayId == null || it.displayId == displayId }
+            .map { WindowStateSubject(timestamp, it, reader) }
+    }
 
     val appWindows: List<WindowStateSubject>
         get() = subjects.filter { wmState.appWindows.contains(it.windowState) }
@@ -86,6 +92,10 @@ constructor(
 
     val visibleAppWindows: List<WindowStateSubject>
         get() = subjects.filter { wmState.visibleAppWindows.contains(it.windowState) }
+
+    /** {@inheritDoc} */
+    override fun onDisplay(displayId: Int): WindowManagerStateSubject =
+        WindowManagerStateSubject(wmState, reader, trace, displayId)
 
     /** Executes a custom [assertion] on the current subject */
     operator fun invoke(
@@ -132,24 +142,16 @@ constructor(
     override fun containsAboveAppWindow(
         componentMatcher: IComponentMatcher
     ): WindowManagerStateSubject = apply {
-        if (!wmState.contains(componentMatcher)) {
-            throw createElementNotFoundException(componentMatcher)
-        }
-        if (!wmState.isAboveAppWindow(componentMatcher)) {
-            throw createElementNotFoundException(componentMatcher)
-        }
+        contains(subjects, componentMatcher)
+        contains(aboveAppWindows, componentMatcher)
     }
 
     /** {@inheritDoc} */
     override fun containsBelowAppWindow(
         componentMatcher: IComponentMatcher
     ): WindowManagerStateSubject = apply {
-        if (!wmState.contains(componentMatcher)) {
-            throw createElementNotFoundException(componentMatcher)
-        }
-        if (!wmState.isBelowAppWindow(componentMatcher)) {
-            throw createElementNotFoundException(componentMatcher)
-        }
+        contains(subjects, componentMatcher)
+        contains(belowAppWindows, componentMatcher)
     }
 
     /** {@inheritDoc} */
@@ -161,9 +163,13 @@ constructor(
         contains(belowWindowComponentMatcher)
 
         val aboveWindow =
-            wmState.windowStates.first { aboveWindowComponentMatcher.windowMatchesAnyOf(it) }
+            subjects
+                .map { it.windowState }
+                .first { aboveWindowComponentMatcher.windowMatchesAnyOf(it) }
         val belowWindow =
-            wmState.windowStates.first { belowWindowComponentMatcher.windowMatchesAnyOf(it) }
+            subjects
+                .map { it.windowState }
+                .first { belowWindowComponentMatcher.windowMatchesAnyOf(it) }
 
         val errorMsgBuilder =
             ExceptionMessageBuilder()
@@ -179,16 +185,17 @@ constructor(
             errorMsgBuilder
                 .setMessage("Above and below windows should be different")
                 .setActual(aboveWindow.title)
+            displayId?.let { errorMsgBuilder.addExtraDescription("Display", it.toString()) }
             throw SubjectAssertionError(errorMsgBuilder)
         }
 
         // windows are ordered by z-order, from top to bottom
         val aboveZ =
-            wmState.windowStates.indexOfFirst { aboveWindowComponentMatcher.windowMatchesAnyOf(it) }
+            subjects.indexOfFirst { aboveWindowComponentMatcher.windowMatchesAnyOf(it.windowState) }
         val belowZ =
-            wmState.windowStates.indexOfFirst { belowWindowComponentMatcher.windowMatchesAnyOf(it) }
+            subjects.indexOfFirst { belowWindowComponentMatcher.windowMatchesAnyOf(it.windowState) }
         if (aboveZ >= belowZ) {
-            errorMsgBuilder
+            errorMsgBuilder()
                 .setMessage("${aboveWindow.title} should be above ${belowWindow.title}")
                 .setActual("${belowWindow.title} is above")
                 .setExpected("${aboveWindow.title} is below")
@@ -200,21 +207,16 @@ constructor(
     override fun containsNonAppWindow(
         componentMatcher: IComponentMatcher
     ): WindowManagerStateSubject = apply {
-        if (!wmState.contains(componentMatcher)) {
-            throw createElementNotFoundException(componentMatcher)
-        }
-        if (!wmState.isNonAppWindow(componentMatcher)) {
-            throw createElementNotFoundException(componentMatcher)
-        }
+        contains(subjects, componentMatcher)
+        contains(nonAppWindows, componentMatcher)
     }
 
     /** {@inheritDoc} */
     override fun isAppWindowOnTop(componentMatcher: IComponentMatcher): WindowManagerStateSubject =
         apply {
-            if (wmState.visibleAppWindows.isEmpty()) {
+            if (visibleAppWindows.isEmpty()) {
                 val errorMsgBuilder =
-                    ExceptionMessageBuilder()
-                        .forSubject(this)
+                    errorMsgBuilder()
                         .forInvalidElement(
                             componentMatcher.toWindowIdentifier(),
                             expectElementExists = true,
@@ -223,19 +225,16 @@ constructor(
                 throw InvalidElementException(errorMsgBuilder)
             }
 
-            val topVisibleAppWindow = wmState.topVisibleAppWindow
-            val topWindowMatches =
-                topVisibleAppWindow != null &&
-                    componentMatcher.windowMatchesAnyOf(topVisibleAppWindow)
+            val topVisibleAppWindow = visibleAppWindows.first().windowState
+            val topWindowMatches = componentMatcher.windowMatchesAnyOf(topVisibleAppWindow)
 
             if (!topWindowMatches) {
-                isNotEmpty()
+                check { "Subjects is not empty" }.that(subjects.isEmpty()).isEqual(false)
 
                 val errorMsgBuilder =
-                    ExceptionMessageBuilder()
-                        .forSubject(this)
+                    errorMsgBuilder()
                         .forInvalidProperty("Top visible app window")
-                        .setActual(topVisibleAppWindow?.name)
+                        .setActual(topVisibleAppWindow.name)
                         .setExpected(componentMatcher.toWindowIdentifier())
                 throw InvalidPropertyException(errorMsgBuilder)
             }
@@ -245,14 +244,13 @@ constructor(
     override fun isAppWindowNotOnTop(
         componentMatcher: IComponentMatcher
     ): WindowManagerStateSubject = apply {
-        val topVisibleAppWindow = wmState.topVisibleAppWindow
+        val topVisibleAppWindow = visibleAppWindows.firstOrNull()?.windowState
         if (
             topVisibleAppWindow != null && componentMatcher.windowMatchesAnyOf(topVisibleAppWindow)
         ) {
             val topWindow = subjects.first { it.windowState == topVisibleAppWindow }
             val errorMsgBuilder =
-                ExceptionMessageBuilder()
-                    .forSubject(this)
+                errorMsgBuilder()
                     .forInvalidProperty("${topWindow.name} should not be on top")
                     .setActual(topWindow.name)
                     .setExpected(componentMatcher.toWindowIdentifier())
@@ -278,7 +276,7 @@ constructor(
             componentMatcher
                 .toSet()
                 .associateWith { act ->
-                    wmState.windowStates.firstOrNull { act.windowMatchesAnyOf(it) }
+                    subjects.map { it.windowState }.firstOrNull { act.windowMatchesAnyOf(it) }
                 }
                 // keep entries only for windows that we actually found by removing nulls
                 .filterValues { it != null }
@@ -292,8 +290,7 @@ constructor(
                 val overlapRegion = Region(ourRegion)
                 if (overlapRegion.op(otherRegion, Region.Op.INTERSECT)) {
                     val errorMsgBuilder =
-                        ExceptionMessageBuilder()
-                            .forSubject(this)
+                        errorMsgBuilder()
                             .setMessage("$componentNames should not overlap")
                             .setActual("$ourTitle overlaps with $otherTitle")
                             .addExtraDescription("$ourTitle region", ourRegion)
@@ -309,12 +306,11 @@ constructor(
     override fun containsAppWindow(componentMatcher: IComponentMatcher): WindowManagerStateSubject =
         apply {
             // Check existence of activity
-            val activity = wmState.getActivitiesForWindow(componentMatcher).firstOrNull()
+            val activity = wmState.getActivitiesForWindow(componentMatcher, displayId).firstOrNull()
 
             if (activity == null) {
                 val errorMsgBuilder =
-                    ExceptionMessageBuilder()
-                        .forSubject(this)
+                    errorMsgBuilder()
                         .forInvalidElement(
                             componentMatcher.toActivityIdentifier(),
                             expectElementExists = true,
@@ -342,10 +338,9 @@ constructor(
     ): WindowManagerStateSubject = apply {
         // system components (e.g., NavBar, StatusBar, PipOverlay) don't have a package name
         // nor an activity, ignore them
-        if (wmState.containsActivity(componentMatcher)) {
+        if (wmState.containsActivity(componentMatcher, displayId)) {
             val errorMsgBuilder =
-                ExceptionMessageBuilder()
-                    .forSubject(this)
+                errorMsgBuilder()
                     .forInvalidElement(
                         componentMatcher.toActivityIdentifier(),
                         expectElementExists = false,
@@ -358,10 +353,9 @@ constructor(
     /** {@inheritDoc} */
     override fun notContains(componentMatcher: IComponentMatcher): WindowManagerStateSubject =
         apply {
-            if (wmState.containsWindow(componentMatcher)) {
+            if (wmState.containsWindow(componentMatcher, displayId)) {
                 val errorMsgBuilder =
-                    ExceptionMessageBuilder()
-                        .forSubject(this)
+                    errorMsgBuilder()
                         .forInvalidElement(
                             componentMatcher.toWindowIdentifier(),
                             expectElementExists = false,
@@ -372,33 +366,25 @@ constructor(
 
     /** {@inheritDoc} */
     override fun isRecentsActivityVisible(): WindowManagerStateSubject = apply {
-        if (wmState.isHomeRecentsComponent) {
-            isHomeActivityVisible()
-        } else {
-            if (!wmState.isRecentsActivityVisible) {
-                val errorMsgBuilder =
-                    ExceptionMessageBuilder()
-                        .forSubject(this)
-                        .forIncorrectVisibility("Recents activity", expectElementVisible = true)
-                        .setActual(wmState.isRecentsActivityVisible)
-                throw IncorrectVisibilityException(errorMsgBuilder)
-            }
+        val isVisible = wmState.isRecentsActivityVisible(displayId)
+        if (!isVisible) {
+            val errorMsgBuilder =
+                errorMsgBuilder()
+                    .forIncorrectVisibility("Recents activity", expectElementVisible = true)
+                    .setActual(isVisible)
+            throw IncorrectVisibilityException(errorMsgBuilder)
         }
     }
 
     /** {@inheritDoc} */
     override fun isRecentsActivityInvisible(): WindowManagerStateSubject = apply {
-        if (wmState.isHomeRecentsComponent) {
-            isHomeActivityInvisible()
-        } else {
-            if (wmState.isRecentsActivityVisible) {
-                val errorMsgBuilder =
-                    ExceptionMessageBuilder()
-                        .forSubject(this)
-                        .forIncorrectVisibility("Recents activity", expectElementVisible = false)
-                        .setActual(wmState.isRecentsActivityVisible)
-                throw IncorrectVisibilityException(errorMsgBuilder)
-            }
+        val isVisible = wmState.isRecentsActivityVisible(displayId)
+        if (isVisible) {
+            val errorMsgBuilder =
+                errorMsgBuilder()
+                    .forIncorrectVisibility("Recents activity", expectElementVisible = false)
+                    .setActual(isVisible)
+            throw IncorrectVisibilityException(errorMsgBuilder)
         }
     }
 
@@ -425,13 +411,8 @@ constructor(
     override fun isNonAppWindowVisible(
         componentMatcher: IComponentMatcher
     ): WindowManagerStateSubject = apply {
-        if (!wmState.contains(componentMatcher)) {
-            throw createElementNotFoundException(componentMatcher)
-        }
-        if (!wmState.isNonAppWindow(componentMatcher)) {
-            throw createElementNotFoundException(componentMatcher)
-        }
-        if (!wmState.isVisible(componentMatcher)) {
+        contains(nonAppWindows, componentMatcher)
+        if (!componentMatcher.windowMatchesAnyOf(visibleWindows.map { it.windowState })) {
             throw createIncorrectVisibilityException(componentMatcher, expectElementVisible = true)
         }
     }
@@ -440,13 +421,8 @@ constructor(
     override fun isAppWindowVisible(
         componentMatcher: IComponentMatcher
     ): WindowManagerStateSubject = apply {
-        if (!wmState.contains(componentMatcher)) {
-            throw createElementNotFoundException(componentMatcher)
-        }
-        if (!wmState.isAppWindow(componentMatcher)) {
-            throw createElementNotFoundException(componentMatcher)
-        }
-        if (!wmState.isVisible(componentMatcher)) {
+        contains(appWindows, componentMatcher)
+        if (!componentMatcher.windowMatchesAnyOf(visibleWindows.map { it.windowState })) {
             throw createIncorrectVisibilityException(componentMatcher, expectElementVisible = true)
         }
     }
@@ -460,9 +436,8 @@ constructor(
 
     /** {@inheritDoc} */
     override fun isKeyguardShowing(): WindowManagerStateSubject = apply {
-        check { "Keyguard or AOD showing" }
-            .that(wmState.isKeyguardShowing || wmState.isAodShowing)
-            .isEqual(true)
+        val isShowing = wmState.isKeyguardShowing || wmState.isAodShowing
+        check { "Keyguard or AOD showing" }.that(isShowing).isEqual(true)
     }
 
     /** {@inheritDoc} */
@@ -494,20 +469,19 @@ constructor(
         val foundWindows =
             subjectList.filter { componentMatcher.windowMatchesAnyOf(it.windowState) }
 
-        val visibleWindows =
-            wmState.visibleWindows.filter { visibleWindow ->
-                foundWindows.any { it.windowState == visibleWindow }
+        val visibleWindowsOnDisplay =
+            visibleWindows.filter { visibleWindow ->
+                foundWindows.any { it.windowState == visibleWindow.windowState }
             }
 
-        if (visibleWindows.isNotEmpty()) {
+        if (visibleWindowsOnDisplay.isNotEmpty()) {
             val errorMsgBuilder =
-                ExceptionMessageBuilder()
-                    .forSubject(this)
+                errorMsgBuilder()
                     .forIncorrectVisibility(
                         componentMatcher.toWindowIdentifier(),
                         expectElementVisible = false,
                     )
-                    .setActual(visibleWindows.map { Fact("Is visible", it.name) })
+                    .setActual(visibleWindowsOnDisplay.map { Fact("Is visible", it.name) })
             throw IncorrectVisibilityException(errorMsgBuilder)
         }
     }
@@ -518,8 +492,7 @@ constructor(
     ) {
         if (!componentMatcher.windowMatchesAnyOf(subjectList.map { it.windowState })) {
             val errorMsgBuilder =
-                ExceptionMessageBuilder()
-                    .forSubject(this)
+                errorMsgBuilder()
                     .forInvalidElement(
                         componentMatcher.toWindowIdentifier(),
                         expectElementExists = true,
@@ -533,15 +506,13 @@ constructor(
         expectElementVisible: Boolean,
     ) =
         IncorrectVisibilityException(
-            ExceptionMessageBuilder()
-                .forSubject(this)
+            errorMsgBuilder()
                 .forIncorrectVisibility(componentMatcher.toWindowIdentifier(), expectElementVisible)
         )
 
     private fun createElementNotFoundException(componentMatcher: IComponentMatcher) =
         InvalidElementException(
-            ExceptionMessageBuilder()
-                .forSubject(this)
+            errorMsgBuilder()
                 .forInvalidElement(
                     componentMatcher.toWindowIdentifier(),
                     expectElementExists = true,
@@ -550,10 +521,11 @@ constructor(
 
     /** {@inheritDoc} */
     override fun isHomeActivityVisible(): WindowManagerStateSubject = apply {
-        if (!wmState.isHomeActivityVisible) {
+        val isVisible = wmState.isHomeActivityVisible(displayId)
+
+        if (!isVisible) {
             val errorMsgBuilder =
-                ExceptionMessageBuilder()
-                    .forSubject(this)
+                errorMsgBuilder()
                     .forIncorrectVisibility("Home activity", expectElementVisible = true)
             throw IncorrectVisibilityException(errorMsgBuilder)
         }
@@ -561,11 +533,11 @@ constructor(
 
     /** {@inheritDoc} */
     override fun isHomeActivityInvisible(): WindowManagerStateSubject = apply {
-        val homeIsVisible = wmState.homeActivity?.isVisible ?: false
-        if (homeIsVisible) {
+        val isVisible = wmState.isHomeActivityVisible(displayId)
+
+        if (isVisible) {
             val errorMsgBuilder =
-                ExceptionMessageBuilder()
-                    .forSubject(this)
+                errorMsgBuilder()
                     .forIncorrectVisibility("Home activity", expectElementVisible = false)
             throw IncorrectVisibilityException(errorMsgBuilder)
         }
@@ -573,37 +545,71 @@ constructor(
 
     /** {@inheritDoc} */
     override fun isFocusedApp(app: String): WindowManagerStateSubject = apply {
-        check { "Window is focused app $app" }.that(wmState.focusedApp).isEqual(app)
+        val focusedApp =
+            if (displayId == null) {
+                wmState.focusedApp
+            } else {
+                wmState.getDisplay(displayId)?.focusedApp ?: ""
+            }
+        val checkName =
+            if (displayId == null) "Window is focused app $app"
+            else "Window is focused app $app on display $displayId"
+        check { checkName }.that(focusedApp).isEqual(app)
     }
 
     /** {@inheritDoc} */
     override fun isNotFocusedApp(app: String): WindowManagerStateSubject = apply {
-        check { "Window is not focused app $app" }.that(wmState.focusedApp).isNotEqual(app)
+        val focusedApp =
+            if (displayId == null) {
+                wmState.focusedApp
+            } else {
+                wmState.getDisplay(displayId)?.focusedApp ?: ""
+            }
+        val checkName =
+            if (displayId == null) "Window is not focused app $app"
+            else "Window is not focused app $app on display $displayId"
+        check { checkName }.that(focusedApp).isNotEqual(app)
     }
 
     /** {@inheritDoc} */
     override fun isPinned(componentMatcher: IComponentMatcher): WindowManagerStateSubject = apply {
-        contains(componentMatcher)
+        contains(subjects, componentMatcher)
+        val pinnedWindows =
+            subjects.filter { it.windowState.windowingMode == PlatformConsts.WINDOWING_MODE_PINNED }
+        val isPinnedOnDisplay =
+            componentMatcher.windowMatchesAnyOf(pinnedWindows.map { it.windowState })
         check { "Window is pinned ${componentMatcher.toWindowIdentifier()}" }
-            .that(wmState.isInPipMode(componentMatcher))
+            .that(isPinnedOnDisplay)
             .isEqual(true)
     }
 
     /** {@inheritDoc} */
     override fun isFullscreen(componentMatcher: IComponentMatcher): WindowManagerStateSubject =
         apply {
-            contains(componentMatcher)
+            contains(subjects, componentMatcher)
+            val fullscreenWindows =
+                subjects.filter {
+                    it.windowState.windowingMode == PlatformConsts.WINDOWING_MODE_FULLSCREEN
+                }
+            val isFullscreenOnDisplay =
+                componentMatcher.windowMatchesAnyOf(fullscreenWindows.map { it.windowState })
             check { "Window is fullscreen ${componentMatcher.toWindowIdentifier()}" }
-                .that(wmState.isInFullscreenMode(componentMatcher))
+                .that(isFullscreenOnDisplay)
                 .isEqual(true)
         }
 
     /** {@inheritDoc} */
     override fun isNotPinned(componentMatcher: IComponentMatcher): WindowManagerStateSubject =
         apply {
-            contains(componentMatcher)
+            contains(subjects, componentMatcher)
+            val pinnedWindows =
+                subjects.filter {
+                    it.windowState.windowingMode == PlatformConsts.WINDOWING_MODE_PINNED
+                }
+            val isPinnedOnDisplay =
+                componentMatcher.windowMatchesAnyOf(pinnedWindows.map { it.windowState })
             check { "Window is pinned ${componentMatcher.toWindowIdentifier()}" }
-                .that(wmState.isInPipMode(componentMatcher))
+                .that(isPinnedOnDisplay)
                 .isEqual(false)
         }
 
@@ -611,12 +617,11 @@ constructor(
     override fun isAppSnapshotStartingWindowVisibleFor(
         componentMatcher: IComponentMatcher
     ): WindowManagerStateSubject = apply {
-        val activity = wmState.getActivitiesForWindow(componentMatcher).firstOrNull()
+        val activity = wmState.getActivitiesForWindow(componentMatcher, displayId).firstOrNull()
 
         if (activity == null) {
             val errorMsgBuilder =
-                ExceptionMessageBuilder()
-                    .forSubject(this)
+                errorMsgBuilder()
                     .forInvalidElement(
                         componentMatcher.toActivityIdentifier(),
                         expectElementExists = true,
@@ -630,8 +635,7 @@ constructor(
 
         if (snapshotStartingWindow == null) {
             val errorMsgBuilder =
-                ExceptionMessageBuilder()
-                    .forSubject(this)
+                errorMsgBuilder()
                     .forInvalidElement(
                         ComponentNameMatcher.SNAPSHOT.toWindowIdentifier(),
                         expectElementExists = true,
@@ -641,8 +645,7 @@ constructor(
 
         if (!activity.isVisible) {
             val errorMsgBuilder =
-                ExceptionMessageBuilder()
-                    .forSubject(this)
+                errorMsgBuilder()
                     .forIncorrectVisibility(
                         componentMatcher.toActivityIdentifier(),
                         expectElementVisible = true,
@@ -652,14 +655,19 @@ constructor(
 
         if (!snapshotStartingWindow.isVisible) {
             val errorMsgBuilder =
-                ExceptionMessageBuilder()
-                    .forSubject(this)
+                errorMsgBuilder()
                     .forIncorrectVisibility(
                         ComponentNameMatcher.SNAPSHOT.toWindowIdentifier(),
                         expectElementVisible = true,
                     )
             throw IncorrectVisibilityException(errorMsgBuilder)
         }
+    }
+
+    private fun errorMsgBuilder(): ExceptionMessageBuilder {
+        val builder = ExceptionMessageBuilder().forSubject(this)
+        displayId?.let { builder.addExtraDescription("Display", it.toString()) }
+        return builder
     }
 
     /** {@inheritDoc} */
@@ -688,7 +696,13 @@ constructor(
 
     /** {@inheritDoc} */
     override fun containsAtLeastOneDisplay(): WindowManagerStateSubject = apply {
-        check { "Displays" }.that(wmState.displays.size).isGreater(0)
+        if (displayId != null) {
+            check { "Displays" }
+                .that(wmState.displays.any { it.displayId == displayId })
+                .isEqual(true)
+        } else {
+            check { "Displays" }.that(wmState.displays.size).isGreater(0)
+        }
     }
 
     /** Obtains the first subject with [WindowState.title] containing [name]. */

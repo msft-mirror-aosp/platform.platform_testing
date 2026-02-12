@@ -54,11 +54,11 @@ class SdvIviRobBaseTest(
     )
     DT_SUBSCRIBER_START_CMD = (
         "sdv_service_bundle start"
-        " local-vm:com.sdv.google.sample.bar.ServiceBundleBar/instance"
+        " local-vm:com.android.sdv.sample.bar.ServiceBundleBar/instance"
     )
     DT_SUBSCRIBER_STOP_CMD = (
         "sdv_service_bundle stop"
-        " local-vm:com.sdv.google.sample.bar.ServiceBundleBar/instance"
+        " local-vm:com.android.sdv.sample.bar.ServiceBundleBar/instance"
     )
     KILLALL_IGNORE_ERROR_CMD = "killall {} || true"
     CLEAR_LOG_BUFFER_CMD = "logcat -c"

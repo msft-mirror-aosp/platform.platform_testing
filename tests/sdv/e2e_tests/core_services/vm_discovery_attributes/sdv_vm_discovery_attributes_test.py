@@ -78,11 +78,11 @@ class SdvVmDiscoveryAttributeTest(sdv_base_test.SdvBaseTestClass):
         # Set Foo-specific system properties
         self.setup_foo_props(device, value)
         # Set requests interval to 1 second
-        self.set_property(device, 'persist.com.sdv.google.sample.bar.rpc_interval_ms', '50')
+        self.set_property(device, 'persist.com.android.sdv.sample.bar.rpc_interval_ms', '50')
         # Set request load size to 200 KBytes
-        self.set_property(device, 'persist.com.sdv.google.sample.bar.load_size', '200')
+        self.set_property(device, 'persist.com.android.sdv.sample.bar.load_size', '200')
         # Set the VM instance to connect to
-        self.set_property(device, 'persist.com.sdv.google.sample.bar.communication_partner_vm_name', 'instance2')
+        self.set_property(device, 'persist.com.android.sdv.sample.bar.communication_partner_vm_name', 'instance2')
         # Reboot device
         device.adb().reboot_device()
         # Wait for device to get back online
@@ -114,10 +114,10 @@ class SdvVmDiscoveryAttributeTest(sdv_base_test.SdvBaseTestClass):
         return self.wait_for_logcat(device, grep_text='Sent.*FooMessage.*' + value, logcat_args='*:F com_android_sdv_sample_foo_ServiceBundleFoo_instance:*')
 
     def receives_message_logs(self, device, value):
-        return self.wait_for_logcat(device, grep_text='Received.*FooMessage.*' + value, logcat_args='*:F com_sdv_google_sample_bar_ServiceBundleBar_instance:*')
+        return self.wait_for_logcat(device, grep_text='Received.*FooMessage.*' + value, logcat_args='*:F com_android_sdv_sample_bar_ServiceBundleBar_instance:*')
 
     def receives_rpc_response_logs(self, device, value):
-        return self.wait_for_logcat(device, grep_text='GetFooRequest.*GetFooResponse.*response=' + value, logcat_args='*:F com_sdv_google_sample_bar_ServiceBundleBar_instance:*')
+        return self.wait_for_logcat(device, grep_text='GetFooRequest.*GetFooResponse.*response=' + value, logcat_args='*:F com_android_sdv_sample_bar_ServiceBundleBar_instance:*')
 
     def test_both_vms_send_messages(self):
         logging.info(

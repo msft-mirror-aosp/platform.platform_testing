@@ -101,10 +101,10 @@ object PlatformConsts {
     internal const val WINDOWING_MODE_UNDEFINED = 0
 
     /** @see android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN */
-    internal const val WINDOWING_MODE_FULLSCREEN = 1
+    const val WINDOWING_MODE_FULLSCREEN = 1
 
     /** @see android.app.WindowConfiguration.WINDOWING_MODE_PINNED */
-    internal const val WINDOWING_MODE_PINNED = 2
+    const val WINDOWING_MODE_PINNED = 2
 
     /** @see android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM */
     internal const val WINDOWING_MODE_FREEFORM = 5

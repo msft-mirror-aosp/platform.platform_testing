@@ -25,6 +25,13 @@ import android.tools.traces.wm.WindowState
 
 /** Base interface for WM trace and state assertions */
 interface IWindowManagerSubject<WMSubjectType, RegionSubjectType> {
+    /**
+     * Scopes subsequent assertions to a specific display.
+     *
+     * @param displayId The ID of the display to target.
+     */
+    fun onDisplay(displayId: Int): WMSubjectType
+
     /** Asserts the current WindowManager state doesn't contain [WindowState]s */
     fun isEmpty(): WMSubjectType
 

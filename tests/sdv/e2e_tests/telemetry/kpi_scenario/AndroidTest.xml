@@ -17,13 +17,6 @@
   <device name="device1">
     <!-- ADB Root -->
     <target_preparer class="com.android.tradefed.targetprep.RootTargetPreparer" />
-
-    <!-- Extra dependencies required for the test -->
-    <!-- TODO(b/448843336): Use Android build libraries instead -->
-    <!-- TODO(b/449630628): Remove when numpy import is replaced by AOSP library -->
-    <target_preparer class="com.android.tradefed.targetprep.PythonVirtualenvPreparer">
-      <option name="dep-module" value="numpy" />
-    </target_preparer>
   </device>
 
   <test class="com.android.tradefed.testtype.mobly.MoblyBinaryHostTest">

@@ -21,7 +21,7 @@ from sdv_test_fw.verification import polling
 
 
 class SdvCujCore22OneVMTest(sdv_base_test.SdvBaseTestClass):
-    SAMPLES_LOGCAT_ARGS = "*:F com_android_sdv_sample_foo_ServiceBundleFoo_instance:V com_sdv_google_sample_bar_ServiceBundleBar_instance:V SdvServiceManagerServer:*"
+    SAMPLES_LOGCAT_ARGS = "*:F com_android_sdv_sample_foo_ServiceBundleFoo_instance:V com_android_sdv_sample_bar_ServiceBundleBar_instance:V SdvServiceManagerServer:*"
 
     GREP_FOO_MESSAGE_SENT = "Sent.*FooMessage.*42"
     GREP_FOO_MESSAGE_RECEIVED = "Received.*FooMessage.*42"
