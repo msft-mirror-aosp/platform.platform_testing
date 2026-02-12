@@ -56,7 +56,7 @@ from sdv_test_fw.verification import polling
 
 class SdvAuthzNegativeTest(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
 
-    TESTING_SERVICES_LOGCAT_ARGS = '*:F com_sdv_google_test_authz_foo_AuthzTestedService_instance com_android_sdv_test_authz_bar_AuthzTestDriver_instance'
+    TESTING_SERVICES_LOGCAT_ARGS = '*:F com_android_sdv_test_authz_foo_AuthzTestedService_instance com_android_sdv_test_authz_bar_AuthzTestDriver_instance'
 
     CREATE_SERVICE_BUNDLE_COMMAND = 'sdv_service_bundle create {service_fqin}'
     START_SERVICE_BUNDLE_COMMAND = 'sdv_service_bundle start {service_fqin}'
@@ -70,7 +70,7 @@ class SdvAuthzNegativeTest(sdv_base_test.SdvBaseTestClass, parameterized.TestCas
         super().setup_class()
         self.adb_devices = {}
         self.adb_devices['tested_service_device'] = self.setup_device_testing_service(
-            'device1', 'instance1:com.sdv.google.test.authz.foo.AuthzTestedService/instance')
+            'device1', 'instance1:com.android.sdv.test.authz.foo.AuthzTestedService/instance')
         self.adb_devices['test_driver_device'] = self.setup_device_testing_service(
             'device2', 'instance1:com.android.sdv.test.authz.bar.AuthzTestDriver/instance')
 
@@ -87,7 +87,7 @@ class SdvAuthzNegativeTest(sdv_base_test.SdvBaseTestClass, parameterized.TestCas
         logging.info('Custom Authz negative test class teardown')
 
         self.teardown_device_testing_service(
-            'device1', 'instance1:com.sdv.google.test.authz.foo.AuthzTestedService/instance')
+            'device1', 'instance1:com.android.sdv.test.authz.foo.AuthzTestedService/instance')
         self.teardown_device_testing_service(
             'device2', 'instance1:com.android.sdv.test.authz.bar.AuthzTestDriver/instance')
 
