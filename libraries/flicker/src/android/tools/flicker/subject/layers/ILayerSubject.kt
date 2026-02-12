@@ -130,4 +130,11 @@ interface ILayerSubject<LayerSubjectType, RegionSubjectType> {
 
     /** Checks if the state contains at least one [Display] */
     fun containsAtLeastOneDisplay(): LayerSubjectType
+
+    /**
+     * Filters the subject by [displayId]
+     *
+     * @param displayId Display to filter
+     */
+    fun onDisplay(displayId: Int): LayerSubjectType
 }
