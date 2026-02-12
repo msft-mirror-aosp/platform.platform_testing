@@ -50,8 +50,8 @@ class SdvHmDumpsysOutputTest(sdv_base_test.SdvBaseTestClass):
         while instance_1_id == instance_2_id:
             instance_2_id = random.randint(0, self.MAX_INSTANCE_ID)
 
-        self.monitored_service_1_fqin = f"instance1:com.sdv.sample_oem.health.monitored.SampleHMBundle/i{instance_1_id}"
-        self.monitored_service_2_fqin = f"instance1:com.sdv.sample_oem.health.monitored.SampleHMBundle/i{instance_2_id}"
+        self.monitored_service_1_fqin = f"instance1:com.android.sdv.sample.oem.health.monitored.SampleHMBundle/i{instance_1_id}"
+        self.monitored_service_2_fqin = f"instance1:com.android.sdv.sample.oem.health.monitored.SampleHMBundle/i{instance_2_id}"
         start_service_command = "sdv_service_bundle start {fqin}"
         self.destroy_service_command = "sdv_service_bundle destroy {fqin}"
 
