@@ -46,6 +46,9 @@ android_library {
         "truth",
         "junit",
     ],
+    libs: [
+        "hamcrest-library",
+    ],
 
     srcs: [
         // Note: this library should be kotlin first.

@@ -23,7 +23,9 @@ import androidx.test.runner.lifecycle.Stage
 import androidx.test.uiautomator.Configurator
 import androidx.test.uiautomator.UiAccessibilityValidator
 import androidx.test.uiautomator.UiDevice
+import com.google.android.apps.common.testing.accessibility.framework.AccessibilityHierarchyCheckResult
 import com.google.android.apps.common.testing.accessibility.framework.integrations.common.AccessibilityNodeInfoValidator
+import com.google.android.apps.common.testing.accessibility.framework.integrations.common.Suppressor
 import java.util.function.Consumer
 import java.util.function.Predicate
 import org.junit.rules.ExternalResource
@@ -44,14 +46,13 @@ import org.junit.runners.model.Statement
  * ```
  *
  * Sometimes, you might need to suppress certain errors because they are false positives or they are
- * real issues to be addressed in the future. Suppress failures by modifying the rule's default
- * validator, or by passing in a custom validator:
+ * real issues to be addressed in the future. Suppress failures by calling [configureSuppressions]:
  * ```kotlin
  * @RunWith(AndroidJUnit4::class)
  * class ExampleTest {
- *   @Rule val a11yRule = UiAutomatorAccessibilityTestRule().configureValidator {
+ *   @Rule val a11yRule = UiAutomatorAccessibilityTestRule().configureSuppressions {
  *      // TODO: fix touch target sizes, then remove this suppression
- *      it.suppressingResultMatcher =
+ *      it.addSuppressingResultMatcher(
  *          allOf(
  *              AccessibilityCheckResultUtils.matchesCheck(TouchTargetSizeCheck:class.java),
  *              AccessibilityCheckResultUtils.matchesElements(
@@ -79,18 +80,25 @@ constructor(
      * method completes.
      */
     val runA11yCheckAfterTest: Boolean = true,
+) : ExternalResource() {
+    /**
+     * If you want to suppress certain results, either modify this one or call
+     * [configureSuppressions].
+     */
+    val suppressor =
+        Suppressor<AccessibilityHierarchyCheckResult>().also { GlobalSuppressions.addAll(it) }
 
     /**
-     * If you want to customize Parameters, suppressions, etc, either modify this one, or pass in
-     * your own validator with the various options set.
+     * If you want to customize Parameters, suppressions, etc, either modify this one or call
+     * [configureValidator].
      */
     val validator: AccessibilityNodeInfoValidator =
         AccessibilityNodeInfoValidator(InstrumentationRegistry.getInstrumentation().targetContext)
+            .setSuppressingResultMatcherSupplier(suppressor::getMatcher)
             .setScreenshotCapturer {
                 UiDevice.getInstance(InstrumentationRegistry.getInstrumentation()).takeScreenshot()
             }
-            .setRunChecksFromRootView(true),
-) : ExternalResource() {
+            .setRunChecksFromRootView(true)
 
     private var _isCheckingEnabled: Boolean = true
     private val beforeListeners: MutableList<Consumer<Description>> = mutableListOf()
@@ -129,6 +137,8 @@ constructor(
         }
 
     override fun apply(base: Statement, description: Description): Statement {
+        suppressor.clearTestSpecificSuppressingResultMatcher()
+
         for (listener in beforeListeners) {
             listener.accept(description)
         }
@@ -201,6 +211,21 @@ constructor(
         onConfigure: Consumer<AccessibilityNodeInfoValidator>
     ): UiAutomatorAccessibilityTestRule {
         onConfigure.accept(validator)
+        return this
+    }
+
+    /**
+     * Fluent method for adding suppressions in a one-liner during initialization.
+     *
+     * This avoids any race conditions that might arise by trying to alter the suppressor in a
+     * `@Before` setup method.
+     *
+     * @param onConfigure called with [suppressor] for easy altering of its options
+     */
+    fun configureSuppressions(
+        onConfigure: Consumer<Suppressor<AccessibilityHierarchyCheckResult>>
+    ): UiAutomatorAccessibilityTestRule {
+        onConfigure.accept(suppressor)
         return this
     }
 
