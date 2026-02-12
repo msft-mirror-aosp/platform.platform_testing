@@ -48,6 +48,7 @@ android_library {
     ],
     libs: [
         "hamcrest-library",
+        "microbenchmark-device-lib",
     ],
 
     srcs: [
