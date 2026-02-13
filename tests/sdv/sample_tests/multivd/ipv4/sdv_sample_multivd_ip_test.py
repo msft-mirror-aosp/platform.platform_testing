@@ -28,11 +28,11 @@ class SdvSampleMultivdIpTest(sdv_base_test.SdvBaseTestClass):
     VIRT_ADDRESS = '$(getprop ro.boot.virt.address)'
     GET_VIRT_ADDRESS = f'echo {VIRT_ADDRESS}'
     SET_IP = f'ifconfig eth1 192.168.98.{VIRT_ADDRESS}'
-    START_SERVER_COMMAND = 'apex/com.sdv.google.sample.multivd.ipv4/bin/sdv_sample_multivd_ipv4_server'
+    START_SERVER_COMMAND = 'sdv_sample_multivd_ipv4_server'
     LOGCAT_SERVER_GREP_TEXT = 'multivd-ipv4-server'
     EXPECTED_SERVER_RESULT = 'Received a from client.'
     START_CLIENT_COMMAND = (
-        'apex/com.sdv.google.sample.multivd.ipv4/bin/sdv_sample_multivd_ipv4_client'
+        'sdv_sample_multivd_ipv4_client'
         ' 192.168.98.{}'
     )
     LOGCAT_CLIENT_GREP_TEXT = 'multivd-ipv4-client'
