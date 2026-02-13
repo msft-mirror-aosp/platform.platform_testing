@@ -55,6 +55,9 @@ class SdvBaselineHwSuspendResumeOneVMTest(
     def setup_test(self):
         super().setup_test()
 
+        # Useful for debugging specific failures in the test.
+        self.log_vm_status(self.DEVICE1_VM_CONFIG)
+
         # Open session for Power Management
         self.sdv_device1_pwm_session = (
             self.sdv_device1.adb().interactive_session(label="PWM")
@@ -62,6 +65,10 @@ class SdvBaselineHwSuspendResumeOneVMTest(
 
     def teardown_test(self):
         logging.info("Cleaning up after test case.")
+
+        # Useful for debugging specific errors in the test.
+        self.log_vm_status(self.DEVICE1_VM_CONFIG)
+
         # end Power Management session
         self.sdv_device1_pwm_session.close()
         super().teardown_test()
