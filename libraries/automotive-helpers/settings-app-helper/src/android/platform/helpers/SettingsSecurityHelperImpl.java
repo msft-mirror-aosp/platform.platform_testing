@@ -32,7 +32,7 @@ public class SettingsSecurityHelperImpl extends AbstractStandardAppHelper
 
     private static final String CHOOSE_LOCK_TYPE = "Choose a lock type";
     private static final int KEY_ENTER = 66;
-    private static final int DEFAULT_WAIT_TIME = 5000;
+    private static final int DEFAULT_WAIT_TIME = 20000;
     private ScrollUtility mScrollUtility;
     private ScrollActions mScrollAction;
     private BySelector mBackwardButtonSelector;
@@ -255,5 +255,42 @@ public class SettingsSecurityHelperImpl extends AbstractStandardAppHelper
                 .validateUiObject(
                         confirm_button, AutomotiveConfigConstants.SECURITY_SETTINGS_CONFIRM_BUTTON);
         getSpectatioUiUtil().clickAndWait(confirm_button);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setLockByPinUsingApi(int userId) {
+        getSpectatioUiUtil()
+                .executeShellCommand(
+                        String.format(
+                                getCommandFromConfig(AutomotiveConfigConstants.LOCK_SCREEN_PIN),
+                                userId));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean isLockScreenVisible() {
+        BySelector lockScreenSelector =
+                getUiElementFromConfig(AutomotiveConfigConstants.LOCK_SCREEN_ON_PROFILES);
+        return getSpectatioUiUtil().hasUiElement(lockScreenSelector, DEFAULT_WAIT_TIME);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void clearLockPinUsingApi() {
+        getSpectatioUiUtil()
+                .executeShellCommand(
+                        getCommandFromConfig(AutomotiveConfigConstants.CLEAR_SET_LOCK));
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void unLockScreenProfiles(String pin) {
+        getSpectatioUiUtil()
+                .executeShellCommand(
+                        String.format(
+                                getCommandFromConfig(AutomotiveConfigConstants.SET_LOCK_SCREEN),
+                                pin));
+        getSpectatioUiUtil().pressEnter();
     }
 }

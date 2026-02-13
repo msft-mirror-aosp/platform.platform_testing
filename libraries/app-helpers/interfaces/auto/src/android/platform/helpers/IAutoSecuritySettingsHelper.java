@@ -67,4 +67,36 @@ public interface IAutoSecuritySettingsHelper extends IAppHelper {
      * <p>This method is to remove any lock, i.e. set the device lock to none.
      */
     void removeLock();
+
+    /**
+     * Setup expectation: None.
+     *
+     * <p>This method is to set PIN using PIN lock type using API
+     *
+     * @param userId Set pin for user Id
+     */
+    void setLockByPinUsingApi(int userId);
+
+    /**
+     * Setup expectation: None.
+     *
+     * <p>This method is to verify password Screen
+     */
+    boolean isLockScreenVisible();
+
+    /**
+     * Setup expectation: None.
+     *
+     * <p>This method is to clear lock screen PIN using API
+     */
+    void clearLockPinUsingApi();
+
+    /**
+     * Setup expectation: Lock screen.
+     *
+     * <p>This method is to set PIN on lock screen
+     *
+     * @param pin pin/password
+     */
+    void unLockScreenProfiles(String pin);
 }
