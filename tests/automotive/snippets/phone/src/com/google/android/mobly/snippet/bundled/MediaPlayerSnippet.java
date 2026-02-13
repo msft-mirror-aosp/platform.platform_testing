@@ -132,6 +132,12 @@ public class MediaPlayerSnippet implements Snippet {
         mAutoMediaHelper.get().clickOnBluetoothToggle();
     }
 
+    /** Click on Mediacard playlist */
+    @Rpc(description = "Click on Mediacard playlist")
+    public void openMediaCardPlayList() {
+        mAutoMediaHelper.get().openMediaCardPlayList();
+    }
+
     @Rpc(description = "Click on Cancel Bluetooth Audio conncetion button")
     public void cancelBluetoothAudioConncetion() {
         mAutoMediaHelper.get().cancelBluetoothAudioConncetion();
@@ -151,6 +157,12 @@ public class MediaPlayerSnippet implements Snippet {
     @Rpc(description = "Select song from playlist")
     public void clickOnSongFromPlaylist(int index) {
         mAutoMediaHelper.get().clickOnSongFromPlaylist(index);
+    }
+
+    /** Select song from mediacard playlist */
+    @Rpc(description = "Select song from mediacard playlist")
+    public void clickOnSongFromMediaCardPlaylist(int index) {
+        mAutoMediaHelper.get().clickOnSongFromMediaCardPlaylist(index);
     }
 
     @Rpc(description = "Get Artist tile")
