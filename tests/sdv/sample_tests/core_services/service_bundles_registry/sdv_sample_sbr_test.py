@@ -75,7 +75,7 @@ class SdvSampleSBRTest(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
 
     def build_apex_path(self, sample_name, library):
         """Build the full path from apex 'sample' name and 'library'."""
-        return f'/apex/com.sdv.google.sample.service_bundles_registry.{sample_name}/lib64/{library}'
+        return f'/apex/com.android.sdv.sample.service_bundles_registry.{sample_name}/lib64/{library}'
 
     ################################################
     ##           Assert-like validators.          ##
@@ -128,7 +128,7 @@ class SdvSampleSBRTest(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
         )
         self.sdv_device.adb().execute_shell_command(
             self.SERVICE_BUNDLE_START_COMMAND.format(
-                package=f'com.sdv.google.sample.service_bundles_registry.{sample_name}',
+                package=f'com.android.sdv.sample.service_bundles_registry.{sample_name}',
                 service_bundle=service_bundle,
             )
         )
