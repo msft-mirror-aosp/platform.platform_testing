@@ -167,31 +167,37 @@ class SdvBaselineHwSuspendResumeMixin:
 
         logging.info(f"Connection to QNX successful")
 
-    def host_command(self, command, timeout=5):
+    def host_command(
+        self, command, timeout=5, output_last_line_only=False
+    ) -> list | str:
         try:
             self.host_session.sendline(command)
             self.host_session.prompt(timeout=timeout)
-
-            logging.debug("Host command sent:")
-            logging.debug("START-------------------")
-            logging.debug(self.host_output())
-            logging.debug("-------------------END")
 
         except pexpect.TIMEOUT:
             logging.error(f"{command} timed out")
             raise
 
-    def host_output(self):
-        return self.host_session.before.decode("utf-8")
+        host_output = self.host_session.before.decode("utf-8")
 
-    def host_output_last_line(self):
-        return self.host_output().splitlines()[-1]
+        logging.debug("Host command sent:")
+        logging.debug("START-------------------")
+        logging.debug(host_output)
+        logging.debug("-------------------END")
+
+        output_lines = host_output.splitlines()
+
+        if output_last_line_only:
+            last_line = output_lines[-1] if output_lines else ""
+            logging.debug(f"Return only last line: {last_line}")
+            return last_line
+
+        return output_lines
 
     def _find_spawned_processes(self, process_identifier):
-        self.host_command(
+        output_lines = self.host_command(
             self.SPAWNED_PROCESSES.format(process=process_identifier)
         )
-        output_lines = self.host_output().splitlines()
 
         spawned_processes = []
         for line in output_lines:
@@ -241,12 +247,13 @@ class SdvBaselineHwSuspendResumeMixin:
         logging.info(f"Prepare fake powerbtn for {vm_config.sdv_guest_name}")
         self._start_fake_powerbtn_daemon(vm_config)
 
-        self.host_command(
-            self.ADDRESS_COMMAND.format(sdv_guest_id=vm_config.sdv_guest_id)
-        )
         # The output is with format 0x1c090000. We are only interested on
         # the value after 0x
-        vdevs_memory_location = self.host_output_last_line()[2:]
+        vdevs_memory_location = self.host_command(
+            self.ADDRESS_COMMAND.format(sdv_guest_id=vm_config.sdv_guest_id),
+            output_last_line_only=True,
+        )[2:]
+
         logging.info(
             f"{vm_config.sdv_guest_name} memory location:"
             f" {vdevs_memory_location}"
@@ -262,10 +269,10 @@ class SdvBaselineHwSuspendResumeMixin:
     # ==========================================================================
 
     def _device_status(self, vm_config):
-        self.host_command(
-            self.SDV_VM_STATUS.format(sdv_guest_name=vm_config.sdv_guest_name)
+        status = self.host_command(
+            self.SDV_VM_STATUS.format(sdv_guest_name=vm_config.sdv_guest_name),
+            output_last_line_only=True,
         )
-        status = self.host_output_last_line()
         logging.debug(f"{vm_config.sdv_guest_name} VM status: {status}")
         asserts.assert_not_equal(
             status,

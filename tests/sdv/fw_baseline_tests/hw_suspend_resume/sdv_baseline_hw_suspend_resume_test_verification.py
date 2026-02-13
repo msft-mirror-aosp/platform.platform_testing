@@ -35,14 +35,12 @@ class SdvBaselineHwSuspendResumeTestVerification:
         Since the QNX connection is shared across all VMs, this verification
         is independent of specific device configurations.
         """
-        self.host_command(f"echo {self.VERIFY_CONNECTION_TEXT}")
+        output_last_line = self.host_command(
+            f"echo {self.VERIFY_CONNECTION_TEXT}", output_last_line_only=True
+        )
 
-        logging.info(
-            f"Verification echo output: {self.host_output_last_line()}"
-        )
-        asserts.assert_equal(
-            self.host_output_last_line(), self.VERIFY_CONNECTION_TEXT
-        )
+        logging.info(f"Verification echo output: {output_last_line}")
+        asserts.assert_equal(output_last_line, self.VERIFY_CONNECTION_TEXT)
 
     def verify_powerbtn_daemon_is_running_in_host(self, vm_config):
         """Verifies that the daemon that allows to fake powerbtn is running in
