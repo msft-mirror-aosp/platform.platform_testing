@@ -419,6 +419,11 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
                                 return createTest();
                             }
                         }.run();
+            } catch (AssumptionViolatedException e) {
+                eachNotifier.fireTestStarted();
+                eachNotifier.addFailedAssumption(e);
+                eachNotifier.fireTestFinished();
+                return;
             } catch (Throwable e) {
                 eachNotifier.fireTestStarted();
                 eachNotifier.addFailure(e);
@@ -511,6 +516,11 @@ public class Microbenchmark extends BlockJUnit4ClassRunner {
                     for (FrameworkMethod noMetricBefore : noMetricBefores) {
                         noMetricBefore.invokeExplosively(test);
                     }
+                } catch (AssumptionViolatedException e) {
+                    eachNotifier.fireTestStarted();
+                    eachNotifier.addFailedAssumption(e);
+                    eachNotifier.fireTestFinished();
+                    throw e;
                 } catch (Throwable e) {
                     eachNotifier.fireTestStarted();
                     eachNotifier.addFailure(e);
