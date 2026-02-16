@@ -72,7 +72,6 @@ class SdvProperty:
           utilize the updated property must be executed after this method.
 
         Args:
-            self (SdvProperty): ignored.
             sdv_property (SdvDeviceProperty): The specific device property to
               update.
             value (str): The value to set the property to. If
