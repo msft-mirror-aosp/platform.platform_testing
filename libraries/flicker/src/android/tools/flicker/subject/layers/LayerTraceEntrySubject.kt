@@ -69,10 +69,23 @@ constructor(
     val entry: LayerTraceEntry,
     override val reader: Reader? = null,
     val trace: LayersTrace? = null,
+    val displayId: Int? = null,
 ) : FlickerSubject(), ILayerSubject<LayerTraceEntrySubject, RegionSubject> {
     override val timestamp = entry.timestamp
 
-    val subjects by lazy { entry.flattenedLayers.map { LayerSubject(timestamp, it, reader) } }
+    val subjects by lazy {
+        entry.getLayersForDisplay(displayId).map { LayerSubject(timestamp, it, reader) }
+    }
+
+    /** {@inheritDoc} */
+    override fun onDisplay(displayId: Int): LayerTraceEntrySubject =
+        LayerTraceEntrySubject(entry, reader, trace, displayId)
+
+    private fun errorMsgBuilder(): ExceptionMessageBuilder {
+        val builder = ExceptionMessageBuilder().forSubject(this)
+        displayId?.let { builder.addExtraDescription("Display", it.toString()) }
+        return builder
+    }
 
     /** Executes a custom [assertion] on the current subject */
     operator fun invoke(assertion: AssertionPredicate<LayerTraceEntry>): LayerTraceEntrySubject =
@@ -82,12 +95,14 @@ constructor(
 
     /** {@inheritDoc} */
     override fun isEmpty(): LayerTraceEntrySubject = apply {
-        check { "SF state size" }.that(entry.flattenedLayers.size).isEqual(0)
+        val layers = entry.getLayersForDisplay(displayId)
+        check { "SF state size" }.that(layers.size).isEqual(0)
     }
 
     /** {@inheritDoc} */
     override fun isNotEmpty(): LayerTraceEntrySubject = apply {
-        check { "SF state size" }.that(entry.flattenedLayers.size).isGreater(0)
+        val layers = entry.getLayersForDisplay(displayId)
+        check { "SF state size" }.that(layers.size).isGreater(0)
     }
 
     /** See [visibleRegion] */
@@ -115,8 +130,7 @@ constructor(
 
         if (selectedLayers.isEmpty()) {
             val errorMsgBuilder =
-                ExceptionMessageBuilder()
-                    .forSubject(this)
+                errorMsgBuilder()
                     .forInvalidElement(
                         componentMatcher?.toLayerIdentifier() ?: "<any>",
                         expectElementExists = true,
@@ -139,10 +153,10 @@ constructor(
 
     /** {@inheritDoc} */
     override fun contains(componentMatcher: IComponentMatcher): LayerTraceEntrySubject = apply {
-        if (!componentMatcher.layerMatchesAnyOf(entry.flattenedLayers)) {
+        val layers = entry.getLayersForDisplay(displayId)
+        if (!componentMatcher.layerMatchesAnyOf(layers)) {
             val errorMsgBuilder =
-                ExceptionMessageBuilder()
-                    .forSubject(this)
+                errorMsgBuilder()
                     .forInvalidElement(
                         componentMatcher.toLayerIdentifier(),
                         expectElementExists = true,
@@ -158,8 +172,7 @@ constructor(
 
         if (foundElements.isNotEmpty()) {
             val errorMsgBuilder =
-                ExceptionMessageBuilder()
-                    .forSubject(this)
+                errorMsgBuilder()
                     .forInvalidElement(
                         componentMatcher.toLayerIdentifier(),
                         expectElementExists = false,
@@ -182,8 +195,7 @@ constructor(
                     .filterNot { it.isVisible }
                     .map { Fact(it.name, it.visibilityReason.joinToString()) }
             val errorMsgBuilder =
-                ExceptionMessageBuilder()
-                    .forSubject(this)
+                errorMsgBuilder()
                     .forIncorrectVisibility(
                         componentMatcher.toLayerIdentifier(),
                         expectElementVisible = true,
@@ -219,8 +231,7 @@ constructor(
                 .filter { it.isVisible }
                 .map { Fact("Is visible", it.name) }
         val errorMsgBuilder =
-            ExceptionMessageBuilder()
-                .forSubject(this)
+            errorMsgBuilder()
                 .forIncorrectVisibility(
                     componentMatcher.toLayerIdentifier(),
                     expectElementVisible = false,
@@ -246,8 +257,7 @@ constructor(
 
         val failedEntries = componentMatcher.filterLayers(layers)
         val errorMsgBuilder =
-            ExceptionMessageBuilder()
-                .forSubject(this)
+            errorMsgBuilder()
                 .forIncorrectOcclusion(
                     componentMatcher.toLayerIdentifier(),
                     expectElementOccluded = true,
@@ -264,7 +274,7 @@ constructor(
         val matchingSubjects = subjects.filter { splashScreenMatcher.layerMatchesAnyOf(it.layer) }
         val hasVisibleMatchingSubject = matchingSubjects.any { it.isVisible }
 
-        val errorMsgBuilder = ExceptionMessageBuilder().forSubject(this)
+        val errorMsgBuilder = errorMsgBuilder()
         if (!hasVisibleMatchingSubject) {
             if (matchingSubjects.isEmpty()) {
                 errorMsgBuilder.forInvalidElement(
@@ -297,8 +307,7 @@ constructor(
 
         if (!hasLayerColor) {
             val errorMsgBuilder =
-                ExceptionMessageBuilder()
-                    .forSubject(this)
+                errorMsgBuilder()
                     .forInvalidProperty("Color")
                     .setExpected("Not empty")
                     .setActual(targets.map { Fact(it.name, it.color) })
@@ -313,8 +322,7 @@ constructor(
 
         if (!hasNoLayerColor) {
             val errorMsgBuilder =
-                ExceptionMessageBuilder()
-                    .forSubject(this)
+                errorMsgBuilder()
                     .forInvalidProperty("Color")
                     .setExpected(emptyColor().toString())
                     .setActual(targets.map { Fact(it.name, it.color) })
@@ -324,7 +332,13 @@ constructor(
 
     /** {@inheritDoc} */
     override fun containsAtLeastOneDisplay(): LayerTraceEntrySubject = apply {
-        check { "Displays" }.that(entry.displays.size).isGreater(0)
+        if (displayId != null) {
+            check { "Displays" }
+                .that(entry.displays.any { it.layerStackId == displayId })
+                .isEqual(true)
+        } else {
+            check { "Displays" }.that(entry.displays.size).isGreater(0)
+        }
     }
 
     /** {@inheritDoc} */
@@ -339,8 +353,7 @@ constructor(
 
             if (!hasRoundedCornersLayer) {
                 val errorMsgBuilder =
-                    ExceptionMessageBuilder()
-                        .forSubject(this)
+                    errorMsgBuilder()
                         .forInvalidProperty("RoundedCorners")
                         .setExpected("Not 0")
                         .setActual("0")
@@ -361,8 +374,7 @@ constructor(
 
             if (!hasNoRoundedCornersLayer) {
                 val errorMsgBuilder =
-                    ExceptionMessageBuilder()
-                        .forSubject(this)
+                    errorMsgBuilder()
                         .forInvalidProperty("RoundedCorners")
                         .setExpected("0")
                         .setActual("Not 0")

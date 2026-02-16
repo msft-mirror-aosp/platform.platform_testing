@@ -66,11 +66,13 @@ class LayerTraceEntry(
 
     /**
      * @param componentMatcher Components to search
+     * @param displayId Display to search (maps to layerStackId)
      * @return A [Layer] matching [componentMatcher] with a non-empty active buffer, or null if no
      *   layer matches [componentMatcher] or if the matching layer's buffer is empty
      */
-    fun getLayerWithBuffer(componentMatcher: IComponentMatcher): Layer? {
-        return flattenedLayers.firstOrNull {
+    @JvmOverloads
+    fun getLayerWithBuffer(componentMatcher: IComponentMatcher, displayId: Int? = null): Layer? {
+        return getLayersForDisplay(displayId).firstOrNull {
             componentMatcher.layerMatchesAnyOf(it) && !it.activeBuffer.isEmpty
         }
     }
@@ -79,30 +81,50 @@ class LayerTraceEntry(
     fun getLayerById(layerId: Int): Layer? = this.flattenedLayers.firstOrNull { it.id == layerId }
 
     /**
+     * @param displayId Display to search
+     * @return all [Layer]s on a specific display. If [displayId] is null, returns all layers.
+     */
+    @JvmOverloads
+    fun getLayersForDisplay(displayId: Int? = null): Collection<Layer> {
+        if (displayId == null) {
+            return flattenedLayers
+        }
+        return flattenedLayers.filter { it.stackId == displayId }
+    }
+
+    /**
      * Checks if any layer matching [componentMatcher] in the screen is animating.
      *
      * The screen is animating when a layer is not simple rotation, of when the pip overlay layer is
      * visible
      *
      * @param componentMatcher Components to search
+     * @param displayId Display to search
      */
+    @JvmOverloads
     fun isAnimating(
         prevState: LayerTraceEntry?,
         componentMatcher: IComponentMatcher? = null,
+        displayId: Int? = null,
     ): Boolean {
+        val layersOnDisplay = getLayersForDisplay(displayId)
+        val curVisibleLayers = layersOnDisplay.filter { it.isVisible }
         val curLayers =
-            visibleLayers.filter {
+            curVisibleLayers.filter {
                 componentMatcher == null || componentMatcher.layerMatchesAnyOf(it)
             }
-        val currIds = visibleLayers.map { it.id }
+        val currIds = curVisibleLayers.map { it.id }
         val prevStateLayers =
-            prevState?.visibleLayers?.filter { currIds.contains(it.id) } ?: emptyList()
+            prevState
+                ?.getLayersForDisplay(displayId)
+                ?.filter { it.isVisible }
+                ?.filter { currIds.contains(it.id) } ?: emptyList()
         val layersAnimating =
             curLayers.any { currLayer ->
                 val prevLayer = prevStateLayers.firstOrNull { it.id == currLayer.id }
                 currLayer.isAnimating(prevLayer)
             }
-        val pipAnimating = isVisible(ComponentNameMatcher.PIP_CONTENT_OVERLAY)
+        val pipAnimating = isVisible(ComponentNameMatcher.PIP_CONTENT_OVERLAY, displayId)
         return layersAnimating || pipAnimating
     }
 
@@ -110,9 +132,13 @@ class LayerTraceEntry(
      * Check if at least one window matching [componentMatcher] is visible.
      *
      * @param componentMatcher Components to search
+     * @param displayId Display to search (maps to layerStackId)
      */
-    fun isVisible(componentMatcher: IComponentMatcher): Boolean =
-        componentMatcher.layerMatchesAnyOf(visibleLayers)
+    @JvmOverloads
+    fun isVisible(componentMatcher: IComponentMatcher, displayId: Int? = null): Boolean =
+        getLayersForDisplay(displayId)
+            .filter { it.isVisible }
+            .any { componentMatcher.layerMatchesAnyOf(it) }
 
     /** @return A [LayersTrace] object containing this state as its only entry */
     fun asTrace(): LayersTrace = LayersTrace(listOf(this))
