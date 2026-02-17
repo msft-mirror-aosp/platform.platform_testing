@@ -680,17 +680,37 @@ public class NotificationController {
      * Posts a Notification.MetricStyle.
      *
      * @param pkg The application that will be launched by notifications.
-     * @param title Notification Title
      * @param metrics to be shown in the Notification content.
-     * @param isLiveUpdate if notification is promoted or not.
      */
     public NotificationIdentity postMetricStyleNotification(
             String pkg, String title, List<Notification.Metric> metrics, boolean isLiveUpdate) {
+        return postMetricStyleNotification(pkg, title,
+                metrics, isLiveUpdate, /* allowAutogrouping= */ false);
+    }
+
+    /**
+     * Posts a Notification.MetricStyle.
+     *
+     * @param pkg The application that will be launched by notifications.
+     * @param title Notification Title
+     * @param metrics to be shown in the Notification content.
+     * @param isLiveUpdate if notification is promoted or not.
+     * @param allowAutogrouping Whether to allow autogrouping of the notification.
+     */
+    public NotificationIdentity postMetricStyleNotification(
+            String pkg, String title,
+            List<Notification.Metric> metrics, boolean isLiveUpdate, boolean allowAutogrouping) {
         final Builder builder = getBuilder(pkg);
         builder.setContentTitle(title).setStyle(new Notification.MetricStyle().setMetrics(metrics));
         builder.setOngoing(isLiveUpdate);
         builder.setRequestPromotedOngoing(isLiveUpdate);
         postNotificationSync(getNextNotificationId(), builder, null);
+
+        if (allowAutogrouping) {
+            postNotificationSync(getNextNotificationId(), builder, null);
+        } else {
+            postNotificationSync(getNextNotificationId(), builder);
+        }
 
         return new NotificationIdentity(
                 /* type= */ NotificationIdentity.Type.BY_ALT_TITLE,
