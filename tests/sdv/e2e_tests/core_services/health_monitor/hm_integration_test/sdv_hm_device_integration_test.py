@@ -26,7 +26,7 @@ class SdvHmDeviceIntegrationTest(sdv_base_test.SdvBaseTestClass):
 
     HEALTH_COMMAND = (
         "sdv_service_bundle {action}"
-        " instance1:com.sdv.sample_oem.health.{service}/first-instance"
+        " instance1:com.android.sdv.sample.oem.health.{service}/first-instance"
     )
     KILL_COMMAND = "pkill -f SampleHMBundle:first-instance"
     PS_COMMAND = "ps -A | grep SampleHMBundle:first-instance"
@@ -182,8 +182,8 @@ class SdvHmDeviceIntegrationTest(sdv_base_test.SdvBaseTestClass):
         )
 
     def test_instances_of_same_bundle_are_monitored_separately(self):
-        monitored_fqin1 = "instance1:com.sdv.sample_oem.health.monitored.SampleHMBundle/instance1"
-        monitored_fqin2 = "instance1:com.sdv.sample_oem.health.monitored.SampleHMBundle/instance2"
+        monitored_fqin1 = "instance1:com.android.sdv.sample.oem.health.monitored.SampleHMBundle/instance1"
+        monitored_fqin2 = "instance1:com.android.sdv.sample.oem.health.monitored.SampleHMBundle/instance2"
 
         self.sdv_device.execute_shell_command(
             f"sdv_service_bundle start {monitored_fqin1}"

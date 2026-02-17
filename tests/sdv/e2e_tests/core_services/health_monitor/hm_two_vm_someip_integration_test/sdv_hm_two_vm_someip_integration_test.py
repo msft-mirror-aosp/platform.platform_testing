@@ -44,9 +44,9 @@ STOP_HEARTBEATS_PUBLISHING_CMD_RESPONSE = "Stopping heartbeats Publishing"
 DEREGISTER_CONFIGURATION_CMD_RESPONSE = "Deregistering configuration"
 
 # String templates for service bundle FQINs
-MONITORED_SERVICE_FQIN_TEMPLATE = "{device_name}:com.sdv.sample_oem.health.monitored.SampleHMBundle/{instance_name}"
-VM_MONITORING_SERVICE_FQIN_TEMPLATE = "{device_name}:com.sdv.sample_oem.health.monitoring.VmHMBundle/{instance_name}"
-HEALTH_MONITOR_SERVICE_FQIN_TEMPLATE = "{device_name}:com.sdv.google.health.HealthMonitorServiceBundle/{instance_name}"
+MONITORED_SERVICE_FQIN_TEMPLATE = "{device_name}:com.android.sdv.sample.oem.health.monitored.SampleHMBundle/{instance_name}"
+VM_MONITORING_SERVICE_FQIN_TEMPLATE = "{device_name}:com.android.sdv.sample.oem.health.monitoring.VmHMBundle/{instance_name}"
+HEALTH_MONITOR_SERVICE_FQIN_TEMPLATE = "{device_name}:com.android.sdv.health.HealthMonitorServiceBundle/{instance_name}"
 
 # String templates for log messages
 VM_HEALTHY_LOG_TEMPLATE = "[INFO] Received health report from {device_name}. All monitored service bundles healthy? True All service bundles alive? True"
