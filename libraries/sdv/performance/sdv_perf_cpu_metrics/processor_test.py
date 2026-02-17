@@ -271,7 +271,7 @@ class ProcessorTest(unittest.TestCase):
 
     def test_compute_overall_utilization_of_process_with_selected_timestamp_range(self):
         self.load_trace_processor(self.ONE_VM_TRACE_FILE)
-        # Test with a specific timestamp range
+        # Test with a specific timestamp range and a specific process name
         _, overall_cpu_perc_metrics_of_process = self.cpu_metrics_processor.compute_overall_utilization_of_process(
             process_name="logcat",
             vm_id=None,
@@ -287,7 +287,7 @@ class ProcessorTest(unittest.TestCase):
 
     def test_compute_per_cpu_utilization_of_process_with_default_time_range(self):
         self.load_trace_processor(self.ONE_VM_TRACE_FILE)
-        # Test with a specific timestamp range
+        # Test with a specific process name
         _, per_cpu_perc_metrics_of_process = self.cpu_metrics_processor.compute_per_cpu_utilization_of_process(
             process_name="logcat",
             vm_id=None,
@@ -309,7 +309,7 @@ class ProcessorTest(unittest.TestCase):
     def test_compute_per_cpu_utilization_of_process_with_invalid_process_name(self):
         self.load_trace_processor(self.ONE_VM_TRACE_FILE)
         # TODO(b/465647296): Update this test once the exception is implemented.
-        # Test with a specific timestamp range
+        # Test with an invalid process name
         _, per_cpu_perc_metrics_of_process = self.cpu_metrics_processor.compute_per_cpu_utilization_of_process(
             process_name="invalid_process_name",
             vm_id=None,
@@ -327,7 +327,7 @@ class ProcessorTest(unittest.TestCase):
 
     def test_compute_overall_utilization_vm0(self):
         self.load_trace_processor(self.MULTI_VM_TRACE_FILE)
-        # Test with a specific timestamp range
+        # Test with vm_id=0
         ts_data, overall_cpu_perc_metrics = self.cpu_metrics_processor.compute_overall_utilization(
             vm_id=0,
             ts_start=None,
@@ -346,7 +346,7 @@ class ProcessorTest(unittest.TestCase):
 
     def test_compute_overall_utilization_vm1(self):
         self.load_trace_processor(self.MULTI_VM_TRACE_FILE)
-        # Test with a specific timestamp range
+        # Test with vm_id=1
         ts_data, overall_cpu_perc_metrics = self.cpu_metrics_processor.compute_overall_utilization(
             vm_id=1,
             ts_start=None,
@@ -365,7 +365,7 @@ class ProcessorTest(unittest.TestCase):
 
     def test_compute_per_cpu_utilization_vm0(self):
         self.load_trace_processor(self.MULTI_VM_TRACE_FILE)
-        # Test with a specific timestamp range
+        # Test with vm_id=0
         _, per_cpu_perc_metrics = self.cpu_metrics_processor.compute_per_cpu_utilization(
             vm_id=0,
             ts_start=None,
@@ -380,7 +380,7 @@ class ProcessorTest(unittest.TestCase):
 
     def test_compute_per_cpu_utilization_vm1(self):
         self.load_trace_processor(self.MULTI_VM_TRACE_FILE)
-        # Test with a specific timestamp range
+        # Test with vm_id=1
         _, per_cpu_perc_metrics = self.cpu_metrics_processor.compute_per_cpu_utilization(
             vm_id=1,
             ts_start=None,
@@ -395,6 +395,7 @@ class ProcessorTest(unittest.TestCase):
 
     def test_compute_overall_utilization_of_process_vm0(self):
         self.load_trace_processor(self.MULTI_VM_TRACE_FILE)
+        # Test with a given process name and vm_id
         _, overall_cpu_perc_metrics_of_process = self.cpu_metrics_processor.compute_overall_utilization_of_process(
             process_name="logcat",
             vm_id=0,
@@ -411,6 +412,7 @@ class ProcessorTest(unittest.TestCase):
 
     def test_compute_overall_utilization_of_process_vm1(self):
         self.load_trace_processor(self.MULTI_VM_TRACE_FILE)
+        # Test with a given process name and vm_id
         _, overall_cpu_perc_metrics_of_process = self.cpu_metrics_processor.compute_overall_utilization_of_process(
             process_name="logcat",
             vm_id=1,
@@ -427,7 +429,7 @@ class ProcessorTest(unittest.TestCase):
 
     def test_compute_per_cpu_utilization_of_process_vm0(self):
         self.load_trace_processor(self.MULTI_VM_TRACE_FILE)
-        # Test with a specific timestamp range
+        # Test with a given process name and vm_id
         _, per_cpu_perc_metrics_of_process = self.cpu_metrics_processor.compute_per_cpu_utilization_of_process(
             process_name="logcat",
             vm_id=0,
@@ -444,7 +446,7 @@ class ProcessorTest(unittest.TestCase):
 
     def test_compute_per_cpu_utilization_of_process_vm1(self):
         self.load_trace_processor(self.MULTI_VM_TRACE_FILE)
-        # Test with a specific timestamp range
+        # Test with a given process name and vm_id
         _, per_cpu_perc_metrics_of_process = self.cpu_metrics_processor.compute_per_cpu_utilization_of_process(
             process_name="logcat",
             vm_id=1,
