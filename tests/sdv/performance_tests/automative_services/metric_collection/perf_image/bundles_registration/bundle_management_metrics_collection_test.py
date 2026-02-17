@@ -275,7 +275,7 @@ class BundleManagementMetricsCollectionTest(sdv_base_test.SdvBaseTestClass):
 
     def _poll_orch_dump_bundle_state(self, expected_state: BundleState):
         def is_expected_state() -> bool:
-            BUNDLE_NAME_PATTERN = "com.sdv.google.performance.apex"
+            BUNDLE_NAME_PATTERN = "com.android.sdv.performance.apex"
             dump = self.sdv_device_adb.execute_shell_command(
                 "dumpsys com.google.sdv.ISdvAgent/orch"
             )

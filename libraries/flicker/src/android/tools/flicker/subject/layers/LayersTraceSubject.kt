@@ -16,6 +16,7 @@
 
 package android.tools.flicker.subject.layers
 
+import android.tools.flicker.assertions.AssertionsChecker
 import android.tools.flicker.subject.FlickerTraceSubject
 import android.tools.flicker.subject.exceptions.ExceptionMessageBuilder
 import android.tools.flicker.subject.exceptions.InvalidElementException
@@ -61,12 +62,48 @@ import kotlin.time.Duration
  */
 class LayersTraceSubject
 @JvmOverloads
-constructor(val trace: LayersTrace, override val reader: Reader? = null) :
-    FlickerTraceSubject<LayerTraceEntrySubject>(),
+constructor(
+    val trace: LayersTrace,
+    override val reader: Reader? = null,
+    val displayId: Int? = null,
+    assertionsChecker: AssertionsChecker<LayerTraceEntrySubject> = AssertionsChecker(),
+) :
+    FlickerTraceSubject<LayerTraceEntrySubject>(assertionsChecker),
     ILayerSubject<LayersTraceSubject, RegionTraceSubject> {
 
     override val subjects by lazy {
-        trace.entries.map { LayerTraceEntrySubject(it, reader, trace) }
+        trace.entries.map { LayerTraceEntrySubject(it, reader, trace, displayId) }
+    }
+
+    /** {@inheritDoc} */
+    override fun onDisplay(displayId: Int): LayersTraceSubject =
+        LayersTraceSubject(trace, reader, displayId, assertionsChecker)
+
+    /** {@inheritDoc} */
+    override fun addAssertion(
+        name: String,
+        isOptional: Boolean,
+        assertion: AssertionPredicate<LayerTraceEntrySubject>,
+    ) {
+        val displayId = this.displayId
+        val scopedAssertion =
+            AssertionPredicate<LayerTraceEntrySubject> {
+                val scopedSubject = if (displayId != null) it.onDisplay(displayId) else it
+                assertion.verify(scopedSubject)
+            }
+        super.addAssertion(name, isOptional, scopedAssertion)
+    }
+
+    /** {@inheritDoc} */
+    override fun first(): LayerTraceEntrySubject {
+        val first = super.first()
+        return if (displayId != null) first.onDisplay(displayId) else first
+    }
+
+    /** {@inheritDoc} */
+    override fun last(): LayerTraceEntrySubject {
+        val last = super.last()
+        return if (displayId != null) last.onDisplay(displayId) else last
     }
 
     /** {@inheritDoc} */

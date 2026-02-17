@@ -23,6 +23,17 @@ This directory contains integration tests for the Health Monitor:
 ## Test Execution
 
 Read [SDV Testing instructions](/vendor/google_testing/software_defined_vehicle/README.md) for detailed information.
+Note: HM tests assume that first SDV instance, runs SOMEIP stack and broker agents. To do this, use either `sdv-cf`:
+
+```bash
+sdv-cf create --instance_name=instance1
+```
+
+Or launch cf with someip enabled sys prop:
+
+```bash
+cvd create --config=sdv_core_instance1 --extra_kernel_cmdline="androidboot.sdv.someip.enable=true"
+```
 
 ### Mobly
 
