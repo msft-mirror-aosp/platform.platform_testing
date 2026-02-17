@@ -50,6 +50,7 @@ import androidx.test.uiautomator.Until
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import java.time.Duration
+import java.util.regex.Pattern
 import org.junit.Assert.assertNull
 
 /** System UI test automation object representing a notification in the notification shade. */
@@ -221,8 +222,14 @@ internal constructor(
                 },
             )
             if (!shouldChronometerBeVisible) {
+                // Find a TextView having any of the textVariants (because we don't know which
+                // one will be chosen -- it depends on the available space).
+                val metricValueVariantsRegex =
+                    metric.value.toValueString(context).textVariants.joinToString("|") {
+                        Pattern.quote(it)
+                    }
                 waitForObj(
-                    By.copy(metricView.value).text(metric.value.toValueString(context).text()),
+                    By.copy(metricView.value).text(Pattern.compile(metricValueVariantsRegex)),
                     errorProvider = { "Couldn't find Metric text label = ${metric.label}" },
                 )
             }
