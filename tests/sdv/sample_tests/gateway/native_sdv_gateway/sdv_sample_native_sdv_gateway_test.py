@@ -23,7 +23,10 @@ class SdvSampleNativeSdvGatewayTest(sdv_base_test.SdvBaseTestClass):
 
     RUN_CLUSTER_SERVER_COMMAND = 'sdv_mw_cluster_server'
     RUN_PUBLISHER_COMMAND = 'sdv_dt_mw_publisher_rs'
-    RUN_NATIVE_SDV_GATEWAY_COMMAND = 'native_sdv_gateway_test_app'
+    # Using the `start` command to trigger the sample through init. This way the sample UID and
+    # SELinux configurations also get applied in contrast to directly executing the sample binary,
+    # in which case it is executed as root.
+    RUN_NATIVE_SDV_GATEWAY_COMMAND = 'start native_sdv_gateway_test_app'
     RUN_SUNROOF_CLIENT_COMMAND = 'sdv_mw_sunroof_client'
     RUN_SUBSCRIBER_COMMAND = 'sdv_dt_mw_subscriber_rs'
 

@@ -21,6 +21,7 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import androidx.test.platform.app.InstrumentationRegistry
+import org.junit.ClassRule
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
@@ -36,6 +37,7 @@ import platform.test.motion.view.ViewRecordingSpec.Companion.captureWithoutScree
 import platform.test.screenshot.DeviceEmulationRule
 import platform.test.screenshot.DeviceEmulationSpec
 import platform.test.screenshot.DisplaySpec
+import platform.test.screenshot.ResetDeviceEmulationRule
 import platform.test.screenshot.ScreenshotActivity
 import platform.test.screenshot.ScreenshotTestRule
 
@@ -112,6 +114,7 @@ class ViewToolkitTest {
     }
 
     companion object {
+        @JvmField @ClassRule val cleanupRule = ResetDeviceEmulationRule()
 
         private val emulationSpec =
             DeviceEmulationSpec(DisplaySpec("phone", width = 320, height = 690, densityDpi = 160))
