@@ -26,6 +26,7 @@ from mobly.controllers.android_device_lib.services import logcat
 from sdv_test_fw.device import sdv_device
 from sdv_test_fw.device import sdv_info
 from sdv_test_fw.device.sdv_property import SdvDeviceProperty
+from sdv_test_fw.feature_flags import sdv_feature_flags
 
 
 class SdvBaseTestClass(base_test.BaseTestClass):
@@ -243,6 +244,13 @@ class SdvBaseTestClass(base_test.BaseTestClass):
         """
         for i in range(1, num_devices + 1):
             setattr(self, f'sdv_device{i}', self.get_device(f'device{i}'))
+
+    @property
+    def feature_flags(self):
+        device = self.get_device("device1")
+        if device:
+            self._feature_flags = sdv_feature_flags.SdvFeatureFlags(device)
+        return self._feature_flags
 
     def log_test_info(self, message):
         """Logs information in a test, along with the suite and test name."""
