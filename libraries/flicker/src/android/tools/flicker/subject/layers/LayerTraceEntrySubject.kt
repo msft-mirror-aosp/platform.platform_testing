@@ -193,6 +193,7 @@ constructor(
             val failedEntries =
                 matchedLayers
                     .filterNot { it.isVisible }
+                    .filterNot { it.isAnimationLeash }
                     .map { Fact(it.name, it.visibilityReason.joinToString()) }
             val errorMsgBuilder =
                 errorMsgBuilder()
@@ -229,6 +230,7 @@ constructor(
             componentMatcher
                 .filterLayers(layers)
                 .filter { it.isVisible }
+                .filterNot { it.isAnimationLeash }
                 .map { Fact("Is visible", it.name) }
         val errorMsgBuilder =
             errorMsgBuilder()
@@ -255,7 +257,7 @@ constructor(
             return@apply
         }
 
-        val failedEntries = componentMatcher.filterLayers(layers)
+        val failedEntries = componentMatcher.filterLayers(layers).filterNot { it.isAnimationLeash }
         val errorMsgBuilder =
             errorMsgBuilder()
                 .forIncorrectOcclusion(
@@ -290,6 +292,7 @@ constructor(
                     .setActual(
                         matchingSubjects
                             .filter { it.isInvisible }
+                            .filterNot { it.layer.isAnimationLeash }
                             .map { Fact(it.name, it.visibilityReason.joinToString()) }
                     )
             }
