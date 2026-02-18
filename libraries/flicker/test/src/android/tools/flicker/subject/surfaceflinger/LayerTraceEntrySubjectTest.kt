@@ -374,6 +374,108 @@ class LayerTraceEntrySubjectTest {
         }
     }
 
+    @Test
+    fun isVisible_filtersAnimationLeashFromError() {
+        val layerName = "MyLayer"
+        val leashName = "MyLayer - animation-leash"
+
+        val layerTraceEntry =
+            MockLayerTraceEntryBuilder()
+                .addDisplay(
+                    rootLayers =
+                        listOf(
+                            MockLayerBuilder(layerName).setInvisible(),
+                            MockLayerBuilder(leashName).setInvisible(),
+                        )
+                )
+                .build()
+
+        val subject = LayerTraceEntrySubject(layerTraceEntry)
+        val matcher = ComponentNameMatcher("", layerName)
+
+        val error = assertThrows<AssertionError> { subject.isVisible(matcher) }
+
+        Truth.assertThat(error).hasMessageThat().contains("Searching for:")
+        Truth.assertThat(error).hasMessageThat().contains("Found:")
+        Truth.assertThat(error).hasMessageThat().contains(layerName)
+        Truth.assertThat(error).hasMessageThat().doesNotContain(leashName)
+    }
+
+    @Test
+    fun isInvisible_filtersAnimationLeashFromError() {
+        val layerName = "MyLayer"
+        val leashName = "MyLayer - animation-leash"
+
+        val layerTraceEntry =
+            MockLayerTraceEntryBuilder()
+                .addDisplay(
+                    rootLayers =
+                        listOf(
+                            MockLayerBuilder(layerName).setVisible(),
+                            MockLayerBuilder(leashName).setVisible(),
+                        )
+                )
+                .build()
+
+        val subject = LayerTraceEntrySubject(layerTraceEntry)
+        val matcher = ComponentNameMatcher("", layerName)
+
+        val error = assertThrows<AssertionError> { subject.isInvisible(matcher) }
+
+        Truth.assertThat(error).hasMessageThat().contains("Searching for:")
+        Truth.assertThat(error).hasMessageThat().contains("Found:")
+        Truth.assertThat(error).hasMessageThat().contains(layerName)
+        Truth.assertThat(error).hasMessageThat().doesNotContain(leashName)
+    }
+
+    @Test
+    fun isOccluded_filtersAnimationLeashFromError() {
+        val layerName = "MyLayer"
+        val leashName = "MyLayer - animation-leash"
+
+        val layerTraceEntry =
+            MockLayerTraceEntryBuilder()
+                .addDisplay(
+                    rootLayers =
+                        listOf(
+                            MockLayerBuilder(layerName).setVisible(),
+                            MockLayerBuilder(leashName).setVisible(),
+                        )
+                )
+                .build()
+
+        val subject = LayerTraceEntrySubject(layerTraceEntry)
+        val matcher = ComponentNameMatcher("", layerName)
+
+        val error = assertThrows<AssertionError> { subject.isOccluded(matcher) }
+
+        Truth.assertThat(error).hasMessageThat().contains("Searching for:")
+        Truth.assertThat(error).hasMessageThat().contains("Found:")
+        Truth.assertThat(error).hasMessageThat().contains(layerName)
+        Truth.assertThat(error).hasMessageThat().doesNotContain(leashName)
+    }
+
+    @Test
+    fun errorBuilderWrapsLongStrings() {
+        val longName =
+            "ThisIsAVeryLongLayerNameThatShouldBeWrappedByTheExceptionMessageBuilderToEnsureItIsReadable" +
+                "MoreContentToEnsureItExceedsOneHundredCharactersWhichIsTheDefaultMaximumLineLength"
+        val layerTraceEntry =
+            MockLayerTraceEntryBuilder()
+                .addDisplay(rootLayers = listOf(MockLayerBuilder(longName).setVisible()))
+                .build()
+
+        val subject = LayerTraceEntrySubject(layerTraceEntry)
+        val matcher = ComponentNameMatcher("", "ImaginaryLayer")
+
+        val error = assertThrows<AssertionError> { subject.isVisible(matcher) }
+
+        val message = error.message ?: ""
+        val lines = message.split("\n").map { it.trim() }
+        Truth.assertThat(lines.any { it == longName }).isFalse()
+        Truth.assertThat(lines.any { longName.startsWith(it) }).isTrue()
+    }
+
     companion object {
         @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }

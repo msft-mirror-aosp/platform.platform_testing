@@ -26,7 +26,9 @@ import android.tools.io.Reader
 class ExceptionMessageBuilder {
     private var timestamp = Timestamps.empty()
     private var expected = ""
+    private var expectedLabel = "Expected"
     private var actual = mutableListOf<String>()
+    private var actualLabel = "Actual"
     private var headerDescription = ""
     private var extraDescription = mutableListOf<Fact>()
 
@@ -46,10 +48,14 @@ class ExceptionMessageBuilder {
     fun forIncorrectVisibility(elementName: String, expectElementVisible: Boolean) =
         setMessage("$elementName should ${if (expectElementVisible) "" else "not "}be visible")
             .setExpected(elementName)
+            .setExpectedLabel("Searching for")
+            .setActualLabel("Found")
 
     fun forIncorrectOcclusion(elementName: String, expectElementOccluded: Boolean) =
         setMessage("$elementName should ${if (expectElementOccluded) "" else "not "}be occluded")
             .setExpected(elementName)
+            .setExpectedLabel("Searching for")
+            .setActualLabel("Found")
 
     fun forInvalidProperty(propertyName: String) = setMessage("Incorrect value for $propertyName")
 
@@ -61,9 +67,13 @@ class ExceptionMessageBuilder {
 
     fun setExpected(value: Any?) = apply { expected = value?.toString() ?: "null" }
 
+    fun setExpectedLabel(value: String) = apply { expectedLabel = value }
+
     fun setActual(value: Collection<String>) = apply { actual.addAll(value) }
 
     fun setActual(value: Any?) = setActual(listOf(value?.toString() ?: "null"))
+
+    fun setActualLabel(value: String) = apply { actualLabel = value }
 
     fun setReader(value: Reader) {
         for (artifact in value.artifacts) {
@@ -94,15 +104,21 @@ class ExceptionMessageBuilder {
         }
 
         if (expected.isNotEmpty()) {
-            append("Expected: ".prependIndent("\t"))
+            append("$expectedLabel: ".prependIndent("\t"))
             appendLine(expected)
         }
 
         actual
             .filter { it.isNotEmpty() }
             .forEach {
-                append("Actual: ".prependIndent("\t"))
-                appendLine(it)
+                val lines = it.split("\n").flatMap { line -> line.chunked(MAX_LINE_LENGTH) }
+                if (lines.size > 1) {
+                    appendLine("$actualLabel: ".prependIndent("\t"))
+                    lines.forEach { line -> appendLine(line.prependIndent("\t\t")) }
+                } else {
+                    append("$actualLabel: ".prependIndent("\t"))
+                    appendLine(it)
+                }
             }
 
         if (extraDescription.isNotEmpty()) {
@@ -113,5 +129,9 @@ class ExceptionMessageBuilder {
 
         appendLine()
         appendLine("Check the test run artifacts for trace files")
+    }
+
+    companion object {
+        private const val MAX_LINE_LENGTH = 100
     }
 }
