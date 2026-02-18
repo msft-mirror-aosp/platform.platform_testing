@@ -704,7 +704,6 @@ public class NotificationController {
         builder.setContentTitle(title).setStyle(new Notification.MetricStyle().setMetrics(metrics));
         builder.setOngoing(isLiveUpdate);
         builder.setRequestPromotedOngoing(isLiveUpdate);
-        postNotificationSync(getNextNotificationId(), builder, null);
 
         if (allowAutogrouping) {
             postNotificationSync(getNextNotificationId(), builder, null);
