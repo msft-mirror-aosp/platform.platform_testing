@@ -8,5 +8,5 @@ The primary goal is to prevent accessibility barriers from being introduced into
 codebases at development time. By integrating ATF with UiAutomator, we can "shift-left" to improve
 accessibility outcomes for Android users.
 
-This library provides a JUnit Test Rule (`UiAutomatorAccessibilityTestRule`) to easily enable ATF
+This library provides a JUnit Test Rule (`PlatformUiAutomatorAccessibilityTestRule`) to easily enable ATF
 checks within existing UiAutomator tests.

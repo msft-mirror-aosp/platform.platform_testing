@@ -16,7 +16,7 @@
 
 // Enables accessibility checks for UiAutomator tests using Accessibility Test Framework. The checks
 // will run automatically on every test action like click(), swipe() etc. See
-// UiAutomatorAccessibilityTestRule.kt for details.
+// PlatformUiAutomatorAccessibilityTestRule.kt for details.
 
 package {
     default_applicable_licenses: ["Android-Apache-2.0"],
