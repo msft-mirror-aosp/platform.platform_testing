@@ -44,7 +44,7 @@ class SdvDiagnosticsCrossVMPerfTest(
 
     def dumpsys_diagnostics_found(self):
         dump = self.device1.dumpsys("com.google.sdv.ISdvAgent/diagnostics")
-        pattern = fr"Read data item\: {self.device2.prop.get(SdvDeviceProperty.INSTANCE_NAME)}\:com.sdv.oem.sample.diagnostics.DiagnosticsProvider1\/default\#pressure"
+        pattern = fr"Read data item\: {self.device2.prop.get(SdvDeviceProperty.INSTANCE_NAME)}\:com.android.sdv.sample.oem.diagnostics.DiagnosticsProvider1\/default\#pressure"
         return re.search(pattern, dump) is not None
 
     def test_diagnostics_cross_vm_perf(self):
