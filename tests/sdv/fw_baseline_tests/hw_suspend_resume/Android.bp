@@ -24,6 +24,7 @@ python_test_host {
     srcs: [
         "sdv_baseline_hw_suspend_resume_1vm_test.py",
         "sdv_baseline_hw_suspend_resume_mixin.py",
+        "qnx_process_management.py",
         "sdv_baseline_hw_suspend_resume_test_verification.py",
     ],
     data: [
@@ -45,6 +46,7 @@ python_test_host {
     srcs: [
         "sdv_baseline_hw_suspend_resume_2vm_test.py",
         "sdv_baseline_hw_suspend_resume_mixin.py",
+        "qnx_process_management.py",
         "sdv_baseline_hw_suspend_resume_test_verification.py",
     ],
     data: [

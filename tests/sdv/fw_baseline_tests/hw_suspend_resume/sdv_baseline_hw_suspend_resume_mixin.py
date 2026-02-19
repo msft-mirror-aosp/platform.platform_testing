@@ -37,6 +37,7 @@ import logging
 from mobly import asserts
 import pexpect
 from pexpect import pxssh
+import qnx_process_management
 from sdv_test_fw.verification import polling
 
 
@@ -69,7 +70,7 @@ class SdvBaselineHwSuspendResumeMixin:
     # This holds true for CI/CD and CATBox environments but may not be
     # guaranteed during local execution with `atest`.
     # TODO(crisguerrero): Look into dynamically resolve configuration based on
-    # evice info (e.g., serial number, instance, etc). This is not important
+    # device info (e.g., serial number, instance, etc). This is not important
     # for verifying the functionality is stable in CI/CD.
     DEVICE1_VM_CONFIG = QnxVmConfig(dev_file="/dev/ttyp6", sdv_guest_id="1")
     DEVICE2_VM_CONFIG = QnxVmConfig(dev_file="/dev/ttyp7", sdv_guest_id="2")
@@ -123,12 +124,6 @@ class SdvBaselineHwSuspendResumeMixin:
     VM_SUSPENDED = "Suspended"
     VM_RUNNING = "Running"
     VM_STATUS_NOT_AVAILABLE = "Not available"
-
-    # ==========================================================================
-    # Other Commands
-    # ==========================================================================
-
-    SPAWNED_PROCESSES = "pidin -f aA | grep {process}"
 
     # ==========================================================================
 
@@ -194,30 +189,6 @@ class SdvBaselineHwSuspendResumeMixin:
 
         return output_lines
 
-    def _find_spawned_processes(self, process_identifier):
-        output_lines = self.host_command(
-            self.SPAWNED_PROCESSES.format(process=process_identifier)
-        )
-
-        spawned_processes = []
-        for line in output_lines:
-            if "pidin" in line or "grep" in line:
-                continue
-
-            pidin_output = line.split()
-            # The pid is expected to be the first element
-            # 000000 process_info
-            if pidin_output and pidin_output[0].isdigit():
-                spawned_processes.append(pidin_output[0])
-
-        return spawned_processes
-
-    def _processes_are_running(self, process_identifier):
-        pids = self._find_spawned_processes(process_identifier)
-        if pids:
-            return True
-        return False
-
     # ==========================================================================
     # Power Button Emulation Setup
     # ==========================================================================
@@ -230,7 +201,10 @@ class SdvBaselineHwSuspendResumeMixin:
         # finalizes.
         logging.info(f"Start daemon {vm_config.daemon_label} in hypervisor")
 
-        if self._processes_are_running(vm_config.daemon_label):
+        if qnx_process_management.processes_are_running(
+            command_executor=self.host_command,
+            process_identifier=vm_config.daemon_label,
+        ):
             logging.info(
                 f"Daemon with tag {vm_config.daemon_label} already running"
             )
