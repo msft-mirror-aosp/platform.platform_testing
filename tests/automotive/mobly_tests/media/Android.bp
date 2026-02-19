@@ -368,3 +368,25 @@ python_test_host {
         ":PhoneSnippet",
     ],
 }
+
+python_test_host {
+    name: "BTMediaCardPlaylistSongsOnHu",
+    main: "media_test_media_card_playlist.py",
+    srcs: ["media_test_media_card_playlist.py"],
+    libs: [
+        "mobly",
+        "utilities",
+        "bluetooth_test",
+    ],
+    test_suites: [
+        "catbox",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    device_common_data: [
+        // Package the snippet with the mobly test
+        ":AutomotiveSnippet",
+        ":PhoneSnippet",
+    ],
+}

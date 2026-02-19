@@ -304,6 +304,13 @@ public interface IAutoMediaHelper extends IAppHelper, Scrollable {
     void clickOnSongFromPlaylist(int index);
 
     /**
+     * Setup expectations: Media Card opened.
+     *
+     * <p>This method is used to select song from playlist with index.
+     */
+    void clickOnSongFromMediaCardPlaylist(int index);
+
+    /**
      * Setup expectations: Media card is open and playing any song.
      *
      * @return get current playing song author name
