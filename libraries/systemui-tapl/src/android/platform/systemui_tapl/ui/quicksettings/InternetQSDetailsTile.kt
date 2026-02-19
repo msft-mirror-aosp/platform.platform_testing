@@ -37,12 +37,10 @@ class InternetQSDetailsTile(private val qsPanel: UiObject2) {
             "Internet header not found after clicking Wi-Fi tile."
         }
 
-        // Synchronization: Wait for the searching progress bar to disappear, which indicates
-        // network stability.
         assertTrue(
-            "Progress Bar $UI_PROGRESS_BAR_ID did not disappear within $WIFI_SEARCH_TIMEOUT.",
+            "Scanning text did not disappear within $WIFI_SEARCH_TIMEOUT.",
             uiDevice.wait(
-                Until.gone(sysuiResSelector(UI_PROGRESS_BAR_ID)),
+                Until.gone(By.text("Searching for networks...")),
                 WIFI_SEARCH_TIMEOUT.inWholeMilliseconds,
             ),
         )
