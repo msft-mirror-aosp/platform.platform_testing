@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 /** Parses tombstones and from a tombstone file or logcat. */
 public class TombstoneParser {
 
-    private static final String TOMBSTONE_HEADER =
+    protected static final String TOMBSTONE_HEADER =
             "*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***";
     private static final Pattern TOMBSTONE_HEADER_PATTERN =
             Pattern.compile(TOMBSTONE_HEADER.replace("*", "\\*"));
@@ -174,17 +174,6 @@ public class TombstoneParser {
         for (String potentialTombstone : potentialTombstones) {
             Tombstone.Builder tombstoneBuilder = Tombstone.newBuilder();
             List<String> lines = lines(potentialTombstone);
-            if (lines.isEmpty()) {
-                continue;
-            }
-            if (!lines.get(0).contains(TOMBSTONE_HEADER)) {
-                continue;
-            }
-            if (NATIVE_CRASH_TIME_PATTERN.matcher(lines.get(1)).find()) {
-                CLog.d("ignoring crash time");
-                continue;
-            }
-
             String tombstoneBlob =
                     lines.stream()
                             .filter(line -> line.contains("DEBUG   :"))
@@ -206,6 +195,7 @@ public class TombstoneParser {
 
             if (!parseTombstone(tombstoneBlob, tombstoneBuilder)) {
                 CLog.w("parsing tombstone failed: \n" + tombstoneBlob);
+                continue;
             }
             Tombstone tombstone = tombstoneBuilder.build();
             tombstones.add(tombstone);
@@ -241,6 +231,15 @@ public class TombstoneParser {
         String[] threadBlobs = THREAD_SEPARATOR_PATTERN.split(tombstoneBlob);
         String headerAndMainThreadBlob = threadBlobs[0];
         List<String> headerAndMainThreadLines = lines(headerAndMainThreadBlob);
+
+        if (!headerAndMainThreadBlob.contains(TOMBSTONE_HEADER)) {
+            return false;
+        }
+
+        if (NATIVE_CRASH_TIME_PATTERN.matcher(headerAndMainThreadBlob).find()) {
+            CLog.w("ignoring crash time");
+            return false;
+        }
 
         // get fingerprint
         if (!matchLine(
