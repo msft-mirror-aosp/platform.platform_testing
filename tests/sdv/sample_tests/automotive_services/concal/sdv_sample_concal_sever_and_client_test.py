@@ -57,7 +57,7 @@ class SdvSampleConCalServerAndClientTest(sdv_base_test.SdvBaseTestClass):
         "                        Some(",
         "                            ServiceFqin \\{",
         "                                vm_name: \\\"instance1\\\",",
-        "                                package_name: \\\"com.sdv.oem.sample.concal\\\",",
+        "                                package_name: \\\"com.android.sdv.sample.oem.concal\\\",",
         "                                service_name: \\\"SampleOemConCalClientServiceBundle\\\",",
         "                                instance_name: \\\"sample\\\",",
         "                                special_fields: SpecialFields \\{",

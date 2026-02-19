@@ -15,6 +15,7 @@
  */
 package android.platform.uiautomatoraccessibility
 
+import android.platform.test.microbenchmark.Microbenchmark
 import android.view.accessibility.AccessibilityNodeInfo
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.runner.lifecycle.ActivityLifecycleCallback
@@ -30,6 +31,7 @@ import java.util.function.Consumer
 import java.util.function.Predicate
 import org.junit.rules.ExternalResource
 import org.junit.runner.Description
+import org.junit.runner.RunWith
 import org.junit.runners.model.Statement
 
 /**
@@ -122,6 +124,10 @@ constructor(
         if (!isCheckingEnabled) return@UiAccessibilityValidator
 
         validator.check(node)
+    }
+
+    init {
+        disableChecksIf { it.isPerformanceTest() }
     }
 
     @SuppressWarnings(
@@ -301,3 +307,12 @@ constructor(
         return this
     }
 }
+
+/** Returns true if the test class is a microbenchmark performance test, false otherwise. */
+private fun Class<*>.isPerformanceTest(): Boolean {
+    val runWith = getAnnotation(RunWith::class.java)
+    return runWith?.value != null && Microbenchmark::class.java.isAssignableFrom(runWith.value.java)
+}
+
+/** Returns true if the test is a microbenchmark performance test, false otherwise. */
+private fun Description.isPerformanceTest() = testClass.isPerformanceTest()

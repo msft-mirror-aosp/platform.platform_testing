@@ -26,13 +26,13 @@ class SdvSampleMultivdVsockTest(sdv_base_test.SdvBaseTestClass):
 
     SERVER_PROCESS_NAME = 'server_process'
     START_SERVER_COMMAND = (
-        'apex/com.sdv.google.sample.multivd.vsock/bin/sdv_sample_multivd_vsock_server'
+        'sdv_sample_multivd_vsock_server'
         ' 1234'
     )
     LOGCAT_SERVER_GREP_TEXT = 'multivd-vsock-server'
     EXPECTED_SERVER_RESULT = 'Received a from client.'
     START_CLIENT_COMMAND = (
-        'apex/com.sdv.google.sample.multivd.vsock/bin/sdv_sample_multivd_vsock_client'
+        'sdv_sample_multivd_vsock_client'
         ' 3 1234'
     )
     LOGCAT_CLIENT_GREP_TEXT = 'multivd-vsock-client'
