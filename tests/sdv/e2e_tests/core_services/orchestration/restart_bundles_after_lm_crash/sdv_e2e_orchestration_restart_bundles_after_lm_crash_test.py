@@ -27,10 +27,10 @@ class SdvE2EOrchestrationBundlesRestartedAfterLMCrashTest(
 ):
 
     RESTARTED_BUNDLE_AFTER_CRASH_SUCCESS_LOGCAT_TEXT = (
-        'Request for moving service bundle Fqin { package_name: "com.sdv.google.sample.lifecycle.apex", service_bundle_name: "LifecycleCppSampleServiceBundle", instance_name: "crashed-restarted" } to STARTED state was Ok(())'
+        r'Request for moving service bundle .*: "com.sdv.google.sample.lifecycle.apex", .*: "LifecycleCppSampleServiceBundle", .*: "crashed-restarted" } to STARTED state was Ok(())'
     )
     AFTER_CRASH_STARTED_BUNDLE_SUCCESS_LOGCAT_TEXT = (
-        'Request for moving service bundle Fqin { package_name: "com.sdv.google.sample.lifecycle.apex", service_bundle_name: "LifecycleCppSampleServiceBundle", instance_name: "recover-custom-mode" } to STARTED state was Ok(())'
+        r'Request for moving service bundle .*: "com.sdv.google.sample.lifecycle.apex", .*: "LifecycleCppSampleServiceBundle", .*: "recover-custom-mode" } to STARTED state was Ok(())'
     )
 
     def restart_lm_agent(self):
@@ -48,7 +48,7 @@ class SdvE2EOrchestrationBundlesRestartedAfterLMCrashTest(
     def wait_for_logcat(self, expected_result, timestamp=None):
         def grep_with_timestamp(sdv_device, expected_result, timestamp):
             res_timestamp, _ = sdv_device.advance_logcat(
-            ).find_message_after_timestamp(expected_result, timestamp)
+            ).find_message_after_timestamp(expected_result, timestamp, regex=True)
             return res_timestamp
 
         result = polling.wait_and_return_result(

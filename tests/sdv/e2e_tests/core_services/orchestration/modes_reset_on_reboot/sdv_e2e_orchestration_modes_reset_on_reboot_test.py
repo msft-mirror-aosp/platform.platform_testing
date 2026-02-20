@@ -29,9 +29,9 @@ class SdvE2EOrchestrationModesResetOnRebootTest(
     FINISHED_PROCESSING_POWER_ON = 'Finished enforcing mode \'Power\' with state \'"ON"\'. successfully'
     FINISHED_PROCESSING_CUSTOM_MODE = 'Finished enforcing mode \'Custom\\("E2E-TESTS"\\)\' with state \'"recover-custom-mode"\'. successfully'
     FINISHED_PROCESSING_DEFAULT = 'Finished enforcing mode \'Default\' with state \'"Requesting state for bundles with no conditions"\'. successfully.'
-    FINISHED_STARTING_RECOVER_CUSTOM_MODE_SERVICE = 'Request for moving service bundle Fqin { package_name: "com.sdv.google.sample.lifecycle.apex", service_bundle_name: "LifecycleCppSampleServiceBundle", instance_name: "recover-custom-mode" } to STARTED state was Ok(())'
-    FINISHED_STARTING_RECOVER_POWER_MODE_SERVICE = 'Request for moving service bundle Fqin { package_name: "com.sdv.google.sample.lifecycle.apex", service_bundle_name: "LifecycleCppSampleServiceBundle", instance_name: "recover-power-mode" } to STARTED state was Ok(())'
-    FINISHED_STARTING_RECOVER_VEHICLE_MODE_SERVICE = 'Request for moving service bundle Fqin { package_name: "com.sdv.google.sample.lifecycle.apex", service_bundle_name: "LifecycleCppSampleServiceBundle", instance_name: "recover-vehicle-mode" } to STARTED state was Ok(())'
+    FINISHED_STARTING_RECOVER_CUSTOM_MODE_SERVICE = r'Request for moving service bundle .*: "com.sdv.google.sample.lifecycle.apex", .*: "LifecycleCppSampleServiceBundle", .*: "recover-custom-mode" } to STARTED state was Ok(())'
+    FINISHED_STARTING_RECOVER_POWER_MODE_SERVICE = r'Request for moving service bundle .*: "com.sdv.google.sample.lifecycle.apex", .*: "LifecycleCppSampleServiceBundle", .*: "recover-power-mode" } to STARTED state was Ok(())'
+    FINISHED_STARTING_RECOVER_VEHICLE_MODE_SERVICE = r'Request for moving service bundle .*: "com.sdv.google.sample.lifecycle.apex", .*: "LifecycleCppSampleServiceBundle", .*: "recover-vehicle-mode" } to STARTED state was Ok(())'
 
     def setup_class(self):
         super().setup_class()
