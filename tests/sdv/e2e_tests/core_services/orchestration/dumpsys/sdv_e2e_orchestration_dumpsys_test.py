@@ -43,17 +43,17 @@ class SdvE2EOrchestrationDumpsysTest(
 
         expected_dump = [
                 r'AGENT NAME: SDV Agent dump - Orchestrator',
-                r'AGENT FQIN: .+:com.sdv.google.orchestrator.OrchestratorServiceBundle/default',
+                r'AGENT FQIN: .+:com.android.sdv.orchestrator.OrchestratorServiceBundle/default',
                 r'AGENT STATE: See orchestrator state below.',
                 r'MODE\s+VALUE\s+TIMESTAMP \(scs, ns\)',
                 r'Vehicle\s+PARK\s+-',
                 r'Power\s+POWER_OFF_EXIT\s+-',
                 r'Custom\("TIRE_PRESSURE"\)\s+front-left\s+\d+ \(scs\) \d+ \(ns\)',
                 r'Modes allowed to publish by bundle \(FQIN: modes\):',
-                r'com.sdv.google.sample.orchestration\/CustomModeControlBundle: TIRE_PRESSURE',
+                r'com.android.sdv.sample.orchestrator\/CustomModeControlBundle: TIRE_PRESSURE',
                 r'Requested state for instances:\nSTATE\s+FQIN',
-                r'Started\s+com.sdv.google.sample.orchestration\/CustomModeControlBundle\/always-started-instance',
-                r'Started\s+com.sdv.google.sample.orchestration\/OrchestratedServiceBundle\/my-instance',
+                r'Started\s+com.android.sdv.sample.orchestrator\/CustomModeControlBundle\/always-started-instance',
+                r'Started\s+com.android.sdv.sample.orchestrator\/OrchestratedServiceBundle\/my-instance',
                 r'Last mode enforced was Vehicle with value "PARK"',
                 r'Next modes to process: \[\]'
         ]
