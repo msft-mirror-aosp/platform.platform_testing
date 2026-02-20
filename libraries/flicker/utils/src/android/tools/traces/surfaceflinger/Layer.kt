@@ -50,6 +50,14 @@ public constructor(
     val packageName = ComponentName.fromLayerName(name).packageName
 
     /**
+     * Checks if the [Layer] is an animation leash
+     *
+     * @return
+     */
+    val isAnimationLeash: Boolean
+        get() = name.contains("animation-leash") || name.contains("transition-leash")
+
+    /**
      * Checks if the [Layer] is a root layer in the hierarchy
      *
      * @return

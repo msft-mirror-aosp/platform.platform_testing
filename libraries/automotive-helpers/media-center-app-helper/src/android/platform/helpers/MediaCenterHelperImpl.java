@@ -626,6 +626,17 @@ public class MediaCenterHelperImpl extends AbstractStandardAppHelper implements 
 
     /** {@inheritDoc} */
     @Override
+    public void clickOnSongFromMediaCardPlaylist(int index) {
+        BySelector songInPlaylist =
+                getUiElementFromConfig(AutomotiveConfigConstants.MEDIA_CARD_SONG);
+        List<UiObject2> songInPlaylistObject = getSpectatioUiUtil().findUiObjects(songInPlaylist);
+        getSpectatioUiUtil()
+                .validateUiObjects(songInPlaylistObject, AutomotiveConfigConstants.MEDIA_CARD_SONG);
+        getSpectatioUiUtil().clickAndWait(songInPlaylistObject.get(index));
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public void waitForBluetoothAudioDisconnectedLabelToDisappear() {
         BySelector isBluetoothAudioDisconnectedLabel =
                 getUiElementFromConfig(AutomotiveConfigConstants.BLUETOOTH_DISCONNECTED_LABEL);

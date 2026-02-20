@@ -631,4 +631,13 @@ public class TombstoneUtilsTest extends BaseHostJUnit4Test {
             device.disableAdbRoot();
         }
     }
+
+    @Test
+    public void testParseLogcatIgnoresConsecutiveTombstoneHeaders() throws Exception {
+        String logcatWithTwoTombstoneHeader = TombstoneParser.TOMBSTONE_HEADER + "\n"
+                + TombstoneParser.TOMBSTONE_HEADER;
+        assertThat(TombstoneParser.parseLogcat(logcatWithTwoTombstoneHeader))
+                        .isEqualTo(EMPTY_TOMBSTONE_LIST);
+    }
+
 }
