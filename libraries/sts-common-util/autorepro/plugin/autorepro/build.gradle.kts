@@ -49,7 +49,7 @@ java {
 // Define the overall plugin
 group = "com.android.security.autorepro"
 
-version = "1.0.1-alpha2"
+version = "1.0.1"
 
 // Define the individual sub-plugins
 gradlePlugin {
