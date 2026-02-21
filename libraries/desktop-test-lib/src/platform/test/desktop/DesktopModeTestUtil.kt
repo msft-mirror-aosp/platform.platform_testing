@@ -56,6 +56,12 @@ class DesktopModeTestUtil(private val resources: Resources) {
         // via developer options.
         getResourceBoolean("config_isDesktopModeDevOptionSupported")
 
+    /**
+     * Returns {@code true} if the current device can hosts desktop sessions on its default display.
+     */
+    public fun canDefaultDisplayHostDesktops(): Boolean =
+        getResourceBoolean("config_canInternalDisplayHostDesktops")
+
     private fun getResourceBoolean(flagName: String): Boolean {
         // Dynamically looks up resources because the symbols are internal (com.android.internal.R)
         // and not available in the SDK stubs used for CTS compilation.
