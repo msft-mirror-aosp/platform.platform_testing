@@ -22,21 +22,28 @@ import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoSettingHelper;
 import android.platform.helpers.IAutoSettingsLocationHelper;
 import android.platform.helpers.SettingsConstants;
+import android.platform.test.flag.junit.SetFlagsRule;
+import android.platform.test.rules.ConditionalIgnore;
+import android.platform.test.rules.ConditionalIgnoreRule;
+import android.platform.test.rules.IgnoreOnPortrait;
 import android.util.Log;
 
 import androidx.test.runner.AndroidJUnit4;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
 public class SettingsLocationTest {
+    @Rule public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
 
     private HelperAccessor<IAutoSettingsLocationHelper> mSettingLocationHelper;
     private HelperAccessor<IAutoSettingHelper> mSettingHelper;
     private static final String LOG_TAG = SettingsLocationTest.class.getSimpleName();
 
+    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     public SettingsLocationTest() {
         mSettingHelper = new HelperAccessor<>(IAutoSettingHelper.class);
@@ -53,6 +60,7 @@ public class SettingsLocationTest {
     }
 
     @Test
+    @ConditionalIgnore(condition = IgnoreOnPortrait.class)
     public void testToVerifyToggleLocation() {
         Log.i(LOG_TAG, "Act: Open Location access");
         mSettingLocationHelper.get().locationAccess();

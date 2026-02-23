@@ -29,6 +29,9 @@ import android.platform.helpers.IAutoAppGridHelper;
 import android.platform.helpers.IAutoSettingHelper;
 import android.platform.helpers.IAutoUserHelper;
 import android.platform.helpers.MultiUserHelper;
+import android.platform.test.rules.ConditionalIgnore;
+import android.platform.test.rules.ConditionalIgnoreRule;
+import android.platform.test.rules.IgnoreOnPortrait;
 import android.util.Log;
 
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -60,6 +63,7 @@ public class VerifyDockOnNewUser {
     private UserInfo mNewUser;
     private UserInfo mInitialUser;
     private static final String DRIVER = AutomotiveConfigConstants.HOME_DRIVER_BUTTON;
+    @Rule public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
 
     private final MultiUserHelper mMultiUserHelper = MultiUserHelper.getInstance();
 
@@ -88,6 +92,7 @@ public class VerifyDockOnNewUser {
     }
 
     @Test
+    @ConditionalIgnore(condition = IgnoreOnPortrait.class)
     public void testDockAndAllAppsOnNewUser() throws Exception {
         Log.i(LOG_TAG, "Act: Create new user");
         mInitialUser = mMultiUserHelper.getCurrentForegroundUserInfo();

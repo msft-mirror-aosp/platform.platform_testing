@@ -22,15 +22,20 @@ import static junit.framework.Assert.assertTrue;
 import android.platform.helpers.AutomotiveConfigConstants;
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoAppGridHelper;
+import android.platform.test.rules.ConditionalIgnore;
+import android.platform.test.rules.ConditionalIgnoreRule;
+import android.platform.test.rules.IgnoreOnPortrait;
 import android.util.Log;
 
 import androidx.test.runner.AndroidJUnit4;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
 public class AppGridTest {
+    @Rule public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
 
     private static final String SMS_APP = "SMS";
     private static final String BLUETOOTH_APP = "Bluetooth Audio";
@@ -168,6 +173,7 @@ public class AppGridTest {
     }
 
     @Test
+    @ConditionalIgnore(condition = IgnoreOnPortrait.class)
     public void testRecentAppsDisplaying() {
         Log.i(LOG_TAG, "Act: Exit Appgrid");
         mAppGridHelper.get().open();

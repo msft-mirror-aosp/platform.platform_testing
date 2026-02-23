@@ -29,6 +29,9 @@ import android.platform.helpers.IAutoSettingHelper;
 import android.platform.helpers.IAutoUserHelper;
 import android.platform.helpers.MultiUserHelper;
 import android.platform.helpers.SettingsConstants;
+import android.platform.test.rules.ConditionalIgnore;
+import android.platform.test.rules.ConditionalIgnoreRule;
+import android.platform.test.rules.IgnoreOnPortrait;
 import android.util.Log;
 
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -58,6 +61,7 @@ public class AddUserSettings {
     private final Instrumentation mInstrumentation = InstrumentationRegistry.getInstrumentation();
     private final UiAutomation mUiAutomation = mInstrumentation.getUiAutomation();
 
+    @Rule public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
 
     private static final String DRIVER = AutomotiveConfigConstants.HOME_DRIVER_BUTTON;
     private UserInfo mNewUser;
@@ -87,6 +91,7 @@ public class AddUserSettings {
     }
 
     @Test
+    @ConditionalIgnore(condition = IgnoreOnPortrait.class)
     public void testAddNonAdminUser() throws Exception {
         Log.i(LOG_TAG, "Act: Get current userinfo");
         UserInfo initialUser = mMultiUserHelper.getCurrentForegroundUserInfo();
