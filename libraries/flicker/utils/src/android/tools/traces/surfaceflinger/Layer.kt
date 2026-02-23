@@ -57,6 +57,10 @@ public constructor(
     val isAnimationLeash: Boolean
         get() = name.contains("animation-leash") || name.contains("transition-leash")
 
+    /** A name that can be used to identify the layer in debug messages */
+    val debugName: String
+        get() = "$name (Layer#$id)"
+
     /**
      * Checks if the [Layer] is a root layer in the hierarchy
      *
