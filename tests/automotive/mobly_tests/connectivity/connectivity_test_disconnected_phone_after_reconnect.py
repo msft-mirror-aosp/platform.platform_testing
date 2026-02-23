@@ -42,45 +42,45 @@ class BluetoothDisablePhoneAfterReconnectTest(bluetooth_base_test.BluetoothBaseT
         self.call_utils.press_home()
 
 
-def test_disable_enable_phone(self):
-    # Log BT Connection State after pairing
-    bt_connection_state = self.call_utils.get_bt_connection_status_using_adb_command(
-        self.discoverer)
-    logging.info("BT State after pairing : <%s>", bt_connection_state)
+    def test_disable_enable_phone(self):
+        # Log BT Connection State after pairing
+        bt_connection_state = self.call_utils.get_bt_connection_status_using_adb_command(
+            self.discoverer)
+        logging.info("BT State after pairing : <%s>", bt_connection_state)
 
-    # Navigate to the bluetooth settings page
-    self.call_utils.open_bluetooth_settings_form_status_bar()
-    target_name = self.target.mbs.btGetName()
-    # Disable phone for the listed paired device via the preference button
-    self.call_utils.press_phone_toggle_on_device(target_name)
-    self.call_utils.wait_with_log(5)
-    # Confirm that the phone button is unchecked
-    asserts.assert_false(
-        self.discoverer.mbs.isPhonePreferenceChecked(),
-        "Expected phone button to be unchecked after pressing it.")
+        # Navigate to the bluetooth settings page
+        self.call_utils.open_bluetooth_settings_form_status_bar()
+        target_name = self.target.mbs.btGetName()
+        # Disable phone for the listed paired device via the preference button
+        self.call_utils.press_phone_toggle_on_device(target_name)
+        self.call_utils.wait_with_log(5)
+        # Confirm that the phone button is unchecked
+        asserts.assert_false(
+            self.discoverer.mbs.isPhonePreferenceChecked(),
+            "Expected phone button to be unchecked after pressing it.")
 
-    # Tap Bluetooth button to Disable Bluetooth
-    self.call_utils.press_bluetooth_toggle_on_device(self.target.mbs.btGetName())
-    self.call_utils.wait_with_log(5)
-    # Tap Grey Bluetooth Button to Enable Bluetooth
-    self.call_utils.press_bluetooth_toggle_on_device(self.target.mbs.btGetName())
-    self.call_utils.wait_with_log(10)
-    # After reconnecting Bluetooth - Confirm that the phone button is unchecked
-    asserts.assert_false(
-        self.discoverer.mbs.isPhonePreferenceChecked(),
-        "Expected phone button to be unchecked after pressing it.")
+        # Tap Bluetooth button to Disable Bluetooth
+        self.call_utils.press_bluetooth_toggle_on_device(self.target.mbs.btGetName())
+        self.call_utils.wait_with_log(5)
+        # Tap Grey Bluetooth Button to Enable Bluetooth
+        self.call_utils.press_bluetooth_toggle_on_device(self.target.mbs.btGetName())
+        self.call_utils.wait_with_log(10)
+        # After reconnecting Bluetooth - Confirm that the phone button is unchecked
+        asserts.assert_false(
+            self.discoverer.mbs.isPhonePreferenceChecked(),
+            "Expected phone button to be unchecked after pressing it.")
 
-    self.call_utils.wait_with_log(constants.DEFAULT_WAIT_TIME_FIVE_SECS)
+        self.call_utils.wait_with_log(constants.DEFAULT_WAIT_TIME_FIVE_SECS)
 
-    # Go back to the bluetooth settings page and enable phone via the preference button
-    self.call_utils.press_home()
-    self.call_utils.open_bluetooth_settings()
-    self.call_utils.press_phone_toggle_on_device(target_name)
+        # Go back to the bluetooth settings page and enable phone via the preference button
+        self.call_utils.press_home()
+        self.call_utils.open_bluetooth_settings()
+        self.call_utils.press_phone_toggle_on_device(target_name)
 
     # Confirm that the phone button is re-enabled
-    asserts.assert_true(
-        self.discoverer.mbs.isPhonePreferenceChecked(),
-        "Expected phone button to be checked after pressing it a second time.")
+        asserts.assert_true(
+            self.discoverer.mbs.isPhonePreferenceChecked(),
+            "Expected phone button to be checked after pressing it a second time.")
 
 
 if __name__ == '__main__':
