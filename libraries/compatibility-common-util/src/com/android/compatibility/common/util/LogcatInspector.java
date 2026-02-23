@@ -120,6 +120,7 @@ public abstract class LogcatInspector {
                     // Check that this log time is after previously matched log
                     if (epochMicroseconds >= lastEpochMicroseconds) {
                         stringIndex++;
+                        lastEpochMicroseconds = epochMicroseconds;
                         if (stringIndex >= logcatStrings.length) {
                             StreamUtil.drainAndClose(logcat);
                             return stringIndex;
