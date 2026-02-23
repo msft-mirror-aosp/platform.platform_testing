@@ -30,9 +30,9 @@ class SdvE2EOrchestrationModesRecoveredAfterCrashTest(
     FINISHED_PROCESSING_VEHICLE_PARK = 'Finished enforcing mode \'Vehicle\' with state \'"PARK"\'. successfully.'
     FINISHED_PROCESSING_POWER_ON = 'Finished enforcing mode \'Power\' with state \'"ON"\'. successfully'
     FINISHED_PROCESSING_CUSTOM_MODE = 'Finished enforcing mode \'Custom("E2E-TESTS")\' with state \'"recover-custom-mode"\'. successfully'
-    FINISHED_STARTING_RECOVER_CUSTOM_MODE_SERVICE = 'Request for moving service bundle Fqin { package_name: "com.sdv.google.sample.lifecycle.apex", service_bundle_name: "LifecycleCppSampleServiceBundle", instance_name: "recover-custom-mode" } to STARTED state was Ok(())'
-    FINISHED_STARTING_RECOVER_POWER_MODE_SERVICE = 'Request for moving service bundle Fqin { package_name: "com.sdv.google.sample.lifecycle.apex", service_bundle_name: "LifecycleCppSampleServiceBundle", instance_name: "recover-power-mode" } to STARTED state was Ok(())'
-    FINISHED_STARTING_RECOVER_VEHICLE_MODE_SERVICE = 'Request for moving service bundle Fqin { package_name: "com.sdv.google.sample.lifecycle.apex", service_bundle_name: "LifecycleCppSampleServiceBundle", instance_name: "recover-vehicle-mode" } to STARTED state was Ok(())'
+    FINISHED_STARTING_RECOVER_CUSTOM_MODE_SERVICE = r'Request for moving service bundle .*: "com.sdv.google.sample.lifecycle.apex", .*: "LifecycleCppSampleServiceBundle", .*: "recover-custom-mode" } to STARTED state was Ok(())'
+    FINISHED_STARTING_RECOVER_POWER_MODE_SERVICE = r'Request for moving service bundle .*: "com.sdv.google.sample.lifecycle.apex", .*: "LifecycleCppSampleServiceBundle", .*: "recover-power-mode" } to STARTED state was Ok(())'
+    FINISHED_STARTING_RECOVER_VEHICLE_MODE_SERVICE = r'Request for moving service bundle .*: "com.sdv.google.sample.lifecycle.apex", .*: "LifecycleCppSampleServiceBundle", .*: "recover-vehicle-mode" } to STARTED state was Ok(())'
 
     def setup_class(self):
         super().setup_class()
@@ -58,10 +58,10 @@ class SdvE2EOrchestrationModesRecoveredAfterCrashTest(
             "kill " + process_id
         )
 
-    def wait_for_logcat(self, expected_result, timestamp=None):
+    def wait_for_logcat(self, expected_result, timestamp=None, regex=False):
         def grep_with_timestamp(sdv_device, expected_result, timestamp):
             res_timestamp, _ = sdv_device.advance_logcat(
-            ).find_message_after_timestamp(expected_result, timestamp)
+            ).find_message_after_timestamp(expected_result, timestamp, regex)
             return res_timestamp
 
         result = polling.wait_and_return_result(
@@ -103,14 +103,14 @@ class SdvE2EOrchestrationModesRecoveredAfterCrashTest(
         # Now we check that the vehicle and power modes were started from the persisted file reading (when enforcing the Default mode)
         # and not from when the modes were retrieved on subscribe.
         started_vehicle_bundle_timestamp = self.wait_for_logcat(
-            self.FINISHED_STARTING_RECOVER_VEHICLE_MODE_SERVICE, timestamp=vehicle_transition_completed_timestamp)
+            self.FINISHED_STARTING_RECOVER_VEHICLE_MODE_SERVICE, timestamp=vehicle_transition_completed_timestamp, regex=True)
         asserts.assert_less(
             started_vehicle_bundle_timestamp,
             vehicle_transition_completed_after_orch_crash,
             f"Vehicle mode was started {started_vehicle_bundle_timestamp} after the vehicle subscription {vehicle_transition_completed_after_orch_crash}"
         )
         started_power_bundle_timestamp = self.wait_for_logcat(
-            self.FINISHED_STARTING_RECOVER_POWER_MODE_SERVICE, timestamp=power_transition_completed_timestamp)
+            self.FINISHED_STARTING_RECOVER_POWER_MODE_SERVICE, timestamp=power_transition_completed_timestamp, regex=True)
         asserts.assert_less(
             started_power_bundle_timestamp,
             power_transition_completed_after_orch_crash,
@@ -122,7 +122,7 @@ class SdvE2EOrchestrationModesRecoveredAfterCrashTest(
         # We can verify that the bundle that is configured to start based on the custom mode was in fact started. This should have happened before the
         # power and vehicle mode subscriptions were started (after the crash).
         started_custom_bundle_timestamp = self.wait_for_logcat(
-            self.FINISHED_STARTING_RECOVER_CUSTOM_MODE_SERVICE, timestamp=custom_transition_completed_timestamp)
+            self.FINISHED_STARTING_RECOVER_CUSTOM_MODE_SERVICE, timestamp=custom_transition_completed_timestamp, regex=True)
         asserts.assert_less(started_custom_bundle_timestamp, power_transition_completed_after_orch_crash,
                                               f"Custom mode was started ({started_custom_bundle_timestamp}) after the power subscription ({power_transition_completed_after_orch_crash})")
         asserts.assert_less(started_custom_bundle_timestamp, vehicle_transition_completed_after_orch_crash,

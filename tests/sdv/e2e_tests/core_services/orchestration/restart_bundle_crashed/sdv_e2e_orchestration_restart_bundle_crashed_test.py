@@ -25,10 +25,10 @@ class SdvE2EOrchestrationRestartBundleCrashedTest(
     sdv_base_test.SdvBaseTestClass
 ):
 
-    BUNDLE_STARTED_SUCCESS_LOGCAT_TEXT = 'Request for moving service bundle Fqin { package_name: "com.sdv.google.sample.lifecycle.apex", service_bundle_name: "LifecycleCppSampleServiceBundle", instance_name: "crashed-restarted" } to STARTED state was Ok(())'
-    BUNDLE_CRASH_NOTIFICATION_LOGCAT_TEXT = r'Service bundle crashed for fqin: ServiceFqin { sdvVmName: ".*?", sdvPackageName: "com.sdv.google.sample.lifecycle.apex", serviceBundleName: "LifecycleCppSampleServiceBundle", serviceInstanceName: "crashed-notification" }'
-    BUNDLE_NON_RESTARTABLE_LOGCAT_TEXT = 'Bundle with Fqin { package_name: "com.sdv.google.sample.lifecycle.apex", service_bundle_name: "LifecycleCppSampleServiceBundle", instance_name: "crashed-restarted" } has crashed, but it is not restartable.'
-    FINISHED_STARTING_SERVICE_BUNDLE = 'Request for moving service bundle Fqin { package_name: "com.sdv.google.sample.lifecycle.apex", service_bundle_name: "LifecycleCppSampleServiceBundle", instance_name: "crashed-notification" } to STARTED state was Ok(())'
+    BUNDLE_STARTED_SUCCESS_LOGCAT_TEXT = r'Request for moving service bundle .*: "com.sdv.google.sample.lifecycle.apex", .*: "LifecycleCppSampleServiceBundle", .*: "crashed-restarted" } to STARTED state was Ok(())'
+    BUNDLE_CRASH_NOTIFICATION_LOGCAT_TEXT = r'Service bundle crashed for .*: "com.sdv.google.sample.lifecycle.apex", .*: "LifecycleCppSampleServiceBundle", .*: "crashed-notification" }'
+    BUNDLE_NON_RESTARTABLE_LOGCAT_TEXT = r'Bundle with .*: "com.sdv.google.sample.lifecycle.apex", .*: "LifecycleCppSampleServiceBundle", .*: "crashed-restarted" } has crashed, but it is not restartable.'
+    FINISHED_STARTING_SERVICE_BUNDLE = r'Request for moving service bundle .*: "com.sdv.google.sample.lifecycle.apex", .*: "LifecycleCppSampleServiceBundle", .*: "crashed-notification" } to STARTED state was Ok(())'
 
     def kill_bundle(self, instance_name):
         # Process name for service bundle is constructed as: bundle_name:instance_name
@@ -42,7 +42,7 @@ class SdvE2EOrchestrationRestartBundleCrashedTest(
 
     def wait_for_logcat(self, expected_result, timestamp=None):
         def grep_with_timestamp(sdv_device, expected_result, timestamp):
-            res_timestamp, _ = sdv_device.advance_logcat().find_message_after_timestamp(expected_result, timestamp)
+            res_timestamp, _ = sdv_device.advance_logcat().find_message_after_timestamp(expected_result, timestamp, regex=True)
             return res_timestamp
 
         result = polling.wait_and_return_result(grep_with_timestamp, self.sdv_device, expected_result, timestamp)
