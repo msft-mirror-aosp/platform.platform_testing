@@ -27,7 +27,7 @@ python_test_host {
         ":sdv_test_fw_device_configs",
     ],
     device_first_data: [
-        ":com.sdv.google.sample.diagnostics_update.v2",
+        ":com.android.sdv.sample.diagnostics_update.v2",
     ],
     test_options: {
         unit_test: false,

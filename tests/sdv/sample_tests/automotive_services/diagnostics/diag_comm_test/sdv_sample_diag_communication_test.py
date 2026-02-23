@@ -36,12 +36,12 @@ class SdvSampleDiagCommunicationTest(
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_ENABLE_CONDITIONS_STARTING = [cleandoc(r"""
         Starting interaction with EnableConditions""")]
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_ENABLE_CONDITIONS_LISTENING = [cleandoc(r"""
-        Listening for service units registration by type : com\.sdv\.google\.diagnostics\.event\.EnableCondition""")]
+        Listening for service units registration by type : com\.android\.sdv\.diagnostics\.event\.EnableCondition""")]
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_ENABLE_CONDITIONS_REGISTERED = [
         cleandoc(r"""
-        Service unit registered: instance1:com\.sdv\.oem\.sample\.diagnostics\.DiagnosticsSampleWithEvent/instance / enable-conditions"""),
+        Service unit registered: instance1:com\.android\.sdv\.sample\.oem\.diagnostics\.DiagnosticsSampleWithEvent/instance / enable-conditions"""),
         cleandoc(r"""
-        Discovered unit: instance1:com\.sdv\.oem\.sample\.diagnostics\.DiagnosticsSampleWithEvent/instance : enable-conditions""")]
+        Discovered unit: instance1:com\.android\.sdv\.sample\.oem\.diagnostics\.DiagnosticsSampleWithEvent/instance : enable-conditions""")]
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_ENABLE_CONDITIONS_FREEZING_TEMPERATURE = [cleandoc(r"""
         Enable condition change received: EnableCondition \{
             id: \"freezing_temperature\",
@@ -59,12 +59,12 @@ class SdvSampleDiagCommunicationTest(
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_OPERATION_CYCLES_STARTING = [cleandoc(r"""
         Starting interaction with OperationCycles""")]
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_OPERATION_CYCLES_LISTENING = [cleandoc(r"""
-        Listening for service units registration by type : com\.sdv\.google\.diagnostics\.event\.OperationCycle""")]
+        Listening for service units registration by type : com\.android\.sdv\.diagnostics\.event\.OperationCycle""")]
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_OPERATION_CYCLES_REGISTERED = [
         cleandoc(r"""
-        Service unit registered: instance1:com\.sdv\.oem\.sample\.diagnostics\.DiagnosticsSampleWithEvent/instance / operation-cycles"""),
+        Service unit registered: instance1:com\.android\.sdv\.sample\.oem\.diagnostics\.DiagnosticsSampleWithEvent/instance / operation-cycles"""),
         cleandoc(r"""
-        Discovered unit: instance1:com\.sdv\.oem\.sample\.diagnostics\.DiagnosticsSampleWithEvent/instance : operation-cycles""")]
+        Discovered unit: instance1:com\.android\.sdv\.sample\.oem\.diagnostics\.DiagnosticsSampleWithEvent/instance : operation-cycles""")]
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_OPERATION_CYCLES_IGNITION = [cleandoc(r"""
         Operaction cycle command received: OperationCycle \{
             id: "ignition",
@@ -82,11 +82,11 @@ class SdvSampleDiagCommunicationTest(
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_EVENTS_STARTING = [cleandoc(r"""
         Starting interaction with Events""")]
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_EVENTS_LISTENING = [cleandoc(r"""
-        Listening for service units registration by type : com\.sdv\.google\.diagnostics\.event\.Event""")]
+        Listening for service units registration by type : com\.android\.sdv\.diagnostics\.event\.Event""")]
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_EVENTS_REGISTERED = [cleandoc(r"""
-        Service unit registered: instance1:com\.sdv\.oem\.sample\.diagnostics\.DiagnosticsSampleWithEvent/instance / overheating-event"""),
+        Service unit registered: instance1:com\.android\.sdv\.sample\.oem\.diagnostics\.DiagnosticsSampleWithEvent/instance / overheating-event"""),
                                                                             cleandoc(r"""
-        Discovered unit: instance1:com\.sdv\.oem\.sample\.diagnostics\.DiagnosticsSampleWithEvent/instance : overheating-event""")]
+        Discovered unit: instance1:com\.android\.sdv\.sample\.oem\.diagnostics\.DiagnosticsSampleWithEvent/instance : overheating-event""")]
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_EVENTS_RECEIVED = [
         cleandoc(r"""
         Event received: Event \{
@@ -129,7 +129,7 @@ class SdvSampleDiagCommunicationTest(
         \]""")]
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_EVENTS_FOUND_DECLARATION = [
         cleandoc(r"""
-        Found declaration for event: id: \"overheating\" extended_data_message_name: \"com\.sdv\.oem\.sample\.diagnostics\.OverheatingData\" fault_listener_mask: 1 service_unit_name: \"overheating-event\""""),
+        Found declaration for event: id: \"overheating\" extended_data_message_name: \"com\.android\.sdv\.sample\.oem\.diagnostics\.OverheatingData\" fault_listener_mask: 1 service_unit_name: \"overheating-event\""""),
         cleandoc(r"""
         Event extended data in UDS format: Ok\(
             \[
@@ -149,18 +149,18 @@ class SdvSampleDiagCommunicationTest(
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_DATA_ITEM_INTERACTION_STARTING = [cleandoc(r"""
         Starting interaction with DataItems""")]
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_DATA_ITEM_INTERACTION_LISTENING = [cleandoc(r"""
-        Listening for service units registration by type : com\.sdv\.google\.diagnostics\.data_item\.DataItemService""")]
+        Listening for service units registration by type : com\.android\.sdv\.diagnostics\.data_item\.DataItemService""")]
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_DATA_ITEM_INTERACTION_REGISTERED = [
         cleandoc(r"""
-        Service unit registered: instance1:com\.sdv\.oem\.sample\.diagnostics\.DiagnosticsSampleWithDataItem/instance / com-sdv-google-diagnostics-data-item-data-item-service"""),
+        Service unit registered: instance1:com\.android\.sdv\.sample\.oem\.diagnostics\.DiagnosticsSampleWithDataItem/instance / com-android-sdv-diagnostics-data-item-data-item-service"""),
         cleandoc(r"""
-        Discovered unit: instance1:com\.sdv\.oem\.sample\.diagnostics\.DiagnosticsSampleWithDataItem/instance : com-sdv-google-diagnostics-data-item-data-item-service""")]
+        Discovered unit: instance1:com\.android\.sdv\.sample\.oem\.diagnostics\.DiagnosticsSampleWithDataItem/instance : com-android-sdv-diagnostics-data-item-data-item-service""")]
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_DATA_ITEM_INTERACTION_DIAG_DECLARATION = [
         cleandoc(r"""
-    DataItems diagnostics declaration of a instance1:com\.sdv\.oem\.sample\.diagnostics\.DiagnosticsSampleWithDataItem/instance : \[
+    DataItems diagnostics declaration of a instance1:com\.android\.sdv\.sample\.oem\.diagnostics\.DiagnosticsSampleWithDataItem/instance : \[
         DataItem \{
             id: \"pressure\",
-            message_name: \"com\.sdv\.oem\.sample\.diagnostics\.Pressure\",
+            message_name: \"com\.android\.sdv\.sample\.oem\.diagnostics\.Pressure\",
             is_writable: false,
             special_fields: SpecialFields \{
                 unknown_fields: UnknownFields \{
@@ -175,7 +175,7 @@ class SdvSampleDiagCommunicationTest(
         cleandoc(r"""
     Trying to read data item: DataItem \{
         id: \"pressure\",
-        message_name: \"com\.sdv\.oem\.sample\.diagnostics\.Pressure\",
+        message_name: \"com\.android\.sdv\.sample\.oem\.diagnostics\.Pressure\",
         is_writable: false,
         special_fields: SpecialFields \{
             unknown_fields: UnknownFields \{
@@ -187,37 +187,37 @@ class SdvSampleDiagCommunicationTest(
         \},
     \}""")]
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_DATA_ITEM_INTERACTION_RPC_CALL_PERFORM = [cleandoc(r"""
-        Performing RPC call: com\.sdv\.google\.diagnostics\.data_item\.DataItemService:ReadDataItem""")]
+        Performing RPC call: com\.android\.sdv\.diagnostics\.data_item\.DataItemService:ReadDataItem""")]
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_DATA_ITEM_INTERACTION_RPC_CALL_RESPONSE = [cleandoc(r"""
         Response for RPC call \[ReadDataItem\]: Ok\(ReadDataItemResponse \{ value: \[13, 51, 51, 200, 66\], response_code: POSITIVE_RESPONSE, special_fields: SpecialFields \{ unknown_fields: UnknownFields \{ fields: None \}, cached_size: CachedSize \{ size: 0 \} \} \}\)""")]
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_DATA_ITEM_INTERACTION_RPC_CALL_READ_DATA_ITEM = [cleandoc(r"""
-        Read data item: instance1:com\.sdv\.oem\.sample\.diagnostics\.DiagnosticsSampleWithDataItem/instance\#pressure, proto_value: \[13, 51, 51, 200, 66\], uds_value \[66, 200, 51, 51\]""")]
+        Read data item: instance1:com\.android\.sdv\.sample\.oem\.diagnostics\.DiagnosticsSampleWithDataItem/instance\#pressure, proto_value: \[13, 51, 51, 200, 66\], uds_value \[66, 200, 51, 51\]""")]
 
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_IO_CONTROL_INTERACTION_STARTING = [cleandoc(r"""
         Starting interaction with IoControls""")]
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_IO_CONTROL_INTERACTION_LISTENING = [cleandoc(r"""
-        Listening for service units registration by type : com\.sdv\.google\.diagnostics\.io_control\.IoControlService""")]
+        Listening for service units registration by type : com\.android\.sdv\.diagnostics\.io_control\.IoControlService""")]
 
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_ROUTING_CONTROL_INTERACTION_STARTING = [cleandoc(r"""
         Starting interaction with RoutineControls""")]
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_ROUTING_CONTROL_INTERACTION_LISTENING = [cleandoc(r"""
-        Listening for service units registration by type : com\.sdv\.google\.diagnostics\.routine_control\.RoutineControlService""")]
+        Listening for service units registration by type : com\.android\.sdv\.diagnostics\.routine_control\.RoutineControlService""")]
 
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_FAULT_CONTROL_INTERACTION_STARTING = [cleandoc(r"""
         Starting interaction with FaultListeners""")]
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_FAULT_CONTROL_INTERACTION_LISTENING = [cleandoc(r"""
-        Listening for service units registration by type : com\.sdv\.google\.diagnostics\.fault\.FaultListenerService""")]
+        Listening for service units registration by type : com\.android\.sdv\.diagnostics\.fault\.FaultListenerService""")]
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_FAULT_CONTROL_INTERACTION_REGISTERED = [
         cleandoc(r"""
-        Service unit registered: instance1:com\.sdv\.oem\.sample\.diagnostics\.DiagnosticsSampleWithEvent/instance / overheating-fault"""),
+        Service unit registered: instance1:com\.android\.sdv\.sample\.oem\.diagnostics\.DiagnosticsSampleWithEvent/instance / overheating-fault"""),
         cleandoc(r"""
-        Discovered unit: instance1:com\.sdv\.oem\.sample\.diagnostics\.DiagnosticsSampleWithEvent/instance : overheating-fault""")]
+        Discovered unit: instance1:com\.android\.sdv\.sample\.oem\.diagnostics\.DiagnosticsSampleWithEvent/instance : overheating-fault""")]
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_FAULT_CONTROL_INTERACTION_DIAG_DECLARATION = [
         cleandoc(r"""
-        FaultListeners diagnostics declaration of a instance1:com\.sdv\.oem\.sample\.diagnostics\.DiagnosticsSampleWithEvent/instance : \[
+        FaultListeners diagnostics declaration of a instance1:com\.android\.sdv\.sample\.oem\.diagnostics\.DiagnosticsSampleWithEvent/instance : \[
             Event \{
                 id: \"overheating\",
-                extended_data_message_name: \"com\.sdv\.oem\.sample\.diagnostics\.OverheatingData\",
+                extended_data_message_name: \"com\.android\.sdv\.sample\.oem\.diagnostics\.OverheatingData\",
                 fault_listener_mask: 1,
                 service_unit_name: \"overheating-event\",
                 special_fields: SpecialFields \{
@@ -233,7 +233,7 @@ class SdvSampleDiagCommunicationTest(
         cleandoc(r"""
         Trying to update fault status: Event \{
             id: \"overheating\",
-            extended_data_message_name: \"com\.sdv\.oem\.sample\.diagnostics\.OverheatingData\",
+            extended_data_message_name: \"com\.android\.sdv\.sample\.oem\.diagnostics\.OverheatingData\",
             fault_listener_mask: 1,
             service_unit_name: \"overheating-event\",
             special_fields: SpecialFields \{
@@ -247,7 +247,7 @@ class SdvSampleDiagCommunicationTest(
         \}""")]
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE_LISTEN_TO_FAULT_CONTROL_INTERACTION_RPC_CALL = [
         cleandoc(r"""
-        Performing RPC call: com\.sdv\.google\.diagnostics\.fault\.FaultListenerService:OnFaultStatusChange"""),
+        Performing RPC call: com\.android\.sdv\.diagnostics\.fault\.FaultListenerService:OnFaultStatusChange"""),
         cleandoc(r"""
         Response for RPC call \[OnFaultStatusChange\]: Ok\(OnFaultStatusChangeResponse \{ special_fields: SpecialFields \{ unknown_fields: UnknownFields \{ fields: None \}, cached_size: CachedSize \{ size: 0 \} \} \}\)
         """)]
@@ -266,14 +266,14 @@ class SdvSampleDiagCommunicationTest(
             \},
         \}""")]
     EXPECTED_DUMPSYS_AFTER_EXECUTING_SAMPLE_IO_CONTROL_REGISTERED = [cleandoc(r"""
-        Service unit registered: instance1:com\.sdv\.oem\.sample\.diagnostics\.DiagnosticsProvider1\/default / com-sdv-google-diagnostics-io-control-io-control-service""")]
+        Service unit registered: instance1:com\.android\.sdv\.sample\.oem\.diagnostics\.DiagnosticsProvider1\/default / com-android-sdv-diagnostics-io-control-io-control-service""")]
     EXPECTED_DUMPSYS_AFTER_EXECUTING_SAMPLE_IO_CONTROL_DISCOVERED = [cleandoc(r"""
-        Discovered unit: instance1:com\.sdv\.oem\.sample\.diagnostics\.DiagnosticsProvider1\/default : com-sdv-google-diagnostics-io-control-io-control-service""")]
+        Discovered unit: instance1:com\.android\.sdv\.sample\.oem\.diagnostics\.DiagnosticsProvider1\/default : com-android-sdv-diagnostics-io-control-io-control-service""")]
     EXPECTED_DUMPSYS_AFTER_EXECUTING_SAMPLE_IO_CONTROL_DIAG_DECLARATION = [cleandoc(r"""
-        IoControls diagnostics declaration of a instance1:com\.sdv\.oem\.sample\.diagnostics\.DiagnosticsProvider1\/default : \[
+        IoControls diagnostics declaration of a instance1:com\.android\.sdv\.sample\.oem\.diagnostics\.DiagnosticsProvider1\/default : \[
             InputOutputControlData \{
                 id: \"pressure\",
-                message_name: \"com\.sdv\.oem\.sample\.diagnostics\.Pressure\",
+                message_name: \"com\.android\.sdv\.sample\.oem\.diagnostics\.Pressure\",
                 special_fields: SpecialFields \{
                     unknown_fields: UnknownFields \{
                         fields: None,
@@ -287,7 +287,7 @@ class SdvSampleDiagCommunicationTest(
     EXPECTED_DUMPSYS_AFTER_EXECUTING_SAMPLE_IO_CONTROL_TRY_FREEZE = [cleandoc(r"""
         Trying to freeze current state for: InputOutputControlData \{
             id: \"pressure\",
-            message_name: \"com\.sdv\.oem\.sample\.diagnostics\.Pressure\",
+            message_name: \"com\.android\.sdv\.sample\.oem\.diagnostics\.Pressure\",
             special_fields: SpecialFields \{
                 unknown_fields: UnknownFields \{
                     fields: None,
@@ -299,24 +299,24 @@ class SdvSampleDiagCommunicationTest(
         \}""")]
     EXPECTED_DUMPSYS_AFTER_EXECUTING_SAMPLE_IO_CONTROL_RPC_CALL = [
         cleandoc(r"""
-        Performing RPC call: com\.sdv\.google\.diagnostics\.io_control\.IoControlService:FreezeCurrentState"""),
+        Performing RPC call: com\.android\.sdv\.diagnostics\.io_control\.IoControlService:FreezeCurrentState"""),
         cleandoc(r"""
         Response for RPC call \[FreezeCurrentState\]: Ok\(IoControlResponse \{ value: \[13, 51, 51, 200, 66\], response_code: POSITIVE_RESPONSE, special_fields: SpecialFields \{ unknown_fields: UnknownFields \{ fields: None \}, cached_size: CachedSize \{ size: 0 \} \} \}\)""")]
     EXPECTED_DUMPSYS_AFTER_EXECUTING_SAMPLE_IO_CONTROL_FREEZE = [cleandoc(r"""
-        Freeze current state for: instance1:com\.sdv\.oem\.sample\.diagnostics\.DiagnosticsProvider1\/default\#pressure, proto_response: \[13, 51, 51, 200, 66\], uds_response: \[66, 200, 51, 51\]""")]
+        Freeze current state for: instance1:com\.android\.sdv\.sample\.oem\.diagnostics\.DiagnosticsProvider1\/default\#pressure, proto_response: \[13, 51, 51, 200, 66\], uds_response: \[66, 200, 51, 51\]""")]
 
     EXPECTED_DUMPSYS_AFTER_EXECUTING_SAMPLE_ROUTINE_CONTROL_REGISTERED = [cleandoc(r"""
-        Service unit registered: instance1:com\.sdv\.oem\.sample\.diagnostics\.DiagnosticsProvider1\/default / com-sdv-google-diagnostics-routine-control-routine-control-service""")]
+        Service unit registered: instance1:com\.android\.sdv\.sample\.oem\.diagnostics\.DiagnosticsProvider1\/default / com-android-sdv-diagnostics-routine-control-routine-control-service""")]
     EXPECTED_DUMPSYS_AFTER_EXECUTING_SAMPLE_ROUTINE_CONTROL_DISCOVERED = [cleandoc(r"""
-        Discovered unit: instance1:com\.sdv\.oem\.sample\.diagnostics\.DiagnosticsProvider1\/default : com-sdv-google-diagnostics-routine-control-routine-control-service""")]
+        Discovered unit: instance1:com\.android\.sdv\.sample\.oem\.diagnostics\.DiagnosticsProvider1\/default : com-android-sdv-diagnostics-routine-control-routine-control-service""")]
     EXPECTED_DUMPSYS_AFTER_EXECUTING_SAMPLE_ROUTINE_CONTROL_DIAG_DECLARATION = [cleandoc(r"""
-        RoutinControls diagnostics declaration of a instance1:com\.sdv\.oem\.sample\.diagnostics\.DiagnosticsProvider1\/default : \[
+        RoutinControls diagnostics declaration of a instance1:com\.android\.sdv\.sample\.oem\.diagnostics\.DiagnosticsProvider1\/default : \[
             Routine \{
                 id: \"pressurization\",
                 start: MessageField\(
                     Some\(
                         Method \{
-                            request: \"com\.sdv\.oem\.sample\.diagnostics\.Pressure\",
+                            request: \"com\.android\.sdv\.sample\.oem\.diagnostics\.Pressure\",
                             response: \"google\.protobuf\.Empty\",
                             special_fields: SpecialFields \{
                                 unknown_fields: UnknownFields \{
@@ -377,7 +377,7 @@ class SdvSampleDiagCommunicationTest(
             start: MessageField\(
                 Some\(
                     Method \{
-                        request: \"com\.sdv\.oem\.sample\.diagnostics\.Pressure\",
+                        request: \"com\.android\.sdv\.sample\.oem\.diagnostics\.Pressure\",
                         response: \"google\.protobuf\.Empty\",
                         special_fields: SpecialFields \{
                             unknown_fields: UnknownFields \{
@@ -432,19 +432,19 @@ class SdvSampleDiagCommunicationTest(
             \},
         \}""")]
     EXPECTED_DUMPSYS_AFTER_EXECUTING_SAMPLE_ROUTINE_CONTROL_RPC_CALL = [cleandoc(r"""
-        Performing RPC call: com\.sdv\.google\.diagnostics\.routine_control\.RoutineControlService:StartRoutine""")]
+        Performing RPC call: com\.android\.sdv\.diagnostics\.routine_control\.RoutineControlService:StartRoutine""")]
     EXPECTED_DUMPSYS_AFTER_EXECUTING_SAMPLE_ROUTINE_CONTROL_RPC_RESPONSE = [cleandoc(r"""
         Response for RPC call \[StartRoutine\]: Ok\(RoutineControlResponse \{ routine_info: 0, response: \[\], response_code: POSITIVE_RESPONSE, special_fields: SpecialFields \{ unknown_fields: UnknownFields \{ fields: None \}, cached_size: CachedSize \{ size: 0 \} \} \}\)""")]
     EXPECTED_DUMPSYS_AFTER_EXECUTING_SAMPLE_ROUTINE_CONTROL_TEST_RELEVANT_LOG = [cleandoc(r"""
         \(TEST RELEVANT LOG\) For start method of routine: pressurization, typed response: Empty \{ special_fields: SpecialFields \{ unknown_fields: UnknownFields \{ fields: None \}, cached_size: CachedSize \{ size: 0 \} \} \}""")]
     EXPECTED_DUMPSYS_AFTER_EXECUTING_SAMPLE_ROUTINE_CONTROL_START_ROUTINE = [cleandoc(r"""
-        Start routine: instance1:com\.sdv\.oem\.sample\.diagnostics\.DiagnosticsProvider1\/default\#pressurization, proto_value: \[\], uds_value \[\]""")]
+        Start routine: instance1:com\.android\.sdv\.sample\.oem\.diagnostics\.DiagnosticsProvider1\/default\#pressurization, proto_value: \[\], uds_value \[\]""")]
 
     EXPECTED_DUMPSYS_AFTER_EXECUTING_SAMPLE_FAULT_CONTROL_DIAG_DECLARATION = [cleandoc(r"""
-        FaultListeners diagnostics declaration of a instance1:com\.sdv\.oem\.sample\.diagnostics\.DiagnosticsProvider1\/default : \[
+        FaultListeners diagnostics declaration of a instance1:com\.android\.sdv\.sample\.oem\.diagnostics\.DiagnosticsProvider1\/default : \[
             Event \{
                 id: \"lowpressure\",
-                extended_data_message_name: \"com\.sdv\.oem\.sample\.diagnostics\.LowPressureData\",
+                extended_data_message_name: \"com\.android\.sdv\.sample\.oem\.diagnostics\.LowPressureData\",
                 fault_listener_mask: 3,
                 service_unit_name: \"\",
                 special_fields: SpecialFields \{
@@ -458,7 +458,7 @@ class SdvSampleDiagCommunicationTest(
             \},
             Event \{
                 id: \"pressure-change\",
-                extended_data_message_name: \"com\.sdv\.oem\.sample\.diagnostics\.Pressure\",
+                extended_data_message_name: \"com\.android\.sdv\.sample\.oem\.diagnostics\.Pressure\",
                 fault_listener_mask: 0,
                 service_unit_name: \"pressure-change-publisher\",
                 special_fields: SpecialFields \{
@@ -474,7 +474,7 @@ class SdvSampleDiagCommunicationTest(
     EXPECTED_DUMPSYS_AFTER_EXECUTING_SAMPLE_FAULT_CONTROL_UPDATE_STATUS = [cleandoc(r"""
         Trying to update fault status: Event \{
             id: \"lowpressure\",
-            extended_data_message_name: \"com\.sdv\.oem\.sample\.diagnostics\.LowPressureData\",
+            extended_data_message_name: \"com\.android\.sdv\.sample\.oem\.diagnostics\.LowPressureData\",
             fault_listener_mask: 3,
             service_unit_name: \"\",
             special_fields: SpecialFields \{
@@ -487,13 +487,13 @@ class SdvSampleDiagCommunicationTest(
             \},
         \}""")]
     EXPECTED_DUMPSYS_AFTER_EXECUTING_SAMPLE_FAULT_CONTROL_RPC_CALL = [cleandoc(r"""
-        Performing RPC call: com\.sdv\.google\.diagnostics\.fault\.FaultListenerService:OnFaultStatusChange""")]
+        Performing RPC call: com\.android\.sdv\.diagnostics\.fault\.FaultListenerService:OnFaultStatusChange""")]
     EXPECTED_DUMPSYS_AFTER_EXECUTING_SAMPLE_FAULT_CONTROL_RPC_RESPONSE = [cleandoc(r"""
         Response for RPC call \[OnFaultStatusChange\]: Ok\(OnFaultStatusChangeResponse \{ special_fields: SpecialFields \{ unknown_fields: UnknownFields \{ fields: None \}, cached_size: CachedSize \{ size: 0 \} \} \}\)""")]
     EXPECTED_DUMPSYS_AFTER_EXECUTING_SAMPLE_FAULT_CONTROL_TRY_UPDATE = [cleandoc(r"""
         Trying to update fault status: Event \{
             id: \"pressure-change\",
-            extended_data_message_name: \"com\.sdv\.oem\.sample\.diagnostics\.Pressure\",
+            extended_data_message_name: \"com\.android\.sdv\.sample\.oem\.diagnostics\.Pressure\",
             fault_listener_mask: 0,
             service_unit_name: \"pressure-change-publisher\",
             special_fields: SpecialFields \{
