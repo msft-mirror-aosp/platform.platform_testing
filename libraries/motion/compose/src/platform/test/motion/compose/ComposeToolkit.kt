@@ -17,6 +17,8 @@
 package platform.test.motion.compose
 
 import android.annotation.SuppressLint
+import android.graphics.HardwareRenderer
+import android.os.Build
 import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -80,11 +82,15 @@ import platform.test.screenshot.captureToBitmapAsync
  * Toolkit to support Compose-based [MotionTestRule] tests.
  *
  * @param fixedConfiguration when non-null, applies the specified configuration to the content.
+ * @param disableDrawDuringTest When true, will disable rendering at a [HardwareRenderer] level. On
+ *   by default for cuttlefish emulators, greatly reduces test execution time when using SW
+ *   rendering on emulators.
  */
 class ComposeToolkit(
     val composeContentTestRule: ComposeContentTestRule,
     val testScope: TestScope,
     val fixedConfiguration: FixedConfiguration? = null,
+    val disableDrawDuringTest: Boolean = isCuttlefish(),
 ) {
     internal companion object {
         const val TAG = "ComposeToolkit"
@@ -248,77 +254,87 @@ fun MotionTestRule<ComposeToolkit>.recordMotion(
             }
         }
 
-        var playbackStarted by mutableStateOf(false)
+        val wasDrawingEnabled = HardwareRenderer.isDrawingEnabled()
+        if (toolkit.disableDrawDuringTest && !recordingSpec.captureScreenshots) {
+            HardwareRenderer.setDrawingEnabled(false)
+        }
 
-        mainClock.autoAdvance = false
+        try {
 
-        setContent {
-            EnableMotionTestValueCollection {
-                val fixedConfiguration = toolkit.fixedConfiguration
-                if (fixedConfiguration != null) {
-                    FixedConfigurationProvider(fixedConfiguration) { content(playbackStarted) }
-                } else {
-                    content(playbackStarted)
+            var playbackStarted by mutableStateOf(false)
+
+            mainClock.autoAdvance = false
+
+            setContent {
+                EnableMotionTestValueCollection {
+                    val fixedConfiguration = toolkit.fixedConfiguration
+                    if (fixedConfiguration != null) {
+                        FixedConfigurationProvider(fixedConfiguration) { content(playbackStarted) }
+                    } else {
+                        content(playbackStarted)
+                    }
                 }
             }
-        }
-        Log.i(TAG, "recordMotion() created compose content")
+            Log.i(TAG, "recordMotion() created compose content")
 
-        waitForIdle()
+            waitForIdle()
 
-        val motionControl =
-            MotionControlImpl(
-                toolkit.composeContentTestRule,
-                toolkit.testScope,
-                recordingSpec.motionControl,
+            val motionControl =
+                MotionControlImpl(
+                    toolkit.composeContentTestRule,
+                    toolkit.testScope,
+                    recordingSpec.motionControl,
+                )
+
+            Log.i(TAG, "recordMotion() awaiting readyToPlay")
+
+            // Wait for the test to allow readyToPlay
+            while (!motionControl.readyToPlay) {
+                motionControl.nextFrame()
+            }
+
+            if (recordingSpec.recordBefore) {
+                recordFrame(SupplementalFrameId("before"))
+            }
+            Log.i(TAG, "recordMotion() awaiting recordingStarted")
+
+            playbackStarted = true
+            while (!motionControl.recordingStarted) {
+                motionControl.nextFrame()
+            }
+
+            Log.i(TAG, "recordMotion() begin recording")
+
+            val startFrameTime = mainClock.currentTime
+            while (!motionControl.recordingEnded) {
+                recordFrame(TimestampFrameId(mainClock.currentTime - startFrameTime))
+                motionControl.nextFrame()
+            }
+
+            Log.i(TAG, "recordMotion() end recording")
+
+            mainClock.autoAdvance = true
+            waitForIdle()
+
+            if (recordingSpec.recordAfter) {
+                recordFrame(SupplementalFrameId("after"))
+            }
+
+            val timeSeries =
+                TimeSeries(
+                    frameIdCollector.toList(),
+                    propertyCollector.entries.map { entry -> Feature(entry.key, entry.value) },
+                )
+
+            return create(
+                timeSeries,
+                screenshotCollector
+                    .takeIf { recordingSpec.captureScreenshots }
+                    ?.map { it.asAndroidBitmap() },
             )
-
-        Log.i(TAG, "recordMotion() awaiting readyToPlay")
-
-        // Wait for the test to allow readyToPlay
-        while (!motionControl.readyToPlay) {
-            motionControl.nextFrame()
+        } finally {
+            HardwareRenderer.setDrawingEnabled(wasDrawingEnabled)
         }
-
-        if (recordingSpec.recordBefore) {
-            recordFrame(SupplementalFrameId("before"))
-        }
-        Log.i(TAG, "recordMotion() awaiting recordingStarted")
-
-        playbackStarted = true
-        while (!motionControl.recordingStarted) {
-            motionControl.nextFrame()
-        }
-
-        Log.i(TAG, "recordMotion() begin recording")
-
-        val startFrameTime = mainClock.currentTime
-        while (!motionControl.recordingEnded) {
-            recordFrame(TimestampFrameId(mainClock.currentTime - startFrameTime))
-            motionControl.nextFrame()
-        }
-
-        Log.i(TAG, "recordMotion() end recording")
-
-        mainClock.autoAdvance = true
-        waitForIdle()
-
-        if (recordingSpec.recordAfter) {
-            recordFrame(SupplementalFrameId("after"))
-        }
-
-        val timeSeries =
-            TimeSeries(
-                frameIdCollector.toList(),
-                propertyCollector.entries.map { entry -> Feature(entry.key, entry.value) },
-            )
-
-        return create(
-            timeSeries,
-            screenshotCollector
-                .takeIf { recordingSpec.captureScreenshots }
-                ?.map { it.asAndroidBitmap() },
-        )
     }
 }
 
@@ -535,3 +551,6 @@ private class TouchEventRecorder(
         lastPositions[pointerId] = position
     }
 }
+
+// Another copy of the many ways to figure out whether this is running on a CF.
+private fun isCuttlefish(): Boolean = Build.BOARD == "cutf"
