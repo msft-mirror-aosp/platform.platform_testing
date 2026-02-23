@@ -95,7 +95,7 @@ fun TimeSeriesCaptureScope<SemanticsNodeInteractionsProvider>.on(
     on(
         resolveRelated = {
             try {
-                it.onNode(matcher, useUnmergedTree = useUnmergedTree).fetchSemanticsNode()
+                it.fetchSemanticsNodeMaybeCached(matcher, useUnmergedTree = useUnmergedTree)
             } catch (e: AssertionError) {
                 null
             }

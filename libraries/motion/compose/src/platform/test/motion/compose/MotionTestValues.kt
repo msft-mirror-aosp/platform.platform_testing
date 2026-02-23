@@ -38,7 +38,7 @@ fun <T> SemanticsNodeInteractionsProvider.motionTestValueOfNode(
     motionTestValueKey: MotionTestValueKey<T>,
     matcher: SemanticsMatcher = hasMotionTestValue(motionTestValueKey),
     useUnmergedTree: Boolean = false,
-): T = onNode(matcher, useUnmergedTree).fetchSemanticsNode().get(motionTestValueKey)
+): T = fetchSemanticsNodeMaybeCached(matcher, useUnmergedTree).get(motionTestValueKey)
 
 /**
  * Records a feature by sampling the value associated to [motionTestValueKey], on a single node
