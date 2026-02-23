@@ -28,6 +28,9 @@ import android.platform.helpers.IAutoUserHelper;
 import android.platform.helpers.MultiUserHelper;
 import android.platform.helpers.SettingsConstants;
 import android.platform.scenario.multiuser.MultiUserConstants;
+import android.platform.test.rules.ConditionalIgnore;
+import android.platform.test.rules.ConditionalIgnoreRule;
+import android.platform.test.rules.IgnoreOnPortrait;
 import android.util.Log;
 
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -55,7 +58,7 @@ public class DeleteAdminUser {
     private final Instrumentation mInstrumentation = InstrumentationRegistry.getInstrumentation();
     private final UiAutomation mUiAutomation = mInstrumentation.getUiAutomation();
 
-
+    @Rule public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
 
     private static final String userName = MultiUserConstants.SECONDARY_USER_NAME;
     private static final int WAIT_TIME = 10000;
@@ -77,6 +80,7 @@ public class DeleteAdminUser {
     }
 
     @Test
+    @ConditionalIgnore(condition = IgnoreOnPortrait.class)
     public void testRemoveUser() throws Exception {
         // create new user
         Log.i(LOG_TAG, "Act: Create a non admin user");
