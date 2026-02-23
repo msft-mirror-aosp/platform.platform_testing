@@ -62,3 +62,7 @@ class DeviceHostInteraction(abc.ABC):
     @abc.abstractmethod
     def powerwash(self):
         """Re-initializes and restarts the VM"""
+
+    @abc.abstractmethod
+    def power_button(self):
+        """Trigger power button event on the VM"""
