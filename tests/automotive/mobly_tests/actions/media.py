@@ -13,37 +13,22 @@
 #  limitations under the License.
 
 
-from file_utils_library.file_util import find_resource_path
+
 from image_comparison_library import image_comparison
 from screenshot_util_library.screenshot_util import ScreenshotUtil
-from spectatio_host_tf.core import test_base, test_runner
+from spectatio_host_tf.core import test_runner
+from functional_test.test_base import functional_test_base
 
 import time
 
 
-class MediaKeys(test_base.SpectatioHostBaseTestClass):
-    def setup_class(self):
-        super().setup_class()
-        self.mbs = self.device1.load_bundled_snippets()
-        self.device1.adb.root()
-
-        self.register_service_factory('screenshot', ScreenshotUtil)
-
-    def setup_test(self):
-        pass
-
-    def teardown_test(self):
-        pass
+class MediaKeys(functional_test_base.FunctionalTestBaseClass):
 
     def hardkey_and_screenshot(self, hardkey, screenshot_path, sleep_after=5):
         hardkey()
         time.sleep(0.5)
-        self.screenshot.take_screenshot(
-            screenshot_strategy =
-                ScreenshotUtil.ScreenshotStrategy.DISPLAY_SCREENSHOT_USING_ADB.value,
-            device = self.device1,
-            screenshot_path = screenshot_path,
-        )
+        self.take_device_screenshot(screenshot_path)
+
         if sleep_after:
             time.sleep(sleep_after)
 
@@ -79,40 +64,69 @@ class MediaKeys(test_base.SpectatioHostBaseTestClass):
         self.asserts.assert_false(volume_check.are_images_similar(), "Volume down lowered volume")
 
     def test_mute(self):
-        strategy = ScreenshotUtil.ScreenshotStrategy.DISPLAY_SCREENSHOT_USING_ADB.value
-        first_image = 'first_mute.png'
-        second_image = 'second_mute.png'
 
-        self.hardkey_and_screenshot(self.mbs.hardkeyMute, first_image)
-        self.hardkey_and_screenshot(self.mbs.hardkeyMute, second_image, sleep_after=0)
+        muted_golden_path = self.get_golden_image_path(
+            golden_image_name='muted_golden.png',
+            pkg_name='actions_golden_images'
+        )
 
-        muted_golden_path = find_resource_path('actions_golden_images', 'golden_images/muted.png')
-        unmuted_golden_path = find_resource_path('actions_golden_images', 'golden_images/unmuted.png')
+        unmuted_golden_path = self.get_golden_image_path(
+             golden_image_name='unmuted_golden.png',
+             pkg_name='actions_golden_images'
+        )
+
+        first_mute_test_path = self.get_output_path_for_image(
+            image_name='first_mute.png'
+       )
+
+        second_mute_test_path = self.get_output_path_for_image(
+            image_name='second_mute.png'
+        )
+
+        muted_first_check_diff_path = self.get_output_path_for_image(
+            image_name='muted_first_check_diff_path.png'
+        )
+
+        unmuted_first_check_diff_path = self.get_output_path_for_image(
+           image_name='unmuted_first_check_diff_path.png'
+        )
+
+        second_check_diff_path = self.get_output_path_for_image(
+            image_name='second_check_diff_path.png'
+        )
+        self.hardkey_and_screenshot(self.mbs.hardkeyMute, self.first_mute_test_path)
+        self.hardkey_and_screenshot(self.mbs.hardkeyMute, self.second_mute_test_path, sleep_after=0)
 
         # todo : cf-specific. externalize for other platforms. b/472553534
         ICON_AREA = (24, 37, 57, 70)
-        muted_first_check = image_comparison.CompareImagesUsingPIL(
-            first_image,
-            muted_golden_path,
-            include_area=ICON_AREA,
+        muted_first = self.compare_images(
+              muted_golden_path,
+              first_mute_test_path,
+              muted_first_check_diff_path,
+              include_area=ICON_AREA
         )
-        unmuted_first_check = image_comparison.CompareImagesUsingPIL(
-            first_image,
-            unmuted_golden_path,
-            include_area=ICON_AREA,
+
+        unmuted_first = self.compare_images(
+              unmuted_golden_path,
+              first_mute_test_path,
+              unmuted_first_check_diff_path,
+              include_area=ICON_AREA
         )
-        muted_first = muted_first_check.are_images_similar()
-        unmuted_first = unmuted_first_check.are_images_similar()
+
         self.asserts.assert_true(muted_first or unmuted_first, "Mute button shows sound icon")
         self.asserts.assert_true(muted_first != unmuted_first, "Sanity check (muted != unmuted)")
 
-        second_golden = unmuted_golden_path if muted_first else muted_golden_path
-        second_check = image_comparison.CompareImagesUsingPIL(
-            second_image,
+        second_golden = unmuted_golden_path if muted_first else first_mute_test_path
+
+        second_check = self.compare_images(
             second_golden,
-            include_area=ICON_AREA,
+            second_mute_test_path,
+            second_check_diff_path,
+            include_area=ICON_AREA
         )
+
         self.asserts.assert_true(second_check.are_images_similar(), "Second mute press toggles back")
+
 
 if __name__ == '__main__':
     test_runner.run()

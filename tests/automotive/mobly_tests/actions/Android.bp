@@ -40,7 +40,7 @@ python_test_host {
         "gears.py",
     ],
     libs: [
-        "spectatio_host_tf_lib",
+        "functional_test_library",
     ],
     test_suites: [
         "catbox",
@@ -48,6 +48,9 @@ python_test_host {
     test_options: {
         unit_test: false,
     },
+    defaults: [
+        "spectatio_host_tf_defaults",
+    ],
     device_common_data: [
         ":AutomotiveSnippet",
         "actions_config.yaml",
@@ -63,10 +66,7 @@ python_test_host {
     ],
     libs: [
         "actions_golden_images_lib",
-        "file_utils_library",
-        "image_comparison_library",
-        "screenshot_util_library",
-        "spectatio_host_tf_lib",
+        "functional_test_library",
     ],
     test_suites: [
         "catbox",
@@ -87,10 +87,7 @@ python_test_host {
     ],
     libs: [
         "actions_golden_images_lib",
-        "file_utils_library",
-        "image_comparison_library",
-        "screenshot_util_library",
-        "spectatio_host_tf_lib",
+        "functional_test_library",
     ],
     test_suites: [
         "catbox",
@@ -115,10 +112,7 @@ python_test_host {
     ],
     libs: [
         "actions_golden_images_lib",
-        "file_utils_library",
-        "image_comparison_library",
-        "screenshot_util_library",
-        "spectatio_host_tf_lib",
+        "functional_test_library",
     ],
     test_suites: [
         "catbox",

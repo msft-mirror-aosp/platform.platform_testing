@@ -15,48 +15,43 @@
 from file_utils_library.file_util import find_resource_path
 from image_comparison_library import image_comparison
 from screenshot_util_library.screenshot_util import ScreenshotUtil
-from spectatio_host_tf.core import test_base, test_runner
+from spectatio_host_tf.core import test_runner
+from functional_test.test_base import functional_test_base
 
 import time
 
-class VhalSensors(test_base.SpectatioHostBaseTestClass):
-    def setup_class(self):
-        super().setup_class()
-        self.mbs = self.device1.load_bundled_snippets()
-        self.device1.adb.root()
-
-        self.register_service_factory('screenshot', ScreenshotUtil)
-
-    def setup_test(self):
-        pass
-
-    def teardown_test(self):
-        pass
+class VhalSensors(functional_test_base.FunctionalTestBaseClass):
 
     def test_night_mode(self):
         """Turn night mode on and off and check that the HUD responds."""
         strategy = ScreenshotUtil.ScreenshotStrategy.DISPLAY_SCREENSHOT_USING_ADB.value
 
-        self.mbs.pressHome()
-        self.mbs.setNightMode("true")
-        night_test_path = 'nightmode.png'
-        ANIMATION_WAIT_SECONDS = 5
-        time.sleep(ANIMATION_WAIT_SECONDS)
-        night_golden_path = find_resource_path('actions_golden_images', 'golden_images/nightmode_golden.png')
-        self.screenshot.take_screenshot(
-            screenshot_strategy = strategy,
-            device = self.device1,
-            screenshot_path = night_test_path,
+        nightmode_golden_path = self.get_golden_image_path(
+                  golden_image_name='nightmode_golden.png',
+                  pkg_name='actions_golden_images'
         )
 
-        night_check = image_comparison.CompareImagesUsingMSE(
-            night_test_path,
-            night_golden_path,
-            diff_threshold=0.5,
+        nightmode_test_path = self.get_output_path_for_image(
+                 image_name='nightmode.png'
+        )
+
+        nightmode_diff_path = self.get_output_path_for_image(
+                 image_name='nightmode_diff.png'
+        )
+
+        self.mbs.pressHome()
+        self.mbs.setNightMode("true")
+
+        ANIMATION_WAIT_SECONDS = 5
+        time.sleep(ANIMATION_WAIT_SECONDS)
+
+        self.take_device_screenshot(nightmode_test_path)
+        is_similar = self.compare_images(
+            nightmode_golden_path,
+            nightmode_test_path,
+            nightmode_diff_path,
             include_area=(312, 57, 1080, 528),
         )
-        is_similar = night_check.are_images_similar()
-        night_check.save_diff_image('nightmode_diff.png')
         self.asserts.assert_true(is_similar, "Night mode matches golden")
 
 
