@@ -194,14 +194,25 @@ constructor(
                 matchedLayers
                     .filterNot { it.isVisible }
                     .filterNot { it.isAnimationLeash }
-                    .map { Fact(it.debugName, it.visibilityReason.joinToString()) }
+                    .map { "${it.debugName} (${it.visibilityReason.joinToString()})" }
+
+            val actuallyVisible =
+                subjects
+                    .map { it.layer }
+                    .filter { it.isVisible && !componentMatcher.layerMatchesAnyOf(it) }
+                    .map { it.debugName }
+
             val errorMsgBuilder =
                 errorMsgBuilder()
                     .forIncorrectVisibility(
                         componentMatcher.toLayerIdentifier(),
                         expectElementVisible = true,
                     )
-                    .setActual(failedEntries)
+                    .addSection(
+                        "Occurrences of ${componentMatcher.toLayerIdentifier()}",
+                        failedEntries,
+                    )
+                    .addSection("Actually visible", actuallyVisible)
             throw IncorrectVisibilityException(errorMsgBuilder)
         }
     }
@@ -231,14 +242,21 @@ constructor(
                 .filterLayers(layers)
                 .filter { it.isVisible }
                 .filterNot { it.isAnimationLeash }
-                .map { Fact("Is visible", it.debugName) }
+                .map { it.debugName }
+
+        val actuallyVisible =
+            layers
+                .filter { it.isVisible && !componentMatcher.layerMatchesAnyOf(it) }
+                .map { it.debugName }
+
         val errorMsgBuilder =
             errorMsgBuilder()
                 .forIncorrectVisibility(
                     componentMatcher.toLayerIdentifier(),
                     expectElementVisible = false,
                 )
-                .setActual(failedEntries)
+                .addSection("Occurrences of ${componentMatcher.toLayerIdentifier()}", failedEntries)
+                .addSection("Actually visible", actuallyVisible)
         throw IncorrectVisibilityException(errorMsgBuilder)
     }
 
