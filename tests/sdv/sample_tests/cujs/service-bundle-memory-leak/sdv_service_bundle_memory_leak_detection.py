@@ -27,6 +27,7 @@ import math
 import time
 from absl.testing import parameterized
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
+from sdv_test_fw.verification import polling
 
 
 class SdvSampleCujMemoryLeakDetection(
@@ -149,7 +150,11 @@ class SdvSampleCujMemoryLeakDetection(
         """
         self.sdv_service_bundle(sdv_device, service_bundle_name, 'create')
         created_log_message = self.CREATED_LOG.format(fqn=service_bundle_name)
-        self.wait_for_logcat(sdv_device, created_log_message)
+        polling.wait_and_verify_expected_logs(
+            sdv_device.adb(),
+            created_log_message,
+            logcat_args=self.SAMPLES_LOGCAT_ARGS,
+        )
         return self.get_service_bundle_pid(sdv_device, created_log_message)
 
     def detect_memory_usage(self, sdv_device, pid):
@@ -167,40 +172,6 @@ class SdvSampleCujMemoryLeakDetection(
         )
         return int(rss_result.split()[1])
 
-    # TODO(b/382058513): migrate to framework implementation `wait_for_logcat` when ready.
-    def wait_for_logcat(
-        self,
-        sdv_device,
-        grep_text,
-        grep_args=None,
-        timeout=30,
-        poll_interval=0.1,
-    ):
-        """Polls the logcat output for a specific text until found or timeout.
-
-        Args:
-            sdv_device: The device to wait for logcat.
-            grep_text: The text to search for in the logcat output.
-            grep_args: The argument to be passed to grep command.
-            timeout: The maximum time (in seconds) to wait.
-            poll_interval: The time (in seconds) between polls.
-
-        Returns:
-            True if grep matched at least one logcat output
-            False if grep matched no logcat output within the timeout
-        """
-        deadline = time.perf_counter() + timeout
-        while time.perf_counter() < deadline:
-            logcat_grep_result = sdv_device.adb().grep_from_logcat(
-                grep=grep_text,
-                logcat_args=self.SAMPLES_LOGCAT_ARGS,
-                grep_args=grep_args,
-            )
-            if logcat_grep_result != '':
-                return True
-            time.sleep(poll_interval)
-        return False
-
     ################################################
     ##           Assert-like validators.          ##
     ################################################
@@ -213,14 +184,16 @@ class SdvSampleCujMemoryLeakDetection(
             grep_text: The text to search for in the logcat output.
             assert_msg: The failure assertion message.
         """
-        if not self.wait_for_logcat(sdv_device, grep_text):
-            logcat_grep_result = sdv_device.grep_from_logcat(
+        found_logs = polling.wait_and_return_result(
+            lambda: sdv_device.adb().grep_from_logcat(grep_text, self.SAMPLES_LOGCAT_ARGS) or None,
+        )
+
+        if found_logs is None:
+            logcat_grep_result = sdv_device.adb().grep_from_logcat(
                 '', self.SAMPLES_LOGCAT_ARGS
             )
-            asserts.assert_in(
-                grep_text,
-                logcat_grep_result,
-                assert_msg + '. Samples logcat: ' + logcat_grep_result,
+            asserts.fail(
+                f"{assert_msg}. Samples logcat: {logcat_grep_result}"
             )
 
     def assert_memory_usage(self, sdv_device, pid, memory_maximum):
