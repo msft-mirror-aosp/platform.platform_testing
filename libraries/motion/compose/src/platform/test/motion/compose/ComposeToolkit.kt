@@ -23,12 +23,12 @@ import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.platform.ViewRootForTest
 import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -40,15 +40,11 @@ import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.junit4.v2.createComposeRule
-import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.IntSize
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
-import kotlin.math.roundToInt
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -249,6 +245,7 @@ data class ComposeRecordingSpec(
  * The animation is recorded between flipping [content]'s `play` parameter to `true`, until the
  * [ComposeRecordingSpec.motionControl] finishes.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 fun MotionTestRule<ComposeToolkit>.recordMotion(
     content: @Composable (play: Boolean) -> Unit,
     recordingSpec: ComposeRecordingSpec,
@@ -293,7 +290,9 @@ fun MotionTestRule<ComposeToolkit>.recordMotion(
 
             mainClock.autoAdvance = false
 
+            lateinit var animationCoroutineScope: CoroutineScope
             setContent {
+                animationCoroutineScope = rememberCoroutineScope()
                 EnableMotionTestValueCollection {
                     val fixedConfiguration = toolkit.fixedConfiguration
                     if (fixedConfiguration != null) {
@@ -312,6 +311,7 @@ fun MotionTestRule<ComposeToolkit>.recordMotion(
                         toolkit.composeContentTestRule,
                         toolkit.testScope,
                         recordingSpec.motionControl,
+                        animationCoroutineScope,
                     )
                     .also { nodeProvider = it }
 
@@ -382,11 +382,12 @@ enum class MotionControlState {
     Ended,
 }
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, ExperimentalTestApi::class)
 private class MotionControlImpl(
     val composeTestRule: ComposeTestRule,
     val testScope: TestScope,
     val motionControl: MotionControl,
+    animationCoroutineScope: CoroutineScope,
 ) :
     MotionControlScope,
     SemanticsNodeInteractionsProvider by composeTestRule,
@@ -396,6 +397,7 @@ private class MotionControlImpl(
     private lateinit var delayReadyToPlayJob: Job
     private lateinit var delayRecordingJob: Job
     private lateinit var recordingJob: Job
+    private var frameOffsetMillis: Long? = null
 
     private val frameEmitter = MutableStateFlow<Long>(0)
     private val onFrame = frameEmitter.asStateFlow()
@@ -425,6 +427,36 @@ private class MotionControlImpl(
                 else -> false
             }
 
+    init {
+        animationCoroutineScope.launch {
+            // Request frames during the motion recording. The reasons are two-fold:
+            // - the tight withFrameNanos() loop ensures a frame is immediately scheduled,
+            //   and so will happen frameDelayMillis later. Without that, a frame might be
+            //   scheduled frameDelayMillis after the next input, which could result in
+            //   irregular frame times
+            // - without scheduling a frame, the main clock has no awaiters. So, whether a
+            //   frame is produced during [performTouchInputAsync] depends on accidental side
+            //   effects - for example if a recomposition is required, or an animation is
+            //   running. The measureAndLayout phase is unconditionally run whenever a frame is
+            //   triggered, but it's not change-observed in the test implementation. Hence,
+            //   if the tests changes Snapshot state that is read in measureAndLayout only,
+            //   no frame would be produced.
+            while (!recordingEnded) {
+                withFrameMillis {
+                    // Frames must now be scheduled within regular frameDelayMillis intervals.
+                    val computedFrameTimeOffset = it % frameDurationMillis
+                    if (frameOffsetMillis == null) {
+                        frameOffsetMillis = computedFrameTimeOffset
+                    } else {
+                        check(computedFrameTimeOffset == frameOffsetMillis) {
+                            "frameTimeOffset changed from $frameOffsetMillis to $computedFrameTimeOffset"
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     fun nextFrame() {
         allNodesCache = null
         allNodesUnmergedCache = null
@@ -437,7 +469,7 @@ private class MotionControlImpl(
             }
 
             MotionControlState.WaitingToPlay -> {
-                if (delayReadyToPlayJob.isCompleted) {
+                if (delayReadyToPlayJob.isCompleted && frameOffsetMillis != null) {
                     delayRecordingJob = motionControl.delayRecording.launch()
                     state = MotionControlState.WaitingToRecord
                 }
@@ -487,34 +519,18 @@ private class MotionControlImpl(
         gestureControl: TouchInjectionScope.() -> Unit,
     ) {
         val node = onNode.fetchSemanticsNode()
-        val density = node.layoutInfo.density
-        val viewConfiguration = node.layoutInfo.viewConfiguration
-        val visibleSize =
-            with(node.boundsInRoot) { IntSize(width.roundToInt(), height.roundToInt()) }
 
-        val touchEventRecorder = TouchEventRecorder(density, viewConfiguration, visibleSize)
-        gestureControl(touchEventRecorder)
+        val rootForTest = fetchSemanticsNodeMaybeCached(isRoot()).root as ViewRootForTest
 
-        val recordedEntries = touchEventRecorder.recordedEntries
-        for (entry in recordedEntries) {
-            when (entry) {
-                is TouchEventRecorderEntry.AdvanceTime ->
-                    awaitDelay(entry.durationMillis.milliseconds)
-
-                is TouchEventRecorderEntry.Cancel ->
-                    onNode.performTouchInput { cancel(delayMillis = 0) }
-
-                is TouchEventRecorderEntry.Down ->
-                    onNode.performTouchInput { down(entry.pointerId, entry.position) }
-
-                is TouchEventRecorderEntry.Move ->
-                    onNode.performTouchInput { move(delayMillis = 0) }
-
-                is TouchEventRecorderEntry.Up -> onNode.performTouchInput { up(entry.pointerId) }
-                is TouchEventRecorderEntry.UpdatePointerTo ->
-                    onNode.performTouchInput { updatePointerTo(entry.pointerId, entry.position) }
-            }
-        }
+        composeTestRule.doPerformTouchInputAsync(
+            onSemanticsNode = node,
+            gestureControl = gestureControl,
+            root = rootForTest,
+            frameOffsetMillis = checkNotNull(frameOffsetMillis),
+        )
+        // doPerformTouchInputAsync returned after dispatching the last event. That is 1ms before
+        // the next frame. Thus, the next frame needs to be awaited.
+        awaitFrames(1)
     }
 
     private fun MotionControlFn.launch(): Job {
@@ -551,75 +567,11 @@ private class MotionControlImpl(
     }
 }
 
-/** Records the invocations of the [TouchInjectionScope] methods. */
-private sealed interface TouchEventRecorderEntry {
-
-    class AdvanceTime(val durationMillis: Long) : TouchEventRecorderEntry
-
-    object Cancel : TouchEventRecorderEntry
-
-    class Down(val pointerId: Int, val position: Offset) : TouchEventRecorderEntry
-
-    object Move : TouchEventRecorderEntry
-
-    class Up(val pointerId: Int) : TouchEventRecorderEntry
-
-    class UpdatePointerTo(val pointerId: Int, val position: Offset) : TouchEventRecorderEntry
-}
-
-private class TouchEventRecorder(
-    density: Density,
-    override val viewConfiguration: ViewConfiguration,
-    override val visibleSize: IntSize,
-) : TouchInjectionScope, Density by density {
-
-    val lastPositions = mutableMapOf<Int, Offset>()
-    val recordedEntries = mutableListOf<TouchEventRecorderEntry>()
-
-    override fun advanceEventTime(durationMillis: Long) {
-        if (durationMillis > 0) {
-            recordedEntries.add(TouchEventRecorderEntry.AdvanceTime(durationMillis))
-        }
-    }
-
-    override fun cancel(delayMillis: Long) {
-        advanceEventTime(delayMillis)
-        recordedEntries.add(TouchEventRecorderEntry.Cancel)
-    }
-
-    override fun currentPosition(pointerId: Int): Offset? {
-        return lastPositions[pointerId]
-    }
-
-    override fun down(pointerId: Int, position: Offset) {
-        recordedEntries.add(TouchEventRecorderEntry.Down(pointerId, position))
-        lastPositions[pointerId] = position
-    }
-
-    override fun move(delayMillis: Long) {
-        advanceEventTime(delayMillis)
-        recordedEntries.add(TouchEventRecorderEntry.Move)
-    }
-
-    @ExperimentalTestApi
-    override fun moveWithHistoryMultiPointer(
-        relativeHistoricalTimes: List<Long>,
-        historicalCoordinates: List<List<Offset>>,
-        delayMillis: Long,
-    ) {
-        TODO("Not yet supported")
-    }
-
-    override fun up(pointerId: Int) {
-        recordedEntries.add(TouchEventRecorderEntry.Up(pointerId))
-        lastPositions.remove(pointerId)
-    }
-
-    override fun updatePointerTo(pointerId: Int, position: Offset) {
-        recordedEntries.add(TouchEventRecorderEntry.UpdatePointerTo(pointerId, position))
-        lastPositions[pointerId] = position
-    }
-}
-
 // Another copy of the many ways to figure out whether this is running on a CF.
 private fun isCuttlefish(): Boolean = Build.BOARD == "cutf"
+
+/**
+ * The duration of a frame in a compose test. This is always 16ms, but its hard to get this number
+ * from compose, so copying our own constant.
+ */
+internal const val frameDurationMillis = 16

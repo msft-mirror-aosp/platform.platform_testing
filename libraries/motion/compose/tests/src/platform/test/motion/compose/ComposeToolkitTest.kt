@@ -37,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -51,11 +52,14 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
+import androidx.compose.ui.test.swipeRight
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.IterableSubject
 import com.google.common.truth.Truth.assertThat
 import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.junit.Rule
 import org.junit.Test
@@ -625,6 +629,143 @@ class ComposeToolkitTest {
             // needs all 100 features, and needs to finish within the test timeout (it only does
             // that with useCachedSemanticNodeFetcher == true)
             assertThat(motion.timeSeries.features.keys).hasSize(100)
+        }
+
+    @Test
+    fun asyncTouchInput_generatesFrames_evenWhenNotHandled() =
+        motionRule.runTest {
+            var recompositionCount = 0
+            val motion =
+                recordMotion(
+                    content = {
+                        recompositionCount++
+                        Box(Modifier.testTag("box").size(100.dp))
+                    },
+                    ComposeRecordingSpec(
+                        MotionControl {
+                            performTouchInputAsync(onNodeWithTag("box")) {
+                                swipeRight(durationMillis = 6 * 16)
+                            }
+                        },
+                        recordBefore = false,
+                        recordAfter = false,
+                    ) {},
+                )
+
+            assertThat(motion.timeSeries.frameIds).hasSize(7)
+            assertThat(recompositionCount).isEqualTo(1)
+        }
+
+    @Test
+    fun asyncTouchInput_pointerInput_invokedPerFrame() =
+        motionRule.runTest {
+            val frameEvents = mutableListOf<String>()
+            val pointerEventsType = DataPointTypes.listOf(DataPointTypes.string)
+
+            val motion =
+                recordMotion(
+                    content = {
+                        Box(
+                            Modifier.testTag("box")
+                                .pointerInput(Unit) {
+                                    awaitPointerEventScope {
+                                        while (true) {
+                                            frameEvents.add(awaitPointerEvent().type.toString())
+                                        }
+                                    }
+                                }
+                                .size(100.dp)
+                        )
+                    },
+                    ComposeRecordingSpec(
+                        MotionControl {
+                            performTouchInputAsync(onNodeWithTag("box")) {
+                                swipeRight(durationMillis = 4 * 16)
+                            }
+                        },
+                        recordBefore = false,
+                        recordAfter = true,
+                    ) {
+                        feature("frameEvents") {
+                            pointerEventsType.makeDataPoint(frameEvents.toList()).also {
+                                frameEvents.clear()
+                            }
+                        }
+                    },
+                )
+
+            assertThat(motion).timeSeriesMatchesGolden()
+        }
+
+    @Test
+    fun asyncTouchInput_pointerInput_coroutineContinuation_executedBeforeWithFrameNanos() =
+        motionRule.runTest {
+            val idsType = DataPointTypes.listOf(DataPointTypes.int)
+
+            // verify that any pending (resumed but not yet executed) continuations are executed
+            // before
+            // the once-per-frame work of running the MonotonicFrameClock.withFrameNanos.
+
+            // This test launches coroutines and passes markers via channels. The expected order of
+            // these events matches and is verified by pointerInput_invokedPerFrame
+            val channel = Channel<Int>(capacity = Channel.UNLIMITED)
+            val batchInputEventIds = mutableListOf<Int>()
+            val withFrameNanosEventIds = mutableListOf<Int>()
+
+            val motion =
+                recordMotion(
+                    content = {
+                        Box(
+                            Modifier.testTag("box")
+                                .pointerInput(Unit) {
+                                    coroutineScope {
+                                        awaitPointerEventScope {
+                                            var eventCounter = 0
+                                            while (true) {
+                                                awaitPointerEvent()
+                                                val eventId = eventCounter++
+                                                batchInputEventIds.add(eventId)
+
+                                                launch { channel.send(eventId) }
+                                            }
+                                        }
+                                    }
+                                }
+                                .size(100.dp)
+                        )
+                        LaunchedEffect(channel) {
+                            while (true) {
+                                val eventId = channel.receive()
+                                launch { withFrameNanos { withFrameNanosEventIds.add(eventId) } }
+                            }
+                        }
+                    },
+                    ComposeRecordingSpec(
+                        MotionControl {
+                            performTouchInputAsync(onNodeWithTag("box")) {
+                                swipeRight(durationMillis = 4 * 16)
+                            }
+                            performTouchInputAsync(onNodeWithTag("box")) {
+                                swipeRight(durationMillis = 4 * 16)
+                            }
+                        },
+                        recordBefore = false,
+                        recordAfter = true,
+                    ) {
+                        feature("batchInputEventIds") {
+                            idsType.makeDataPoint(batchInputEventIds.toList()).also {
+                                batchInputEventIds.clear()
+                            }
+                        }
+                        feature("withFrameNanosEventIds") {
+                            idsType.makeDataPoint(withFrameNanosEventIds.toList()).also {
+                                withFrameNanosEventIds.clear()
+                            }
+                        }
+                    },
+                )
+
+            assertThat(motion).timeSeriesMatchesGolden()
         }
 
     /** @see assertThatFrameCountValues */
