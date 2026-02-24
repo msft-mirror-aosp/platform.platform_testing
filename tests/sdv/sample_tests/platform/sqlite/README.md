@@ -15,7 +15,7 @@
 
 ## Sample
 
-This test automates the [SQLite sample](/system/software_defined_vehicle/platform/samples/sqlite/README.md).
+This test automates the [SQLite sample](/system/software_defined_vehicle/samples/sqlite/README.md).
 
 ## Test Execution
 

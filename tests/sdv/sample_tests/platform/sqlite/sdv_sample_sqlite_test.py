@@ -22,8 +22,8 @@ from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 
 class SdvSampleSQLiteTest(sdv_base_test.SdvBaseTestClass):
 
-  START_SAMPLE_COMMAND = 'sdv_service_bundle start local-vm:com.sdv.google.sample.sqlite.{service_bundle}/instance-1'
-  DESTROY_SAMPLE_COMMAND = 'sdv_service_bundle destroy local-vm:com.sdv.google.sample.sqlite.{service_bundle}/instance-1'
+  START_SAMPLE_COMMAND = 'sdv_service_bundle start local-vm:com.android.sdv.sample.sqlite.{service_bundle}/instance-1'
+  DESTROY_SAMPLE_COMMAND = 'sdv_service_bundle destroy local-vm:com.android.sdv.sample.sqlite.{service_bundle}/instance-1'
   RUST_SERVICE_BUNDLE = 'SQliteRustSampleServiceBundle'
   CPP_SERVICE_BUNDLE = 'SQliteCppSampleServiceBundle'
   LOGCAT_GREP_TEXT_RUST = 'sqlite_rust_sample'
