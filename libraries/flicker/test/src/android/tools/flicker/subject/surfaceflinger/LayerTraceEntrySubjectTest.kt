@@ -296,7 +296,8 @@ class LayerTraceEntrySubjectTest {
 
         subject.contains(component)
 
-        assertFail("Found: com.simple.test.app1") { subject.notContains(component) }
+        val error = assertThrows<AssertionError> { subject.notContains(component) }
+        Truth.assertThat(error).hasMessageThat().contains("Found: com.simple.test.app1 (Layer#")
     }
 
     @Test
@@ -397,7 +398,7 @@ class LayerTraceEntrySubjectTest {
 
         Truth.assertThat(error).hasMessageThat().contains("Searching for:")
         Truth.assertThat(error).hasMessageThat().contains("Found:")
-        Truth.assertThat(error).hasMessageThat().contains(layerName)
+        Truth.assertThat(error).hasMessageThat().contains("$layerName (Layer#")
         Truth.assertThat(error).hasMessageThat().doesNotContain(leashName)
     }
 
@@ -424,7 +425,7 @@ class LayerTraceEntrySubjectTest {
 
         Truth.assertThat(error).hasMessageThat().contains("Searching for:")
         Truth.assertThat(error).hasMessageThat().contains("Found:")
-        Truth.assertThat(error).hasMessageThat().contains(layerName)
+        Truth.assertThat(error).hasMessageThat().contains("$layerName (Layer#")
         Truth.assertThat(error).hasMessageThat().doesNotContain(leashName)
     }
 
@@ -451,7 +452,7 @@ class LayerTraceEntrySubjectTest {
 
         Truth.assertThat(error).hasMessageThat().contains("Searching for:")
         Truth.assertThat(error).hasMessageThat().contains("Found:")
-        Truth.assertThat(error).hasMessageThat().contains(layerName)
+        Truth.assertThat(error).hasMessageThat().contains("$layerName (Layer#")
         Truth.assertThat(error).hasMessageThat().doesNotContain(leashName)
     }
 

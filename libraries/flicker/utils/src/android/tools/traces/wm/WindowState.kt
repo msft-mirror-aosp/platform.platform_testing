@@ -49,6 +49,10 @@ class WindowState(
     override val isVisible: Boolean = windowContainer.isVisible
     var isAppWindow = false
 
+    /** A name that can be used to identify the window in debug messages */
+    val debugName: String
+        get() = "$name (Window#$token)"
+
     override val isFullscreen: Boolean
         get() = this.attributes.flags.and(PlatformConsts.FLAG_FULLSCREEN) > 0
 

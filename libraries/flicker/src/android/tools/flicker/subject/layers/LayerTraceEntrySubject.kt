@@ -177,7 +177,7 @@ constructor(
                         componentMatcher.toLayerIdentifier(),
                         expectElementExists = false,
                     )
-                    .setActual(foundElements.map { Fact("Found", it) })
+                    .setActual(foundElements.map { Fact("Found", it.debugName) })
             throw InvalidElementException(errorMsgBuilder)
         }
     }
@@ -194,7 +194,7 @@ constructor(
                 matchedLayers
                     .filterNot { it.isVisible }
                     .filterNot { it.isAnimationLeash }
-                    .map { Fact(it.name, it.visibilityReason.joinToString()) }
+                    .map { Fact(it.debugName, it.visibilityReason.joinToString()) }
             val errorMsgBuilder =
                 errorMsgBuilder()
                     .forIncorrectVisibility(
@@ -231,7 +231,7 @@ constructor(
                 .filterLayers(layers)
                 .filter { it.isVisible }
                 .filterNot { it.isAnimationLeash }
-                .map { Fact("Is visible", it.name) }
+                .map { Fact("Is visible", it.debugName) }
         val errorMsgBuilder =
             errorMsgBuilder()
                 .forIncorrectVisibility(
@@ -257,7 +257,11 @@ constructor(
             return@apply
         }
 
-        val failedEntries = componentMatcher.filterLayers(layers).filterNot { it.isAnimationLeash }
+        val failedEntries =
+            componentMatcher
+                .filterLayers(layers)
+                .filterNot { it.isAnimationLeash }
+                .map { it.debugName }
         val errorMsgBuilder =
             errorMsgBuilder()
                 .forIncorrectOcclusion(
@@ -293,7 +297,7 @@ constructor(
                         matchingSubjects
                             .filter { it.isInvisible }
                             .filterNot { it.layer.isAnimationLeash }
-                            .map { Fact(it.name, it.visibilityReason.joinToString()) }
+                            .map { Fact(it.layer.debugName, it.visibilityReason.joinToString()) }
                     )
             }
 
@@ -313,7 +317,7 @@ constructor(
                 errorMsgBuilder()
                     .forInvalidProperty("Color")
                     .setExpected("Not empty")
-                    .setActual(targets.map { Fact(it.name, it.color) })
+                    .setActual(targets.map { Fact(it.debugName, it.color) })
             throw InvalidPropertyException(errorMsgBuilder)
         }
     }
@@ -328,7 +332,7 @@ constructor(
                 errorMsgBuilder()
                     .forInvalidProperty("Color")
                     .setExpected(emptyColor().toString())
-                    .setActual(targets.map { Fact(it.name, it.color) })
+                    .setActual(targets.map { Fact(it.debugName, it.color) })
             throw InvalidPropertyException(errorMsgBuilder)
         }
     }

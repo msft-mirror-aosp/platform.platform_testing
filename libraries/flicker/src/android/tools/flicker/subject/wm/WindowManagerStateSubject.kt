@@ -234,7 +234,7 @@ constructor(
                 val errorMsgBuilder =
                     errorMsgBuilder()
                         .forInvalidProperty("Top visible app window")
-                        .setActual(topVisibleAppWindow.name)
+                        .setActual(topVisibleAppWindow.debugName)
                         .setExpected(componentMatcher.toWindowIdentifier())
                 throw InvalidPropertyException(errorMsgBuilder)
             }
@@ -251,8 +251,8 @@ constructor(
             val topWindow = subjects.first { it.windowState == topVisibleAppWindow }
             val errorMsgBuilder =
                 errorMsgBuilder()
-                    .forInvalidProperty("${topWindow.name} should not be on top")
-                    .setActual(topWindow.name)
+                    .forInvalidProperty("${topWindow.debugName} should not be on top")
+                    .setActual(topWindow.debugName)
                     .setExpected(componentMatcher.toWindowIdentifier())
                     .addExtraDescription("Type", "App window")
                     .addExtraDescription("Filter", componentMatcher.toWindowIdentifier())
@@ -430,7 +430,7 @@ constructor(
     /** {@inheritDoc} */
     override fun hasNoVisibleAppWindow(): WindowManagerStateSubject = apply {
         check { "Visible app windows" }
-            .that(visibleAppWindows.joinToString(", ") { it.name })
+            .that(visibleAppWindows.joinToString(", ") { it.debugName })
             .isEqual("")
     }
 
@@ -481,7 +481,7 @@ constructor(
                         componentMatcher.toWindowIdentifier(),
                         expectElementVisible = false,
                     )
-                    .setActual(visibleWindowsOnDisplay.map { Fact("Is visible", it.name) })
+                    .setActual(visibleWindowsOnDisplay.map { Fact("Is visible", it.debugName) })
             throw IncorrectVisibilityException(errorMsgBuilder)
         }
     }
