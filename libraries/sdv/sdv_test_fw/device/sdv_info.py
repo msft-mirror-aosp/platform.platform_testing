@@ -18,6 +18,12 @@ import logging
 from mobly import signals
 from sdv_test_fw.device import sdv_property
 
+DEVICE_TAG_PREFIX = 'device'
+
+
+def build_device_tag(device_id):
+    return f'{DEVICE_TAG_PREFIX}{device_id}'
+
 
 class SdvDeviceInfoError(signals.ControllerError):
     """Raised when there is an issue reading or parsing SDV device information."""
@@ -90,6 +96,18 @@ class SdvInfo:
         )
         self._target = SdvTarget.from_flavor(device_flavor)
         self._vm = SdvVm.from_flavor(device_flavor)
+
+    @property
+    def device_tag(self):
+        # In HW, only 2VMs is supported for multiVM tests. There is a temporary
+        # workaround in the setup that requires the instance name for the second
+        # VM to be instance3. TODO(458268779): Remove conditional when bug is
+        # fixed and setup is aligned between CF and HW.
+        if self.is_hardware:
+            if self.instance_number > 1:
+                return build_device_tag(device_id=2)
+
+        return build_device_tag(self.instance_number)
 
     @property
     def instance_number(self):

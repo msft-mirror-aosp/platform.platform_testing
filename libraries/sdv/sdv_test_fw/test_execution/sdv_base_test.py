@@ -24,6 +24,7 @@ from mobly import signals
 from mobly.controllers import android_device
 from mobly.controllers.android_device_lib.services import logcat
 from sdv_test_fw.device import sdv_device
+from sdv_test_fw.device import sdv_info
 from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 
 
@@ -96,30 +97,6 @@ class SdvBaseTestClass(base_test.BaseTestClass):
         }
         return test_args
 
-    def __get_instance_number(self, instance_name):
-        return int(instance_name[len('instance') :])
-
-    def __is_instance_name_in_valid_format(self, instance_name):
-        # Check for instance name format: instance{number}
-        return re.search('^instance[0-9]+$', instance_name)
-
-    def __is_instance_number_valid(self, instance_name):
-        instance_number = self.__get_instance_number(instance_name)
-        return instance_number > 0 and instance_number <= self.__num_of_devices
-
-    def __is_device_tag_update_needed(self, instance_name, device_number):
-        # Check if instance_name exist
-        # and if instance_name is in the format of instance{number}
-        # and if the instance id is between 1 and self.__num_of_devices,
-        # and if the instance id does not match current device number
-        # then update the device tag
-        return (
-            instance_name
-            and self.__is_instance_name_in_valid_format(instance_name)
-            and self.__is_instance_number_valid(instance_name)
-            and self.__get_instance_number(instance_name) != device_number
-        )
-
     def __prepare_logcat(self, device):
         """Enable verbose logs and restart logcat service with 'clear_log' set to False"""
 
@@ -132,12 +109,11 @@ class SdvBaseTestClass(base_test.BaseTestClass):
         device.services().logcat.start()
         device.adb().verify_logcat_is_running()
 
-    def __get_device_list(self):
+    def _resolve_device_mapping(self):
         device_list = {}
-        default_device_list = {}
 
-        for index in range(self.__num_of_devices):
-            device_tag = f'device{index+1}'
+        for index in range(1, self.__num_of_devices + 1):
+            device_tag = sdv_info.build_device_tag(index)
 
             # The Device Host Interaction (DHI) strategy depends on the execution environment.
             # We explicitly pass the environment context (local vs. remote) because the
@@ -147,37 +123,22 @@ class SdvBaseTestClass(base_test.BaseTestClass):
                 is_local_run=self.is_local_run(),
             )
 
-            default_device_list[device_tag] = device
+            # Test creation expects the devices are mapped to the corresponding
+            # instance:
+            #
+            # device1 -> instance1
+            # device2 -> instance2
+            # device3 -> instance3
+            #
+            # It is not possible to specify the device in a particular order
+            # for atest and sometimes the order of devices is not maintained
+            # on CI/CD.
+            #
+            # Therefore, we cannot rely in the default assignment. To ensure the
+            # right mapping, we return the device_list with the corresponding
+            # tags provided by DeviceInfo.
+            device_list[device.info.device_tag] = device
 
-            """
-        It is not possible to specify the device in a particular order
-        for atest. Also, sometimes the order of devices is not maintained
-        on CI/CD which causes the test to fail, resulting in flakiness.
-        To avoid this, we use the instance name on the device to assign
-        the devices in correct order for the test. If the instance name is
-        not provided or is not in the correct format, we will use the
-        default order.
-      """
-            if self.__is_device_tag_update_needed(
-                device.info.instance_name, index + 1
-            ):
-                device_tag = f'device{self.__get_instance_number(device.info.instance_name)}'
-
-            device_list[device_tag] = device
-
-        # Fail Safe or Fallback: This happens when same instance name is
-        # assigned to multiple devices or when the instance names are not
-        # assigned correctly. e.g. device1->instance2, device2->no instance name
-        if len(device_list) != self.__num_of_devices:
-            device_list.clear()
-            assigned_devices = [{
-                tag: device.adb().get_device_serial()
-                for tag, device in default_device_list.items()
-            }]
-            logging.info(f'Assigned devices : {assigned_devices}')
-            return default_device_list
-
-        default_device_list.clear()
         assigned_devices = [{
             tag: device.adb().get_device_serial()
             for tag, device in device_list.items()
@@ -235,7 +196,7 @@ class SdvBaseTestClass(base_test.BaseTestClass):
         )
 
         logging.info('Get the list of devices for test execution')
-        self.__device_list = self.__get_device_list()
+        self.__device_list = self._resolve_device_mapping()
 
         # Because 'clear_log' is True by default and we would like to keep logs
         # even when logcat is restarted.

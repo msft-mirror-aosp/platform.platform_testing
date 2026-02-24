@@ -18,6 +18,14 @@ from unittest import mock
 from sdv_test_fw.device import sdv_info
 
 
+class SdvDeviceTagTests(unittest.TestCase):
+
+    def test_build_device_tag(self):
+        self.assertEqual(sdv_info.build_device_tag(1), "device1")
+        self.assertEqual(sdv_info.build_device_tag(2), "device2")
+        self.assertEqual(sdv_info.build_device_tag("3"), "device3")
+
+
 class SdvTargetTests(unittest.TestCase):
 
     def test_core_from_flavor(self):
@@ -77,6 +85,25 @@ class SdvInfoProperties(unittest.TestCase):
 
     def test_instance_number(self):
         self.assertEqual(self.info.instance_number, 1)
+
+    def test_device_tag_when_cf(self):
+        self.set_info_members(vm=sdv_info.SdvVm.CF)
+        self.info.instance_name = "instance1"
+        self.assertEqual(self.info.device_tag, "device1")
+
+        self.info.instance_name = "instance2"
+        self.assertEqual(self.info.device_tag, "device2")
+
+        self.info.instance_name = "instance3"
+        self.assertEqual(self.info.device_tag, "device3")
+
+    def test_device_tag_when_hw(self):
+        self.set_info_members(vm=sdv_info.SdvVm.HW)
+        self.info.instance_name = "instance1"
+        self.assertEqual(self.info.device_tag, "device1")
+
+        self.info.instance_name = "instance3"
+        self.assertEqual(self.info.device_tag, "device2")
 
     @mock.patch("logging.error")
     def test_instance_number_invalid(self, mock_logging_error):
