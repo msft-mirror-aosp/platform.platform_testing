@@ -23,6 +23,7 @@ validation behavior.
 import logging
 import time
 from mobly import asserts
+import qnx_process_management
 import sdv_baseline_hw_suspend_resume_mixin as hw_suspend_resume
 
 
@@ -35,25 +36,27 @@ class SdvBaselineHwSuspendResumeTestVerification:
         Since the QNX connection is shared across all VMs, this verification
         is independent of specific device configurations.
         """
-        self.host_command(f"echo {self.VERIFY_CONNECTION_TEXT}")
+        output_last_line = self.host_command(
+            f"echo {self.VERIFY_CONNECTION_TEXT}", output_last_line_only=True
+        )
 
-        logging.info(
-            f"Verification echo output: {self.host_output_last_line()}"
-        )
-        asserts.assert_equal(
-            self.host_output_last_line(), self.VERIFY_CONNECTION_TEXT
-        )
+        logging.info(f"Verification echo output: {output_last_line}")
+        asserts.assert_equal(output_last_line, self.VERIFY_CONNECTION_TEXT)
 
     def verify_powerbtn_daemon_is_running_in_host(self, vm_config):
-        """Verifies that the daemon that allows to fake powerbtn is running in
+        """Verifies fake powerbtn daemon is running
 
-        the QNX hypervisor.
+        Verifies that the daemon that allows to fake powerbtn is running in the
+        QNX hypervisor.
 
         Args:
             vm_config: The VM config for the device being tested.
         """
         asserts.assert_true(
-            self._processes_are_running(vm_config.daemon_label),
+            qnx_process_management.processes_are_running(
+                command_executor=self.host_command,
+                process_identifier=vm_config.daemon_label,
+            ),
             f"Daemon to wake up {vm_config.sdv_guest_name} is not running",
         )
 
