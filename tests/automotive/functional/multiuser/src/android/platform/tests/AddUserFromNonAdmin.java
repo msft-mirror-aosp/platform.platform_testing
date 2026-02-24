@@ -30,9 +30,6 @@ import android.platform.helpers.IAutoUserHelper;
 import android.platform.helpers.MultiUserHelper;
 import android.platform.helpers.SettingsConstants;
 import android.platform.scenario.multiuser.MultiUserConstants;
-import android.platform.test.rules.ConditionalIgnore;
-import android.platform.test.rules.ConditionalIgnoreRule;
-import android.platform.test.rules.IgnoreOnPortrait;
 import android.util.Log;
 
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -63,7 +60,6 @@ public class AddUserFromNonAdmin {
     private final Instrumentation mInstrumentation = InstrumentationRegistry.getInstrumentation();
     private final UiAutomation mUiAutomation = mInstrumentation.getUiAutomation();
 
-    @Rule public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
 
     private final MultiUserHelper mMultiUserHelper = MultiUserHelper.getInstance();
     private static final String USER_NAME = MultiUserConstants.SECONDARY_USER_NAME;
@@ -110,7 +106,6 @@ public class AddUserFromNonAdmin {
     }
 
     @Test
-    @ConditionalIgnore(condition = IgnoreOnPortrait.class)
     public void testAddNonAdminUser1QuickSettings() throws Exception {
         // create new user quick settings
         Log.i(LOG_TAG, "Act: Create new user");
@@ -143,7 +138,6 @@ public class AddUserFromNonAdmin {
     }
 
     @Test
-    @ConditionalIgnore(condition = IgnoreOnPortrait.class)
     public void testAddNonAdminUser2Settings() throws Exception {
         // create new user
         Log.i(LOG_TAG, "Act: Get current userinfo");
