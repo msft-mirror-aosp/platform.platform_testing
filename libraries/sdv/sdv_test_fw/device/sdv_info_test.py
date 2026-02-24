@@ -23,7 +23,7 @@ class SdvDeviceTagTests(unittest.TestCase):
     def test_build_device_tag(self):
         self.assertEqual(sdv_info.build_device_tag(1), "device1")
         self.assertEqual(sdv_info.build_device_tag(2), "device2")
-        self.assertEqual(sdv_info.build_device_tag("3"), "device3")
+        self.assertEqual(sdv_info.build_device_tag(3), "device3")
 
 
 class SdvTargetTests(unittest.TestCase):

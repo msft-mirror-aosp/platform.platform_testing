@@ -16,12 +16,13 @@ import enum
 import logging
 
 from mobly import signals
+from sdv_test_fw.device import sdv_adb
 from sdv_test_fw.device import sdv_property
 
 DEVICE_TAG_PREFIX = 'device'
 
 
-def build_device_tag(device_id):
+def build_device_tag(device_id: int) -> str:
     return f'{DEVICE_TAG_PREFIX}{device_id}'
 
 
@@ -37,7 +38,7 @@ class SdvTarget(enum.Enum):
     MEDIA = 'media'
 
     @classmethod
-    def from_flavor(cls, device_flavor):
+    def from_flavor(cls, device_flavor: str) -> 'SdvTarget':
         # The flavor property contains information about the target.
         # SdvTarget values must match with the targets in the property.
         # e.g. core: sdv_core_cf-userdebug
@@ -55,7 +56,7 @@ class SdvVm(enum.Enum):
     HW = 'HW VM'
 
     @classmethod
-    def from_flavor(cls, device_flavor):
+    def from_flavor(cls, device_flavor: str) -> 'SdvVm':
         # The flavor property for CF VMs contains _cf while for hardware there is
         # no relevant information. We assume that if it is not cuttlefish, it is
         # hardware
@@ -78,7 +79,7 @@ class SdvInfo:
 
     INSTANCE_NAME_PREFIX = 'instance'
 
-    def __init__(self, adb_device):
+    def __init__(self, adb_device: sdv_adb.SdvAdb):
         """Initialize with all relevant device information for SDV.
 
         Args:
@@ -98,7 +99,7 @@ class SdvInfo:
         self._vm = SdvVm.from_flavor(device_flavor)
 
     @property
-    def device_tag(self):
+    def device_tag(self) -> str:
         # In HW, only 2VMs is supported for multiVM tests. There is a temporary
         # workaround in the setup that requires the instance name for the second
         # VM to be instance3. TODO(458268779): Remove conditional when bug is
@@ -110,7 +111,7 @@ class SdvInfo:
         return build_device_tag(self.instance_number)
 
     @property
-    def instance_number(self):
+    def instance_number(self) -> int:
         """Returns the instance number derived from the instance name.
 
         Returns:
@@ -129,7 +130,7 @@ class SdvInfo:
         return int(self.instance_name[len(self.INSTANCE_NAME_PREFIX) :])
 
     @property
-    def is_cuttlefish(self):
+    def is_cuttlefish(self) -> bool:
         """Checks if the current device is a Cuttlefish (CF) virtual device.
 
         Returns:
@@ -138,7 +139,7 @@ class SdvInfo:
         return self._vm is SdvVm.CF
 
     @property
-    def is_hardware(self):
+    def is_hardware(self) -> bool:
         """Checks if the current device is a Hardware VM.
 
         Returns:
@@ -147,7 +148,7 @@ class SdvInfo:
         return self._vm is SdvVm.HW
 
     @property
-    def is_core(self):
+    def is_core(self) -> bool:
         """Checks if the target of the device is SDV Core.
 
         Returns:
@@ -157,7 +158,7 @@ class SdvInfo:
         return self._target is SdvTarget.CORE
 
     @property
-    def is_ivi(self):
+    def is_ivi(self) -> bool:
         """Checks if the target of the device is IVI.
 
         Returns:
@@ -166,7 +167,7 @@ class SdvInfo:
         return self._target is SdvTarget.IVI
 
     @property
-    def is_media(self):
+    def is_media(self) -> bool:
         """Checks if the target of the device is Media.
 
         Returns:
@@ -175,7 +176,7 @@ class SdvInfo:
         return self._target is SdvTarget.MEDIA
 
     @property
-    def is_sdv(self):
+    def is_sdv(self) -> bool:
         """Checks if the target is SDV.
 
         Both core and media targets are considered SDV.
