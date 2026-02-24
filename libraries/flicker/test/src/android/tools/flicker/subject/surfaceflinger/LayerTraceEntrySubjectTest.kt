@@ -397,7 +397,7 @@ class LayerTraceEntrySubjectTest {
         val error = assertThrows<AssertionError> { subject.isVisible(matcher) }
 
         Truth.assertThat(error).hasMessageThat().contains("Searching for:")
-        Truth.assertThat(error).hasMessageThat().contains("Found:")
+        Truth.assertThat(error).hasMessageThat().contains("Occurrences of $layerName:")
         Truth.assertThat(error).hasMessageThat().contains("$layerName (Layer#")
         Truth.assertThat(error).hasMessageThat().doesNotContain(leashName)
     }
@@ -424,7 +424,7 @@ class LayerTraceEntrySubjectTest {
         val error = assertThrows<AssertionError> { subject.isInvisible(matcher) }
 
         Truth.assertThat(error).hasMessageThat().contains("Searching for:")
-        Truth.assertThat(error).hasMessageThat().contains("Found:")
+        Truth.assertThat(error).hasMessageThat().contains("Occurrences of $layerName:")
         Truth.assertThat(error).hasMessageThat().contains("$layerName (Layer#")
         Truth.assertThat(error).hasMessageThat().doesNotContain(leashName)
     }

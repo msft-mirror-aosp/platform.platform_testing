@@ -31,6 +31,7 @@ class ExceptionMessageBuilder {
     private var actualLabel = "Actual"
     private var headerDescription = ""
     private var extraDescription = mutableListOf<Fact>()
+    private var customSections = mutableMapOf<String, List<String>>()
 
     fun forSubject(value: FlickerSubject) = apply {
         setTimestamp(value.timestamp)
@@ -75,6 +76,10 @@ class ExceptionMessageBuilder {
 
     fun setActualLabel(value: String) = apply { actualLabel = value }
 
+    fun addSection(title: String, content: Collection<String>) = apply {
+        customSections[title] = content.toList()
+    }
+
     fun setReader(value: Reader) {
         for (artifact in value.artifacts) {
             addExtraDescription("${artifact.type} Artifact", artifact)
@@ -98,7 +103,7 @@ class ExceptionMessageBuilder {
             appendLine(timestamp.toString().prependIndent("\t"))
         }
 
-        if (expected.isNotEmpty() || actual.isNotEmpty()) {
+        if (expected.isNotEmpty() || actual.isNotEmpty() || customSections.isNotEmpty()) {
             appendLine()
             appendLine("What?")
         }
@@ -120,6 +125,18 @@ class ExceptionMessageBuilder {
                     appendLine(it)
                 }
             }
+
+        customSections.forEach { (title, content) ->
+            if (content.isNotEmpty()) {
+                append("$title: ".prependIndent("\t"))
+                if (content.size == 1 && content.first().length < MAX_LINE_LENGTH) {
+                    appendLine(content.first())
+                } else {
+                    appendLine()
+                    content.forEach { line -> appendLine(line.prependIndent("\t\t")) }
+                }
+            }
+        }
 
         if (extraDescription.isNotEmpty()) {
             appendLine()

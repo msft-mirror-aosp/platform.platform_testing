@@ -231,11 +231,25 @@ constructor(
             if (!topWindowMatches) {
                 check { "Subjects is not empty" }.that(subjects.isEmpty()).isEqual(false)
 
+                val occurrences =
+                    appWindows
+                        .filter { componentMatcher.windowMatchesAnyOf(it.windowState) }
+                        .map { "${it.debugName} (isVisible=${it.isVisible})" }
+
+                val actuallyVisible =
+                    visibleAppWindows
+                        .filter { !componentMatcher.windowMatchesAnyOf(it.windowState) }
+                        .map { it.debugName }
+
                 val errorMsgBuilder =
                     errorMsgBuilder()
                         .forInvalidProperty("Top visible app window")
-                        .setActual(topVisibleAppWindow.debugName)
                         .setExpected(componentMatcher.toWindowIdentifier())
+                        .addSection(
+                            "Occurrences of ${componentMatcher.toWindowIdentifier()}",
+                            occurrences,
+                        )
+                        .addSection("Actually visible", actuallyVisible)
                 throw InvalidPropertyException(errorMsgBuilder)
             }
         }
@@ -252,8 +266,8 @@ constructor(
             val errorMsgBuilder =
                 errorMsgBuilder()
                     .forInvalidProperty("${topWindow.debugName} should not be on top")
-                    .setActual(topWindow.debugName)
                     .setExpected(componentMatcher.toWindowIdentifier())
+                    .addSection("Actually visible on top", listOf(topWindow.debugName))
                     .addExtraDescription("Type", "App window")
                     .addExtraDescription("Filter", componentMatcher.toWindowIdentifier())
             throw InvalidPropertyException(errorMsgBuilder)
@@ -413,7 +427,11 @@ constructor(
     ): WindowManagerStateSubject = apply {
         contains(nonAppWindows, componentMatcher)
         if (!componentMatcher.windowMatchesAnyOf(visibleWindows.map { it.windowState })) {
-            throw createIncorrectVisibilityException(componentMatcher, expectElementVisible = true)
+            throw createIncorrectVisibilityException(
+                componentMatcher,
+                expectElementVisible = true,
+                nonAppWindows,
+            )
         }
     }
 
@@ -423,7 +441,11 @@ constructor(
     ): WindowManagerStateSubject = apply {
         contains(appWindows, componentMatcher)
         if (!componentMatcher.windowMatchesAnyOf(visibleWindows.map { it.windowState })) {
-            throw createIncorrectVisibilityException(componentMatcher, expectElementVisible = true)
+            throw createIncorrectVisibilityException(
+                componentMatcher,
+                expectElementVisible = true,
+                appWindows,
+            )
         }
     }
 
@@ -475,13 +497,22 @@ constructor(
             }
 
         if (visibleWindowsOnDisplay.isNotEmpty()) {
+            val actuallyVisible =
+                visibleWindows
+                    .filter { !componentMatcher.windowMatchesAnyOf(it.windowState) }
+                    .map { it.debugName }
+
             val errorMsgBuilder =
                 errorMsgBuilder()
                     .forIncorrectVisibility(
                         componentMatcher.toWindowIdentifier(),
                         expectElementVisible = false,
                     )
-                    .setActual(visibleWindowsOnDisplay.map { Fact("Is visible", it.debugName) })
+                    .addSection(
+                        "Occurrences of ${componentMatcher.toWindowIdentifier()}",
+                        visibleWindowsOnDisplay.map { it.debugName },
+                    )
+                    .addSection("Actually visible", actuallyVisible)
             throw IncorrectVisibilityException(errorMsgBuilder)
         }
     }
@@ -504,11 +535,25 @@ constructor(
     private fun createIncorrectVisibilityException(
         componentMatcher: IComponentMatcher,
         expectElementVisible: Boolean,
-    ) =
-        IncorrectVisibilityException(
+        subjectList: List<WindowStateSubject>,
+    ): IncorrectVisibilityException {
+        val occurrences =
+            subjectList
+                .filter { componentMatcher.windowMatchesAnyOf(it.windowState) }
+                .map { "${it.debugName} (isVisible=${it.isVisible})" }
+
+        val actuallyVisible =
+            visibleWindows
+                .filter { !componentMatcher.windowMatchesAnyOf(it.windowState) }
+                .map { it.debugName }
+
+        return IncorrectVisibilityException(
             errorMsgBuilder()
                 .forIncorrectVisibility(componentMatcher.toWindowIdentifier(), expectElementVisible)
+                .addSection("Occurrences of ${componentMatcher.toWindowIdentifier()}", occurrences)
+                .addSection("Actually visible", actuallyVisible)
         )
+    }
 
     private fun createElementNotFoundException(componentMatcher: IComponentMatcher) =
         InvalidElementException(

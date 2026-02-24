@@ -450,6 +450,7 @@ class WindowManagerStateSubjectTest {
         val matcher = ComponentNameMatcher.STATUS_BAR
         val error = assertThrows<AssertionError> { entry.isNonAppWindowInvisible(matcher) }
 
+        Truth.assertThat(error).hasMessageThat().contains("Occurrences of StatusBar:")
         Truth.assertThat(error).hasMessageThat().contains("StatusBar (Window#")
     }
 
