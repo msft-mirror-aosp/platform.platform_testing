@@ -72,8 +72,8 @@ class SdvSampleApexUpdateTest(sdv_base_test.SdvBaseTestClass):
   # CUJ-APEX-008, CUJ-APEX-009, and CUJ-APEX-015
   def test_communication_after_apex_update(self):
 
-    PROVIDER_APEX_NAME = "com.sdv.google.sample.apex.provider"
-    CONSUMER_APEX_NAME = "com.sdv.google.sample.apex.consumer"
+    PROVIDER_APEX_NAME = "com.android.sdv.sample.apex.provider"
+    CONSUMER_APEX_NAME = "com.android.sdv.sample.apex.consumer"
 
     PROVIDER_LOG_V1 = ["Provider serving pressure value 992.", "Provider publishing pressure value 42."]
     PROVIDER_LOG_V2 = ["Provider serving pressure value 992 and new field value 1.", "Provider publishing pressure value 42 and new field value 1."]
@@ -114,7 +114,7 @@ class SdvSampleApexUpdateTest(sdv_base_test.SdvBaseTestClass):
 
   # CUJ-APEX-003, CUJ-APEX-004, CUJ-APEX-007
   def test_apex_update_persists(self):
-    APEX_NAME = "com.sdv.google.sample.test1"
+    APEX_NAME = "com.android.sdv.sample.test1"
     user_data = "This is new user data!"
     user_data_file = "/data/new_user_data_test_file.txt"
     self.sdv_device.execute_shell_command(f"echo {user_data} > {user_data_file}")

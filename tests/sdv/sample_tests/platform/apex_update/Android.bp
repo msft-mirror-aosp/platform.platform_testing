@@ -25,9 +25,9 @@ python_test_host {
         ":sdv_test_fw_device_configs",
     ],
     device_first_data: [
-        ":com.sdv.google.sample.apex.provider.v2",
-        ":com.sdv.google.sample.apex.consumer.v2",
-        ":com.sdv.google.sample.test1.v2",
+        ":com.android.sdv.sample.apex.provider.v2",
+        ":com.android.sdv.sample.apex.consumer.v2",
+        ":com.android.sdv.sample.test1.v2",
     ],
     test_options: {
         unit_test: false,
@@ -46,8 +46,8 @@ python_test_host {
         ":sdv_test_fw_device_configs",
     ],
     device_first_data: [
-        ":com.sdv.google.sample.apex.provider.v2",
-        ":com.sdv.google.sample.ivi.service.v2",
+        ":com.android.sdv.sample.apex.provider.v2",
+        ":com.android.sdv.sample.ivi.service.v2",
     ],
     test_options: {
         unit_test: false,
@@ -66,8 +66,8 @@ python_test_host {
         ":sdv_test_fw_device_configs",
     ],
     device_first_data: [
-        ":com.sdv.google.sample.hello.brand_new.blocked",
-        ":com.sdv.google.sample.hello.brand_new.allowed",
+        ":com.android.sdv.sample.hello.brand_new.blocked",
+        ":com.android.sdv.sample.hello.brand_new.allowed",
     ],
     test_options: {
         unit_test: false,

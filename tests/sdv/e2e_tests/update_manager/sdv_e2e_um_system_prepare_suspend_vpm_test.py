@@ -28,7 +28,7 @@ from time import sleep
 class SdvE2EUMSystemPrepareSuspendVpmTest(
     sdv_base_test.SdvBaseTestClass, UpdateManagerBaseClass
 ):
-    APEX_NAME = "com.sdv.google.sample.apex.provider"
+    APEX_NAME = "com.android.sdv.sample.apex.provider"
 
     # This is fairly arbitrary and it can be adjusted as needed
     PREPARE_SUSPEND_COMPLETE_STATUS_CHECK_ATTEMPTS = 10

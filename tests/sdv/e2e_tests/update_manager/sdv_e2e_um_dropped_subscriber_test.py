@@ -23,7 +23,7 @@ from sdv_test_fw.update.update_manager_base_class import UpdateManagerBaseClass,
 
 
 class SdvE2EUMDroppedSubscriber(sdv_base_test.SdvBaseTestClass, UpdateManagerBaseClass):
-    APEX_NAME = "com.sdv.google.sample.apex.provider"
+    APEX_NAME = "com.android.sdv.sample.apex.provider"
     FAILED_CALLBACK_LOG = "Failed to send callback to subscriber"
 
     def setup_class(self):

@@ -25,12 +25,12 @@ from sdv_test_fw.update.update_manager_base_class import UpdateManagerBaseClass
 from sdv_test_fw.verification import polling
 
 class SdvIviSampleApexUpdateTest(sdv_base_test.SdvBaseTestClass, UpdateManagerBaseClass):
-  SDV_APEX_NAME = 'com.sdv.google.sample.apex.provider'
-  IVI_APEX_NAME = 'com.sdv.google.sample.ivi.service'
+  SDV_APEX_NAME = 'com.android.sdv.sample.apex.provider'
+  IVI_APEX_NAME = 'com.android.sdv.sample.ivi.service'
 
   APEX_HOST_DIR = 'out/host/**'
 
-  RUN_IVI_SERVICE_CMD = '/apex/com.sdv.google.sample.ivi.service/bin/ivi_service_bundle_apex_update'
+  RUN_IVI_SERVICE_CMD = '/apex/com.android.sdv.sample.ivi.service/bin/ivi_service_bundle_apex_update'
   SERVICE_PROCESS_NAME = 'ivi_service_bundle_apex_update'
 
   RPC_SERVER_LOG_KEYWORD = 'Provider serving pressure value 992'

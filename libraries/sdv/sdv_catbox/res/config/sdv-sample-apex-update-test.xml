@@ -22,16 +22,16 @@
     <target_preparer class="com.android.tradefed.targetprep.PushFilePreparer">
       <option name="cleanup" value="true" />
       <option name="push-file"
-        key="com.sdv.google.sample.apex.provider.v2.apex"
-        value="/data/local/com.sdv.google.sample.apex.provider.v2.apex"
+        key="com.android.sdv.sample.apex.provider.v2.apex"
+        value="/data/local/com.android.sdv.sample.apex.provider.v2.apex"
       />
       <option name="push-file"
-        key="com.sdv.google.sample.apex.consumer.v2.apex"
-        value="/data/local/com.sdv.google.sample.apex.provider.v2.apex"
+        key="com.android.sdv.sample.apex.consumer.v2.apex"
+        value="/data/local/com.android.sdv.sample.apex.provider.v2.apex"
       />
       <option name="push-file"
-        key="com.sdv.google.sample.test1.v2.apex"
-        value="/data/local/com.sdv.google.sample.apex.provider.v2.apex"
+        key="com.android.sdv.sample.test1.v2.apex"
+        value="/data/local/com.android.sdv.sample.apex.provider.v2.apex"
       />
     </target_preparer>
   </device>
