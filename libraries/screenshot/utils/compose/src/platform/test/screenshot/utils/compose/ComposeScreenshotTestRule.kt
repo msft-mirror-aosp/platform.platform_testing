@@ -41,6 +41,7 @@ import androidx.compose.ui.platform.ViewRootForTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.junit4.AndroidComposeTestRule
+import androidx.compose.ui.test.junit4.v2.AndroidComposeTestRule as AndroidComposeTestRuleV2
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.core.text.TextUtilsCompat
@@ -71,23 +72,70 @@ import platform.test.screenshot.captureToBitmapAsync
 import platform.test.screenshot.dialogScreenshotTest
 import platform.test.screenshot.matchers.BitmapMatcher
 
-/** A rule for Compose screenshot diff tests. */
+/**
+ * Creates a `ComposeScreenshotTestRule`
+ *
+ * A `v2.AndroidComposeTestRule` is instantiated, which ensures a more deterministic scheduling of
+ * coroutines by using the `StandardTestDispatcher`.
+ */
+fun createComposeScreenshotTestRule(
+    emulationSpec: DeviceEmulationSpec,
+    pathManager: GoldenPathManager,
+    enforcePerfectPixelMatch: Boolean = false,
+    effectContext: CoroutineContext = EmptyCoroutineContext,
+): ComposeScreenshotTestRule {
+
+    return ComposeScreenshotTestRule(
+        emulationSpec = emulationSpec,
+        screenshotRule = ScreenshotTestRule(pathManager),
+        useV2ComposeTestRule = true,
+        effectContext = effectContext,
+        customMatcher = if (enforcePerfectPixelMatch) PerfectMatcher else null,
+    )
+}
+
 class ComposeScreenshotTestRule(
     private val emulationSpec: DeviceEmulationSpec,
     private val screenshotRule: ScreenshotTestRule,
+    useV2ComposeTestRule: Boolean,
     effectContext: CoroutineContext = EmptyCoroutineContext,
     customMatcher: BitmapMatcher? = null,
 ) : TestRule, BitmapDiffer by screenshotRule, ScreenshotAsserterFactory by screenshotRule {
+    /**
+     * A rule for Compose screenshot diff tests.
+     *
+     * @param useV2ComposeTestRule Whether to create a `v2.AndroidComposeTestRule`, which ensures
+     *   more deterministic scheduling of coroutines using the `StandardTestDispatcher`.
+     */
+    @Deprecated("pass in `useV2ComposeTestRule = true` to ensure a v2.ComposeTestRule is created.")
+    constructor(
+        emulationSpec: DeviceEmulationSpec,
+        screenshotRule: ScreenshotTestRule,
+        effectContext: CoroutineContext = EmptyCoroutineContext,
+        customMatcher: BitmapMatcher? = null,
+    ) : this(
+        emulationSpec = emulationSpec,
+        screenshotRule = screenshotRule,
+        useV2ComposeTestRule = false,
+        effectContext = effectContext,
+        customMatcher = customMatcher,
+    )
+
+    @Deprecated(
+        "Use createComposeScreenshotTestRule to ensure a v2.ComposeTestRule is created.",
+        replaceWith = ReplaceWith("createComposeScreenshotTestRule"),
+    )
     constructor(
         emulationSpec: DeviceEmulationSpec,
         pathManager: GoldenPathManager,
         enforcePerfectPixelMatch: Boolean = false,
         effectContext: CoroutineContext = EmptyCoroutineContext,
     ) : this(
-        emulationSpec,
-        ScreenshotTestRule(pathManager),
-        effectContext,
-        if (enforcePerfectPixelMatch) PerfectMatcher else null,
+        emulationSpec = emulationSpec,
+        screenshotRule = ScreenshotTestRule(pathManager),
+        useV2ComposeTestRule = false,
+        effectContext = effectContext,
+        customMatcher = if (enforcePerfectPixelMatch) PerfectMatcher else null,
     )
 
     private val timeZoneRule = TimeZoneRule()
@@ -105,18 +153,37 @@ class ComposeScreenshotTestRule(
 
     @OptIn(ExperimentalTestApi::class)
     val composeRule =
-        AndroidComposeTestRule(
-            activityRule = activityRule,
-            effectContext = effectContext,
-            activityProvider = {
-                var activity: ScreenshotActivity? = null
-                activityRule.scenario.onActivity { activity = it }
-                if (activity == null) {
-                    throw IllegalStateException("Activity was not set in the ActivityScenarioRule!")
-                }
-                return@AndroidComposeTestRule activity
-            },
-        )
+        if (useV2ComposeTestRule) {
+            AndroidComposeTestRuleV2(
+                activityRule = activityRule,
+                effectContext = effectContext,
+                activityProvider = {
+                    var activity: ScreenshotActivity? = null
+                    activityRule.scenario.onActivity { activity = it }
+                    if (activity == null) {
+                        throw IllegalStateException(
+                            "Activity was not set in the ActivityScenarioRule!"
+                        )
+                    }
+                    return@AndroidComposeTestRuleV2 activity
+                },
+            )
+        } else {
+            AndroidComposeTestRule(
+                activityRule = activityRule,
+                effectContext = effectContext,
+                activityProvider = {
+                    var activity: ScreenshotActivity? = null
+                    activityRule.scenario.onActivity { activity = it }
+                    if (activity == null) {
+                        throw IllegalStateException(
+                            "Activity was not set in the ActivityScenarioRule!"
+                        )
+                    }
+                    return@AndroidComposeTestRule activity
+                },
+            )
+        }
 
     private val commonRule =
         RuleChain.outerRule(deviceEmulationRule).around(screenshotRule).around(composeRule)
