@@ -26,7 +26,7 @@ from sdv_test_fw.verification import polling
 
 
 class SdvSampleDiagUpdateTest(sdv_base_test.SdvBaseTestClass, UpdateManagerBaseClass):
-    APEX_NAME = "com.sdv.google.sample.diagnostics_update"
+    APEX_NAME = "com.android.sdv.sample.diagnostics_update"
     BUNDLE_NAME = "UpdatableDiagnosticsBundle"
     BUNDLE_FQIN = f"instance1:{APEX_NAME}.{BUNDLE_NAME}/myinstance"
 

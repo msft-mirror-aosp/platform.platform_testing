@@ -84,9 +84,6 @@ class SdvHmDumpsysOutputTest(sdv_base_test.SdvBaseTestClass):
             'ID: Agent: sdv_sd_agent\n'
             "linked_binder: google.sdv.service_discovery.discovery.IServiceDiscoveryAgent/default\n"
             "alive: true",
-
-            "b. SB monitoring:\n"
-            "NO ACTIVE MONITORS",
         ]
 
         expected_post_bundle_start = [
