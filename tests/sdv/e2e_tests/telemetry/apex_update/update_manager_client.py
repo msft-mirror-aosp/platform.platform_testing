@@ -20,7 +20,7 @@ from sdv_telemetry_test_execution.telemetry_utils import shlex_join
 
 
 class UpdateManagerClient:
-    UPDATE_CLIENT_PATH = "/apex/com.sdv.google.sample.update_manager.client/bin/sdv_update_manager_client"
+    UPDATE_CLIENT_PATH = "/apex/com.android.sdv.sample.update_manager.client/bin/sdv_update_manager_client"
 
     def __init__(self, adb):
         self.adb = adb
