@@ -24,6 +24,10 @@ import android.tools.flicker.config.ScenarioId
 import android.tools.flicker.extractors.ScenarioExtractor
 import android.tools.flicker.extractors.TraceSlice
 import android.tools.getTraceReaderFromScenario
+import android.tools.io.Reader
+import android.tools.testutils.assertThrows
+import android.tools.traces.surfaceflinger.LayersTrace
+import com.google.common.truth.Truth
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.Test
@@ -34,6 +38,32 @@ import org.mockito.Mockito
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class FlickerServiceTest {
     @get:Rule val cleanUp = CleanFlickerEnvironmentRuleWithDataStore()
+
+    @Test
+    fun failsWhenLayersTraceIsMissing() {
+        val mockReader = Mockito.mock(Reader::class.java)
+        Mockito.`when`(mockReader.readLayersTrace()).thenReturn(null)
+
+        val service = FlickerService(Mockito.mock(FlickerConfig::class.java))
+
+        val exception = assertThrows<FlickerTraceException> { service.detectScenarios(mockReader) }
+        Truth.assertThat(exception).hasMessageThat().contains("Missing layers trace")
+    }
+
+    @Test
+    fun failsWhenLayersTraceIsIdle() {
+        val mockReader = Mockito.mock(Reader::class.java)
+        val emptyTrace = LayersTrace(emptyList())
+        Mockito.`when`(mockReader.readLayersTrace()).thenReturn(emptyTrace)
+
+        val service = FlickerService(Mockito.mock(FlickerConfig::class.java))
+
+        val exception = assertThrows<FlickerTraceException> { service.detectScenarios(mockReader) }
+        Truth.assertThat(exception)
+            .hasMessageThat()
+            .contains("Layers trace must have at least two entries")
+        Truth.assertThat(exception).hasMessageThat().contains("Checklist")
+    }
 
     @Test
     fun generatesAssertionsFromExtractedScenarios() {
