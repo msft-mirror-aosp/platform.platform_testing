@@ -22,6 +22,7 @@ import android.platform.test.flag.util.FlagReadException;
 
 import com.android.tradefed.log.LogUtil;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -82,6 +83,9 @@ record TestResourceFlags(boolean mExists, Map<String, Aconfig.parsed_flag> mAllF
                     flagMap.put(fullFlagName, flag);
                 }
                 return true;
+            } catch (FileNotFoundException e) {
+                LogUtil.CLog.i("The static aconfig.pb does not exist.");
+                return false;
             } catch (IOException e) {
                 throw new FlagReadException(
                         "ALL_FLAGS", "Failed to read static flags from aconfig.pb", e);
