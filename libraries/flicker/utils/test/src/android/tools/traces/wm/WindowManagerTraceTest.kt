@@ -149,6 +149,21 @@ class WindowManagerTraceTest {
         assertThat(trace.entries).isEmpty()
     }
 
+    @Test
+    fun getLastVisibleTimestamp() {
+        val entry = trace.getEntryExactlyAt(Timestamps.from(elapsedNanos = 9215511235586))
+        val component =
+            entry.windowStates
+                .first { it.isVisible }
+                .let { android.tools.traces.component.ComponentNameMatcher("", it.title) }
+        val timestamp = entry.timestamp
+
+        val lastVisibleTimestamp = trace.getLastVisibleTimestamp(component, timestamp)
+        assertThat(lastVisibleTimestamp).isNotNull()
+        assertThat(lastVisibleTimestamp!!.elapsedNanos).isLessThan(timestamp.elapsedNanos)
+        assertThat(trace.getEntryExactlyAt(lastVisibleTimestamp).isVisible(component)).isTrue()
+    }
+
     companion object {
         @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }

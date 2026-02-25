@@ -382,9 +382,19 @@ constructor(
     override fun isRecentsActivityVisible(): WindowManagerStateSubject = apply {
         val isVisible = wmState.isRecentsActivityVisible(displayId)
         if (!isVisible) {
+            val lastVisibleTimestamp =
+                trace
+                    ?.trace
+                    ?.entries
+                    ?.filter { it.timestamp < timestamp }
+                    ?.findLast { it.isRecentsActivityVisible(displayId) }
+                    ?.timestamp
+            val lastVisibleTimestampStr = lastVisibleTimestamp?.toString() ?: "never"
+
             val errorMsgBuilder =
                 errorMsgBuilder()
                     .forIncorrectVisibility("Recents activity", expectElementVisible = true)
+                    .addExtraDescription("Last visible at", lastVisibleTimestampStr)
                     .setActual(isVisible)
             throw IncorrectVisibilityException(errorMsgBuilder)
         }
@@ -537,10 +547,14 @@ constructor(
         expectElementVisible: Boolean,
         subjectList: List<WindowStateSubject>,
     ): IncorrectVisibilityException {
+        val lastVisibleTimestamp =
+            trace?.trace?.getLastVisibleTimestamp(componentMatcher, timestamp)
+        val lastVisibleTimestampStr = lastVisibleTimestamp?.toString() ?: "never"
+
         val occurrences =
             subjectList
                 .filter { componentMatcher.windowMatchesAnyOf(it.windowState) }
-                .map { "${it.debugName} (isVisible=${it.isVisible})" }
+                .map { "${it.debugName} Last visible at: $lastVisibleTimestampStr" }
 
         val actuallyVisible =
             visibleWindows
@@ -569,9 +583,19 @@ constructor(
         val isVisible = wmState.isHomeActivityVisible(displayId)
 
         if (!isVisible) {
+            val lastVisibleTimestamp =
+                trace
+                    ?.trace
+                    ?.entries
+                    ?.filter { it.timestamp < timestamp }
+                    ?.findLast { it.isHomeActivityVisible(displayId) }
+                    ?.timestamp
+            val lastVisibleTimestampStr = lastVisibleTimestamp?.toString() ?: "never"
+
             val errorMsgBuilder =
                 errorMsgBuilder()
                     .forIncorrectVisibility("Home activity", expectElementVisible = true)
+                    .addExtraDescription("Last visible at", lastVisibleTimestampStr)
             throw IncorrectVisibilityException(errorMsgBuilder)
         }
     }
@@ -699,12 +723,16 @@ constructor(
         }
 
         if (!snapshotStartingWindow.isVisible) {
+            val lastVisibleTimestamp =
+                trace?.trace?.getLastVisibleTimestamp(ComponentNameMatcher.SNAPSHOT, timestamp)
+            val lastVisibleTimestampStr = lastVisibleTimestamp?.toString() ?: "never"
             val errorMsgBuilder =
                 errorMsgBuilder()
                     .forIncorrectVisibility(
                         ComponentNameMatcher.SNAPSHOT.toWindowIdentifier(),
                         expectElementVisible = true,
                     )
+                    .addExtraDescription("Last visible at", lastVisibleTimestampStr)
             throw IncorrectVisibilityException(errorMsgBuilder)
         }
     }
