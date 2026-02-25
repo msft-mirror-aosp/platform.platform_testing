@@ -10,25 +10,13 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
+<configuration description="SDV HW Suspend Resume Baseline One VM">
+    <!-- Template for Device Configuration -->
+    <template-include name="sdv-device-config" default="sdv-device-config/one-device" />
 
-# Sample: SQLite test
+    <!-- Plan. Use the same name as the file name -->
+    <option name="plan" value="sdv-fw-baseline-suspend-resume-hw-one-vm-test"/>
 
-## Sample
-
-This test automates the [SQLite sample](/system/software_defined_vehicle/samples/sqlite/README.md).
-
-## Test Execution
-
-Read [SDV Testing instructions](/vendor/google_testing/software_defined_vehicle/README.md) for detailed information.
-
-### Mobly
-
-```
-atest SdvSampleSQLiteTest
-```
-
-### CATBox
-
-```
-NOTIFY_AS_NATIVE=0.0.0.0:6520 ./tools/catbox-tradefed run commandAndExit sdv-sample-sqlite-test --{device1}serial 0.0.0.0:6520
-```
+    <!-- Test: mobly-par-file-name should match the module name -->
+    <option name="mobly-host:mobly-par-file-name" value="SdvBaselineHwSuspendResumeOneVMTest" />
+</configuration>

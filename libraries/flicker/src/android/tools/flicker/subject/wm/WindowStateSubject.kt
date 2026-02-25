@@ -52,6 +52,7 @@ constructor(
     val isVisible: Boolean = windowState.isVisible
     val isInvisible: Boolean = !windowState.isVisible
     val name: String = windowState.name
+    val debugName: String = windowState.debugName
     val frame: RegionSubject
         get() = RegionSubject(windowState.frame, timestamp, reader)
 

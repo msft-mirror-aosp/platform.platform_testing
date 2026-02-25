@@ -17,11 +17,15 @@ package {
     default_applicable_licenses: ["sdv_tests_license"],
 }
 
+// Single VM test
 python_test_host {
-    name: "SdvBaselineHwSuspendResumeTest",
-    main: "sdv_baseline_hw_suspend_resume_test.py",
+    name: "SdvBaselineHwSuspendResumeOneVMTest",
+    main: "sdv_baseline_hw_suspend_resume_1vm_test.py",
     srcs: [
-        "sdv_baseline_hw_suspend_resume_test.py",
+        "sdv_baseline_hw_suspend_resume_1vm_test.py",
+        "sdv_baseline_hw_suspend_resume_mixin.py",
+        "qnx_process_management.py",
+        "sdv_baseline_hw_suspend_resume_test_verification.py",
     ],
     data: [
         ":sdv_test_fw_device_configs",
@@ -33,4 +37,26 @@ python_test_host {
         "sdv_test_fw_defaults",
     ],
     test_config_template: ":sdv_one_device",
+}
+
+// Two VMs test
+python_test_host {
+    name: "SdvBaselineHwSuspendResumeTwoVMTest",
+    main: "sdv_baseline_hw_suspend_resume_2vm_test.py",
+    srcs: [
+        "sdv_baseline_hw_suspend_resume_2vm_test.py",
+        "sdv_baseline_hw_suspend_resume_mixin.py",
+        "qnx_process_management.py",
+        "sdv_baseline_hw_suspend_resume_test_verification.py",
+    ],
+    data: [
+        ":sdv_test_fw_device_configs",
+    ],
+    test_options: {
+        unit_test: false,
+    },
+    defaults: [
+        "sdv_test_fw_defaults",
+    ],
+    test_config_template: ":sdv_two_devices",
 }

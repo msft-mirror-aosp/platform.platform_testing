@@ -246,6 +246,12 @@ class WindowManagerStateSubjectTest {
             .check { "App window names contain $expectedAppWindowName" }
             .that(appWindowNames)
             .contains(expectedAppWindowName)
+
+        val debugNames = firstEntry.wmState.appWindows.map { it.debugName }
+        Truth.assertThat(
+                debugNames.any { it.contains(expectedAppWindowName) && it.contains("(Window#") }
+            )
+            .isTrue()
     }
 
     @Test
@@ -434,6 +440,18 @@ class WindowManagerStateSubjectTest {
         assertFail("ImaginaryWindow should exist") {
             entry.isNonAppWindowInvisible(TestComponents.IMAGINARY, mustExist = true)
         }
+    }
+
+    @Test
+    fun isVisible_reportsDebugName() {
+        val entry =
+            WindowManagerTraceSubject(trace, reader)
+                .getEntryByElapsedTimestamp(traceFirstFrameTimestamp)
+        val matcher = ComponentNameMatcher.STATUS_BAR
+        val error = assertThrows<AssertionError> { entry.isNonAppWindowInvisible(matcher) }
+
+        Truth.assertThat(error).hasMessageThat().contains("Occurrences of StatusBar:")
+        Truth.assertThat(error).hasMessageThat().contains("StatusBar (Window#")
     }
 
     companion object {
