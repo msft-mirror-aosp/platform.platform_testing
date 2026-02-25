@@ -26,6 +26,7 @@
     352,
     368,
     384,
+    400,
     "after"
   ],
   "features": [
@@ -46,11 +47,11 @@
           "height": 10
         },
         {
-          "width": 13.2,
+          "width": 13.428572,
           "height": 10
         },
         {
-          "width": 20.8,
+          "width": 20.857143,
           "height": 10
         },
         {
@@ -58,7 +59,7 @@
           "height": 10
         },
         {
-          "width": 39.2,
+          "width": 39.42857,
           "height": 10
         },
         {
@@ -66,11 +67,11 @@
           "height": 10
         },
         {
-          "width": 55.6,
+          "width": 55.714287,
           "height": 10
         },
         {
-          "width": 62.4,
+          "width": 62.285713,
           "height": 10
         },
         {
@@ -78,63 +79,67 @@
           "height": 10
         },
         {
-          "width": 72.4,
+          "width": 72.57143,
           "height": 10
         },
         {
-          "width": 76.4,
+          "width": 76.28571,
           "height": 10
         },
         {
-          "width": 79.2,
+          "width": 79.42857,
           "height": 10
         },
         {
-          "width": 81.6,
+          "width": 81.71429,
           "height": 10
         },
         {
-          "width": 83.6,
+          "width": 83.42857,
           "height": 10
         },
         {
-          "width": 85.2,
+          "width": 85.14286,
           "height": 10
         },
         {
-          "width": 86,
+          "width": 86.28571,
           "height": 10
         },
         {
-          "width": 87.2,
+          "width": 87.14286,
           "height": 10
         },
         {
-          "width": 87.6,
+          "width": 87.71429,
           "height": 10
         },
         {
-          "width": 88.4,
+          "width": 88.28571,
           "height": 10
         },
         {
-          "width": 88.8,
+          "width": 88.57143,
           "height": 10
         },
         {
-          "width": 89.2,
+          "width": 89.14286,
           "height": 10
         },
         {
-          "width": 89.2,
+          "width": 89.14286,
           "height": 10
         },
         {
-          "width": 89.6,
+          "width": 89.42857,
           "height": 10
         },
         {
-          "width": 89.6,
+          "width": 89.71429,
+          "height": 10
+        },
+        {
+          "width": 89.71429,
           "height": 10
         },
         {
