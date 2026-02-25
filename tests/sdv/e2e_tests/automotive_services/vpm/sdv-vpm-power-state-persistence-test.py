@@ -20,6 +20,7 @@ from typing import Optional
 
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 from sdv_test_fw.session.interactive_session import Session
+from sdv_test_fw.verification import polling
 
 
 class SdvVpmPowerStateManager:
@@ -70,25 +71,22 @@ class SdvVpmPowerStateManager:
                 f' [{self.__device_adb.get_device_serial()}]'
             )
 
-    def wait_polling_for_power_state_report(self, expected_state_str, timeout=30, poll_interval=0.5) -> str:
-        last_report = ''
-        deadline = time.perf_counter() + timeout
-        result = False
-        while (
-            time.perf_counter() < deadline
-        ):
+    def wait_polling_for_power_state_report(self, expected_state_str, timeout=30, poll_interval=0.5) -> bool:
+        def _check_state():
             full_report = self.__device_adb.execute_shell_command(
                 self.__COMMAND_TO_READ_LOG.format(
                     log_file_path=self.__VPM_POWER_STATE_CLIENT_LOG_PATH
                 )
             )
-            last_report = full_report.splitlines()[-1]
-            if expected_state_str in last_report:
-                result = True
-                break
+            if full_report and expected_state_str in full_report.splitlines()[-1]:
+                return True
+            return False
 
-            time.sleep(poll_interval)
-
+        result = polling.wait_and_return_result(
+            _check_state,
+            timeout=timeout,
+            poll_interval=poll_interval,
+        )
         return result
 
     def stop_power_state_client(self) -> str:
@@ -145,24 +143,21 @@ class SdvVpmPowerStateManager:
             )
 
         # wait until new power state set:
-        deadline = time.perf_counter() + timeout
-        vepsm_log = ''
-        vepsm_success = False
-        while (
-            time.perf_counter() < deadline
-            and not vepsm_success
-        ):
+        def _has_received_report():
             vepsm_log = self.__device_adb.execute_shell_command(
                 self.__COMMAND_TO_READ_LOG.format(
                     log_file_path=self.__VPM_VEPSM_LOG_PATH
                 )
             )
-            if 'Received power-state-report' in vepsm_log:
-                vepsm_success = True
-            time.sleep(poll_interval)
-        if not vepsm_success:
-            raise Exception(
-                "Timeout in vepsm command, did not receive expected stdout")
+            return 'Received power-state-report' in vepsm_log
+
+        # wait_for_true raises asserts.fail on timeout.
+        polling.wait_for_true(
+            _has_received_report,
+            timeout=timeout,
+            poll_interval=poll_interval,
+            assert_msg="Timeout in vepsm command, did not receive expected stdout"
+        )
 
         # cleanup temp file and subprocess:
         self.__device_adb.terminate_subprocess(
