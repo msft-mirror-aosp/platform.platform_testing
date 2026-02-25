@@ -42,3 +42,6 @@ class HardwareDHI(device_host_interaction.DeviceHostInteraction):
 
     def powerwash(self):
         self._not_implemented_error('powerwash')
+
+    def power_button(self):
+        self._not_implemented_error('power_button')
