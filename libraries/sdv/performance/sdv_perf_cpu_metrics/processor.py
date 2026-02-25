@@ -12,6 +12,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Library for computing CPU metrics from a Perfetto trace.
+
+from sdv_perf_cpu_metrics import processor
+
+# Get overall system cpu utilization
+cpu_metrics_processor = processor.CpuMetricsProcessor(perfetto_trace)
+
+_, overall_cpu_perc_metrics = cpu_metrics_processor.compute_overall_utilization()
+sys_overall_cpu_perc_mean = overall_cpu_perc_metrics['overall_cpu_perc_mean']
+
+# Get overall system cpu utilization per-cpu core
+_, overall_per_cpu_metrics = cpu_metrics_processor.compute_per_cpu_utilization()
+sys_overall_per_cpu_metrics_mean = overall_per_cpu_metrics['overall_cpu_perc_cpu_0_mean']
+
+# Get cpu utilization of specified process within specified time rage
+_, overall_cpu_perc_metrics_of_process = (
+    cpu_metrics_processor.compute_overall_utilization_of_process(
+        process_name="logcat",
+        ts_start=trace_processor.get_trace_start_timestamp() + 100 * 1e9,
+        ts_end=trace_processor.get_trace_end_timestamp() - 100 * 1e9,
+        aggregates=[Aggregate.MIN, Aggregate.MAX, Aggregate.MEAN, Aggregate.STDEV],
+    )
+)
+overall_cpu_perc_metrics_of_logcat_at_given_time_mean = overall_cpu_perc_metrics_of_process['overall_cpu_perc_mean']
+"""
+
 import logging
 from typing import Any, Dict, List, Optional, Tuple
 
