@@ -15,8 +15,8 @@
 """ SDV Sample that automates deadline scheduling sample. """
 from mobly import asserts
 import logging
-import time
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
+from sdv_test_fw.verification import polling
 
 
 class SdvSampleServiceBundleDeadlineSchedulingTest(sdv_base_test.SdvBaseTestClass):
@@ -46,32 +46,17 @@ class SdvSampleServiceBundleDeadlineSchedulingTest(sdv_base_test.SdvBaseTestClas
         """ Unified logging exit test suit. """
         logging.info(f"{self.get_suite_name()} :: Finished test {self.current_test_info.name}")
 
-
-    def wait_for_logcat(self, grep_text, timeout=30, poll_interval=0.1):
-        """Polls the logcat output for a specific text until found or timeout.
-
-        Args:
-            grep_text: The text to search for in the logcat output.
-            timeout: The maximum time (in seconds) to wait.
-            poll_interval: The time (in seconds) between polls.
-        Returns:
-            matched string if grep matched at least one logcat output
-            empty string if grep matched no logcat output within the timeout
-        """
-        deadline = time.perf_counter() + timeout
-        while time.perf_counter() < deadline:
-            logcat_grep_result = self.sdv_device.adb().grep_from_logcat(
-                grep = f'{self.LOGCAT_TAG}: .*{grep_text}')
-            if logcat_grep_result != "":
-                return logcat_grep_result
-            time.sleep(poll_interval)
-        return ""
-
     def verify_deadline_scheduling(self, grep_text, timeout=30, poll_interval=0.1):
         """ Verifies that the deadline scheduling configuration was successfully applied. """
 
-        logcat_grep_result = self.wait_for_logcat(grep_text)
-        asserts.assert_not_equal(logcat_grep_result, "", 'Failed to find logcat entry')
+        logcat_grep_result = polling.wait_and_return_result(
+            lambda: self.sdv_device.adb().grep_from_logcat(
+                grep=f'{self.LOGCAT_TAG}: .*{grep_text}'
+            ) or None,
+            timeout=timeout,
+            poll_interval=poll_interval
+        )
+        asserts.assert_is_not_none(logcat_grep_result, "Failed to find logcat entry")
         pid = logcat_grep_result.split()[2]
         logging.info(f"Scheduling configuration applied to the process with id: {pid}")
         sched_output = self.sdv_device.adb().execute_shell_command(self.PROCESS_SCHEDULING_COMMAND.format(pid = pid))
@@ -86,8 +71,14 @@ class SdvSampleServiceBundleDeadlineSchedulingTest(sdv_base_test.SdvBaseTestClas
     def verify_cpu_affinity(self, grep_text, timeout=30, poll_interval=0.1):
         """ Verifies that the CPU affinity was successfully applied. """
 
-        logcat_grep_result = self.wait_for_logcat(grep_text)
-        asserts.assert_not_equal(logcat_grep_result, "", 'Failed to find logcat entry')
+        logcat_grep_result = polling.wait_and_return_result(
+            lambda: self.sdv_device.adb().grep_from_logcat(
+                grep=f'{self.LOGCAT_TAG}: .*{grep_text}'
+            ) or None,
+            timeout=timeout,
+            poll_interval=poll_interval
+        )
+        asserts.assert_is_not_none(logcat_grep_result, "Failed to find logcat entry")
 
         pid = logcat_grep_result.split()[2]
         logging.info(f"CPU Affinity service bundle has process id {pid}")
