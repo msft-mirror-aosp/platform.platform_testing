@@ -594,6 +594,39 @@ class ComposeToolkitTest {
             assertThat(awaitAnimationEndInvocationFrames).containsExactly(108, 109, 110).inOrder()
         }
 
+    @Test
+    fun performance_captureHundredProperties() =
+        motionRule.runTest {
+            var completed = false
+
+            val motion =
+                recordMotion(
+                    content = { play ->
+                        Box(
+                            modifier =
+                                Modifier.testTag("foo")
+                                    .animateContentSize { _, _ -> completed = true }
+                                    .width(if (play) 90.dp else 10.dp)
+                                    .height(10.dp)
+                                    .background(Color.Red)
+                        )
+                    },
+                    ComposeRecordingSpec.until({ completed }) {
+                        repeat(100) {
+                            feature(
+                                hasTestTag("foo"),
+                                ComposeFeatureCaptures.dpSize,
+                                name = "foo_$it",
+                            )
+                        }
+                    },
+                )
+
+            // needs all 100 features, and needs to finish within the test timeout (it only does
+            // that with useCachedSemanticNodeFetcher == true)
+            assertThat(motion.timeSeries.features.keys).hasSize(100)
+        }
+
     /** @see assertThatFrameCountValues */
     private fun MotionTestRule<ComposeToolkit>.assertThatFrameCountValuesImpl(
         recordBefore: Boolean,

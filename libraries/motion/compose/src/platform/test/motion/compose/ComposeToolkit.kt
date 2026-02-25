@@ -30,14 +30,16 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.platform.ViewRootForTest
+import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
 import androidx.compose.ui.test.TouchInjectionScope
+import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.junit4.v2.createComposeRule
-import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
@@ -145,6 +147,26 @@ class MotionControl(
 
 typealias MotionControlFn = suspend MotionControlScope.() -> Unit
 
+/**
+ * Returns a single semantic node matching [matcher].
+ *
+ * Throws if not exactly one matching node exists.
+ *
+ * This is a temporary replacement `onNode(matcher).fetchSemanticsNode()` for fetching many
+ * [SemanticsNode] during the same animation frame. This needs to be replaced eventually with the
+ * Compose-provided solution for this.
+ */
+fun SemanticsNodeInteractionsProvider.fetchSemanticsNodeMaybeCached(
+    matcher: SemanticsMatcher,
+    useUnmergedTree: Boolean = false,
+): SemanticsNode {
+    return if (this is CachedSemanticNodeFetcher) {
+        fetchSemanticsNodeCached(matcher, useUnmergedTree)
+    } else {
+        onNode(matcher).fetchSemanticsNode()
+    }
+}
+
 interface MotionControlScope : SemanticsNodeInteractionsProvider {
     /** Waits until [check] returns true. Invoked on each frame. */
     suspend fun awaitCondition(check: () -> Boolean)
@@ -236,14 +258,20 @@ fun MotionTestRule<ComposeToolkit>.recordMotion(
         val propertyCollector = mutableMapOf<String, MutableList<DataPoint<*>>>()
         val screenshotCollector = mutableListOf<ImageBitmap>()
 
+        lateinit var nodeProvider: SemanticsNodeInteractionsProvider
+
         @SuppressLint("VisibleForTests")
         fun recordFrame(frameId: FrameId) {
             Log.i(TAG, "recordFrame($frameId)")
             frameIdCollector.add(frameId)
-            recordingSpec.timeSeriesCapture.invoke(TimeSeriesCaptureScope(this, propertyCollector))
+            recordingSpec.timeSeriesCapture.invoke(
+                TimeSeriesCaptureScope(nodeProvider, propertyCollector)
+            )
 
             if (recordingSpec.captureScreenshots) {
-                val view = (onRoot().fetchSemanticsNode().root as ViewRootForTest).view
+                val view =
+                    (nodeProvider.fetchSemanticsNodeMaybeCached(isRoot()).root as ViewRootForTest)
+                        .view
                 try {
                     screenshotCollector.add(
                         view.captureToBitmapAsync().get(10, TimeUnit.SECONDS).asImageBitmap()
@@ -281,10 +309,11 @@ fun MotionTestRule<ComposeToolkit>.recordMotion(
 
             val motionControl =
                 MotionControlImpl(
-                    toolkit.composeContentTestRule,
-                    toolkit.testScope,
-                    recordingSpec.motionControl,
-                )
+                        toolkit.composeContentTestRule,
+                        toolkit.testScope,
+                        recordingSpec.motionControl,
+                    )
+                    .also { nodeProvider = it }
 
             Log.i(TAG, "recordMotion() awaiting readyToPlay")
 
@@ -338,6 +367,13 @@ fun MotionTestRule<ComposeToolkit>.recordMotion(
     }
 }
 
+internal interface CachedSemanticNodeFetcher : SemanticsNodeInteractionsProvider {
+    fun fetchSemanticsNodeCached(
+        matcher: SemanticsMatcher,
+        useUnmergedTree: Boolean = false,
+    ): SemanticsNode
+}
+
 enum class MotionControlState {
     Start,
     WaitingToPlay,
@@ -351,7 +387,10 @@ private class MotionControlImpl(
     val composeTestRule: ComposeTestRule,
     val testScope: TestScope,
     val motionControl: MotionControl,
-) : MotionControlScope, SemanticsNodeInteractionsProvider by composeTestRule {
+) :
+    MotionControlScope,
+    SemanticsNodeInteractionsProvider by composeTestRule,
+    CachedSemanticNodeFetcher {
 
     private var state = MotionControlState.Start
     private lateinit var delayReadyToPlayJob: Job
@@ -387,6 +426,8 @@ private class MotionControlImpl(
             }
 
     fun nextFrame() {
+        allNodesCache = null
+        allNodesUnmergedCache = null
         composeTestRule.mainClock.advanceTimeByFrame()
 
         when (state) {
@@ -479,6 +520,34 @@ private class MotionControlImpl(
     private fun MotionControlFn.launch(): Job {
         val function = this
         return testScope.launch { function() }
+    }
+
+    override fun fetchSemanticsNodeCached(
+        matcher: SemanticsMatcher,
+        useUnmergedTree: Boolean,
+    ): SemanticsNode {
+        return fetchAllNodes(useUnmergedTree).singleOrNull { matcher.matches(it) }
+            ?: throw AssertionError("Failed: assertExists")
+    }
+
+    private val allNodesMatcher = SemanticsMatcher("All Nodes") { true }
+    private var allNodesCache: List<SemanticsNode>? = null
+    private var allNodesUnmergedCache: List<SemanticsNode>? = null
+
+    private fun fetchAllNodes(useUnmergedTree: Boolean): List<SemanticsNode> {
+        return if (useUnmergedTree) {
+            allNodesUnmergedCache
+                ?: composeTestRule
+                    .onAllNodes(allNodesMatcher, useUnmergedTree = true)
+                    .fetchSemanticsNodes()
+                    .also { allNodesUnmergedCache = it }
+        } else {
+            allNodesCache
+                ?: composeTestRule
+                    .onAllNodes(allNodesMatcher, useUnmergedTree = false)
+                    .fetchSemanticsNodes()
+                    .also { allNodesCache = it }
+        }
     }
 }
 
