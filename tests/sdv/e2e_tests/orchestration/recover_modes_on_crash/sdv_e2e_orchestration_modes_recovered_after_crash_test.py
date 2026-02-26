@@ -33,6 +33,7 @@ class SdvE2EOrchestrationModesRecoveredAfterCrashTest(
     FINISHED_STARTING_RECOVER_CUSTOM_MODE_SERVICE = r'Request for moving service bundle .*: "com.sdv.google.sample.lifecycle.apex", .*: "LifecycleCppSampleServiceBundle", .*: "recover-custom-mode" } to STARTED state was Ok(())'
     FINISHED_STARTING_RECOVER_POWER_MODE_SERVICE = r'Request for moving service bundle .*: "com.sdv.google.sample.lifecycle.apex", .*: "LifecycleCppSampleServiceBundle", .*: "recover-power-mode" } to STARTED state was Ok(())'
     FINISHED_STARTING_RECOVER_VEHICLE_MODE_SERVICE = r'Request for moving service bundle .*: "com.sdv.google.sample.lifecycle.apex", .*: "LifecycleCppSampleServiceBundle", .*: "recover-vehicle-mode" } to STARTED state was Ok(())'
+    ORCH_READY_PROPERTY_ERROR = "Couldn't write property 'ro.sdv.orchestrator.state.ready'"
 
     def setup_class(self):
         super().setup_class()
@@ -69,6 +70,14 @@ class SdvE2EOrchestrationModesRecoveredAfterCrashTest(
         asserts.assert_is_not_none(result, f"Logcat result not found within timeout: {expected_result}")
         return result
 
+    def verify_orch_ready_property_error_not_logged(self):
+        logcat_result = self.sdv_device.grep_from_logcat("sdv_orchestration_agent")
+        asserts.assert_not_in(
+            self.ORCH_READY_PROPERTY_ERROR,
+            logcat_result,
+            f"Not expected logcat result found: {self.ORCH_READY_PROPERTY_ERROR}",
+        )
+
     def test_modes_recovered_after_orch_crash(
         self
     ):
@@ -87,6 +96,8 @@ class SdvE2EOrchestrationModesRecoveredAfterCrashTest(
             'orch_custom_mode_sample E2E-TESTS recover-custom-mode')
         custom_transition_completed_timestamp = self.wait_for_logcat(
             self.FINISHED_PROCESSING_CUSTOM_MODE)
+
+        self.verify_orch_ready_property_error_not_logged()
 
         # Kill orchestrator agent
         self.kill_orch_agent()
@@ -146,6 +157,8 @@ class SdvE2EOrchestrationModesRecoveredAfterCrashTest(
         for dump_line in expected_dump:
             asserts.assert_regex(dump_report, dump_line,
                                                    f"Did not find: '{dump_line}' in dump report: {dump_report}")
+
+        self.verify_orch_ready_property_error_not_logged()
 
         logging.info(
             f"{self.get_suite_name()}#{self.current_test_info.name} completed."
