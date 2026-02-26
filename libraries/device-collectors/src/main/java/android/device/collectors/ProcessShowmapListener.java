@@ -24,8 +24,6 @@ import androidx.annotation.VisibleForTesting;
 
 import com.android.helpers.ProcessShowmapHelper;
 
-import org.junit.runner.Description;
-
 /**
  * A {@link ProcessShowmapListener} that measures process PSS, RSS, and VSS at the beginning and
  * end of a test method and adds the final values and their deltas to the metrics.
@@ -57,7 +55,7 @@ public class ProcessShowmapListener extends BaseCollectionListener<Long> {
     }
 
     @Override
-    public void onTestRunStart(DataRecord runData, Description description) {
+    public void setupAdditionalArgs() {
         Bundle args = getArgsBundle();
         String procsString = args.getString(PROCESS_NAMES_KEY);
         if (procsString == null) {
