@@ -35,7 +35,7 @@ class SdvHmDumpsysOutputTest(sdv_base_test.SdvBaseTestClass):
         registration_proof = "Registered health configuration:"
         deadline = time.perf_counter() + timeout
         while time.perf_counter() < deadline:
-            if self.sdv_device.advance_logcat().nth_message(2, registration_proof) is not None:
+            if self.sdv_device.advance_logcat().nth_message(3, registration_proof) is not None:
                 return
             time.sleep(0.1)
         asserts.fail(
@@ -56,6 +56,14 @@ class SdvHmDumpsysOutputTest(sdv_base_test.SdvBaseTestClass):
         self.destroy_service_command = "sdv_service_bundle destroy {fqin}"
 
         hm_binder_name = "com.google.sdv.ISdvAgent/hm"
+
+        # The vm name is overridden by orch to "local-vm"
+        self.expected_recovery_data_dump = (
+            'ID: FQIN: local-vm:com.android.sdv.sample.oem.health.monitored.SampleHMBundle/dumpsys-e2e-test\n'
+            "Recovery State: Normal\n"
+            "Lifecycle State: Started\n"
+            "Health Status: Healthy"
+        )
 
         expected_pre_bundle_start = [
             "AGENT NAME: SDV Agent dump - Health Monitor\n"
@@ -113,6 +121,8 @@ class SdvHmDumpsysOutputTest(sdv_base_test.SdvBaseTestClass):
             'ID: Agent: sdv_sd_agent\n'
             "linked_binder: google.sdv.service_discovery.discovery.IServiceDiscoveryAgent/default\n"
             "alive: true",
+
+            self.expected_recovery_data_dump
         ]
 
         # verify dumpsys output when no service bundles are monitored:
@@ -123,12 +133,17 @@ class SdvHmDumpsysOutputTest(sdv_base_test.SdvBaseTestClass):
                 s, report,
                 f"Monitored bundles not active case. Did not find substring:\n{s}\n\nin dumpsys report:\n{report}"
             )
+        asserts.assert_not_in(self.expected_recovery_data_dump,
+                              report,
+                              "Recovery data should not be present before the bundle starts")
 
         # add monitored bundles:
         self.sdv_device.execute_shell_command(
             start_service_command.format(fqin=self.monitored_service_1_fqin))
         self.sdv_device.execute_shell_command(
             start_service_command.format(fqin=self.monitored_service_2_fqin))
+        # start monitored bundle through orchestrator to assert recovery data
+        self.sdv_device.execute_shell_command_in_subprocess("custom_mode_process", 'orch_custom_mode_sample E2E-TESTS health-monitor-dumpsys-start')
 
         # wait for bundles to log registration with HM:
         self.wait_for_bundles_to_register()
