@@ -86,7 +86,9 @@ public class LockscreenUtils {
      * @param expectedResult expected result after setting the lockscreen because for lock type
      *     Swipe and None Keyguard#isKeyguardSecure remain unlocked i.e. false.
      * @return whether the given {@code lockscreenType} is supported by this device. For now, it's
-     *     only checked for {@code SWIPE} (and always return {@code true} for the other types
+     *     only checked for {@code SWIPE} (and always return {@code true} for the other types). If
+     *     this returns {@code false}, configuring {@code lockscreenType} failed and the lock screen
+     *     is now disabled.
      */
     public static boolean setLockscreen(
             LockscreenType lockscreenType, String lockscreenCode, boolean expectedResult) {
