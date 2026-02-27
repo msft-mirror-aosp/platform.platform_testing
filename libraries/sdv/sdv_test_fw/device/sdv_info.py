@@ -13,8 +13,23 @@
 # limitations under the License.
 
 import enum
+import logging
 
+from mobly import signals
+from sdv_test_fw.device import sdv_adb
 from sdv_test_fw.device import sdv_property
+
+DEVICE_TAG_PREFIX = 'device'
+
+
+def build_device_tag(device_id: int) -> str:
+    return f'{DEVICE_TAG_PREFIX}{device_id}'
+
+
+class SdvDeviceInfoError(signals.ControllerError):
+    """Raised when there is an issue reading or parsing SDV device information."""
+
+    pass
 
 
 class SdvTarget(enum.Enum):
@@ -23,7 +38,7 @@ class SdvTarget(enum.Enum):
     MEDIA = 'media'
 
     @classmethod
-    def from_flavor(cls, device_flavor):
+    def from_flavor(cls, device_flavor: str) -> 'SdvTarget':
         # The flavor property contains information about the target.
         # SdvTarget values must match with the targets in the property.
         # e.g. core: sdv_core_cf-userdebug
@@ -33,7 +48,7 @@ class SdvTarget(enum.Enum):
             if target.value in device_flavor:
                 return target
 
-        raise NotImplementedError(f'Device target not found in {device_flavor}')
+        raise SdvDeviceInfoError(f'Device target not found in {device_flavor}')
 
 
 class SdvVm(enum.Enum):
@@ -41,7 +56,7 @@ class SdvVm(enum.Enum):
     HW = 'HW VM'
 
     @classmethod
-    def from_flavor(cls, device_flavor):
+    def from_flavor(cls, device_flavor: str) -> 'SdvVm':
         # The flavor property for CF VMs contains _cf while for hardware there is
         # no relevant information. We assume that if it is not cuttlefish, it is
         # hardware
@@ -62,7 +77,9 @@ class SdvInfo:
     critical when accessing the system properties via adb is not possible.
     """
 
-    def __init__(self, adb_device):
+    INSTANCE_NAME_PREFIX = 'instance'
+
+    def __init__(self, adb_device: sdv_adb.SdvAdb):
         """Initialize with all relevant device information for SDV.
 
         Args:
@@ -82,7 +99,38 @@ class SdvInfo:
         self._vm = SdvVm.from_flavor(device_flavor)
 
     @property
-    def is_cuttlefish(self):
+    def device_tag(self) -> str:
+        # In HW, only 2VMs is supported for multiVM tests. There is a temporary
+        # workaround in the setup that requires the instance name for the second
+        # VM to be instance3. TODO(458268779): Remove conditional when bug is
+        # fixed and setup is aligned between CF and HW.
+        if self.is_hardware:
+            if self.instance_number > 1:
+                return build_device_tag(device_id=2)
+
+        return build_device_tag(self.instance_number)
+
+    @property
+    def instance_number(self) -> int:
+        """Returns the instance number derived from the instance name.
+
+        Returns:
+          int: Instance number (i.e. 1, 2, 3)
+        """
+        if not self.instance_name.startswith(self.INSTANCE_NAME_PREFIX):
+            logging.error(
+                'Not possible to parse instance number. Unexpected instance'
+                f' name {self.instance_name}. Expected format:'
+                f' {self.INSTANCE_NAME_PREFIX}<number>'
+            )
+            raise SdvDeviceInfoError(
+                f'Invalid instance name format: {self.instance_name}. Expected'
+                f' format: {self.INSTANCE_NAME_PREFIX}<number>'
+            )
+        return int(self.instance_name[len(self.INSTANCE_NAME_PREFIX) :])
+
+    @property
+    def is_cuttlefish(self) -> bool:
         """Checks if the current device is a Cuttlefish (CF) virtual device.
 
         Returns:
@@ -91,7 +139,7 @@ class SdvInfo:
         return self._vm is SdvVm.CF
 
     @property
-    def is_hardware(self):
+    def is_hardware(self) -> bool:
         """Checks if the current device is a Hardware VM.
 
         Returns:
@@ -100,7 +148,7 @@ class SdvInfo:
         return self._vm is SdvVm.HW
 
     @property
-    def is_core(self):
+    def is_core(self) -> bool:
         """Checks if the target of the device is SDV Core.
 
         Returns:
@@ -110,7 +158,7 @@ class SdvInfo:
         return self._target is SdvTarget.CORE
 
     @property
-    def is_ivi(self):
+    def is_ivi(self) -> bool:
         """Checks if the target of the device is IVI.
 
         Returns:
@@ -119,7 +167,7 @@ class SdvInfo:
         return self._target is SdvTarget.IVI
 
     @property
-    def is_media(self):
+    def is_media(self) -> bool:
         """Checks if the target of the device is Media.
 
         Returns:
@@ -128,7 +176,7 @@ class SdvInfo:
         return self._target is SdvTarget.MEDIA
 
     @property
-    def is_sdv(self):
+    def is_sdv(self) -> bool:
         """Checks if the target is SDV.
 
         Both core and media targets are considered SDV.

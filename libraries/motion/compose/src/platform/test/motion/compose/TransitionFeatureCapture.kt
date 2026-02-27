@@ -54,7 +54,8 @@ fun <T> TimeSeriesCaptureScope<SemanticsNodeInteractionsProvider>.animatedVisibi
 ) {
     on({
         try {
-            it.onNode(matcher).fetchSemanticsNode().config[transitionValueKey.semanticsPropertyKey]
+            it.fetchSemanticsNodeMaybeCached(matcher)
+                .config[transitionValueKey.semanticsPropertyKey]
         } catch (e: AssertionError) {
             null
         }

@@ -17,6 +17,8 @@
 package platform.test.motion.compose
 
 import android.annotation.SuppressLint
+import android.graphics.HardwareRenderer
+import android.os.Build
 import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,14 +30,16 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.ViewConfiguration
 import androidx.compose.ui.platform.ViewRootForTest
+import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.SemanticsNodeInteractionsProvider
 import androidx.compose.ui.test.TouchInjectionScope
+import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.junit4.ComposeTestRule
 import androidx.compose.ui.test.junit4.v2.createComposeRule
-import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
@@ -80,11 +84,15 @@ import platform.test.screenshot.captureToBitmapAsync
  * Toolkit to support Compose-based [MotionTestRule] tests.
  *
  * @param fixedConfiguration when non-null, applies the specified configuration to the content.
+ * @param disableDrawDuringTest When true, will disable rendering at a [HardwareRenderer] level. On
+ *   by default for cuttlefish emulators, greatly reduces test execution time when using SW
+ *   rendering on emulators.
  */
 class ComposeToolkit(
     val composeContentTestRule: ComposeContentTestRule,
     val testScope: TestScope,
     val fixedConfiguration: FixedConfiguration? = null,
+    val disableDrawDuringTest: Boolean = isCuttlefish(),
 ) {
     internal companion object {
         const val TAG = "ComposeToolkit"
@@ -138,6 +146,26 @@ class MotionControl(
 )
 
 typealias MotionControlFn = suspend MotionControlScope.() -> Unit
+
+/**
+ * Returns a single semantic node matching [matcher].
+ *
+ * Throws if not exactly one matching node exists.
+ *
+ * This is a temporary replacement `onNode(matcher).fetchSemanticsNode()` for fetching many
+ * [SemanticsNode] during the same animation frame. This needs to be replaced eventually with the
+ * Compose-provided solution for this.
+ */
+fun SemanticsNodeInteractionsProvider.fetchSemanticsNodeMaybeCached(
+    matcher: SemanticsMatcher,
+    useUnmergedTree: Boolean = false,
+): SemanticsNode {
+    return if (this is CachedSemanticNodeFetcher) {
+        fetchSemanticsNodeCached(matcher, useUnmergedTree)
+    } else {
+        onNode(matcher).fetchSemanticsNode()
+    }
+}
 
 interface MotionControlScope : SemanticsNodeInteractionsProvider {
     /** Waits until [check] returns true. Invoked on each frame. */
@@ -230,14 +258,20 @@ fun MotionTestRule<ComposeToolkit>.recordMotion(
         val propertyCollector = mutableMapOf<String, MutableList<DataPoint<*>>>()
         val screenshotCollector = mutableListOf<ImageBitmap>()
 
+        lateinit var nodeProvider: SemanticsNodeInteractionsProvider
+
         @SuppressLint("VisibleForTests")
         fun recordFrame(frameId: FrameId) {
             Log.i(TAG, "recordFrame($frameId)")
             frameIdCollector.add(frameId)
-            recordingSpec.timeSeriesCapture.invoke(TimeSeriesCaptureScope(this, propertyCollector))
+            recordingSpec.timeSeriesCapture.invoke(
+                TimeSeriesCaptureScope(nodeProvider, propertyCollector)
+            )
 
             if (recordingSpec.captureScreenshots) {
-                val view = (onRoot().fetchSemanticsNode().root as ViewRootForTest).view
+                val view =
+                    (nodeProvider.fetchSemanticsNodeMaybeCached(isRoot()).root as ViewRootForTest)
+                        .view
                 try {
                     screenshotCollector.add(
                         view.captureToBitmapAsync().get(10, TimeUnit.SECONDS).asImageBitmap()
@@ -248,78 +282,96 @@ fun MotionTestRule<ComposeToolkit>.recordMotion(
             }
         }
 
-        var playbackStarted by mutableStateOf(false)
+        val wasDrawingEnabled = HardwareRenderer.isDrawingEnabled()
+        if (toolkit.disableDrawDuringTest && !recordingSpec.captureScreenshots) {
+            HardwareRenderer.setDrawingEnabled(false)
+        }
 
-        mainClock.autoAdvance = false
+        try {
 
-        setContent {
-            EnableMotionTestValueCollection {
-                val fixedConfiguration = toolkit.fixedConfiguration
-                if (fixedConfiguration != null) {
-                    FixedConfigurationProvider(fixedConfiguration) { content(playbackStarted) }
-                } else {
-                    content(playbackStarted)
+            var playbackStarted by mutableStateOf(false)
+
+            mainClock.autoAdvance = false
+
+            setContent {
+                EnableMotionTestValueCollection {
+                    val fixedConfiguration = toolkit.fixedConfiguration
+                    if (fixedConfiguration != null) {
+                        FixedConfigurationProvider(fixedConfiguration) { content(playbackStarted) }
+                    } else {
+                        content(playbackStarted)
+                    }
                 }
             }
-        }
-        Log.i(TAG, "recordMotion() created compose content")
+            Log.i(TAG, "recordMotion() created compose content")
 
-        waitForIdle()
+            waitForIdle()
 
-        val motionControl =
-            MotionControlImpl(
-                toolkit.composeContentTestRule,
-                toolkit.testScope,
-                recordingSpec.motionControl,
+            val motionControl =
+                MotionControlImpl(
+                        toolkit.composeContentTestRule,
+                        toolkit.testScope,
+                        recordingSpec.motionControl,
+                    )
+                    .also { nodeProvider = it }
+
+            Log.i(TAG, "recordMotion() awaiting readyToPlay")
+
+            // Wait for the test to allow readyToPlay
+            while (!motionControl.readyToPlay) {
+                motionControl.nextFrame()
+            }
+
+            if (recordingSpec.recordBefore) {
+                recordFrame(SupplementalFrameId("before"))
+            }
+            Log.i(TAG, "recordMotion() awaiting recordingStarted")
+
+            playbackStarted = true
+            while (!motionControl.recordingStarted) {
+                motionControl.nextFrame()
+            }
+
+            Log.i(TAG, "recordMotion() begin recording")
+
+            val startFrameTime = mainClock.currentTime
+            while (!motionControl.recordingEnded) {
+                recordFrame(TimestampFrameId(mainClock.currentTime - startFrameTime))
+                motionControl.nextFrame()
+            }
+
+            Log.i(TAG, "recordMotion() end recording")
+
+            mainClock.autoAdvance = true
+            waitForIdle()
+
+            if (recordingSpec.recordAfter) {
+                recordFrame(SupplementalFrameId("after"))
+            }
+
+            val timeSeries =
+                TimeSeries(
+                    frameIdCollector.toList(),
+                    propertyCollector.entries.map { entry -> Feature(entry.key, entry.value) },
+                )
+
+            return create(
+                timeSeries,
+                screenshotCollector
+                    .takeIf { recordingSpec.captureScreenshots }
+                    ?.map { it.asAndroidBitmap() },
             )
-
-        Log.i(TAG, "recordMotion() awaiting readyToPlay")
-
-        // Wait for the test to allow readyToPlay
-        while (!motionControl.readyToPlay) {
-            motionControl.nextFrame()
+        } finally {
+            HardwareRenderer.setDrawingEnabled(wasDrawingEnabled)
         }
-
-        if (recordingSpec.recordBefore) {
-            recordFrame(SupplementalFrameId("before"))
-        }
-        Log.i(TAG, "recordMotion() awaiting recordingStarted")
-
-        playbackStarted = true
-        while (!motionControl.recordingStarted) {
-            motionControl.nextFrame()
-        }
-
-        Log.i(TAG, "recordMotion() begin recording")
-
-        val startFrameTime = mainClock.currentTime
-        while (!motionControl.recordingEnded) {
-            recordFrame(TimestampFrameId(mainClock.currentTime - startFrameTime))
-            motionControl.nextFrame()
-        }
-
-        Log.i(TAG, "recordMotion() end recording")
-
-        mainClock.autoAdvance = true
-        waitForIdle()
-
-        if (recordingSpec.recordAfter) {
-            recordFrame(SupplementalFrameId("after"))
-        }
-
-        val timeSeries =
-            TimeSeries(
-                frameIdCollector.toList(),
-                propertyCollector.entries.map { entry -> Feature(entry.key, entry.value) },
-            )
-
-        return create(
-            timeSeries,
-            screenshotCollector
-                .takeIf { recordingSpec.captureScreenshots }
-                ?.map { it.asAndroidBitmap() },
-        )
     }
+}
+
+internal interface CachedSemanticNodeFetcher : SemanticsNodeInteractionsProvider {
+    fun fetchSemanticsNodeCached(
+        matcher: SemanticsMatcher,
+        useUnmergedTree: Boolean = false,
+    ): SemanticsNode
 }
 
 enum class MotionControlState {
@@ -335,7 +387,10 @@ private class MotionControlImpl(
     val composeTestRule: ComposeTestRule,
     val testScope: TestScope,
     val motionControl: MotionControl,
-) : MotionControlScope, SemanticsNodeInteractionsProvider by composeTestRule {
+) :
+    MotionControlScope,
+    SemanticsNodeInteractionsProvider by composeTestRule,
+    CachedSemanticNodeFetcher {
 
     private var state = MotionControlState.Start
     private lateinit var delayReadyToPlayJob: Job
@@ -371,6 +426,8 @@ private class MotionControlImpl(
             }
 
     fun nextFrame() {
+        allNodesCache = null
+        allNodesUnmergedCache = null
         composeTestRule.mainClock.advanceTimeByFrame()
 
         when (state) {
@@ -464,6 +521,34 @@ private class MotionControlImpl(
         val function = this
         return testScope.launch { function() }
     }
+
+    override fun fetchSemanticsNodeCached(
+        matcher: SemanticsMatcher,
+        useUnmergedTree: Boolean,
+    ): SemanticsNode {
+        return fetchAllNodes(useUnmergedTree).singleOrNull { matcher.matches(it) }
+            ?: throw AssertionError("Failed: assertExists")
+    }
+
+    private val allNodesMatcher = SemanticsMatcher("All Nodes") { true }
+    private var allNodesCache: List<SemanticsNode>? = null
+    private var allNodesUnmergedCache: List<SemanticsNode>? = null
+
+    private fun fetchAllNodes(useUnmergedTree: Boolean): List<SemanticsNode> {
+        return if (useUnmergedTree) {
+            allNodesUnmergedCache
+                ?: composeTestRule
+                    .onAllNodes(allNodesMatcher, useUnmergedTree = true)
+                    .fetchSemanticsNodes()
+                    .also { allNodesUnmergedCache = it }
+        } else {
+            allNodesCache
+                ?: composeTestRule
+                    .onAllNodes(allNodesMatcher, useUnmergedTree = false)
+                    .fetchSemanticsNodes()
+                    .also { allNodesCache = it }
+        }
+    }
 }
 
 /** Records the invocations of the [TouchInjectionScope] methods. */
@@ -535,3 +620,6 @@ private class TouchEventRecorder(
         lastPositions[pointerId] = position
     }
 }
+
+// Another copy of the many ways to figure out whether this is running on a CF.
+private fun isCuttlefish(): Boolean = Build.BOARD == "cutf"

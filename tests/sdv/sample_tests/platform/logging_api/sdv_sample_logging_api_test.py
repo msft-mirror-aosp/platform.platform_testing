@@ -48,7 +48,7 @@ class SdvSampleLoggingAPITest(
 
     REDIRECT_ERROR_TO_OUTPUT = '2>&1'
 
-    SAMPLES_ROOT_DIR = '/apex/com.sdv.google.sample.logging/bin'
+    SAMPLES_ROOT_DIR = '/apex/com.android.sdv.sample.logging/bin'
 
     @contextlib.contextmanager
     def property_override(self, name: str, value: str):
@@ -200,7 +200,7 @@ class SdvSampleLoggingAPITest(
             f'{self.get_suite_name()}#{self.current_test_info.name} started'
         )
 
-        # TODO: b/361610453 - include in com.sdv.google.sample.logging
+        # TODO: b/361610453 - include in com.android.sdv.sample.logging
         self.sdv_device.execute_shell_command(
             'structured_logging_sdv_rust_sample'
         )
@@ -538,14 +538,14 @@ class SdvSampleLoggingAPITest(
     @parameterized.named_parameters(
         {
             'testcase_name': 'cpp',
-            'service_bundle_fqin': 'local-vm:com.sdv.google.sample.logging.LoggingSampleServiceBundleCpp/instance',
-            'expected_tag': 'com_sdv_google_sample_logging_LoggingSampleServiceBundleCpp_instance',
+            'service_bundle_fqin': 'local-vm:com.android.sdv.sample.logging.LoggingSampleServiceBundleCpp/instance',
+            'expected_tag': 'com_android_sdv_sample_logging_LoggingSampleServiceBundleCpp_instance',
             'expected_log': 'Logging sample service bundle CPP successfully {}!'
         },
         {
             'testcase_name': 'rust',
-            'service_bundle_fqin': 'local-vm:com.sdv.google.sample.logging.LoggingSampleServiceBundle/instance',
-            'expected_tag': 'com_sdv_google_sample_logging_LoggingSampleServiceBundle_instance',
+            'service_bundle_fqin': 'local-vm:com.android.sdv.sample.logging.LoggingSampleServiceBundle/instance',
+            'expected_tag': 'com_android_sdv_sample_logging_LoggingSampleServiceBundle_instance',
             'expected_log': 'Logging sample service bundle successfully {}!'
         },
     )
@@ -570,13 +570,13 @@ class SdvSampleLoggingAPITest(
     @parameterized.named_parameters(
         {
             'testcase_name': 'cpp',
-            'service_bundle_fqin': 'local-vm:com.sdv.google.sample.logging.LoggingSampleServiceBundleWithCustomTagCpp/instance',
+            'service_bundle_fqin': 'local-vm:com.android.sdv.sample.logging.LoggingSampleServiceBundleWithCustomTagCpp/instance',
             'expected_tag': 'logging_sample_service_bundle_with_custom_tag_cpp',
             'expected_log': 'Logging with custom log tag sample service bundle CPP successfully {}!'
         },
         {
             'testcase_name': 'rust',
-            'service_bundle_fqin': 'local-vm:com.sdv.google.sample.logging.LoggingSampleServiceBundleWithCustomTag/instance',
+            'service_bundle_fqin': 'local-vm:com.android.sdv.sample.logging.LoggingSampleServiceBundleWithCustomTag/instance',
             'expected_tag': 'logging_sample_service_bundle_with_custom_tag',
             'expected_log': 'Logging with custom log tag sample service bundle successfully {}!'
         },
