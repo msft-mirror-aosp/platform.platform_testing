@@ -87,13 +87,10 @@ class ComposeToolkitTest {
     @Test
     fun recordMotion_capturePosition() =
         motionRule.runTest {
-            var completed = false
-
             val motion =
                 recordMotion(
                     content = { play ->
-                        val offset by
-                            animateDpAsState(if (play) 90.dp else 0.dp) { completed = true }
+                        val offset by animateDpAsState(if (play) 90.dp else 0.dp)
                         Box(
                             modifier =
                                 Modifier.offset(x = offset)
@@ -102,7 +99,7 @@ class ComposeToolkitTest {
                                     .background(Color.Red)
                         )
                     },
-                    ComposeRecordingSpec.until({ completed }) {
+                    ComposeRecordingSpec.untilIdle {
                         feature(hasTestTag("foo"), ComposeFeatureCaptures.positionInRoot)
                     },
                 )
@@ -113,21 +110,19 @@ class ComposeToolkitTest {
     @Test
     fun recordMotion_captureSize() =
         motionRule.runTest {
-            var completed = false
-
             val motion =
                 recordMotion(
                     content = { play ->
                         Box(
                             modifier =
                                 Modifier.testTag("foo")
-                                    .animateContentSize { _, _ -> completed = true }
+                                    .animateContentSize()
                                     .width(if (play) 90.dp else 10.dp)
                                     .height(10.dp)
                                     .background(Color.Red)
                         )
                     },
-                    ComposeRecordingSpec.until({ completed }) {
+                    ComposeRecordingSpec.untilIdle {
                         feature(hasTestTag("foo"), ComposeFeatureCaptures.dpSize)
                     },
                 )
@@ -138,13 +133,10 @@ class ComposeToolkitTest {
     @Test
     fun recordMotion_captureAlpha() =
         motionRule.runTest {
-            var completed = false
-
             val motion =
                 recordMotion(
                     content = { play ->
-                        val opacity by
-                            animateFloatAsState(if (play) 1f else 0f) { completed = true }
+                        val opacity by animateFloatAsState(if (play) 1f else 0f)
                         Box(
                             modifier =
                                 Modifier.graphicsLayer { alpha = opacity }
@@ -155,7 +147,7 @@ class ComposeToolkitTest {
                                     .motionTestValues { opacity exportAs MotionTestValues.alpha }
                         )
                     },
-                    ComposeRecordingSpec.until({ completed }) {
+                    ComposeRecordingSpec.untilIdle {
                         feature(hasTestTag("BoxOfInterest"), ComposeFeatureCaptures.alpha)
                     },
                 )
@@ -166,13 +158,10 @@ class ComposeToolkitTest {
     @Test
     fun recordMotion_captureCrossfade() =
         motionRule.runTest {
-            var completed = false
-
             val motion =
                 recordMotion(
                     content = { play ->
-                        val opacity by
-                            animateFloatAsState(if (play) 1f else 0f) { completed = true }
+                        val opacity by animateFloatAsState(if (play) 1f else 0f)
 
                         Box(
                             modifier =
@@ -195,7 +184,7 @@ class ComposeToolkitTest {
                                     }
                         )
                     },
-                    ComposeRecordingSpec.until({ completed }) {
+                    ComposeRecordingSpec.untilIdle {
                         feature(hasTestTag("bar"), ComposeFeatureCaptures.alpha, name = "bar_alpha")
                         feature(hasTestTag("foo"), ComposeFeatureCaptures.alpha, name = "foo_alpha")
                     },
@@ -605,21 +594,19 @@ class ComposeToolkitTest {
     @Test
     fun performance_captureHundredProperties() =
         motionRule.runTest {
-            var completed = false
-
             val motion =
                 recordMotion(
                     content = { play ->
                         Box(
                             modifier =
                                 Modifier.testTag("foo")
-                                    .animateContentSize { _, _ -> completed = true }
+                                    .animateContentSize()
                                     .width(if (play) 90.dp else 10.dp)
                                     .height(10.dp)
                                     .background(Color.Red)
                         )
                     },
-                    ComposeRecordingSpec.until({ completed }) {
+                    ComposeRecordingSpec.untilIdle {
                         repeat(100) {
                             feature(
                                 hasTestTag("foo"),
