@@ -57,7 +57,12 @@ data class TimestampFrameId(val milliseconds: Long) : FrameId {
 }
 
 /** ID of UI frame before/after the animation. */
-data class SupplementalFrameId(override val label: String) : FrameId
+data class SupplementalFrameId(override val label: String) : FrameId {
+    companion object {
+        val Before = SupplementalFrameId("before")
+        val After = SupplementalFrameId("after")
+    }
+}
 
 /**
  * Recorded [dataPoints], one per frame in the [TimeSeries].

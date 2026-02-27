@@ -68,7 +68,7 @@ internal suspend fun ComposeTestRule.doPerformTouchInputAsync(
     root: ViewRootForTest,
     frameOffsetMillis: Long,
 ) {
-    require(frameOffsetMillis in 0..15) {
+    require(frameOffsetMillis in 0..<frameDurationMillis) {
         "frameTimeOffsetMillis out of bounds ($frameOffsetMillis)"
     }
 

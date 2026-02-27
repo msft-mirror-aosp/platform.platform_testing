@@ -20,11 +20,15 @@ import android.annotation.SuppressLint
 import android.graphics.HardwareRenderer
 import android.os.Build
 import android.util.Log
+import androidx.compose.runtime.BroadcastFrameClock
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MonotonicFrameClock
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.ObserverHandle
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
@@ -44,10 +48,12 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.take
@@ -174,6 +180,16 @@ interface MotionControlScope : SemanticsNodeInteractionsProvider {
     suspend fun awaitDelay(duration: Duration)
 
     /**
+     * Waits for compose to become idle.
+     *
+     * IMPORTANT: this is an experimental approximation; clients might need to use explicit signals
+     * if this does not work.
+     *
+     * @param timeout the timeout in virtual time.
+     */
+    suspend fun awaitIdle(timeout: Duration = 1.seconds)
+
+    /**
      * Performs touch input, and waits for the completion thereof.
      *
      * NOTE: Do use this function instead of [SemanticsNodeInteraction.performTouchInput], since
@@ -236,6 +252,22 @@ data class ComposeRecordingSpec(
                 timeSeriesCapture,
             )
         }
+
+        /** Record a time-series until [MotionControlScope.awaitIdle] completes. */
+        fun untilIdle(
+            recordBefore: Boolean = true,
+            timeout: Duration = 1.seconds,
+            captureScreenshots: Boolean = Defaults.captureScreenshots(),
+            timeSeriesCapture: TimeSeriesCaptureScope<SemanticsNodeInteractionsProvider>.() -> Unit,
+        ): ComposeRecordingSpec {
+            return ComposeRecordingSpec(
+                motionControl = MotionControl { awaitIdle(timeout) },
+                recordBefore = recordBefore,
+                recordAfter = false,
+                captureScreenshots = captureScreenshots,
+                timeSeriesCapture = timeSeriesCapture,
+            )
+        }
     }
 }
 
@@ -279,9 +311,12 @@ fun MotionTestRule<ComposeToolkit>.recordMotion(
             }
         }
 
-        val wasDrawingEnabled = HardwareRenderer.isDrawingEnabled()
+        val cleanupRunnables = mutableListOf<() -> Unit>()
+
         if (toolkit.disableDrawDuringTest && !recordingSpec.captureScreenshots) {
+            val wasDrawingEnabled = HardwareRenderer.isDrawingEnabled()
             HardwareRenderer.setDrawingEnabled(false)
+            cleanupRunnables.add { HardwareRenderer.setDrawingEnabled(wasDrawingEnabled) }
         }
 
         try {
@@ -313,7 +348,10 @@ fun MotionTestRule<ComposeToolkit>.recordMotion(
                         recordingSpec.motionControl,
                         animationCoroutineScope,
                     )
-                    .also { nodeProvider = it }
+                    .also {
+                        nodeProvider = it
+                        cleanupRunnables.add { it.unregisterSnapshotObserver }
+                    }
 
             Log.i(TAG, "recordMotion() awaiting readyToPlay")
 
@@ -323,7 +361,7 @@ fun MotionTestRule<ComposeToolkit>.recordMotion(
             }
 
             if (recordingSpec.recordBefore) {
-                recordFrame(SupplementalFrameId("before"))
+                recordFrame(SupplementalFrameId.Before)
             }
             Log.i(TAG, "recordMotion() awaiting recordingStarted")
 
@@ -346,7 +384,7 @@ fun MotionTestRule<ComposeToolkit>.recordMotion(
             waitForIdle()
 
             if (recordingSpec.recordAfter) {
-                recordFrame(SupplementalFrameId("after"))
+                recordFrame(SupplementalFrameId.After)
             }
 
             val timeSeries =
@@ -362,7 +400,7 @@ fun MotionTestRule<ComposeToolkit>.recordMotion(
                     ?.map { it.asAndroidBitmap() },
             )
         } finally {
-            HardwareRenderer.setDrawingEnabled(wasDrawingEnabled)
+            cleanupRunnables.forEach { it() }
         }
     }
 }
@@ -387,7 +425,7 @@ private class MotionControlImpl(
     val composeTestRule: ComposeTestRule,
     val testScope: TestScope,
     val motionControl: MotionControl,
-    animationCoroutineScope: CoroutineScope,
+    val animationCoroutineScope: CoroutineScope,
 ) :
     MotionControlScope,
     SemanticsNodeInteractionsProvider by composeTestRule,
@@ -397,10 +435,24 @@ private class MotionControlImpl(
     private lateinit var delayReadyToPlayJob: Job
     private lateinit var delayRecordingJob: Job
     private lateinit var recordingJob: Job
-    private var frameOffsetMillis: Long? = null
+    private var lastFrameTimeMillis = 0L
 
     private val frameEmitter = MutableStateFlow<Long>(0)
     private val onFrame = frameEmitter.asStateFlow()
+
+    private var isComposeIdle = false
+
+    val broadcastFrameClock =
+        animationCoroutineScope.coroutineContext[MonotonicFrameClock] as BroadcastFrameClock
+
+    private var snapshotWasChanged = false
+
+    val unregisterSnapshotObserver: ObserverHandle
+
+    init {
+        unregisterSnapshotObserver =
+            Snapshot.registerGlobalWriteObserver { snapshotWasChanged = true }
+    }
 
     val readyToPlay: Boolean
         get() =
@@ -427,40 +479,23 @@ private class MotionControlImpl(
                 else -> false
             }
 
-    init {
-        animationCoroutineScope.launch {
-            // Request frames during the motion recording. The reasons are two-fold:
-            // - the tight withFrameNanos() loop ensures a frame is immediately scheduled,
-            //   and so will happen frameDelayMillis later. Without that, a frame might be
-            //   scheduled frameDelayMillis after the next input, which could result in
-            //   irregular frame times
-            // - without scheduling a frame, the main clock has no awaiters. So, whether a
-            //   frame is produced during [performTouchInputAsync] depends on accidental side
-            //   effects - for example if a recomposition is required, or an animation is
-            //   running. The measureAndLayout phase is unconditionally run whenever a frame is
-            //   triggered, but it's not change-observed in the test implementation. Hence,
-            //   if the tests changes Snapshot state that is read in measureAndLayout only,
-            //   no frame would be produced.
-            while (!recordingEnded) {
-                withFrameMillis {
-                    // Frames must now be scheduled within regular frameDelayMillis intervals.
-                    val computedFrameTimeOffset = it % frameDurationMillis
-                    if (frameOffsetMillis == null) {
-                        frameOffsetMillis = computedFrameTimeOffset
-                    } else {
-                        check(computedFrameTimeOffset == frameOffsetMillis) {
-                            "frameTimeOffset changed from $frameOffsetMillis to $computedFrameTimeOffset"
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     fun nextFrame() {
         allNodesCache = null
         allNodesUnmergedCache = null
+
+        // With `advanceTimeByFrame()` below, it is guaranteed to produce a frame.
+        val lastFrameTimeFuture =
+            animationCoroutineScope.async {
+                var frameTimeMillis = 0L
+                withFrameMillis { frameTimeMillis = it }
+                frameTimeMillis
+            }
+
         composeTestRule.mainClock.advanceTimeByFrame()
+        lastFrameTimeMillis = lastFrameTimeFuture.getCompleted()
+
+        isComposeIdle = !(broadcastFrameClock.hasAwaiters || snapshotWasChanged)
+        snapshotWasChanged = false
 
         when (state) {
             MotionControlState.Start -> {
@@ -469,7 +504,7 @@ private class MotionControlImpl(
             }
 
             MotionControlState.WaitingToPlay -> {
-                if (delayReadyToPlayJob.isCompleted && frameOffsetMillis != null) {
+                if (delayReadyToPlayJob.isCompleted) {
                     delayRecordingJob = motionControl.delayRecording.launch()
                     state = MotionControlState.WaitingToRecord
                 }
@@ -514,6 +549,18 @@ private class MotionControlImpl(
         onFrame.takeWhile { !check() }.collect {}
     }
 
+    override suspend fun awaitIdle(timeout: Duration) {
+        val timeout = composeTestRule.mainClock.currentTime + timeout.inWholeMilliseconds
+
+        while (!isComposeIdle) {
+            if (composeTestRule.mainClock.currentTime > timeout) {
+                throw CancellationException("timed out while waiting for compose to become idle")
+            }
+
+            awaitFrames(1)
+        }
+    }
+
     override suspend fun performTouchInputAsync(
         onNode: SemanticsNodeInteraction,
         gestureControl: TouchInjectionScope.() -> Unit,
@@ -522,12 +569,36 @@ private class MotionControlImpl(
 
         val rootForTest = fetchSemanticsNodeMaybeCached(isRoot()).root as ViewRootForTest
 
-        composeTestRule.doPerformTouchInputAsync(
-            onSemanticsNode = node,
-            gestureControl = gestureControl,
-            root = rootForTest,
-            frameOffsetMillis = checkNotNull(frameOffsetMillis),
-        )
+        val touchDispatchJob =
+            testScope.launch {
+                composeTestRule.doPerformTouchInputAsync(
+                    onSemanticsNode = node,
+                    gestureControl = gestureControl,
+                    root = rootForTest,
+                    frameOffsetMillis = lastFrameTimeMillis % frameDurationMillis,
+                )
+            }
+
+        animationCoroutineScope.launch {
+            // Request frames during the gesture replay. The reasons are two-fold:
+            // - the tight withFrameNanos() loop ensures a frame is immediately scheduled,
+            //   and so will happen frameDelayMillis later. Without that, a frame might be
+            //   scheduled frameDelayMillis after the next input, which could result in
+            //   irregular frame times
+            // - without scheduling a frame, the main clock has no awaiters. So, whether a
+            //   frame is produced during [performTouchInputAsync] depends on accidental side
+            //   effects - for example if a recomposition is required, or an animation is
+            //   running. The measureAndLayout phase is unconditionally run whenever a frame is
+            //   triggered, but it's not change-observed in the test implementation. Hence,
+            //   if the tests changes Snapshot state that is read in measureAndLayout only,
+            //   no frame would be produced.
+            while (touchDispatchJob.isActive) {
+                withFrameMillis {}
+            }
+        }
+
+        touchDispatchJob.join()
+
         // doPerformTouchInputAsync returned after dispatching the last event. That is 1ms before
         // the next frame. Thus, the next frame needs to be awaited.
         awaitFrames(1)

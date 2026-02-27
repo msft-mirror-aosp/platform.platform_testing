@@ -34,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -69,10 +70,13 @@ import platform.test.motion.compose.DataPointTypes.offset
 import platform.test.motion.compose.values.MotionTestValueKey
 import platform.test.motion.compose.values.MotionTestValues
 import platform.test.motion.compose.values.motionTestValues
+import platform.test.motion.golden.DataPoint
 import platform.test.motion.golden.DataPointTypes
 import platform.test.motion.golden.NotFoundDataPoint
 import platform.test.motion.golden.ValueDataPoint
+import platform.test.motion.golden.feature
 import platform.test.motion.testing.createGoldenPathManager
+import platform.test.motion.truth.TimeSeriesSubject.Companion.assertThat
 
 @RunWith(AndroidJUnit4::class)
 class ComposeToolkitTest {
@@ -766,6 +770,98 @@ class ComposeToolkitTest {
                 )
 
             assertThat(motion).timeSeriesMatchesGolden()
+        }
+
+    @Test
+    fun awaitIdle_empty_includesOneFrame() =
+        motionRule.runTest {
+            val motion = motionRule.recordMotion(content = {}, ComposeRecordingSpec.untilIdle {})
+
+            assertThat(motion.timeSeries).containsBeforeFrame().isTrue()
+            assertThat(motion.timeSeries).frameCount().isEqualTo(1)
+        }
+
+    @Test
+    fun awaitIdle_playState_togglesToTrue() =
+        motionRule.runTest {
+            var playState: Boolean? = null
+            val motion =
+                motionRule.recordMotion(
+                    content = { play -> playState = play },
+                    ComposeRecordingSpec.untilIdle {
+                        feature("play") { DataPoint.of(playState, DataPointTypes.boolean) }
+                    },
+                )
+
+            assertThat(motion.timeSeries).containsBeforeFrame().isTrue()
+            assertThat(motion.timeSeries).frameCount().isEqualTo(1)
+
+            assertThat(motion.timeSeries)
+                .dataPointValues("play")
+                .containsExactly(false, true)
+                .inOrder()
+        }
+
+    @Test
+    fun awaitIdle_pendingRecompositions_keepRecording() =
+        motionRule.runTest {
+            var someState by mutableIntStateOf(0)
+
+            val motion =
+                motionRule.recordMotion(
+                    content = { Text("$someState") },
+                    ComposeRecordingSpec({
+                        coroutineScope {
+                            launch {
+                                repeat(3) {
+                                    someState += 1
+                                    awaitFrames()
+                                }
+                            }
+                        }
+
+                        awaitIdle()
+                    }) {},
+                )
+
+            // awaitIdle will wait one more frame after the last change.
+            assertThat(motion.timeSeries).frameCount().isEqualTo(4)
+        }
+
+    @Test
+    fun awaitIdle_playAnimation_waitsForAnimationToComplete() =
+        motionRule.runTest {
+            val motion =
+                motionRule.recordMotion(
+                    content = { play ->
+                        // No need to read the state, just running an animation is enough
+                        animateFloatAsState(
+                            if (play) 0f else 1f,
+                            animationSpec = tween(durationMillis = 64),
+                        )
+                    },
+                    ComposeRecordingSpec.untilIdle {},
+                )
+
+            assertThat(motion.timeSeries).frameCount().isEqualTo(6)
+        }
+
+    @Test
+    fun awaitIdle_playAnimation_roundsToNextFrame_waitsForAnimationToComplete() =
+        motionRule.runTest {
+            val motion =
+                motionRule.recordMotion(
+                    content = { play ->
+                        // No need to read the state, just running an animation is enough
+                        animateFloatAsState(
+                            if (play) 0f else 1f,
+                            animationSpec = tween(durationMillis = 65),
+                        )
+                    },
+                    ComposeRecordingSpec.untilIdle {},
+                )
+
+            assertThat(motion.timeSeries).frameCount().isEqualTo(7)
         }
 
     /** @see assertThatFrameCountValues */
