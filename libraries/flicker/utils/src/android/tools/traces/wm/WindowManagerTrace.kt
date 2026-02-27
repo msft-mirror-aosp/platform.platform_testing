@@ -86,4 +86,11 @@ data class WindowManagerTrace(override val entries: Collection<WindowManagerStat
             .findLast { it.isVisible(matcher) }
             ?.timestamp
     }
+
+    fun getLastInvisibleTimestamp(matcher: IComponentMatcher, before: Timestamp): Timestamp? {
+        return entries
+            .filter { it.timestamp < before }
+            .findLast { !it.isVisible(matcher) }
+            ?.timestamp
+    }
 }

@@ -243,12 +243,18 @@ constructor(
             return@apply
         }
 
+        val lastInvisibleTimestamp = trace?.getLastInvisibleTimestamp(componentMatcher, timestamp)
+        val lastInvisibleTimestampStr = lastInvisibleTimestamp?.toString() ?: "never"
+
         val failedEntries =
             componentMatcher
                 .filterLayers(layers)
                 .filter { it.isVisible }
                 .filterNot { it.isAnimationLeash }
-                .map { it.debugName }
+                .map {
+                    "${it.debugName} (${it.visibilityReason.joinToString()}) " +
+                        "Last invisible at: $lastInvisibleTimestampStr"
+                }
 
         val actuallyVisible =
             layers

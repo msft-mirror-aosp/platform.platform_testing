@@ -507,23 +507,11 @@ constructor(
             }
 
         if (visibleWindowsOnDisplay.isNotEmpty()) {
-            val actuallyVisible =
-                visibleWindows
-                    .filter { !componentMatcher.windowMatchesAnyOf(it.windowState) }
-                    .map { it.debugName }
-
-            val errorMsgBuilder =
-                errorMsgBuilder()
-                    .forIncorrectVisibility(
-                        componentMatcher.toWindowIdentifier(),
-                        expectElementVisible = false,
-                    )
-                    .addSection(
-                        "Occurrences of ${componentMatcher.toWindowIdentifier()}",
-                        visibleWindowsOnDisplay.map { it.debugName },
-                    )
-                    .addSection("Actually visible", actuallyVisible)
-            throw IncorrectVisibilityException(errorMsgBuilder)
+            throw createIncorrectVisibilityException(
+                componentMatcher,
+                expectElementVisible = false,
+                subjectList,
+            )
         }
     }
 
@@ -547,14 +535,23 @@ constructor(
         expectElementVisible: Boolean,
         subjectList: List<WindowStateSubject>,
     ): IncorrectVisibilityException {
-        val lastVisibleTimestamp =
-            trace?.trace?.getLastVisibleTimestamp(componentMatcher, timestamp)
-        val lastVisibleTimestampStr = lastVisibleTimestamp?.toString() ?: "never"
-
         val occurrences =
             subjectList
                 .filter { componentMatcher.windowMatchesAnyOf(it.windowState) }
-                .map { "${it.debugName} Last visible at: $lastVisibleTimestampStr" }
+                .map {
+                    if (expectElementVisible) {
+                        val lastVisibleTimestamp =
+                            trace?.trace?.getLastVisibleTimestamp(componentMatcher, timestamp)
+                        val lastVisibleTimestampStr = lastVisibleTimestamp?.toString() ?: "never"
+                        "${it.debugName} Last visible at: $lastVisibleTimestampStr"
+                    } else {
+                        val lastInvisibleTimestamp =
+                            trace?.trace?.getLastInvisibleTimestamp(componentMatcher, timestamp)
+                        val lastInvisibleTimestampStr =
+                            lastInvisibleTimestamp?.toString() ?: "never"
+                        "${it.debugName} Last invisible at: $lastInvisibleTimestampStr"
+                    }
+                }
 
         val actuallyVisible =
             visibleWindows

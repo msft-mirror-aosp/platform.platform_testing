@@ -166,6 +166,22 @@ class LayersTraceTest {
             .isTrue()
     }
 
+    @Test
+    fun getLastInvisibleTimestamp() {
+        val reader = getLayerTraceReaderFromAsset("layers_trace_occluded.perfetto-trace")
+        val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
+        val component =
+            ComponentNameMatcher("", "com.android.server.wm.flicker.testapp.SimpleActivity#0")
+        val timestamp = Timestamps.from(systemUptimeNanos = 1700382131522L)
+
+        val lastInvisibleTimestamp = trace.getLastInvisibleTimestamp(component, timestamp)
+        Truth.assertThat(lastInvisibleTimestamp).isNotNull()
+        Truth.assertThat(lastInvisibleTimestamp!!.systemUptimeNanos)
+            .isLessThan(timestamp.systemUptimeNanos)
+        Truth.assertThat(trace.getEntryExactlyAt(lastInvisibleTimestamp).isVisible(component))
+            .isFalse()
+    }
+
     companion object {
         @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }

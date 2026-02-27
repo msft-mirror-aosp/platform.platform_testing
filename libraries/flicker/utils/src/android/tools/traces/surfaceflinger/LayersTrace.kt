@@ -86,4 +86,11 @@ data class LayersTrace(override val entries: Collection<LayerTraceEntry>) : Trac
             .findLast { it.isVisible(matcher) }
             ?.timestamp
     }
+
+    fun getLastInvisibleTimestamp(matcher: IComponentMatcher, before: Timestamp): Timestamp? {
+        return entries
+            .filter { it.timestamp < before }
+            .findLast { !it.isVisible(matcher) }
+            ?.timestamp
+    }
 }
