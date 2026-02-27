@@ -26,7 +26,7 @@ from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 class SdvSampleApexUpdateTest(sdv_base_test.SdvBaseTestClass):
 
   UPDATE_FOLDER = "/data/mydir/"
-  SDV_UPDATE_MANAGER_CLIENT = "/apex/com.sdv.google.sample.update_manager.client/bin/sdv_update_manager_client"
+  SDV_UPDATE_MANAGER_CLIENT = "/apex/com.android.sdv.sample.update_manager.client/bin/sdv_update_manager_client"
   test_dir = ''
 
   def setup_class(self):
