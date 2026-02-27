@@ -102,7 +102,7 @@ constructor(
 
     /** Clicks new window in the menu to open a new instance of the app in a new window. */
     fun clickNewWindowInMenu() {
-        findObject(By.res(packageName,NEW_WINDOW_ID)).also { it.click() }
+        findObject(By.res(packageName, NEW_WINDOW_ID)).also { it.click() }
     }
 
     /** Clears the Chrome application's storage and data. */
@@ -183,14 +183,14 @@ constructor(
     fun closePopupsIfNeeded(device: UiDevice): Boolean {
         if (device.hasObject(By.text(NOTIFICATION_PERMISSION_TEXT))) {
             val negativeButton = device.findObject(By.res(packageName, NEGATIVE_BUTTON_ID))
-            negativeButton.click()
+            negativeButton?.click()
             Log.d(TAG, "Dismiss grant notification pop-up")
             return true
         }
 
         if (device.hasObject(By.text(AD_PRIVACY_TITLE_TEXT))) {
             val negativeButton = device.findObject(By.res(packageName, NEGATIVE_BUTTON_ID))
-            negativeButton.click()
+            negativeButton?.click()
             Log.d(TAG, "Dismiss ad privacy pop-up")
 
             // Next popup about ad privacy is showed immediately - we need to close it as well
@@ -200,7 +200,7 @@ constructor(
             )
             if (device.hasObject(By.res(packageName, MORE_BUTTON_ID))) {
                 val moreButton = device.findObject(By.res(packageName, MORE_BUTTON_ID))
-                moreButton.click()
+                moreButton?.click()
                 device.waitForIdle()
                 Log.d(TAG, "Click the more button")
             }
@@ -210,7 +210,7 @@ constructor(
                     Until.findObject(By.text(ACKNOWLEDGED_BUTTON_TEXT)),
                     WAIT_TIME_IN_MILLISECONDS,
                 )
-            ackButton.click()
+            ackButton?.click()
             Log.d(TAG, "Dismiss other ad privacy pop-up")
             device.waitForIdle()
             return true
@@ -241,7 +241,7 @@ constructor(
 
     private fun findObject(selector: BySelector): UiObject2 =
         uiDevice.wait(Until.findObject(selector), WAIT_TIME_IN_MILLISECONDS)
-        ?: error("Can't find object $selector")
+            ?: error("Can't find object $selector")
 
     companion object {
         enum class TabDraggingDirection {
@@ -266,7 +266,7 @@ constructor(
         private val WAIT_TIME_IN_MILLISECONDS = Duration.ofSeconds(3).toMillis()
         private const val MIN_WINDOW_WIDTH_FOR_TAB_TEARING_DP = 475
 
-        /**  Opens a specified web page in the Chrome browser. */
+        /** Opens a specified web page in the Chrome browser. */
         fun getSpecialBrowserIntent(intentString: String): Intent {
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse("http://$intentString"))
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
