@@ -23,6 +23,10 @@ import android.tools.flicker.assertors.ComponentTemplate
 /** Checks if the [component] layer is visible throughout the animation */
 class AppLayerIsVisibleAlways(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
+    override val assertionHint =
+        "The application layer was not visible during the entire transition. Check if it " +
+            "is occluded by another layer or if the transition finishes prematurely."
+
     /** {@inheritDoc} */
     override fun doEvaluate(scenarioInstance: ScenarioInstance, flicker: FlickerChecker) {
         val matcher = component.get(scenarioInstance)

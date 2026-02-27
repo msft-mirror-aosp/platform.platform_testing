@@ -92,6 +92,8 @@ class ExceptionMessageBuilder {
 
     fun addExtraDescription(value: Collection<Fact>) = apply { extraDescription.addAll(value) }
 
+    fun addHint(hint: String) = apply { addSection("Debugging Hint", listOf(hint)) }
+
     fun build(): String = buildString {
         if (headerDescription.isNotEmpty()) {
             appendLine(headerDescription)
