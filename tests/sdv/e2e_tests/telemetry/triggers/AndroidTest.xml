@@ -63,6 +63,32 @@
         value="/data/local/tmp/event_publisher_data.csv"
       />
 
+      <!-- Journey Status Test -->
+      <option name="push-file"
+        key="journey_config_sim_actions.textproto"
+        value="/data/local/tmp/journey_config_sim_actions.textproto"
+      />
+      <option name="push-file"
+        key="journey_source_data_first_off.csv"
+        value="/data/local/tmp/journey_source_data_first_off.csv"
+      />
+      <option name="push-file"
+        key="journey_source_data_first_on.csv"
+        value="/data/local/tmp/journey_source_data_first_on.csv"
+      />
+      <option name="push-file"
+        key="journey_source_publisher_first_off.textproto"
+        value="/data/local/tmp/journey_source_publisher_first_off.textproto"
+      />
+      <option name="push-file"
+        key="journey_source_publisher_first_on.textproto"
+        value="/data/local/tmp/journey_source_publisher_first_on.textproto"
+      />
+      <option name="push-file"
+        key="journey_status.textproto"
+        value="/data/local/tmp/journey_status.textproto"
+      />
+
       <!-- Lifecycle Triggers Test -->
       <option name="push-file"
         key="lifecycle_publisher.textproto"
