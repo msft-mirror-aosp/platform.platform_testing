@@ -70,6 +70,7 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
     public static final String OUTPUT_FILE_PATH_KEY = "showmap_output_file";
     public static final String SYSTEM_THREADS_FILE_PATH_KEY = "system_threads_output_file";
     public static final String PROCESS_COUNT = "process_count";
+    public static final String PERSISTENT_PROCESS_COUNT = "persistent_process_count";
     public static final String CHILD_PROCESS_COUNT_PREFIX = "child_processes_count";
     public static final String OUTPUT_CHILD_PROCESS_COUNT_KEY = CHILD_PROCESS_COUNT_PREFIX + "_%s";
     public static final String PROCESS_WITH_CHILD_PROCESS_COUNT =
@@ -223,6 +224,8 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
             }
             HashSet<Integer> zygoteChildrenPids = getZygoteChildrenPids();
             FileWriter writer = new FileWriter(new File(mTestOutputFile), true);
+            // To track unique persistent processes (OOM score <= 200)
+            Set<String> persistentProcessNames = new HashSet<>();
 
             try {
                 // dump the activity lru to better understand the process state
@@ -267,6 +270,7 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
                                     showmapOutput,
                                     OUTPUT_IMPERCEPTIBLE_METRIC_PATTERN);
                         } else {
+                            persistentProcessNames.add(processName);
                             parseAndUpdateMemoryInfo(
                                     processName, showmapOutput, OUTPUT_METRIC_PATTERN);
                         }
@@ -296,6 +300,8 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
             }
             // Store the unique process count. -1 to exclude the "ps" process name.
             mMemoryMap.put(PROCESS_COUNT, Integer.toString(mProcessNames.length - 1));
+            mMemoryMap.put(
+                    PERSISTENT_PROCESS_COUNT, Integer.toString(persistentProcessNames.size()));
             writer.close();
             mMemoryMap.put(OUTPUT_FILE_PATH_KEY, mTestOutputFile);
         } catch (RuntimeException e) {
