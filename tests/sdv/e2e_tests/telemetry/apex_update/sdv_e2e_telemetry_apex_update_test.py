@@ -29,7 +29,7 @@ from update_manager_client import UpdateManagerClient
 class SdvE2ETelemetryApexUpdateTest(
     telemetry_base_test.SdvTelemetryBaseTestClass
 ):
-    APEX_NAME = 'com.sdv.google.sample.apex.provider'
+    APEX_NAME = 'com.android.sdv.sample.apex.provider'
     APEX_NAME_V2 = f'{APEX_NAME}.v2'
 
     METRICS_CONFIG_UUID = 'aa27883c-96a5-4a67-adad-d15e00c0f12a'
@@ -42,7 +42,7 @@ class SdvE2ETelemetryApexUpdateTest(
     # produces an error when trying to prepare the APEX:
     #
     # Failed to verify signature of
-    # /data/local/tmp/com.sdv.google.sample.apex.provider.v2.apex: Permission
+    # /data/local/tmp/com.android.sdv.sample.apex.provider.v2.apex: Permission
     # denied (os error 13)
     APEX_V2_PATH = Path(f'/data/local/{APEX_NAME_V2}.apex')
     METRICS_CONFIG_PATH = Path(

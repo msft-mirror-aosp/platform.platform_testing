@@ -25,7 +25,7 @@ from sdv_test_fw.verification import polling
 
 
 class SdvE2EUMApexCleanupTest(sdv_base_test.SdvBaseTestClass, UpdateManagerBaseClass):
-    APEX_NAME = "com.sdv.google.sample.apex.provider"
+    APEX_NAME = "com.android.sdv.sample.apex.provider"
     APEX_FILE_NAME = f"{APEX_NAME}.apex"
     ACTIVE_APEX_DIR = "/data/apex/active"
     ACTIVE_APEX_PATH = f"{ACTIVE_APEX_DIR}/{APEX_FILE_NAME}"

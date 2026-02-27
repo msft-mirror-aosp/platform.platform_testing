@@ -24,9 +24,9 @@ descriptor_protos {
 sources {
   name: "dt_tire_pressure_fl_publisher"
   data_source {
-    source_identifier: "com.sdv.google.sample.apex.provider.Provider#"
+    source_identifier: "com.android.sdv.sample.apex.provider.Provider#"
                        "TirePressure|"
-                       "com-sdv-google-sample-apex-provider-tire-pressure-"
+                       "com-android-sdv-sample-apex-provider-tire-pressure-"
                        "front-"
                        "left"
   }
@@ -35,12 +35,12 @@ sources {
 sources {
   name: "rpc_tire_pressure_fl_publisher"
   data_source {
-    source_identifier: "com.sdv.google.sample.apex.provider.Provider#"
+    source_identifier: "com.android.sdv.sample.apex.provider.Provider#"
                        "TireStatus|"
-                       "com-sdv-google-sample-apex-provider-tire-status"
+                       "com-android-sdv-sample-apex-provider-tire-status"
     configuration {
       type_url: "type.googleapis.com/"
-                "com.sdv.google.sample.apex.provider.GetTireStatusRequest"
+                "com.android.sdv.sample.apex.provider.GetTireStatusRequest"
       value: "\x08\x00"
     }
     # Middleware does not currently support Streaming RPC, hence we fall

@@ -26,9 +26,9 @@ from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 from sdv_test_fw.update.update_manager_client import UpdateManagerClient
 
 class SdvSampleBrandNewApexTest(sdv_base_test.SdvBaseTestClass):
-    APEX_NAME = 'com.sdv.google.sample.brand_new_apex'
-    APEX_FILE_NAME_BLOCKED = 'com.sdv.google.sample.hello.brand_new.blocked.apex'
-    APEX_FILE_NAME_ALLOWED = 'com.sdv.google.sample.hello.brand_new.allowed.apex'
+    APEX_NAME = 'com.android.sdv.sample.brand_new_apex'
+    APEX_FILE_NAME_BLOCKED = 'com.android.sdv.sample.hello.brand_new.blocked.apex'
+    APEX_FILE_NAME_ALLOWED = 'com.android.sdv.sample.hello.brand_new.allowed.apex'
     APEX_DEVICE_PATH_BLOCKED = '/data/test/' + APEX_FILE_NAME_BLOCKED
     APEX_DEVICE_PATH_ALLOWED = '/data/test/' + APEX_FILE_NAME_ALLOWED
 

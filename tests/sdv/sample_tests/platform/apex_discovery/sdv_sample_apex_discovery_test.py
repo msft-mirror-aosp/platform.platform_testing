@@ -23,7 +23,7 @@ from sdv_test_fw.verification import polling
 class SdvSampleApexDiscoveryTest(sdv_base_test.SdvBaseTestClass):
 
     EXPECTED_APEX_DISCOVERY_RESULT = 'sdv_apex_discovery_hello_world::service: Hello World!'
-    APEX_LOGCAT_GREP_TEXT = 'com_sdv_google_sample_test1_ApexDiscoveryHelloWorld_instance-1'
+    APEX_LOGCAT_GREP_TEXT = 'com_android_sdv_sample_test1_ApexDiscoveryHelloWorld_instance-1'
 
     def setup_class(self):
         super().setup_class()
