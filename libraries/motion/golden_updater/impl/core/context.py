@@ -1,7 +1,4 @@
-#!/usr/bin/env python3
-
-#
-# Copyright 2024, The Android Open Source Project
+# Copyright 2025, The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +13,14 @@
 # limitations under the License.
 #
 
-from impl.core.main import main
+from dataclasses import dataclass
+from typing import Optional
 
-if __name__ == "__main__":
-    main()
+@dataclass
+class MotionWatcherContext:
+    android_build_top: str
+    temp_dir: str
+    secret_token: str
+    this_server_address: str
+    port: int
+    client_url: str
