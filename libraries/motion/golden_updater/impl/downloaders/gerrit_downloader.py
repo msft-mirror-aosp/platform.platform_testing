@@ -20,7 +20,7 @@ import uuid
 import json
 from enum import Enum
 import datetime
-from impl.enums import DataSource
+from impl.models.motion_enums import DataSource
 import concurrent.futures
 
 class GerritDownloader:

@@ -21,9 +21,9 @@ import os
 from urllib.parse import urlparse
 import threading
 import shutil
-from impl.constants import create_presubmit_artifacts_list_url
-from impl.constants import create_get_download_url_for_presubmit_artifact
-from impl.constants import ANDROID_BUILD_SCOPE
+from impl.models.motion_constants import create_presubmit_artifacts_list_url
+from impl.models.motion_constants import create_get_download_url_for_presubmit_artifact
+from impl.models.motion_constants import ANDROID_BUILD_SCOPE
 
 class FetchPresubmitTestArtifacts:
 
