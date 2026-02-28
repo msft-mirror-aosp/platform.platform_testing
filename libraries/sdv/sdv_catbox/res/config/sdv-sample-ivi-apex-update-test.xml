@@ -22,8 +22,8 @@
     <target_preparer class="com.android.tradefed.targetprep.PushFilePreparer">
       <option name="cleanup" value="true" />
       <option name="push-file"
-        key="com.sdv.google.sample.ivi.service.v2.apex"
-        value="/data/local/com.sdv.google.sample.ivi.service.v2.apex"
+        key="com.android.sdv.sample.ivi.service.v2.apex"
+        value="/data/local/com.android.sdv.sample.ivi.service.v2.apex"
       />
     </target_preparer>
   </device>
@@ -33,8 +33,8 @@
     <target_preparer class="com.android.tradefed.targetprep.PushFilePreparer">
       <option name="cleanup" value="true" />
       <option name="push-file"
-        key="com.sdv.google.sample.apex.provider.v2.apex"
-        value="/data/local/com.sdv.google.sample.apex.provider.v2.apex"
+        key="com.android.sdv.sample.apex.provider.v2.apex"
+        value="/data/local/com.android.sdv.sample.apex.provider.v2.apex"
       />
     </target_preparer>
   </device>

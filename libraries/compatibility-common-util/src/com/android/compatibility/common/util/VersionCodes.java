@@ -54,4 +54,5 @@ public class VersionCodes {
     public static final int UPSIDE_DOWN_CAKE = 34;
     public static final int VANILLA_ICE_CREAM = 35;
     public static final int BAKLAVA = 36;
+    public static final int CINNAMON_BUN = 37;
 }

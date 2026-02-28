@@ -30,9 +30,9 @@ class SdvSampleApexVerificationTest(sdv_base_test.SdvBaseTestClass):
         # Apex Information
         self.APEX_PATH = '/product/apex/'
         self.APEX_FILTER = 'hello'
-        self.EXPECTED_APEX_PACKAGE = 'com.sdv.google.sample.hello.apex.apex'
+        self.EXPECTED_APEX_PACKAGE = 'com.android.sdv.sample.hello.apex.apex'
         self.APEX_EXECUTION_COMMAND = (
-            'apex/com.sdv.google.sample.hello.apex/bin/sdv_hello_apex'
+            'apex/com.android.sdv.sample.hello.apex/bin/sdv_hello_apex'
         )
         self.EXPECTED_APEX_EXECUTION_RESULT = 'Hello APEX'
         self.NOT_NONE_ASSERT_MESSAGE = '{} is null. Expected result is "{}".'

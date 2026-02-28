@@ -34,7 +34,7 @@ python_test_host {
     test_options: {
         unit_test: false,
     },
-    device_common_data: [":com.sdv.google.sample.apex.provider.v2"],
+    device_common_data: [":com.android.sdv.sample.apex.provider.v2"],
     data: [
         ":sdv_test_fw_device_configs",
         "apex_update_metrics_config.textproto",

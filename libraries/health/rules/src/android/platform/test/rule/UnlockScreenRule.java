@@ -17,9 +17,13 @@ package android.platform.test.rule;
 
 import static android.platform.uiautomatorhelpers.DeviceHelpers.assertInvisible;
 
+import android.app.KeyguardManager;
+import android.content.Context;
 import android.os.RemoteException;
+import android.platform.uiautomatorhelpers.WaitUtils;
 
 import androidx.annotation.NonNull;
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.By;
 import androidx.test.uiautomator.BySelector;
 import androidx.test.uiautomator.UiDevice;
@@ -58,10 +62,27 @@ public class UnlockScreenRule extends TestWatcher {
             BySelector screenLock;
             screenLock = KEYGUARD_ROOT_VIEW;
 
-            if (uiDevice.hasObject(screenLock)) {
+            KeyguardManager km =
+                    (KeyguardManager)
+                            InstrumentationRegistry.getInstrumentation()
+                                    .getContext()
+                                    .getSystemService(Context.KEYGUARD_SERVICE);
+
+            if (uiDevice.hasObject(screenLock) || (km != null && km.isKeyguardLocked())) {
                 uiDevice.pressMenu();
                 uiDevice.waitForIdle();
-                assertInvisible(screenLock, /* timeout= */ Duration.ofSeconds(20));
+                if (uiDevice.hasObject(screenLock)) {
+                    assertInvisible(screenLock, /* timeout= */ Duration.ofSeconds(20));
+                }
+                if (km != null) {
+                    WaitUtils.ensureThat(
+                            "Device unlocked",
+                            /* timeout= */ Duration.ofSeconds(10),
+                            /* errorProvider= */ null,
+                            /* ignoreFailure= */ false,
+                            /* ignoreException= */ false,
+                            () -> !km.isKeyguardLocked());
+                }
             }
         } catch (RemoteException e) {
             throw new RuntimeException("Could not unlock device.", e);

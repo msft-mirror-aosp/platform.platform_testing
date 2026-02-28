@@ -35,16 +35,23 @@ class FlickerServiceImpl(private val flickerConfig: FlickerConfig) : FlickerServ
     }
 
     private fun validateTrace(reader: Reader) {
-        val layersTrace = reader.readLayersTrace()
-                ?: error("Missing layers trace: Cannot run Flicker Service without this trace!")
-        assert(layersTrace.entries.isNotEmpty()) {
-            "Layers trace is empty! Cannot run Flicker Service on this trace! " +
-                    "This is likely a bug! It shouldn't ever happen."
-        }
-        assert(layersTrace.entries.size > 1) {
-            "Layers trace must have at least only one entry. This is likely due to nothing " +
-                    "happening on the device while the trace is being collected. Please double " +
-                    "check that something is happening while the trace is being collected."
+        val layersTrace =
+            reader.readLayersTrace()
+                ?: throw FlickerTraceException(
+                    "Missing layers trace: Cannot run Flicker Service without this trace!"
+                )
+        if (layersTrace.entries.size <= 1) {
+            throw FlickerTraceException(
+                buildString {
+                    appendLine("Layers trace must have at least two entries.")
+                    appendLine("This is likely due to nothing happening on the device.")
+                    appendLine()
+                    appendLine("Checklist:")
+                    appendLine("1. Verify the test action (e.g., button click) occurred.")
+                    appendLine("2. Check if the screen was off or keyguard was showing.")
+                    appendLine("3. Ensure transition duration matches the actual animation.")
+                }
+            )
         }
     }
 }

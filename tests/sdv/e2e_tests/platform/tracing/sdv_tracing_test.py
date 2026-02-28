@@ -34,10 +34,10 @@ from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 class SdvPerfettoTracingTest(sdv_base_test.SdvBaseTestClass):
 
     TRACE_CONFIG_PATH = "config/trace_cfg.pbtx"
-    START_SERVER_CPP_COMMAND = "/apex/com.sdv.google.sample.tracing/bin/sdv_server_cpp_tracing_sample"
-    START_CLIENT_CPP_COMMAND = "/apex/com.sdv.google.sample.tracing/bin/sdv_client_cpp_tracing_sample"
+    START_SERVER_CPP_COMMAND = "/apex/com.android.sdv.sample.tracing/bin/sdv_server_cpp_tracing_sample"
+    START_CLIENT_CPP_COMMAND = "/apex/com.android.sdv.sample.tracing/bin/sdv_client_cpp_tracing_sample"
     START_SERVER_RUST_COMMAND = "sdv_server_rust_tracing_sample"
-    START_CLIENT_RUST_COMMAND = "/apex/com.sdv.google.sample.tracing/bin/sdv_client_rust_tracing_sample"
+    START_CLIENT_RUST_COMMAND = "/apex/com.android.sdv.sample.tracing/bin/sdv_client_rust_tracing_sample"
     TAGS_CPP = ["tracing-sample-server", "tracing-sample-client"]
     TAGS_RUST = ["tracing-sample-rust-server", "tracing-sample-rust-client"]
 

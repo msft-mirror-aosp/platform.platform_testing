@@ -19,6 +19,7 @@ package android.tools.traces.wm
 import android.tools.Rotation
 import android.tools.Timestamp
 import android.tools.Trace
+import android.tools.traces.component.IComponentMatcher
 
 /**
  * Contains a collection of parsed WindowManager trace entries and assertions to apply over a single
@@ -77,5 +78,19 @@ data class WindowManagerTrace(override val entries: Collection<WindowManagerStat
             }
         }
         return null
+    }
+
+    fun getLastVisibleTimestamp(matcher: IComponentMatcher, before: Timestamp): Timestamp? {
+        return entries
+            .filter { it.timestamp < before }
+            .findLast { it.isVisible(matcher) }
+            ?.timestamp
+    }
+
+    fun getLastInvisibleTimestamp(matcher: IComponentMatcher, before: Timestamp): Timestamp? {
+        return entries
+            .filter { it.timestamp < before }
+            .findLast { !it.isVisible(matcher) }
+            ?.timestamp
     }
 }

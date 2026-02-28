@@ -190,11 +190,17 @@ constructor(
         val visibleLayers = matchedLayers.filter { it.isVisible }
 
         if (visibleLayers.isEmpty()) {
+            val lastVisibleTimestamp = trace?.getLastVisibleTimestamp(componentMatcher, timestamp)
+            val lastVisibleTimestampStr = lastVisibleTimestamp?.toString() ?: "never"
+
             val failedEntries =
                 matchedLayers
                     .filterNot { it.isVisible }
                     .filterNot { it.isAnimationLeash }
-                    .map { "${it.debugName} (${it.visibilityReason.joinToString()})" }
+                    .map {
+                        "${it.debugName} (${it.visibilityReason.joinToString()}) " +
+                            "Last visible at: $lastVisibleTimestampStr"
+                    }
 
             val actuallyVisible =
                 subjects
@@ -237,12 +243,18 @@ constructor(
             return@apply
         }
 
+        val lastInvisibleTimestamp = trace?.getLastInvisibleTimestamp(componentMatcher, timestamp)
+        val lastInvisibleTimestampStr = lastInvisibleTimestamp?.toString() ?: "never"
+
         val failedEntries =
             componentMatcher
                 .filterLayers(layers)
                 .filter { it.isVisible }
                 .filterNot { it.isAnimationLeash }
-                .map { it.debugName }
+                .map {
+                    "${it.debugName} (${it.visibilityReason.joinToString()}) " +
+                        "Last invisible at: $lastInvisibleTimestampStr"
+                }
 
         val actuallyVisible =
             layers
@@ -306,6 +318,9 @@ constructor(
                     expectElementExists = true,
                 )
             } else {
+                val lastVisibleTimestamp =
+                    trace?.getLastVisibleTimestamp(splashScreenMatcher, timestamp)
+                val lastVisibleTimestampStr = lastVisibleTimestamp?.toString() ?: "never"
                 errorMsgBuilder
                     .forIncorrectVisibility(
                         "Splash screen for ${componentMatcher.toLayerIdentifier()}",
@@ -315,7 +330,13 @@ constructor(
                         matchingSubjects
                             .filter { it.isInvisible }
                             .filterNot { it.layer.isAnimationLeash }
-                            .map { Fact(it.layer.debugName, it.visibilityReason.joinToString()) }
+                            .map {
+                                Fact(
+                                    it.layer.debugName,
+                                    "${it.visibilityReason.joinToString()} " +
+                                        "Last visible at: $lastVisibleTimestampStr",
+                                )
+                            }
                     )
             }
 

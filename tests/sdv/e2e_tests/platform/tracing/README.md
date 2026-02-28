@@ -15,18 +15,14 @@
 
 Test captures perfetto tracing report and checks whether it contains expected processes.
 
-## Test Execution
+## Trigger atest locally
 
-Read [SDV Testing instructions](/vendor/google_testing/software_defined_vehicle/README.md) for detailed information.
-
-### Mobly
-
-```
-NOTIFY_AS_NATIVE=0.0.0.0:6520 atest SdvPerfettoTracingTest -- --test-arg com.android.tradefed.testtype.mobly.MoblyBinaryHostTest:mobly-config-file-name:sdv_one_device_local_only_config.yaml
+```bash
+SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt atest SdvPerfettoTracingTest -- --test-arg com.android.tradefed.testtype.mobly.MoblyBinaryHostTest:mobly-config-file-name:sdv_one_device_config_local.yaml
 ```
 
-### CATBox
+## Trigger CATBox test locally
 
-```
-NOTIFY_AS_NATIVE=0.0.0.0:6520 ./tools/catbox-tradefed run commandAndExit sdv-e2e-perfetto-tracing-test --{device1}serial 0.0.0.0:6520 --mobly-config-file-name sdv_one_device_local_only_config.yaml
+```bash
+m catbox-tradefed && SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt NOTIFY_AS_NATIVE=0.0.0.0:6520 $ANDROID_BUILD_TOP/out/host/linux-x86/catbox/android-catbox/tools/catbox-tradefed run commandAndExit sdv-e2e-perfetto-tracing-test --{device1}serial 0.0.0.0:6520 --mobly-config-file-name sdv_one_device_config_local.yaml
 ```

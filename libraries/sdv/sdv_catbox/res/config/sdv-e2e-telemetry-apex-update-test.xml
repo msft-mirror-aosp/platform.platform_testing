@@ -26,8 +26,8 @@
         value="/data/local/tmp/apex_update_metrics_config.textproto"
       />
       <option name="push-file"
-        key="com.sdv.google.sample.apex.provider.v2.apex"
-        value="/data/local/com.sdv.google.sample.apex.provider.v2.apex"
+        key="com.android.sdv.sample.apex.provider.v2.apex"
+        value="/data/local/com.android.sdv.sample.apex.provider.v2.apex"
       />
     </target_preparer>
   </device>
@@ -39,8 +39,8 @@
         value="/data/local/tmp/apex_update_metrics_config.textproto"
       />
       <option name="push-file"
-        key="com.sdv.google.sample.apex.provider.v2.apex"
-        value="/data/local/com.sdv.google.sample.apex.provider.v2.apex"
+        key="com.android.sdv.sample.apex.provider.v2.apex"
+        value="/data/local/com.android.sdv.sample.apex.provider.v2.apex"
       />
     </target_preparer>
   </device>
