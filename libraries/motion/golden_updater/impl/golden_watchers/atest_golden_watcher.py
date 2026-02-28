@@ -18,7 +18,7 @@ import re
 import os
 import gzip
 import shutil
-from impl.cached_golden import CachedGolden
+from impl.models.cached_golden import CachedGolden
 from impl.golden_watchers.golden_watcher import GoldenWatcher
 import itertools
 
@@ -31,6 +31,8 @@ class AtestGoldenWatcher(GoldenWatcher):
         self.cached_golden_service = cached_golden_service
         # name -> CachedGolden
         self.cached_goldens = {}
+        # Ensure temp_dir exists
+        os.makedirs(self.temp_dir, exist_ok=True)
         self.refresh_golden_files()
 
     def clean(self):

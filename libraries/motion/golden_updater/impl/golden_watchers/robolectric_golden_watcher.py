@@ -18,7 +18,7 @@ import os
 import hashlib
 import datetime
 import shutil
-from impl.cached_golden import CachedGolden
+from impl.models.cached_golden import CachedGolden
 from impl.golden_watchers.golden_watcher import GoldenWatcher
 
 class RobolectricGoldenWatcher(GoldenWatcher):
