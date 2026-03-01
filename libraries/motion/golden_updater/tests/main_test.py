@@ -17,7 +17,6 @@ import unittest
 
 class MainTest(unittest.TestCase):
     def test_stub(self):
-        # This is a stub test for the new refactored codebase.
         self.assertTrue(True)
 
 if __name__ == "__main__":

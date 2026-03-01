@@ -93,7 +93,7 @@ class WatchWebAppRequestHandler(http.server.BaseHTTPRequestHandler):
 
         content_type = self.headers.get("Content-Type")
 
-        # refuse to receive non-json content
+        # Refuse to receive non-json content
         if content_type != "application/json":
             self.send_response(400)
             return
@@ -183,7 +183,7 @@ class WatchWebAppRequestHandler(http.server.BaseHTTPRequestHandler):
         for golden in WatchWebAppRequestHandler.test_entity.golden_watcher.cached_goldens.values():
             goldens_list.append(self.create_golden_data(golden))
 
-        #updating the goldens list
+        # Update the goldens list
         WatchWebAppRequestHandler.test_entity.goldens_list = goldens_list
         self.send_json(goldens_list)
 
@@ -250,7 +250,7 @@ class WatchWebAppRequestHandler(http.server.BaseHTTPRequestHandler):
             presubmit_data_json = {}
             presubmit_data_json["testname"] = test
             presubmit_data.append(presubmit_data_json)
-        #updating the goldens list
+        # Update the goldens list
         WatchWebAppRequestHandler.test_entity.goldens_list = presubmit_data
         self.send_json(presubmit_data)
 
@@ -274,16 +274,14 @@ class WatchWebAppRequestHandler(http.server.BaseHTTPRequestHandler):
     def get_available_modes(self):
         '''
         Collects all adb devices available and send them along with modes like
-        robolectric and atest as available test mode options.
+        atest as available test mode options.
         '''
+
         available_modes = WatchWebAppRequestHandler.service.get_available_modes()
         self.send_json(available_modes)
 
     def switch_mode(self, mode: GoldenWatcherTypes):
         print(f'Switched to: {mode}')
-
-        #If found in cache, served from cache.
-        #If files changed then need to run refresh.
 
         if mode in WatchWebAppRequestHandler.test_entity_cache:
             (WatchWebAppRequestHandler
@@ -301,23 +299,15 @@ class WatchWebAppRequestHandler(http.server.BaseHTTPRequestHandler):
                                         )
 
                     case _:
-                        '''
-                            If not matched with above two test modes,
-                            it must be an ADB device connected.
-                            If not raise exception.
-
-                            Else, create adb client and move on.
-                        '''
                         if mode not in WatchWebAppRequestHandler.service.adb_serial_finder.model_serial_map:
-                             # We need to expose adb_serial_finder or modes from service
-                             # For now, let's assume it's available or re-fetch
                              WatchWebAppRequestHandler.service.get_available_modes()
-                        
-                        if mode not in WatchWebAppRequestHandler.service.adb_serial_finder.model_serial_map:
-                            raise ValueError("Mode not supported")
-                        
+
                         serial = (WatchWebAppRequestHandler.service.adb_serial_finder
                                   .model_serial_map.get(mode))
+
+                        if not serial:
+                            raise ValueError(f"Mode or device '{mode}' not supported or found.")
+
                         adb_client = AdbClient(serial)
                         if not adb_client.run_as_root():
                             raise Exception("Cannot run ADB as root.")
@@ -360,7 +350,6 @@ class WatchWebAppRequestHandler(http.server.BaseHTTPRequestHandler):
 
     def send_json(self, data, status_code=200):
         try:
-            # Replace this with code that generates your JSON data
             response = {"success": True, "data": data}
             data_encoded = json.dumps(response).encode("utf-8")
             self.send_response(status_code)
