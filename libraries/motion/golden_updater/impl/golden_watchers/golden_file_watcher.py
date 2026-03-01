@@ -33,6 +33,9 @@ class GoldenFileWatcher(GoldenWatcher):
 
     def clean(self):
         self.cached_goldens = {}
+        if os.path.exists(self.temp_dir):
+            shutil.rmtree(self.temp_dir)
+        os.makedirs(self.temp_dir, exist_ok=True)
 
     def refresh_golden_files(self):
         command = f"find /data/user/0/ -type f -name *.actual.json"

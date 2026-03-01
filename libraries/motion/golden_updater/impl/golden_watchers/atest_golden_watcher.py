@@ -36,7 +36,9 @@ class AtestGoldenWatcher(GoldenWatcher):
         self.refresh_golden_files()
 
     def clean(self):
-        self.cached_goldens = {}
+        # Deletion is disabled for Atest mode to prevent unintended data loss
+        # and because results persist in /tmp.
+        pass
 
     def refresh_golden_files(self):
 
@@ -45,7 +47,6 @@ class AtestGoldenWatcher(GoldenWatcher):
         )
 
         # Output from on-device runs
-        # Modifying the search regex to handle files not ending with json as given above.
         for filename in glob.iglob(
             f"{self.atest_latest_dir}//**/*.actual*json*", recursive=True
         ):
