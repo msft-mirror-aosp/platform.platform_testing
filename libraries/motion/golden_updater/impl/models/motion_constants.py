@@ -18,6 +18,10 @@ from urllib.parse import quote
 
 GOLDEN_ACCESS_TOKEN_HEADER = "Golden-Access-Token"
 GOLDEN_ACCESS_TOKEN_LOCATION = os.path.expanduser("~/.config/motion-golden/.token")
+MOTION_CACHE_DIR = os.path.join(
+    os.environ.get("XDG_CACHE_HOME", os.path.expanduser("~/.cache")),
+    "motion-golden"
+)
 ANDROID_BUILD_SCOPE = "https://www.googleapis.com/auth/androidbuild.internal"
 
 def create_presubmit_artifacts_list_url(invocation_id, max_results):
