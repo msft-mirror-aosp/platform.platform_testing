@@ -37,14 +37,13 @@ class MotionService:
     def get_available_modes(self):
         '''
         Collects all adb devices available and send them along with modes like
-        robolectric and atest as available test mode options.
+        atest as available test mode options.
         '''
         available_modes = []
         self.adb_serial_finder.update_model_serial_map()
         if self.adb_serial_finder.model_serial_map:
             available_modes = list(self.adb_serial_finder.model_serial_map.keys())
         available_modes.append(GoldenWatcherTypes.ATEST.value)
-        available_modes.append(GoldenWatcherTypes.ROBOLECTRIC.value)
 
         print(f"available modes: {available_modes}")
         return available_modes

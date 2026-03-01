@@ -294,12 +294,6 @@ class WatchWebAppRequestHandler(http.server.BaseHTTPRequestHandler):
             try:
                 golden_watcher = None
                 match(mode):
-                    case GoldenWatcherTypes.ROBOLECTRIC.value:
-                        golden_watcher = GoldenWatcherFactory.create_watcher(
-                                            GoldenWatcherTypes.ROBOLECTRIC,
-                                            WatchWebAppRequestHandler.context
-                                        )
-
                     case GoldenWatcherTypes.ATEST.value:
                         golden_watcher = GoldenWatcherFactory.create_watcher(
                                             GoldenWatcherTypes.ATEST,

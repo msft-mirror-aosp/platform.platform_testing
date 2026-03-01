@@ -16,7 +16,6 @@
 import os
 from impl.golden_watchers.golden_watcher_types import GoldenWatcherTypes
 from impl.golden_watchers.atest_golden_watcher import AtestGoldenWatcher
-from impl.golden_watchers.robolectric_golden_watcher import RobolectricGoldenWatcher
 from impl.golden_watchers.presubmit_golden_watcher import PresubmitGoldenWatcher
 from impl.core.context import MotionWatcherContext
 from impl.golden_watchers.golden_file_watcher import GoldenFileWatcher
@@ -37,11 +36,6 @@ class GoldenWatcherFactory:
                 tmpdir = os.path.join(context.temp_dir, type.value)
                 return PresubmitGoldenWatcher(
                     tmpdir, os.path.join(tmpdir,"artifacts_download_dir")
-                )
-
-            case GoldenWatcherTypes.ROBOLECTRIC:
-                return RobolectricGoldenWatcher(
-                    os.path.join(context.temp_dir, type.value), f"/tmp/motion/"
                 )
 
             case GoldenWatcherTypes.ADB:
