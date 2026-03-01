@@ -15,7 +15,7 @@
 class UpdateManagerClient:
     def __init__(self, adb):
         self.adb = adb
-        self.UPDATE_CLIENT_PATH = "/apex/com.sdv.google.sample.update_manager.client/bin/sdv_update_manager_client"
+        self.UPDATE_CLIENT_PATH = "/apex/com.android.sdv.sample.update_manager.client/bin/sdv_update_manager_client"
 
     def command(self, command: str) -> str:
         return self.adb.execute_shell_command(f"{self.UPDATE_CLIENT_PATH} {command}")

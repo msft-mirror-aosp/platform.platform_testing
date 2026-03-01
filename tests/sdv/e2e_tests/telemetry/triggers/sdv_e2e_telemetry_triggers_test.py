@@ -14,10 +14,10 @@
 
 """E2E Tests validating trigger usage scenarios in Telemetry Service"""
 
-from mobly import asserts
 from datetime import timedelta
 from pathlib import Path
-from typing import List
+from typing import List, Optional
+from mobly import asserts
 from sdv_telemetry_test_execution import telemetry_base_test
 from sdv_telemetry_test_execution.telemetry_utils import shlex_join
 from sdv_test_fw.device import sdv_device
@@ -68,6 +68,30 @@ class DistanceTraveledParams:
     ]
 
 
+class JourneyStatusFirstOffParams:
+    SIMULATION_TIME = timedelta(seconds=1)
+    METRICS_CONFIG_UUID = "bcbffd01-42ba-4444-ae35-908b907c48b8"
+    METRICS_REPORT_NAME = "report"
+    METRICS_CONFIG_FILE_NAME = "journey_status.textproto"
+    HOST_METRICS_CONFIG_PATH = Path("journey_status") / METRICS_CONFIG_FILE_NAME
+    METRICS_PUBLISHER_PATHS = [
+        Path("journey_source_publisher_first_off.textproto")
+    ]
+    SIM_ACTIONS_FILE_NAME = "journey_config_sim_actions.textproto"
+
+
+class JourneyStatusFirstOnParams:
+    SIMULATION_TIME = timedelta(seconds=1)
+    METRICS_CONFIG_UUID = "bcbffd01-42ba-4444-ae35-908b907c48b8"
+    METRICS_REPORT_NAME = "report"
+    METRICS_CONFIG_FILE_NAME = "journey_status.textproto"
+    HOST_METRICS_CONFIG_PATH = Path("journey_status") / METRICS_CONFIG_FILE_NAME
+    METRICS_PUBLISHER_PATHS = [
+        Path("journey_source_publisher_first_on.textproto"),
+    ]
+    SIM_ACTIONS_FILE_NAME = "journey_config_sim_actions.textproto"
+
+
 # Validate that the data collection is performed only in-between Start and End
 # Trigger and that Finish Trigger deactivates the Metrics Config.
 class LifecycleTriggersParams:
@@ -106,6 +130,7 @@ class SdvE2ETelemetryTriggersTest(
         simulation_time: timedelta,
         metrics_config_file_name: str,
         publisher_config_paths: List[Path],
+        sim_actions_file_name: Optional[str],
     ) -> str:
         # TODO: b/461465688: Prettify this by moving the command creation to the
         # Telemetry Framework
@@ -134,6 +159,12 @@ class SdvE2ETelemetryTriggersTest(
             "--output-directory",
             str(self._SIMULATOR_OUT_DIR),
         ])
+
+        if sim_actions_file_name:
+            command.extend([
+                "--simulation-actions",
+                str(self._SIMULATION_CONFIG_DIR / sim_actions_file_name),
+            ])
 
         cd_command = shlex_join(["cd", str(self._SIMULATION_CONFIG_DIR)])
         simulator_command = shlex_join(command)
@@ -318,9 +349,47 @@ class SdvE2ETelemetryTriggersTest(
             report_number=1,
             host_metrics_config_path=DistanceTraveledParams.HOST_METRICS_CONFIG_PATH,
         )
-        asserts.assert_equal(
-            report_payload.value, 7, "Unexpected report value"
-        )
+        asserts.assert_equal(report_payload.value, 7, "Unexpected report value")
+
+    # Test's metrics configuration contains a data source which publishes
+    # current vehicle journey status. The test verifies that Telemetry Service
+    # is properly tracking status changes.
+    #
+    # The test is set up in a way that metrics configuration is only added and
+    # activated after some status has already been published (via simulation
+    # actions configuration).
+    #
+    # Two similar sequences of statuses are being tested, with a difference in
+    # the status published before the configuration activation. The
+    # configuration produces a metrics report on each new journey start and end.
+    def test_journey_status(self):
+        self.enter_context(self.disable_authz(self.sdv_device))
+
+        for params in [JourneyStatusFirstOffParams, JourneyStatusFirstOnParams]:
+            self.sdv_device.adb().log().info(
+                "Running test_journey_status with parameters:"
+                f" {params.__name__}"
+            )
+            self._run_simulation(params)
+
+            report_count = len(
+                self.find_report_paths(
+                    device=self.sdv_device,
+                    simulator_out_dir=self._SIMULATOR_OUT_DIR,
+                    config_uuid=params.METRICS_CONFIG_UUID,
+                    report_name=params.METRICS_REPORT_NAME,
+                )
+            )
+            asserts.assert_equal(
+                report_count,
+                6,
+                "Expected 6 metrics reports: there are 3 intervals of data"
+                " collection, with reports produced on its start and end",
+            )
+            # Clear output directory as the metrics config is shared between both tests
+            self.sdv_device.adb().execute_shell_command(
+                f"rm -rf {self._SIMULATOR_OUT_DIR}"
+            )
 
     def _run_simulation(self, params):
         self.sdv_device.adb().log().info("Starting Simulator")
@@ -331,6 +400,7 @@ class SdvE2ETelemetryTriggersTest(
                 params.SIMULATION_TIME,
                 params.METRICS_CONFIG_FILE_NAME,
                 params.METRICS_PUBLISHER_PATHS,
+                getattr(params, "SIM_ACTIONS_FILE_NAME", None),
             )
         )
         self.sdv_device.adb().log().info("Simulation finished")
