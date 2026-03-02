@@ -183,6 +183,21 @@ class ApiClientTest(unittest.TestCase):
 
         mock_error_logger.assert_called_once()
 
+    @mock.patch("logging.error")
+    @mock.patch("urllib.request.urlopen")
+    def test_execute_handles_timeout_error(
+        self, mock_urlopen, mock_error_logger
+    ):
+        """Verifies that timeouts raise NetworkError."""
+        request = api_client.ApiRequest(path="test")
+
+        mock_urlopen.side_effect = TimeoutError
+
+        with self.assertRaises(api_client.NetworkError):
+            self.client.execute(request)
+
+        mock_error_logger.assert_called_once()
+
 
 if __name__ == "__main__":
     unittest.main()

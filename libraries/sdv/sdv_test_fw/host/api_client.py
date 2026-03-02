@@ -79,6 +79,8 @@ class ApiRequest:
 class ApiClient:
     """Handles generic HTTP communication using the standard library."""
 
+    DEFAULT_REQUEST_TIMEOUT = 10
+
     def __init__(self, base_url: str):
         """Initializes the client with a base URL.
 
@@ -88,18 +90,21 @@ class ApiClient:
         """
         self._base_url = base_url.rstrip("/")
 
-    def execute(self, request: ApiRequest):
+    def execute(
+        self, request: ApiRequest, timeout: float = DEFAULT_REQUEST_TIMEOUT
+    ):
         """Executes the given API request.
 
         Args:
             request: The ApiRequest object containing request details.
+            timeout: The request timeout in seconds.
 
         Returns:
             The parsed JSON response (as a dict or list), or None if response is
             empty.
 
         Raises:
-            NetworkError: If the connection fails.
+            NetworkError: If the connection fails or times out.
             HttpError: If the server returns a 4xx/5xx error.
             ApiClientError: For JSON parsing errors or other unexpected issues.
         """
@@ -130,7 +135,7 @@ class ApiClient:
         )
 
         try:
-            with urllib.request.urlopen(req_obj) as response:
+            with urllib.request.urlopen(req_obj, timeout=timeout) as response:
                 response_body = response.read().decode("utf-8")
                 if not response_body:
                     return None
@@ -145,11 +150,17 @@ class ApiClient:
                 url,
                 error_msg,
             )
-            raise HttpError(e.code, str(error_msg)) from e
+            raise HttpError(e.code, error_msg) from e
 
         except urllib.error.URLError as e:
             logging.error("Network error accessing %s: %s", url, e.reason)
             raise NetworkError(f"Connection failed: {e.reason}") from e
+
+        except TimeoutError as e:
+            logging.error("Request to %s timed out", url)
+            raise NetworkError(
+                f"Connection timed out while reading the data"
+            ) from e
 
         except json.JSONDecodeError as e:
             logging.error("Failed to parse JSON response from %s", url)
