@@ -169,6 +169,24 @@ fun SemanticsNodeInteractionsProvider.fetchSemanticsNodeMaybeCached(
     }
 }
 
+/**
+ * Returns all semantic node matching [matcher].
+ *
+ * This is a temporary replacement `onAllNodes(matcher).fetchSemanticsNodes()` for fetching many
+ * [SemanticsNode] during the same animation frame. This needs to be replaced eventually with the
+ * Compose-provided solution for this.
+ */
+fun SemanticsNodeInteractionsProvider.fetchAllSemanticsNodesMaybeCached(
+    matcher: SemanticsMatcher,
+    useUnmergedTree: Boolean = false,
+): List<SemanticsNode> {
+    return if (this is CachedSemanticNodeFetcher) {
+        fetchAllSemanticsNodesCached(matcher, useUnmergedTree)
+    } else {
+        onAllNodes(matcher).fetchSemanticsNodes()
+    }
+}
+
 interface MotionControlScope : SemanticsNodeInteractionsProvider {
     /** Waits until [check] returns true. Invoked on each frame. */
     suspend fun awaitCondition(check: () -> Boolean)
@@ -410,6 +428,11 @@ internal interface CachedSemanticNodeFetcher : SemanticsNodeInteractionsProvider
         matcher: SemanticsMatcher,
         useUnmergedTree: Boolean = false,
     ): SemanticsNode
+
+    fun fetchAllSemanticsNodesCached(
+        matcher: SemanticsMatcher,
+        useUnmergedTree: Boolean = false,
+    ): List<SemanticsNode>
 }
 
 enum class MotionControlState {
@@ -615,6 +638,13 @@ private class MotionControlImpl(
     ): SemanticsNode {
         return fetchAllNodes(useUnmergedTree).singleOrNull { matcher.matches(it) }
             ?: throw AssertionError("Failed: assertExists")
+    }
+
+    override fun fetchAllSemanticsNodesCached(
+        matcher: SemanticsMatcher,
+        useUnmergedTree: Boolean,
+    ): List<SemanticsNode> {
+        return fetchAllNodes(useUnmergedTree).filter { matcher.matches(it) }
     }
 
     private val allNodesMatcher = SemanticsMatcher("All Nodes") { true }
