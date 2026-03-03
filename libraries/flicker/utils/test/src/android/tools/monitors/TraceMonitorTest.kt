@@ -57,7 +57,7 @@ abstract class TraceMonitorTest<T : TraceMonitor> {
     }
 
     @After
-    fun teardown() {
+    open fun teardown() {
         device.pressHome()
         if (traceMonitor.isEnabled) {
             traceMonitor.stop(newTestResultWriter())
