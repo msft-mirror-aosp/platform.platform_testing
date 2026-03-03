@@ -30,13 +30,13 @@ class SdvSampleServiceBundleLifecycleTest(
         " [{expected_result}]"
     )
 
-    SERVICE_BUNDLE_FQIN = "local-vm:com.sdv.google.sample.lifecycle.apex.Lifecycle{lang}SampleServiceBundle/instance-1"
+    SERVICE_BUNDLE_FQIN = "local-vm:com.android.sdv.sample.lifecycle.Lifecycle{lang}SampleServiceBundle/instance-1"
 
     DUMPSYS_COMMAND = "dumpsys google.sdv.lifecycle.ILifecycleManager/default | grep '{fqin}'"
 
     LIFECYCLE_EXECUTION_COMMAND = (
         "sdv_service_bundle {start_stop_launch_shutdown_param} "
-        + "local-vm:com.sdv.google.sample.lifecycle.apex.Lifecycle{lang}SampleServiceBundle/instance-1"
+        + "local-vm:com.android.sdv.sample.lifecycle.Lifecycle{lang}SampleServiceBundle/instance-1"
     )
 
     def execute_lifecycle_command(self, start_stop_launch_shutdown_param, lang):

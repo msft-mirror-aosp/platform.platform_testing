@@ -29,9 +29,9 @@ class SdvE2EOrchestrationModesResetOnRebootTest(
     FINISHED_PROCESSING_POWER_ON = 'Finished enforcing mode \'Power\' with state \'"ON"\'. successfully'
     FINISHED_PROCESSING_CUSTOM_MODE = 'Finished enforcing mode \'Custom\\("E2E-TESTS"\\)\' with state \'"recover-custom-mode"\'. successfully'
     FINISHED_PROCESSING_DEFAULT = 'Finished enforcing mode \'Default\' with state \'"Requesting state for bundles with no conditions"\'. successfully.'
-    FINISHED_STARTING_RECOVER_CUSTOM_MODE_SERVICE = r'Request for moving service bundle .*: "com.sdv.google.sample.lifecycle.apex", .*: "LifecycleCppSampleServiceBundle", .*: "recover-custom-mode" } to STARTED state was Ok(())'
-    FINISHED_STARTING_RECOVER_POWER_MODE_SERVICE = r'Request for moving service bundle .*: "com.sdv.google.sample.lifecycle.apex", .*: "LifecycleCppSampleServiceBundle", .*: "recover-power-mode" } to STARTED state was Ok(())'
-    FINISHED_STARTING_RECOVER_VEHICLE_MODE_SERVICE = r'Request for moving service bundle .*: "com.sdv.google.sample.lifecycle.apex", .*: "LifecycleCppSampleServiceBundle", .*: "recover-vehicle-mode" } to STARTED state was Ok(())'
+    FINISHED_STARTING_RECOVER_CUSTOM_MODE_SERVICE = r'Request for moving service bundle .*: "com.android.sdv.sample.lifecycle", .*: "LifecycleCppSampleServiceBundle", .*: "recover-custom-mode" } to STARTED state was Ok(())'
+    FINISHED_STARTING_RECOVER_POWER_MODE_SERVICE = r'Request for moving service bundle .*: "com.android.sdv.sample.lifecycle", .*: "LifecycleCppSampleServiceBundle", .*: "recover-power-mode" } to STARTED state was Ok(())'
+    FINISHED_STARTING_RECOVER_VEHICLE_MODE_SERVICE = r'Request for moving service bundle .*: "com.android.sdv.sample.lifecycle", .*: "LifecycleCppSampleServiceBundle", .*: "recover-vehicle-mode" } to STARTED state was Ok(())'
 
     def setup_class(self):
         super().setup_class()
@@ -110,9 +110,9 @@ class SdvE2EOrchestrationModesResetOnRebootTest(
                 r'Vehicle\s+PARK\s+-',
                 r'Power\s+ON\s+-',
                 r'Custom\("E2E-TESTS"\)\s+recover-custom-mode\s+\d+ \(scs\) \d+ \(ns\)',
-                r'Started\s+com.sdv.google.sample.lifecycle.apex/LifecycleCppSampleServiceBundle/recover-custom-mode',
-                r'Started\s+com.sdv.google.sample.lifecycle.apex/LifecycleCppSampleServiceBundle/recover-vehicle-mode',
-                r'Started\s+com.sdv.google.sample.lifecycle.apex/LifecycleCppSampleServiceBundle/recover-power-mode',
+                r'Started\s+com.android.sdv.sample.lifecycle/LifecycleCppSampleServiceBundle/recover-custom-mode',
+                r'Started\s+com.android.sdv.sample.lifecycle/LifecycleCppSampleServiceBundle/recover-vehicle-mode',
+                r'Started\s+com.android.sdv.sample.lifecycle/LifecycleCppSampleServiceBundle/recover-power-mode',
         ]
         dump_report = self.sdv_device.execute_shell_command(
                 "dumpsys com.google.sdv.ISdvAgent/orch"
