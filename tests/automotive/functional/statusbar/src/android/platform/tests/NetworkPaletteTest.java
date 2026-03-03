@@ -23,6 +23,7 @@ import android.platform.helpers.AutomotiveConfigConstants;
 import android.platform.helpers.HelperAccessor;
 import android.platform.helpers.IAutoSettingHelper;
 import android.platform.helpers.IAutoStatusBarHelper;
+import android.platform.helpers.SettingsConstants;
 import android.util.Log;
 
 import androidx.test.runner.AndroidJUnit4;
@@ -147,6 +148,28 @@ public class NetworkPaletteTest {
             mStatusBarHelper.get().networkPaletteToggleOnOff(HOTSPOT);
         }
         Log.i(LOG_TAG, "Assert: Wifi and Hotsport are enabled");
+        assertTrue("Wi-Fi is not enabled", mSettingHelper.get().isWifiOn());
+        assertTrue(
+                "Hotspot is not enabled", mStatusBarHelper.get().isNetworkSwitchEnabled(HOTSPOT));
+    }
+
+    @Test
+    public void testHotspotAndWifiOnStatusBar() {
+        if (!mSettingHelper.get().isWifiOn()) {
+            mStatusBarHelper.get().networkPaletteToggleOnOff(WIFI);
+        }
+        goBackToHomeScreen();
+        Log.i(LOG_TAG, "Act: Open Network Settings");
+        mSettingHelper.get().openSetting(SettingsConstants.NETWORK_AND_INTERNET_SETTINGS);
+        assertTrue(
+                "Network and Internet settings did not open",
+                mSettingHelper.get().checkMenuExists("Hotspot"));
+        Log.i(LOG_TAG, "Act: Turn On Hotspot");
+        mSettingHelper.get().turnOnOffHotspot(true);
+        Log.i(LOG_TAG, "Assert: Hotspot is On");
+        assertTrue(mSettingHelper.get().isHotspotOn());
+        goBackToHomeScreen();
+        openNetworkPalette();
         assertTrue("Wi-Fi is not enabled", mSettingHelper.get().isWifiOn());
         assertTrue(
                 "Hotspot is not enabled", mStatusBarHelper.get().isNetworkSwitchEnabled(HOTSPOT));

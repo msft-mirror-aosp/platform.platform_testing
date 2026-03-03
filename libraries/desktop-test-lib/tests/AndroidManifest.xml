@@ -15,7 +15,7 @@
 -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-        package="platform.test.desktop">
+        package="platform.test.desktop.tests">
 
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
     <application>
@@ -24,6 +24,6 @@
 
     <instrumentation
         android:name="androidx.test.runner.AndroidJUnitRunner"
-        android:targetPackage="platform.test.desktop"
+        android:targetPackage="platform.test.desktop.tests"
         android:label="Desktop Test Library Tests" />
 </manifest>
