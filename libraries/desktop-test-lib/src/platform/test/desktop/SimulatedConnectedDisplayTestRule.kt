@@ -27,6 +27,7 @@ import android.util.Log
 import android.view.Display.TYPE_OVERLAY
 import androidx.core.util.keyIterator
 import androidx.test.platform.app.InstrumentationRegistry
+import kotlin.jvm.JvmOverloads
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -77,9 +78,10 @@ class SimulatedConnectedDisplayTestRule(val initDisplayCount: Int = 0) : TestRul
      *
      * @param displays A list of [Point] objects, where each [Point] represents the width and height
      *   of a simulated display.
+     * @param density the density of the simulated displays.
      * @return List of displayIds of added displays.
      */
-    fun setupTestDisplays(displays: List<Point>): List<Int> = runBlocking {
+    fun setupTestDisplays(displays: List<Point>, density: Int = DEFAULT_DENSITY): List<Int> = runBlocking {
         // Cleanup any existing overlay displays.
         cleanupTestDisplays()
 
@@ -109,7 +111,7 @@ class SimulatedConnectedDisplayTestRule(val initDisplayCount: Int = 0) : TestRul
                     // it.
                     val displaySettings =
                         displays.joinToString(separator = ";") { size ->
-                            "${size.x}x${size.y}/$DEFAULT_DENSITY,disable_window_interaction"
+                            "${size.x}x${size.y}/$density,disable_window_interaction"
                         }
 
                     // Add the overlay displays
@@ -156,9 +158,16 @@ class SimulatedConnectedDisplayTestRule(val initDisplayCount: Int = 0) : TestRul
         return setupTestDisplays(displays)
     }
 
-    /** Add a single overlay display. */
-    fun setupTestDisplay(width: Int = DEFAULT_WIDTH, height: Int = DEFAULT_HEIGHT): Int =
-        setupTestDisplays(listOf(Point(width, height)))[0]
+    /**
+     * Add a single overlay display.
+     *
+     * @param width the width of the simulated display.
+     * @param height the height of the simulated display.
+     * @param density the density of the simulated display.
+     */
+    @JvmOverloads
+    fun setupTestDisplay(width: Int = DEFAULT_WIDTH, height: Int = DEFAULT_HEIGHT, density: Int = DEFAULT_DENSITY): Int =
+        setupTestDisplays(listOf(Point(width, height)), density)[0]
 
     /**
      * Removes all overlay displays. This function is safe to call manually, as it will be a no-op
