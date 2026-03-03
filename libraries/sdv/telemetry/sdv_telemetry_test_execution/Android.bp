@@ -43,3 +43,28 @@ python_library_host {
         // keep-sorted end
     ],
 }
+
+python_test_host {
+    name: "sdv_telemetry_test_execution_library_unit_tests",
+    main: "expects_test.py",
+    srcs: [
+        // keep-sorted start
+        "expects_test.py",
+        // keep-sorted end
+    ],
+    libs: [
+        // keep-sorted start
+        "sdv_telemetry_test_execution_library",
+        // keep-sorted end
+    ],
+    test_suites: [
+        // keep-sorted start
+        "automotive-sdv-tests",
+        "general-tests",
+        "sdv-host-unit-tests",
+        // keep-sorted end
+    ],
+    test_options: {
+        unit_test: true,
+    },
+}
