@@ -23,6 +23,10 @@ import android.tools.flicker.assertors.ComponentTemplate
 /** Checks that [component] window remains visible throughout the transition */
 class AppWindowIsVisibleAlways(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
+    override val assertionHint =
+        "The application window was not visible during the entire transition. Check if " +
+            "it is occluded by another window."
+
     /** {@inheritDoc} */
     override fun doEvaluate(scenarioInstance: ScenarioInstance, flicker: FlickerChecker) {
         val matcher = component.get(scenarioInstance)

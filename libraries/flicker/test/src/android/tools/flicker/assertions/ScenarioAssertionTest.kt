@@ -120,4 +120,39 @@ class ScenarioAssertionTest {
             .hasMessageThat()
             .isEqualTo("got: <false>, expected: is <true>")
     }
+
+    @Test
+    fun addsHintToFlickerAssertionMessage() {
+        val mockReader = Mockito.mock(Reader::class.java)
+        val mockScenarioInstance = Mockito.mock(ScenarioInstance::class.java)
+
+        val assertionTemplate =
+            object : AssertionTemplate("MyAssertion") {
+                override val assertionHint = "My specific hint string"
+
+                override fun doEvaluate(
+                    scenarioInstance: ScenarioInstance,
+                    flicker: FlickerChecker,
+                ) {
+                    throw SimpleFlickerAssertionError("Error")
+                }
+            }
+
+        val scenarioAssertion =
+            ScenarioAssertionImpl(
+                name = "My Assertion",
+                reader = mockReader,
+                assertionData = assertionTemplate.createAssertions(mockScenarioInstance),
+                stabilityGroup = AssertionInvocationGroup.BLOCKING,
+                assertionExtraData = mapOf(),
+            )
+
+        val result = scenarioAssertion.execute()
+
+        Truth.assertThat(result.status).isEqualTo(AssertionResult.Status.FAIL)
+        Truth.assertThat(result.assertionErrors).hasSize(1)
+        val assertionMessage = result.assertionErrors.first().message
+        Truth.assertThat(assertionMessage).contains("My specific hint string")
+        Truth.assertThat(assertionMessage).contains("Error")
+    }
 }

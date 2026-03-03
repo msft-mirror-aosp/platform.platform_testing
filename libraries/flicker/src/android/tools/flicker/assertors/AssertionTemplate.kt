@@ -21,6 +21,7 @@ import android.tools.flicker.assertions.AssertionData
 import android.tools.flicker.assertions.FlickerChecker
 import android.tools.flicker.assertions.ServiceFlickerChecker
 import android.tools.flicker.assertions.SubjectsParser
+import android.tools.flicker.subject.exceptions.FlickerAssertionError
 
 /** Base class for a FaaS assertion */
 abstract class AssertionTemplate @JvmOverloads constructor(name: String? = null) {
@@ -30,6 +31,8 @@ abstract class AssertionTemplate @JvmOverloads constructor(name: String? = null)
             ?: error("Must provide a name to assertions when using anonymous classes.")
     val id
         get() = AssertionId(name)
+
+    open val assertionHint: String? = null
 
     fun qualifiedAssertionName(scenarioInstance: ScenarioInstance): String =
         "${scenarioInstance.type}::$name"
@@ -43,6 +46,15 @@ abstract class AssertionTemplate @JvmOverloads constructor(name: String? = null)
         val mainBlockAssertions = mutableListOf<AssertionData>()
         try {
             doEvaluate(scenarioInstance, flicker)
+        } catch (e: FlickerAssertionError) {
+            assertionHint?.let { e.messageBuilder.addHint(it) }
+            mainBlockAssertions.add(
+                object : AssertionData {
+                    override fun checkAssertion(run: SubjectsParser) {
+                        throw e
+                    }
+                }
+            )
         } catch (e: Throwable) {
             // Any failure that occurred outside the Flicker assertion blocks
             mainBlockAssertions.add(
@@ -54,7 +66,20 @@ abstract class AssertionTemplate @JvmOverloads constructor(name: String? = null)
             )
         }
 
-        return flicker.assertions + mainBlockAssertions
+        return flicker.assertions.map { wrapAssertionWithHint(it) } + mainBlockAssertions
+    }
+
+    private fun wrapAssertionWithHint(assertionData: AssertionData): AssertionData {
+        return object : AssertionData {
+            override fun checkAssertion(run: SubjectsParser) {
+                try {
+                    assertionData.checkAssertion(run)
+                } catch (e: FlickerAssertionError) {
+                    assertionHint?.let { e.messageBuilder.addHint(it) }
+                    throw e
+                }
+            }
+        }
     }
 
     override fun equals(other: Any?): Boolean {
