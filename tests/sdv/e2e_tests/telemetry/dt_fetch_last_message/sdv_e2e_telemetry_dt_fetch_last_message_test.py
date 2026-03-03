@@ -14,14 +14,14 @@
 
 """SDV E2E Telemetry Data Tunnel Fetch Last Message Test"""
 
-from mobly import asserts
 from pathlib import Path
 import pprint
 from random import randint
 import re
 from time import sleep
-from typing import Any, List, TypedDict
-from sdv_telemetry_test_execution import telemetry_base_test
+from typing import Any, List, Optional, TypedDict
+from mobly import asserts
+from sdv_telemetry_test_execution import expects, telemetry_base_test
 from sdv_telemetry_test_execution.telemetry_utils import shlex_join
 from sdv_test_fw.device import sdv_device
 from sdv_test_fw.test_execution import sdv_test_runner
@@ -134,88 +134,59 @@ class SdvE2ETelemetryDtFetchLastMessageTest(
 
     self.start_dt_publishers(publisher_device, UNIT_NAMES, expected_value)
 
-    mc1_all_reports_flmtrue = list()
-    mc1_all_reports_flmfalse = list()
-    mc2_all_reports_flmtrue = list()
-    mc2_all_reports_flmfalse = list()
+    def expect_value_field(field, value: Optional[int], msg: str):
+      expects.expect_equal(field.value, 0 if value is None else value, msg)
+      expects.expect_equal(field.HasField('value'), value is not None, msg)
 
     for _ in range(2):
       # The metrics config is always run on the main device.
       (
-                mc1_reports_flmtrue,
-                mc1_reports_flmfalse,
-                mc2_reports_flmtrue,
-                mc2_reports_flmfalse,
-            ) = self.run_metrics_config(self.sdv_device1)
+          mc1_reports_flmtrue,
+          mc1_reports_flmfalse,
+          mc2_reports_flmtrue,
+          mc2_reports_flmfalse,
+      ) = self.run_metrics_config(self.sdv_device1)
 
       self.sdv_device1.adb().log().info(
-                f'Metrics Config 1: Reports FLM true: {mc1_reports_flmtrue}'
-            )
+          f'Metrics Config 1: Reports FLM true: {mc1_reports_flmtrue}'
+      )
       self.sdv_device1.adb().log().info(
-                f'Metrics Config 1: Reports FLM false: {mc1_reports_flmfalse}'
-            )
+          f'Metrics Config 1: Reports FLM false: {mc1_reports_flmfalse}'
+      )
       self.sdv_device1.adb().log().info(
-                f'Metrics Config 2: Reports FLM true: {mc2_reports_flmtrue}'
-            )
+          f'Metrics Config 2: Reports FLM true: {mc2_reports_flmtrue}'
+      )
       self.sdv_device1.adb().log().info(
-                f'Metrics Config 2: Reports FLM false: {mc2_reports_flmfalse}'
-            )
+          f'Metrics Config 2: Reports FLM false: {mc2_reports_flmfalse}'
+      )
 
-      mc1_all_reports_flmtrue.append(mc1_reports_flmtrue)
-      mc1_all_reports_flmfalse.append(mc1_reports_flmfalse)
-      mc2_all_reports_flmtrue.append(mc2_reports_flmtrue)
-      mc2_all_reports_flmfalse.append(mc2_reports_flmfalse)
+      # Metrics Config 1
+      expect_value_field(
+          mc1_reports_flmtrue[0]['payload'],
+          expected_value,
+          'Unexpected reports received for Metrics Config 1 FLM'
+          f' true:\n{pprint.pformat(mc1_reports_flmtrue, indent=4, width=120, sort_dicts=False)}',
+      )
+      expect_value_field(
+          mc1_reports_flmfalse[0]['payload'],
+          None,
+          'Unexpected reports received for Metrics Config 1 FLM'
+          f' false:\n{pprint.pformat(mc1_reports_flmfalse, indent=4, width=120, sort_dicts=False)}',
+      )
 
-    error_msg = (
-            'Unexpected reports received:\n\nMetrics Config 1 FLM'
-            f' true:\n\n{pprint.pformat(mc1_all_reports_flmtrue, indent=4, width=120, sort_dicts=False)}\n\nMetrics'
-            ' Config 1 FLM'
-            f' false:\n\n{pprint.pformat(mc1_all_reports_flmfalse, indent=4, width=120, sort_dicts=False)}\n\nMetrics'
-            ' Config 2 FLM'
-            f' true:\n\n{pprint.pformat(mc2_all_reports_flmtrue, indent=4, width=120, sort_dicts=False)}\n\nMetrics'
-            ' Config 2 FLM'
-            f' false:\n\n{pprint.pformat(mc2_all_reports_flmfalse, indent=4, width=120, sort_dicts=False)}'
-        )
-
-    asserts.assert_equal(
-        [
-            (
-                (
-                    mc1_all_reports_flmtrue[i][0]['payload'].value,
-                    mc1_all_reports_flmtrue[i][0]['payload'].HasField('value'),
-                ),
-                (
-                    mc1_all_reports_flmfalse[i][0]['payload'].value,
-                    mc1_all_reports_flmfalse[i][0]['payload'].HasField('value'),
-                ),
-                (
-                    mc2_all_reports_flmtrue[i][0]['payload'].value,
-                    mc2_all_reports_flmtrue[i][0]['payload'].HasField('value'),
-                ),
-                (
-                    mc2_all_reports_flmfalse[i][0]['payload'].value,
-                    mc2_all_reports_flmfalse[i][0]['payload'].HasField('value'),
-                ),
-            )
-            for i in range(2)
-        ],
-        [
-            (
-                # Metrics Config 1
-                # flmtrue
-                (expected_value, True),
-                # flmfalse
-                (0, False),
-                # Metrics Config 2
-                # flmtrue
-                (expected_value, True),
-                # flmfalse
-                (0, False),
-            )
-            for _ in range(2)
-        ],
-        error_msg,
-    )
+      # Metrics Config 2
+      expect_value_field(
+          mc2_reports_flmtrue[0]['payload'],
+          expected_value,
+          'Unexpected reports received for Metrics Config 2 FLM'
+          f' true:\n{pprint.pformat(mc2_reports_flmtrue, indent=4, width=120, sort_dicts=False)}',
+      )
+      expect_value_field(
+          mc2_reports_flmfalse[0]['payload'],
+          None,
+          'Unexpected reports received for Metrics Config 2 FLM'
+          f' false:\n{pprint.pformat(mc2_reports_flmfalse, indent=4, width=120, sort_dicts=False)}',
+      )
 
   def start_dt_publishers(
       self,
