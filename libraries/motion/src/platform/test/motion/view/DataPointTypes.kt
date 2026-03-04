@@ -21,7 +21,6 @@ import android.graphics.Rect
 import org.json.JSONObject
 import platform.test.motion.golden.DataPointType
 import platform.test.motion.golden.UnknownTypeException
-import platform.test.motion.isApproximatelyEqualTo
 
 fun Rect.asDataPoint() = DataPointTypes.rect.makeDataPoint(this)
 
@@ -30,7 +29,7 @@ fun Point.asDataPoint() = DataPointTypes.point.makeDataPoint(this)
 /** [DataPointType] implementations for core [View] related types. */
 object DataPointTypes {
     val point: DataPointType<Point> =
-        DataPointType(
+        DataPointType.create(
             "point",
             jsonToValue = {
                 with(it as? JSONObject ?: throw UnknownTypeException()) {
@@ -47,7 +46,7 @@ object DataPointTypes {
         )
 
     val rect: DataPointType<Rect> =
-        DataPointType(
+        DataPointType.create(
             "rect",
             jsonToValue = {
                 with(it as? JSONObject ?: throw UnknownTypeException()) {
@@ -67,7 +66,7 @@ object DataPointTypes {
 
     /** [GradientDrawable] corner radii */
     val cornerRadii: DataPointType<CornerRadii> =
-        DataPointType(
+        DataPointType.create(
             "cornerRadii",
             jsonToValue = {
                 with(it as? JSONObject ?: throw UnknownTypeException()) {
@@ -85,13 +84,6 @@ object DataPointTypes {
                     }
                 }
             },
-            isApproximateEqual = { actual, expected ->
-                var res = true
-                for(i in actual.rawValues.indices){
-                    res = res && actual.rawValues[i].isApproximatelyEqualTo(expected.rawValues[i])
-                }
-                res
-            }
         )
     // property names match order of val
     private val cornerRadiiPropertyNames =
@@ -105,6 +97,4 @@ object DataPointTypes {
             "bottom_left_x",
             "bottom_left_y",
         )
-
-    val allTypes = listOf(point, rect, cornerRadii)
 }

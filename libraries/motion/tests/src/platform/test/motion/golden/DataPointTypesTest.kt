@@ -185,7 +185,7 @@ class DataPointTypesTest {
     private data class Something(val string: String)
 
     private val something: DataPointType<Something> =
-        DataPointType(
+        DataPointType.create(
             "something",
             jsonToValue = {
                 with(it as? JSONObject ?: throw UnknownTypeException()) {

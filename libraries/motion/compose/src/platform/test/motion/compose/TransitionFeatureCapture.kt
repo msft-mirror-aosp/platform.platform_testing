@@ -135,7 +135,7 @@ internal data class AnimatedVisibilityValues(
 
 internal object TransitionFeatureCapture {
     val animatedVisibilityTransitions: DataPointType<AnimatedVisibilityTransitions> =
-        DataPointType(
+        DataPointType.create(
             "animatedVisibilityTransitions",
             jsonToValue = {
                 with(it as? JSONObject ?: throw UnknownTypeException()) {
@@ -152,7 +152,7 @@ internal object TransitionFeatureCapture {
         )
 
     val animatedVisibilityValues: DataPointType<AnimatedVisibilityValues> =
-        DataPointType(
+        DataPointType.create(
             "animatedVisibilityValues",
             jsonToValue = { json ->
                 with(json as? JSONObject ?: throw UnknownTypeException()) {

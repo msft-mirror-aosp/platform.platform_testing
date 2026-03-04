@@ -121,7 +121,7 @@ object JsonGoldenSerializer {
     private const val KEY_FEATURE_DATAPOINTS = "data_points"
 
     private val unknownType: DataPointType<Any> =
-        DataPointType(
+        DataPointType.create(
             "unknown",
             jsonToValue = { throw UnknownTypeException() },
             valueToJson = { throw AssertionError() },
