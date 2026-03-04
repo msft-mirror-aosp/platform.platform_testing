@@ -1,0 +1,35 @@
+{
+  "frame_ids": [
+    0,
+    16,
+    32,
+    48,
+    64,
+    "after"
+  ],
+  "features": [
+    {
+      "name": "frameEvents",
+      "type": "string[]",
+      "data_points": [
+        [],
+        [
+          "Press"
+        ],
+        [
+          "Move"
+        ],
+        [
+          "Move"
+        ],
+        [
+          "Move"
+        ],
+        [
+          "Move",
+          "Release"
+        ]
+      ]
+    }
+  ]
+}
