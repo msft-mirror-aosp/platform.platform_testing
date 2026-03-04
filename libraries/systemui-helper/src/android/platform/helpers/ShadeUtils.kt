@@ -17,51 +17,114 @@
 package android.platform.helpers
 
 import android.content.Context
+import android.content.pm.PackageManager
+import android.content.res.Configuration
+import android.hardware.display.DisplayManager
+import android.platform.helpers.CommonUtils.isLargeScreen
 import android.platform.uiautomatorhelpers.DeviceHelpers
+import android.platform.uiautomatorhelpers.DeviceHelpers.shell
 import android.provider.Settings
+import android.util.Log
+import android.view.WindowManager.LayoutParams.TYPE_APPLICATION
+import com.android.app.tracing.traceSection
 import com.android.systemui.Flags
 
 object ShadeUtils {
 
     /**
-     * @return true if the device has a config, that should display SingleShade.
+     * Whether the device is in a configuration that should display Single Shade.
      *
-     * This is useful for tests that are validating SingleShade specific scenarios.
+     * @param context The context containing the configuration of the display that is hosting the
+     *   shade.
      */
     @JvmStatic
-    fun isSingleShadeConfig(): Boolean =
-            if (Flags.sceneContainer()) {
-                // TODO(429153906) use a display-aware context.
-                !shouldShowDualShade(DeviceHelpers.context)
-            } else {
-                !CommonUtils.isSplitShade()
+    @JvmOverloads
+    fun isSingleShadeConfig(context: Context = getShadeDisplayContext()): Boolean =
+        !isDualShadeConfig(context) && !isSplitShadeConfig(context)
+
+    /**
+     * Whether the device is in a configuration that should display Dual Shade.
+     *
+     * @param context The context containing the configuration of the display that is hosting the
+     *   shade.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun isDualShadeConfig(context: Context = getShadeDisplayContext()): Boolean {
+        if (!Flags.dualShade()) {
+            return false
+        }
+
+        if (
+            context.getBoolResource(
+                resName = "config_useDualShadeSetting",
+                packageName = "com.android.settingslib",
+            ) == true
+        ) {
+            return isDualShadeSettingEnabled(context)
+        }
+
+        return context.getBoolResource("config_dualShadeEnabledByDefault")
+            ?: isDualShadeSettingEnabled(context)
+    }
+
+    /**
+     * Whether the device is in a configuration that should display Split Shade.
+     *
+     * @param context The context containing the configuration of the display that is hosting the
+     *   shade.
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun isSplitShadeConfig(context: Context = getShadeDisplayContext()): Boolean {
+        if (Flags.dualShade()) {
+            return false // Split shade cannot be shown
+        }
+
+        return context.getBoolResource("config_use_split_notification_shade")
+            ?:
+            // Fallback check, accurate for most but not necessarily all devices.
+            isLargeScreen() &&
+            context.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    }
+
+    private fun getShadeDisplayContext(): Context {
+        val displayIdString = shell("cmd statusbar shade_display_override display_id")
+        val displayId =
+            try {
+                displayIdString.trim().toInt()
+            } catch (e: NumberFormatException) {
+                error("Couldn't parse shade display ID: $displayIdString")
             }
 
-    /**
-     * @return tue if the device has a config, that should display DualShade.
-     *
-     * This is useful for tests that are validating DualShade specific scenarios.
-     */
-    @JvmStatic
-    fun isDualShadeConfig(): Boolean =
-        // TODO(429153906) use a display-aware context.
-        Flags.sceneContainer() && shouldShowDualShade(DeviceHelpers.context)
+        return traceSection("getShadeDisplayContext") {
+            val displayManager =
+                DeviceHelpers.context.getSystemService(DisplayManager::class.java)
+                    ?: error("Couldn't get DisplayManager")
+            val display = displayManager.getDisplay(displayId)
+            DeviceHelpers.context.createWindowContext(display, TYPE_APPLICATION, null)
+        }
+    }
 
-    /**
-     * @return true if the device has a config, that should display SplitShade. Always false, when
-     *   [Flags.sceneContainer] is enabled.
-     */
-    @JvmStatic
-    fun isSplitShadeConfig(): Boolean = !Flags.sceneContainer() && CommonUtils.isSplitShade()
+    private fun isDualShadeSettingEnabled(context: Context): Boolean {
+        val defaultValue = if (Flags.dualShade()) 1 else 0
+        val resolver = context.contentResolver
+        return Settings.Secure.getInt(resolver, Settings.Secure.DUAL_SHADE, defaultValue) == 1
+    }
 
-    private const val COMPACT_SCREEN_MAX_DPS = 600
-
-    private fun shouldShowDualShade(context: Context) =
-        isDualShadeSettingEnabled(context) || isShadeLayoutWide(context)
-
-    private fun isDualShadeSettingEnabled(context: Context) =
-        Settings.Secure.getInt(context.contentResolver, Settings.Secure.DUAL_SHADE, 0) == 1
-
-    private fun isShadeLayoutWide(context: Context) =
-        context.resources.configuration.screenWidthDp >= COMPACT_SCREEN_MAX_DPS
+    private fun Context.getBoolResource(
+        resName: String,
+        packageName: String = "com.android.systemui",
+    ): Boolean? {
+        try {
+            val appResources = packageManager.getResourcesForApplication(packageName)
+            val resourceId = appResources.getIdentifier(resName, "bool", packageName)
+            return appResources.getBoolean(resourceId)
+        } catch (e: PackageManager.NameNotFoundException) {
+            Log.e(TAG, "Couldn't find boolean resource: [$packageName].$resName", e)
+            return null
+        }
+    }
 }
+
+private const val TAG = "ShadeUtils"
