@@ -42,6 +42,8 @@ object SysuiRestarter {
             By.res("com.android.systemui", "keyguard_indication_area")
         }
 
+    private val STATUS_BAR_SELECTOR = By.res("com.android.systemui", "status_bar_container")
+
     /**
      * Restart System UI by running `am crash com.android.systemui`.
      *
@@ -65,8 +67,20 @@ object SysuiRestarter {
                     /* expectedResult= */ false,
                 )
             sysuiProcessUtils.restart()
+
             if (!isSwipeSupported) {
-                Log.d(TAG, "restartSystemUI(): device doesn't support LockscreenType.SWIPE")
+                Log.d(
+                    TAG,
+                    "restartSystemUI(): device doesn't support LockscreenType.SWIPE - waiting for status bar instead",
+                )
+                // The device does not have a credential at this point (unless a previous test
+                // forgot to clear it), so it should not be locked.
+                LockscreenUtils.checkDeviceLock(false)
+                // Wait for SysUI to be initialized to be consistent with the isSwipeSupported ==
+                // true case. No lock screen will be shown because the device is not locked and
+                // Swipe is not supported - Use the presence of the status bar as a signal for SysUI
+                // initialization.
+                waitForStatusBar { "Status bar did not become visible after restart" }
                 return false
             }
 
@@ -83,6 +97,15 @@ object SysuiRestarter {
         uiDevice.assertVisibility(
             LOCKSCREEN_SELECTOR,
             visible,
+            timeout = Duration.ofSeconds(60).platformAdjust(),
+            errorProvider = errorMessageProvider,
+        )
+    }
+
+    private fun waitForStatusBar(errorMessageProvider: () -> String) {
+        uiDevice.assertVisibility(
+            STATUS_BAR_SELECTOR,
+            true,
             timeout = Duration.ofSeconds(60).platformAdjust(),
             errorProvider = errorMessageProvider,
         )
