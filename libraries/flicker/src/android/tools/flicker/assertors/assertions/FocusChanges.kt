@@ -28,6 +28,9 @@ class FocusChanges(
     private val fromComponent: ComponentTemplate = ANY_MATCH_COMPONENT,
     private val toComponent: ComponentTemplate = ANY_MATCH_COMPONENT,
 ) : AssertionTemplateWithComponent(fromComponent, toComponent) {
+    override val assertionHint =
+        "The window focus did not change. Check if the target activity is correctly " +
+            "defined in your ComponentMatcher or if another window is stealing focus."
 
     // TODO: Make parent call this when appropriate
     override fun doEvaluate(scenarioInstance: ScenarioInstance, flicker: FlickerChecker) {

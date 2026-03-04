@@ -22,6 +22,10 @@ import android.tools.flicker.assertors.ComponentTemplate
 
 class AppWindowOnTopAtStart(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
+    override val assertionHint =
+        "The application window was not on top at the start of the transition. Check if " +
+            "another window (e.g. SystemUI) is covering it."
+
     /** {@inheritDoc} */
     override fun doEvaluate(scenarioInstance: ScenarioInstance, flicker: FlickerChecker) {
         flicker.assertWmStart { isAppWindowOnTop(component.get(scenarioInstance)) }

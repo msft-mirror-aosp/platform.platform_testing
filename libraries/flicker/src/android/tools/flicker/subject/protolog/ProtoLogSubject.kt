@@ -30,7 +30,7 @@ class ProtoLogSubject(val protolog: ProtoLogTrace, override val reader: Reader) 
 
     override val timestamp = protolog.entries.firstOrNull()?.timestamp ?: Timestamps.empty()
 
-    override val focusChanges by lazy {
+    val focusEvents by lazy {
         val regex = Regex("^Focus (entering|leaving) (.+) reason=(.*)$")
         protolog.entries
             .filter { it.tag == "INPUT_FOCUS" && it.message.matches(regex) }
@@ -46,6 +46,12 @@ class ProtoLogSubject(val protolog: ProtoLogTrace, override val reader: Reader) 
                     FocusEvent(it.timestamp, window, type, reason, 0, "", 0)
                 } ?: error("Unexpected focus message: ${it.message}")
             }
+    }
+
+    override val focusChanges by lazy {
+        val focusList = mutableListOf<FocusEvent>()
+        focusEvents.firstOrNull { !it.hasFocus() }?.let { focusList.add(it) }
+        focusList + focusEvents.filter { it.hasFocus() }
     }
 
     override val exceptionMessageBuilder

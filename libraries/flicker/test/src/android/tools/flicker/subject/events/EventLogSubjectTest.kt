@@ -25,6 +25,8 @@ import android.tools.testutils.TestArtifact
 import android.tools.traces.events.EventLog
 import android.tools.traces.events.FocusEvent
 import org.junit.Assert.assertThrows
+import org.junit.Assume.assumeFalse
+import org.junit.Before
 import org.junit.ClassRule
 import org.junit.Test
 
@@ -32,6 +34,11 @@ import org.junit.Test
  * Contains [EventLogSubject] tests. To run this test: `atest FlickerLibTest:EventLogSubjectTest`
  */
 class EventLogSubjectTest {
+    @Before
+    fun setup() {
+        assumeFalse(android.tracing.Flags.nativeProtoLogging())
+    }
+
     @Test
     fun canDetectFocusChanges() {
         val reader =

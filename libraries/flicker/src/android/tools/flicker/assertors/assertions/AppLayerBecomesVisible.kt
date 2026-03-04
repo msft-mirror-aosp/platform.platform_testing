@@ -27,6 +27,10 @@ import android.tools.traces.component.ComponentNameMatcher
  */
 class AppLayerBecomesVisible(private val component: ComponentTemplate) :
     AssertionTemplateWithComponent(component) {
+    override val assertionHint =
+        "The application layer did not become visible. Check if the animation is " +
+            "actually starting or if it is completely occluded."
+
     /** {@inheritDoc} */
     override fun doEvaluate(scenarioInstance: ScenarioInstance, flicker: FlickerChecker) {
         // The app launch transition can finish when the splashscreen or SnapshotStartingWindows
