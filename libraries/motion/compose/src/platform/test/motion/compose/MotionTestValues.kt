@@ -53,10 +53,7 @@ fun <T : Any> TimeSeriesCaptureScope<SemanticsNodeInteractionsProvider>.feature(
     matcher: SemanticsMatcher = hasMotionTestValue(motionTestValueKey),
     name: String = motionTestValueKey.semanticsPropertyKey.name,
 ) {
-    feature(
-        matcher,
-        FeatureCapture(name) { dataPointType.makeDataPoint(it.get(motionTestValueKey)) },
-    )
+    feature(matcher, FeatureCapture(name, dataPointType) { it.get(motionTestValueKey) })
 }
 
 /**
@@ -66,13 +63,16 @@ fun <T : Any> TimeSeriesCaptureScope<SemanticsNodeInteractionsProvider>.feature(
  * Records `DataPoint.notFound()` if 0 or 2+ matching node are found. [IllegalStateException] is
  * thrown if the node does not have a [motionTestValueKey] exported.
  */
-fun <T> TimeSeriesCaptureScope<SemanticsNodeInteractionsProvider>.feature(
+fun <T, V : Any> TimeSeriesCaptureScope<SemanticsNodeInteractionsProvider>.feature(
     motionTestValueKey: MotionTestValueKey<T>,
-    capture: FeatureCapture<T, *>,
+    capture: FeatureCapture<T, V>,
     matcher: SemanticsMatcher = hasMotionTestValue(motionTestValueKey),
     name: String = "${motionTestValueKey.semanticsPropertyKey.name}_${capture.name}",
 ) {
-    feature(matcher, FeatureCapture(name) { capture.capture(it.get(motionTestValueKey)) })
+    feature(
+        matcher,
+        FeatureCapture(name, capture.type) { capture.captureFn(it.get(motionTestValueKey)) },
+    )
 }
 
 private fun <T> SemanticsNode.get(motionTestValueKey: MotionTestValueKey<T>) =

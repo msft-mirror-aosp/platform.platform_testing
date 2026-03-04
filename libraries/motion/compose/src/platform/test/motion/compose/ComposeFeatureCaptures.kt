@@ -27,47 +27,47 @@ import androidx.compose.ui.unit.toSize
 import platform.test.motion.compose.values.MotionTestValues
 import platform.test.motion.golden.FeatureCapture
 import platform.test.motion.golden.TimeSeriesCaptureScope
-import platform.test.motion.golden.asDataPoint
+import platform.test.motion.golden.dataPointType
 import platform.test.motion.golden.feature
 
 /** Common, generic [FeatureCapture] implementations for Compose. */
 object ComposeFeatureCaptures {
     /** Size of a node in pixels. */
-    val size = FeatureCapture<SemanticsNode, IntSize>("size") { it.size.asDataPoint() }
+    val size = FeatureCapture<SemanticsNode, IntSize>("size", IntSize.dataPointType) { it.size }
     /** Size of a node in DPs. */
     val dpSize =
-        FeatureCapture<SemanticsNode, DpSize>("size") {
-            with(it.layoutInfo.density) { it.size.toSize().toDpSize().asDataPoint() }
+        FeatureCapture<SemanticsNode, DpSize>("size", DpSize.dataPointType) {
+            with(it.layoutInfo.density) { it.size.toSize().toDpSize() }
         }
     /** Width of a node in DPs. */
     val width =
-        FeatureCapture<SemanticsNode, Dp>("width") {
-            with(it.layoutInfo.density) { it.layoutInfo.width.toDp().asDataPoint() }
+        FeatureCapture<SemanticsNode, Dp>("width", Dp.dataPointType) {
+            with(it.layoutInfo.density) { it.layoutInfo.width.toDp() }
         }
     /** Height of a node in DPs. */
     val height =
-        FeatureCapture<SemanticsNode, Dp>("height") {
-            with(it.layoutInfo.density) { it.layoutInfo.height.toDp().asDataPoint() }
+        FeatureCapture<SemanticsNode, Dp>("height", Dp.dataPointType) {
+            with(it.layoutInfo.density) { it.layoutInfo.height.toDp() }
         }
     /**
      * The position of this node relative to the root of this Compose hierarchy, with no clipping
      * applied.
      */
     val positionInRoot =
-        FeatureCapture<SemanticsNode, DpOffset>("position") {
+        FeatureCapture<SemanticsNode, DpOffset>("position", DpOffset.dataPointType) {
             with(it.layoutInfo.density) {
-                DpOffset(it.positionInRoot.x.toDp(), it.positionInRoot.y.toDp()).asDataPoint()
+                DpOffset(it.positionInRoot.x.toDp(), it.positionInRoot.y.toDp())
             }
         }
     /** The x position of this node relative to the root of this Compose hierarchy in DPs. */
     val x =
-        FeatureCapture<SemanticsNode, Dp>("x") {
-            with(it.layoutInfo.density) { it.positionInRoot.x.toDp().asDataPoint() }
+        FeatureCapture<SemanticsNode, Dp>("x", Dp.dataPointType) {
+            with(it.layoutInfo.density) { it.positionInRoot.x.toDp() }
         }
     /** The y position of this node relative to the root of this Compose hierarchy in DPs. */
     val y =
-        FeatureCapture<SemanticsNode, Dp>("y") {
-            with(it.layoutInfo.density) { it.positionInRoot.y.toDp().asDataPoint() }
+        FeatureCapture<SemanticsNode, Dp>("y", Dp.dataPointType) {
+            with(it.layoutInfo.density) { it.positionInRoot.y.toDp() }
         }
 
     /**
@@ -77,8 +77,8 @@ object ComposeFeatureCaptures {
      * code, see [MotionTestValues.alpha]
      */
     val alpha =
-        FeatureCapture<SemanticsNode, Float>("alpha") {
-            it.config[MotionTestValues.alpha.semanticsPropertyKey].asDataPoint()
+        FeatureCapture<SemanticsNode, Float>("alpha", Float.dataPointType) {
+            it.config[MotionTestValues.alpha.semanticsPropertyKey]
         }
 }
 

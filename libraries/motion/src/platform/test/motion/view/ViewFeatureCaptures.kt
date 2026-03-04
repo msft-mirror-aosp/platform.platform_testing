@@ -20,7 +20,7 @@ import android.graphics.Point
 import android.view.View
 import platform.test.motion.golden.FeatureCapture
 import platform.test.motion.golden.TimeSeriesCaptureScope
-import platform.test.motion.golden.asDataPoint
+import platform.test.motion.golden.dataPointType
 
 /** Returns a [TimeSeriesCaptureScope] for the child view with the specified ID. */
 fun <U : View> TimeSeriesCaptureScope<out View>.onViewWithId(
@@ -31,29 +31,27 @@ fun <U : View> TimeSeriesCaptureScope<out View>.onViewWithId(
 /** Common, generic [FeatureCapture] implementations for Views. */
 object ViewFeatureCaptures {
     /** Captures the `alpha` value of a view. */
-    val alpha = FeatureCapture<View, Float>("alpha") { view -> view.alpha.asDataPoint() }
+    val alpha = FeatureCapture<View, Float>("alpha", Float.dataPointType) { view -> view.alpha }
 
     /** Captures the `elevation` value of a view. */
     val elevation =
-        FeatureCapture<View, Float>("elevation") { view -> view.elevation.asDataPoint() }
+        FeatureCapture<View, Float>("elevation", Float.dataPointType) { view -> view.elevation }
 
     /** Captures the `x` value of a view. */
-    val x = FeatureCapture<View, Float>("x") { view -> view.x.asDataPoint() }
+    val x = FeatureCapture<View, Float>("x", Float.dataPointType) { view -> view.x }
 
     /** Captures the `y` value of a view. */
-    val y = FeatureCapture<View, Float>("y") { view -> view.y.asDataPoint() }
+    val y = FeatureCapture<View, Float>("y", Float.dataPointType) { view -> view.y }
 
     /** Captures the top-left coordinate of the view in screen coordinate system. */
     val positionOnScreen =
-        FeatureCapture<View, Point>("pos") { view ->
+        FeatureCapture<View, Point>("pos", DataPointTypes.point) { view ->
             val outLocation = IntArray(2)
             view.getLocationOnScreen(outLocation)
 
-            Point()
-                .apply {
-                    x = outLocation[0]
-                    y = outLocation[1]
-                }
-                .asDataPoint()
+            Point().apply {
+                x = outLocation[0]
+                y = outLocation[1]
+            }
         }
 }

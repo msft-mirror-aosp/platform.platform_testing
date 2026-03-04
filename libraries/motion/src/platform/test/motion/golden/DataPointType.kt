@@ -96,6 +96,16 @@ internal constructor(
         )
     }
 
+    internal fun isTypeCompatible(other: DataPointType<*>): Boolean {
+        if (this == other) return true
+
+        // Tolerance is allowed to differ.
+        return typeName == other.typeName &&
+            jsonToValue == other.jsonToValue &&
+            valueToJson == other.valueToJson &&
+            toleranceAwareEquality == other.toleranceAwareEquality
+    }
+
     companion object {
         /**
          * Creates a [DataPointType] that uses default equality on [T] to verify if two values are

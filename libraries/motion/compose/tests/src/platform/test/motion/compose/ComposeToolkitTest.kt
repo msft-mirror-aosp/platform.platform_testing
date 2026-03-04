@@ -66,7 +66,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import platform.test.motion.MotionTestRule
-import platform.test.motion.compose.DataPointTypes.offset
 import platform.test.motion.compose.values.MotionTestValueKey
 import platform.test.motion.compose.values.MotionTestValues
 import platform.test.motion.compose.values.motionTestValues
@@ -74,7 +73,7 @@ import platform.test.motion.golden.DataPoint
 import platform.test.motion.golden.DataPointTypes
 import platform.test.motion.golden.NotFoundDataPoint
 import platform.test.motion.golden.ValueDataPoint
-import platform.test.motion.golden.feature
+import platform.test.motion.golden.dataPointType
 import platform.test.motion.testing.createGoldenPathManager
 import platform.test.motion.truth.TimeSeriesSubject.Companion.assertThat
 
@@ -283,7 +282,7 @@ class ComposeToolkitTest {
                             awaitDelay(200.milliseconds)
                         }
                     ) {
-                        feature(pointerOffsetKey, offset)
+                        feature(pointerOffsetKey, Offset.dataPointType)
                     },
                 )
 
@@ -306,7 +305,7 @@ class ComposeToolkitTest {
                             awaitFrames(1)
                         }
                     ) {
-                        feature(pointerOffsetKey, offset)
+                        feature(pointerOffsetKey, Offset.dataPointType)
                     },
                 )
 
@@ -338,7 +337,7 @@ class ComposeToolkitTest {
                             dragSurface.performTouchInput { up() }
                         }
                     ) {
-                        feature(pointerOffsetKey, offset)
+                        feature(pointerOffsetKey, Offset.dataPointType)
                     },
                 )
 
@@ -651,7 +650,7 @@ class ComposeToolkitTest {
     fun asyncTouchInput_pointerInput_invokedPerFrame() =
         motionRule.runTest {
             val frameEvents = mutableListOf<String>()
-            val pointerEventsType = DataPointTypes.listOf(DataPointTypes.string)
+            val pointerEventsType = DataPointTypes.listOf(String.dataPointType)
 
             val motion =
                 recordMotion(
@@ -691,7 +690,7 @@ class ComposeToolkitTest {
     @Test
     fun asyncTouchInput_pointerInput_coroutineContinuation_executedBeforeWithFrameNanos() =
         motionRule.runTest {
-            val idsType = DataPointTypes.listOf(DataPointTypes.int)
+            val idsType = DataPointTypes.listOf(Int.dataPointType)
 
             // verify that any pending (resumed but not yet executed) continuations are executed
             // before
@@ -776,7 +775,7 @@ class ComposeToolkitTest {
                 motionRule.recordMotion(
                     content = { play -> playState = play },
                     ComposeRecordingSpec.untilIdle {
-                        feature("play") { DataPoint.of(playState, DataPointTypes.boolean) }
+                        feature("play") { DataPoint.of(playState, Boolean.dataPointType) }
                     },
                 )
 
@@ -886,7 +885,7 @@ class ComposeToolkitTest {
                     )
                 },
                 ComposeRecordingSpec(motionControl, recordBefore, recordAfter) {
-                    feature(frameCountKey, DataPointTypes.int)
+                    feature(frameCountKey, Int.dataPointType)
                 },
             )
 
