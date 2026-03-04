@@ -35,7 +35,7 @@ class SdvSomeIpMultipubDeviceIntegrationTest(sdv_base_test.SdvBaseTestClass):
         return len(self.sdv_device.read_file(log)) == 0
 
     def assert_bundle_successful_execution(self, action, service, instance):
-        PUBLISHER_COMMAND = "sdv_service_bundle {action} local-vm:com.sdv.google.sample.someip.{service}/{instance}"
+        PUBLISHER_COMMAND = "sdv_service_bundle {action} local-vm:com.android.sdv.sample.someip.{service}/{instance}"
         ERROR_MESSAGE = "Failed to {action} {service}: {log}"
 
         log = self.sdv_device.execute_shell_command_in_subprocess_log(
@@ -84,8 +84,8 @@ class SdvSomeIpMultipubDeviceIntegrationTest(sdv_base_test.SdvBaseTestClass):
         INSTANCE1 = "instance1"
         INSTANCE2 = "instance2"
 
-        TEMPERATURE_SENSOR1_LOGCAT_TAG = "com_sdv_google_sample_someip_TemperatureSensor_instance1"
-        TEMPERATURE_SENSOR2_LOGCAT_TAG = "com_sdv_google_sample_someip_TemperatureSensor_instance2"
+        TEMPERATURE_SENSOR1_LOGCAT_TAG = "com_android_sdv_sample_someip_TemperatureSensor_instance1"
+        TEMPERATURE_SENSOR2_LOGCAT_TAG = "com_android_sdv_sample_someip_TemperatureSensor_instance2"
 
         TEMPERATURE_SENSOR_EXPECTED_LOG = "Starting temperature sensor"
 
