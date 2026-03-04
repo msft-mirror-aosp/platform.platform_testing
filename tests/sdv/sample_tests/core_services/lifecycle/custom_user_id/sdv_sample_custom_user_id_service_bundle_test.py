@@ -26,7 +26,7 @@ class SdvSampleCustomUserIdTest(
     ASSERT_MESSAGE = "Current process user id 7050. Expected user id to be 7050"
     ERROR_MESSAGE = '\n[FAILURE]: Current process user id message is not found'
 
-    SERVICE_BUNDLE_FQIN = "sdv_service_bundle start local-vm:com.sdv.google.sample.lifecycle.userid.apex.LifecycleCustomUserIdSampleServiceBundle/instance-1"
+    SERVICE_BUNDLE_FQIN = "sdv_service_bundle start local-vm:com.android.sdv.sample.lifecycle.userid.LifecycleCustomUserIdSampleServiceBundle/instance-1"
 
     SAMPLES_LOGCAT_ARGS = "oem_service_bundle_custom_userid_sample:*"
 
