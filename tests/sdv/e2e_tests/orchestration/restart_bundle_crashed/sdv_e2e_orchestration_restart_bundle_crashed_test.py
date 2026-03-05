@@ -25,10 +25,10 @@ class SdvE2EOrchestrationRestartBundleCrashedTest(
     sdv_base_test.SdvBaseTestClass
 ):
 
-    BUNDLE_STARTED_SUCCESS_LOGCAT_TEXT = r'Request for moving service bundle .*: "com.sdv.google.sample.lifecycle.apex", .*: "LifecycleCppSampleServiceBundle", .*: "crashed-restarted" } to STARTED state was Ok(())'
-    BUNDLE_CRASH_NOTIFICATION_LOGCAT_TEXT = r'Service bundle crashed for .*: "com.sdv.google.sample.lifecycle.apex", .*: "LifecycleCppSampleServiceBundle", .*: "crashed-notification" }'
-    BUNDLE_NON_RESTARTABLE_LOGCAT_TEXT = r'Bundle with .*: "com.sdv.google.sample.lifecycle.apex", .*: "LifecycleCppSampleServiceBundle", .*: "crashed-restarted" } has crashed, but it is not restartable.'
-    FINISHED_STARTING_SERVICE_BUNDLE = r'Request for moving service bundle .*: "com.sdv.google.sample.lifecycle.apex", .*: "LifecycleCppSampleServiceBundle", .*: "crashed-notification" } to STARTED state was Ok(())'
+    BUNDLE_STARTED_SUCCESS_LOGCAT_TEXT = r'Request for moving service bundle .*: "com.android.sdv.sample.lifecycle", .*: "LifecycleCppSampleServiceBundle", .*: "crashed-restarted" } to STARTED state was Ok(())'
+    BUNDLE_CRASH_NOTIFICATION_LOGCAT_TEXT = r'Service bundle crashed for .*: "com.android.sdv.sample.lifecycle", .*: "LifecycleCppSampleServiceBundle", .*: "crashed-notification" }'
+    BUNDLE_NON_RESTARTABLE_LOGCAT_TEXT = r'Bundle with .*: "com.android.sdv.sample.lifecycle", .*: "LifecycleCppSampleServiceBundle", .*: "crashed-restarted" } has crashed, but it is not restartable.'
+    FINISHED_STARTING_SERVICE_BUNDLE = r'Request for moving service bundle .*: "com.android.sdv.sample.lifecycle", .*: "LifecycleCppSampleServiceBundle", .*: "crashed-notification" } to STARTED state was Ok(())'
 
     def kill_bundle(self, instance_name):
         # Process name for service bundle is constructed as: bundle_name:instance_name

@@ -21,8 +21,8 @@ from sdv_test_fw.verification import polling
 
 class SdvSampleServiceBundleDeadlineSchedulingTest(sdv_base_test.SdvBaseTestClass):
 
-    SCHEDULING_SERVICE_BUNDLE_FULL_NAME = "com.sdv.google.sample.lifecycle.apex.LifecycleRustDeadlineSchedServiceBundle"
-    CPU_AFFINITY_SERVICE_BUNDLE_FULL_NAME = "com.sdv.google.sample.lifecycle.apex.LifecycleRustAffinitySchedServiceBundle"
+    SCHEDULING_SERVICE_BUNDLE_FULL_NAME = "com.android.sdv.sample.lifecycle.LifecycleRustDeadlineSchedServiceBundle"
+    CPU_AFFINITY_SERVICE_BUNDLE_FULL_NAME = "com.android.sdv.sample.lifecycle.LifecycleRustAffinitySchedServiceBundle"
 
     PROCESS_SCHEDULING_COMMAND = "for pid in $(ps -o tid --pid {pid} | tail -n +3); do chrt -p $pid; done"
 

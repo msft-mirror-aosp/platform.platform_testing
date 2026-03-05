@@ -18,6 +18,8 @@ package android.platform.systemui_tapl.ui.quicksettings
 import android.graphics.PointF
 import android.platform.helpers.ShadeUtils
 import android.platform.systemui_tapl.ui.QSHeader
+import android.platform.systemui_tapl.ui.Root
+import android.platform.systemui_tapl.ui.Taskbar
 import android.platform.systemui_tapl.ui.UniversalMediaObject
 import android.platform.systemui_tapl.ui.UserSelectionPanel
 import android.platform.systemui_tapl.utils.DeviceUtils
@@ -37,7 +39,6 @@ import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.Direction
 import androidx.test.uiautomator.UiSelector
 import java.util.regex.Pattern
-import android.platform.systemui_tapl.ui.Taskbar
 
 /** System UI test automation object representing quick settings in the notification shade. */
 class QuickSettings internal constructor(val displayId: Int = DEFAULT_DISPLAY) {
@@ -48,7 +49,7 @@ class QuickSettings internal constructor(val displayId: Int = DEFAULT_DISPLAY) {
 
     init {
         qsContainer.assertVisible { "Quick settings didn't open" }
-        if (!ShadeUtils.isDualShadeConfig()) {
+        if (!ShadeUtils.isDualShadeConfig(Root.get(displayId).displayContext)) {
             footerSelector.assertVisible()
         } else {
             waitForObj(sysuiResSelector(POWER_BTN_RES_ID, displayId))
@@ -126,7 +127,10 @@ class QuickSettings internal constructor(val displayId: Int = DEFAULT_DISPLAY) {
         // Avoid triggering Overview mode by swiping from just above the Taskbar. If the Taskbar is
         // not present, the bottom of the screen is used.
         BetterSwipe.swipe(
-            PointF((displayWidth / 2).toFloat(), displayHeight.toFloat() - Taskbar.getTaskbarHeight(displayId) - 1f),
+            PointF(
+                (displayWidth / 2).toFloat(),
+                displayHeight.toFloat() - Taskbar.getTaskbarHeight(displayId) - 1f,
+            ),
             PointF((displayWidth / 2).toFloat(), 0f),
             displayId = displayId,
         )

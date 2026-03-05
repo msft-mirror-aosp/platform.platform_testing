@@ -27,10 +27,10 @@ class SdvE2EOrchestrationBundlesRestartedAfterLMCrashTest(
 ):
 
     RESTARTED_BUNDLE_AFTER_CRASH_SUCCESS_LOGCAT_TEXT = (
-        r'Request for moving service bundle .*: "com.sdv.google.sample.lifecycle.apex", .*: "LifecycleCppSampleServiceBundle", .*: "crashed-restarted" } to STARTED state was Ok(())'
+        r'Request for moving service bundle .*: "com.android.sdv.sample.lifecycle", .*: "LifecycleCppSampleServiceBundle", .*: "crashed-restarted" } to STARTED state was Ok(())'
     )
     AFTER_CRASH_STARTED_BUNDLE_SUCCESS_LOGCAT_TEXT = (
-        r'Request for moving service bundle .*: "com.sdv.google.sample.lifecycle.apex", .*: "LifecycleCppSampleServiceBundle", .*: "recover-custom-mode" } to STARTED state was Ok(())'
+        r'Request for moving service bundle .*: "com.android.sdv.sample.lifecycle", .*: "LifecycleCppSampleServiceBundle", .*: "recover-custom-mode" } to STARTED state was Ok(())'
     )
 
     def restart_lm_agent(self):
