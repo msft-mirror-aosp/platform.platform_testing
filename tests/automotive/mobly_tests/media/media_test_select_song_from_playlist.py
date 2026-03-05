@@ -58,10 +58,7 @@ class SelectSongFromPlaylist(bluetooth_base_test.BluetoothBaseTest):
         # Scroll play list to the button
         self.discoverer.mbs.scrollUpOnePage()
         self.media_utils.select_song_from_playlist(2)
-        # This step is for RB
-        if self.media_utils.is_playlist_icon_visible():
-           self.media_utils.click_on_playlist_icon()
-        self.call_utils.wait_with_log(2)
+        self.media_utils.pause_media_on_hu()
         current_next_phone_song_title = self.media_utils.get_song_title_from_phone()
         current_next_hu_song_title = self.media_utils.get_song_title_from_hu()
         # Assert song titles are different after scrolling
