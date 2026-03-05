@@ -144,12 +144,13 @@ class DisplaySafetyBaseTestClass(test_base.SpectatioHostBaseTestClass):
       yield client
 
   def get_golden_image_path(
-      self, test_name: str, pkg_name: str = 'display_safety_test'
+      self, test_name: str, pkg_name: str = 'display_safety_test',
+     image_format: str = 'jpg',
   ) -> str:
     image_path = self.get_test_arg(f'{test_name}_golden_image_path')
     if not image_path:
       image_path = file_util.find_resource_path(
-          pkg_name, f'golden_images/{test_name}.jpg'
+          pkg_name, f'golden_images/{test_name}.{image_format}'
       )
     if not file_util.is_valid_path(image_path):
       raise FileNotFoundError(f'Golden image not found at: {image_path}')
