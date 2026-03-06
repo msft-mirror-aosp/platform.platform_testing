@@ -22,9 +22,9 @@ import org.json.JSONObject
 import platform.test.motion.golden.DataPointType
 import platform.test.motion.golden.UnknownTypeException
 
-fun Rect.asDataPoint() = DataPointTypes.rect.makeDataPoint(this)
+fun Rect?.asDataPoint() = DataPointTypes.rect.makeDataPoint(this)
 
-fun Point.asDataPoint() = DataPointTypes.point.makeDataPoint(this)
+fun Point?.asDataPoint() = DataPointTypes.point.makeDataPoint(this)
 
 /** [DataPointType] implementations for core [View] related types. */
 object DataPointTypes {

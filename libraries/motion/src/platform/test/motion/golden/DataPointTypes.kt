@@ -18,13 +18,25 @@ package platform.test.motion.golden
 
 import org.json.JSONArray
 
-fun Float.asDataPoint() = DataPointTypes.float.makeDataPoint(this)
+fun Float?.asDataPoint() = DataPointTypes.float.makeDataPoint(this)
 
-fun Boolean.asDataPoint() = DataPointTypes.boolean.makeDataPoint(this)
+val Float.Companion.dataPointType
+    get() = DataPointTypes.float
 
-fun Int.asDataPoint() = DataPointTypes.int.makeDataPoint(this)
+fun Boolean?.asDataPoint() = DataPointTypes.boolean.makeDataPoint(this)
 
-fun String.asDataPoint() = DataPointTypes.string.makeDataPoint(this)
+val Boolean.Companion.dataPointType
+    get() = DataPointTypes.boolean
+
+fun Int?.asDataPoint() = DataPointTypes.int.makeDataPoint(this)
+
+val Int.Companion.dataPointType
+    get() = DataPointTypes.int
+
+fun String?.asDataPoint() = DataPointTypes.string.makeDataPoint(this)
+
+val String.Companion.dataPointType
+    get() = DataPointTypes.string
 
 /** [DataPointType] implementations for core Kotlin types. */
 object DataPointTypes {

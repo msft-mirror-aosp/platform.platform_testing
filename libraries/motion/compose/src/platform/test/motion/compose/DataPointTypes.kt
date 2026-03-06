@@ -31,17 +31,35 @@ import platform.test.motion.golden.DataPointType
 import platform.test.motion.golden.FloatTolerances
 import platform.test.motion.golden.UnknownTypeException
 
-fun Dp.asDataPoint() = DataPointTypes.dp.makeDataPoint(this)
+fun Dp?.asDataPoint() = DataPointTypes.dp.makeDataPoint(this)
 
-fun IntSize.asDataPoint() = DataPointTypes.intSize.makeDataPoint(this)
+val Dp.Companion.dataPointType
+    get() = DataPointTypes.dp
 
-fun Offset.asDataPoint() = DataPointTypes.offset.makeDataPoint(this)
+fun IntSize?.asDataPoint() = DataPointTypes.intSize.makeDataPoint(this)
 
-fun Size.asDataPoint() = DataPointTypes.size.makeDataPoint(this)
+val IntSize.Companion.dataPointType
+    get() = DataPointTypes.intSize
 
-fun DpSize.asDataPoint() = DataPointTypes.dpSize.makeDataPoint(this)
+fun Offset?.asDataPoint() = DataPointTypes.offset.makeDataPoint(this)
 
-fun DpOffset.asDataPoint() = DataPointTypes.dpOffset.makeDataPoint(this)
+val Offset.Companion.dataPointType
+    get() = DataPointTypes.offset
+
+fun Size?.asDataPoint() = DataPointTypes.size.makeDataPoint(this)
+
+val Size.Companion.dataPointType
+    get() = DataPointTypes.size
+
+fun DpSize?.asDataPoint() = DataPointTypes.dpSize.makeDataPoint(this)
+
+val DpSize.Companion.dataPointType
+    get() = DataPointTypes.dpSize
+
+fun DpOffset?.asDataPoint() = DataPointTypes.dpOffset.makeDataPoint(this)
+
+val DpOffset.Companion.dataPointType
+    get() = DataPointTypes.dpOffset
 
 object DataPointTypes {
 
