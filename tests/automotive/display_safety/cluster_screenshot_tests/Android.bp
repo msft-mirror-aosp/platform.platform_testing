@@ -21,6 +21,8 @@ filegroup {
     name: "display_safety_cluster_test_resources",
     srcs: [
         "golden_images/**/*.jpg",
+        "golden_images/**/*.png",
+        "golden_images/**/*.jpeg",
     ],
 }
 

@@ -61,9 +61,13 @@ public class LockscreenController {
 
     private LockscreenController() {}
 
-    /** Enables unlocking via swipe. */
-    public void setUnlockSwipe() {
-        LockscreenUtils.setLockscreen(
+    /**
+     * Enables unlocking via swipe (if supported by this device).
+     *
+     * @return whether the given Swipe lock type is supported by this device.
+     */
+    public boolean setUnlockSwipe() {
+        return LockscreenUtils.setLockscreen(
                 /* lockscreenType= */ SWIPE, /* lockscreenCode= */ "", /* expectedResult= */ false);
     }
 

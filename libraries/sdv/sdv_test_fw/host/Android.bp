@@ -18,9 +18,51 @@ package {
 }
 
 python_test_host {
-    name: "sdv_host_test_framework_unit_cvd_test",
+    name: "sdv_host_test_framework_unit_host_cvd_test",
     srcs: ["cvd_test.py"],
     main: "cvd_test.py",
+    libs: ["sdv_test_fw_lib"],
+    test_options: {
+        unit_test: true,
+    },
+    test_suites: [
+        "automotive-sdv-tests",
+        "general-tests",
+    ],
+}
+
+python_test_host {
+    name: "sdv_host_test_framework_unit_host_api_client_test",
+    srcs: ["api_client_test.py"],
+    main: "api_client_test.py",
+    libs: ["sdv_test_fw_lib"],
+    test_options: {
+        unit_test: true,
+    },
+    test_suites: [
+        "automotive-sdv-tests",
+        "general-tests",
+    ],
+}
+
+python_test_host {
+    name: "sdv_host_test_framework_unit_host_ho_requests_test",
+    srcs: ["ho_requests_test.py"],
+    main: "ho_requests_test.py",
+    libs: ["sdv_test_fw_lib"],
+    test_options: {
+        unit_test: true,
+    },
+    test_suites: [
+        "automotive-sdv-tests",
+        "general-tests",
+    ],
+}
+
+python_test_host {
+    name: "sdv_host_test_framework_unit_host_ho_test",
+    srcs: ["host_orchestrator_test.py"],
+    main: "host_orchestrator_test.py",
     libs: ["sdv_test_fw_lib"],
     test_options: {
         unit_test: true,

@@ -176,13 +176,13 @@ class FixedConfigurationTest {
 
             val dataPoints = checkNotNull(motion.timeSeries.features["yDragDistance"]?.dataPoints)
 
-            // recorded swipe is 8 frames long (128ms/16ms frames)
-            assertThat(dataPoints.size).isEqualTo(8)
+            // recorded swipe is 8 frames long (128ms/(16ms/frames)), but first event is on frame 1
+            assertThat(dataPoints.size).isEqualTo(9)
 
-            // drag distance threshold is at 3/4 of the drag distance, swipe is 8 frames long, thus
-            // 6 elements must be 0
+            // drag distance threshold is at 3/4 of the drag distance, swipe is 8 frames long and
+            // starts at frame 1, thus  7 elements must be 0
             val firstNonZeroIndex = dataPoints.indexOfFirst { it != 0f.asDataPoint() }
-            assertThat(firstNonZeroIndex).isEqualTo(6)
+            assertThat(firstNonZeroIndex).isEqualTo(7)
 
             // Of the remaining elements, they all must be at least dragStartThreshold.
             assertThat(dataPoints.drop(firstNonZeroIndex))

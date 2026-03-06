@@ -144,7 +144,7 @@ internal fun <T> MotionTestRule<ViewToolkit>.recordSeekableAnimation(
     }
 
     if (sampling.sampleBefore) {
-        recordFrame(SupplementalFrameId("before"))
+        recordFrame(SupplementalFrameId.Before)
     }
 
     for (sampleProgress in sampling.sampleAt) {
@@ -155,7 +155,7 @@ internal fun <T> MotionTestRule<ViewToolkit>.recordSeekableAnimation(
 
     if (sampling.sampleAfter) {
         seekableAnimation.seekTo(1f)
-        recordFrame(SupplementalFrameId("after"))
+        recordFrame(SupplementalFrameId.After)
     }
 
     val timeSeries =
