@@ -235,7 +235,19 @@ constructor(
      * This will trigger the permissions dialog if microphone permissions are not yet granted.
      */
     fun clickVoiceButtonInSearchBox() {
-        findObject(By.res(packageName, VOICE_SEARCH_BUTTON_ID)).also { it.click() }
+        // Navigate to NTP where the voice search button is consistently present
+        openThreeDotsMenu()
+        clickNewTabInMenu()
+
+        val selector = By.res(packageName, VOICE_SEARCH_BUTTON_ID)
+        val backupSelector = By.res(packageName, MIC_BUTTON_ID)
+
+        val button =
+            uiDevice.wait(Until.findObject(selector), WAIT_TIME_IN_MILLISECONDS)
+                ?: uiDevice.wait(Until.findObject(backupSelector), WAIT_TIME_IN_MILLISECONDS)
+                ?: error("Can't find voice search button ($selector or $backupSelector)")
+
+        button.click()
         device.waitForIdle()
     }
 
@@ -260,10 +272,11 @@ constructor(
         private const val ACKNOWLEDGED_BUTTON_TEXT = "Got it"
         private const val ADD_TO_HOME_SCREEN_TEXT = "Add to Home screen"
         private const val VOICE_SEARCH_BUTTON_ID = "voice_search_button"
+        private const val MIC_BUTTON_ID = "mic_button"
         private const val MANAGE_WINDOWS_ID = "manage_all_windows_menu_id"
         private const val NEW_WINDOW_ID = "new_window_menu_id"
 
-        private val WAIT_TIME_IN_MILLISECONDS = Duration.ofSeconds(3).toMillis()
+        private val WAIT_TIME_IN_MILLISECONDS = Duration.ofSeconds(10).toMillis()
         private const val MIN_WINDOW_WIDTH_FOR_TAB_TEARING_DP = 475
 
         /**  Opens a specified web page in the Chrome browser. */
