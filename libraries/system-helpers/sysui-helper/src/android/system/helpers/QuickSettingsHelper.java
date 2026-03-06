@@ -19,6 +19,7 @@ package android.system.helpers;
 import static android.content.Context.CONTEXT_IGNORE_SECURITY;
 
 import static com.android.systemui.Flags.qsSplitInternetTileRw;
+import static com.android.systemui.Flags.qsSplitInternetTileSuppression;
 
 import android.app.Instrumentation;
 import android.content.Context;
@@ -35,8 +36,6 @@ import androidx.test.uiautomator.BySelector;
 import androidx.test.uiautomator.UiDevice;
 import androidx.test.uiautomator.UiObject2;
 import androidx.test.uiautomator.Until;
-
-import com.android.systemui.Flags;
 
 import org.junit.Assert;
 
@@ -56,7 +55,7 @@ public class QuickSettingsHelper {
     private static final int SHORT_TIMEOUT = 500;
     private static final String SYSTEMUI_PACKAGE = "com.android.systemui";
     private static final String QS_DEFAULT_TILES_RES =
-            Flags.qsSplitInternetTileRw()
+            (qsSplitInternetTileRw() && !qsSplitInternetTileSuppression())
                     ? "quick_settings_tiles_default_split"
                     : "quick_settings_tiles_default";
     private static final String QS_DEFAULT_HSU_TILES_RES = "hsu_allow_list_qs_tiles";
@@ -110,9 +109,11 @@ public class QuickSettingsHelper {
         // Migration from internet to wifi tile and viceversa
         for (int i = 0; i < tiles.length; i++) {
             String tile = tiles[i];
-            if ("internet".equals(tile) && qsSplitInternetTileRw()) {
+            if ("internet".equals(tile)
+                    && (qsSplitInternetTileRw() && !qsSplitInternetTileSuppression())) {
                 tiles[i] = "wifi";
-            } else if ("wifi".equals(tile) && !qsSplitInternetTileRw()) {
+            } else if ("wifi".equals(tile)
+                    && !(qsSplitInternetTileRw() && !qsSplitInternetTileSuppression())) {
                 tiles[i] = "internet";
             }
         }
