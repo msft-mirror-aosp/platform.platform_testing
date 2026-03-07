@@ -19,7 +19,7 @@ import os
 import gzip
 import shutil
 import itertools
-from impl.cached_golden import CachedGolden
+from impl.models.cached_golden import CachedGolden
 from impl.golden_watchers.golden_watcher import GoldenWatcher
 
 

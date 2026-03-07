@@ -13,11 +13,14 @@
 # limitations under the License.
 #
 
-import enum
+from dataclasses import dataclass
+from typing import Optional
 
-class GoldenWatcherTypes(enum.Enum):
-    ATEST = "atest"
-    ADB = "adb"
-    ROBOLECTRIC = "robolectric"
-    PRESUBMIT = "presubmit"
-    GERRIT = "gerrit"
+@dataclass
+class MotionWatcherContext:
+    android_build_top: str
+    temp_dir: str
+    secret_token: str
+    this_server_address: str
+    port: int
+    client_url: str
