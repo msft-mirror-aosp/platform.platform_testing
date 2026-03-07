@@ -95,6 +95,10 @@ class SdvSomeIpRobBaseTestClass(sdv_base_test.SdvBaseTestClass):
         )
 
     def run_vsomeip_counterpart(self, cuj_num):
+        """Restart the device to bring sdv_vsomeip_robustness_tester into a consistent state."""
+        self.sdv_device1.reboot_device()
+        self.sdv_device1.wait_for_device_online()
+
         CUJ_NUM_PROP = "ROB_CUJ_NUM=" + str(cuj_num)
         SOMEIP_CONFIG_FILE = (
             "VSOMEIP_CONFIGURATION=/vendor/etc/vsomeip/robustness_tester.json"

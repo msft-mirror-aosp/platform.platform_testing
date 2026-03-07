@@ -1,0 +1,18 @@
+{
+  "name": "a11y-check-integrator",
+  "version": "1.0.0",
+  "description": "Assists in automatically integrating accessibility checks into your existing Android tests, using Accessibility Testing Framework (ATF). To use, install the extension and type the slash command `/a11y/add-checks`",
+  "contextFileName": "context/ATF-Context.md",
+  "mcpServers": {
+    "android_build": {
+      "command": "python3",
+      "args": [
+        "${ANDROID_BUILD_TOP}/build/soong/scripts/ai/android_build/interface/cli.py"
+      ],
+      "env": {
+        "PYTHONPATH": "${ANDROID_BUILD_TOP}/build/soong/scripts/ai/android_build"
+      },
+      "trust": true
+    }
+  }
+}

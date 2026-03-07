@@ -76,7 +76,7 @@ class PhysicalDeviceController : PeripheralsController {
             displayMonitor.matchPeripherals(
                 /*isWaitingForCondition=*/ false,
                 displayPeripherals,
-                Display.TYPE_EXTERNAL,
+                /*isSimulated=*/ false,
             )
 
         if (mustRunTest) {
@@ -210,7 +210,7 @@ class PhysicalDeviceController : PeripheralsController {
                 displayMonitor.matchPeripherals(
                     isWaitingForCondition,
                     peripherals,
-                    Display.TYPE_EXTERNAL,
+                    /*isSimulated=*/ false,
                 ) != null
             if (result) {
                 // If condition is satisfied - unblock the dialog
@@ -237,7 +237,9 @@ class PhysicalDeviceController : PeripheralsController {
                     "Connect: ${displayPeripherals.map { "${it::class.simpleName}:${it.size}" }}"
                 }
             return ConnectDevicesDialogProvider.instance.showDialog(
-                    textToShow, TIMEOUT.inWholeMilliseconds)
+                textToShow,
+                TIMEOUT.inWholeMilliseconds,
+            )
         }
     }
 

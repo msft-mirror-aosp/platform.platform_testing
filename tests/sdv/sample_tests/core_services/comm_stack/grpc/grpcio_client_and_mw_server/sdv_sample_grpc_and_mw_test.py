@@ -31,13 +31,13 @@ class SdvSampleGrpcTest(sdv_base_test.SdvBaseTestClass):
 
     CLIENT_USER_PREFERENCES = 'sdv_user_preferences_client_cpp'
 
-    SERVER_USER_PREFERENCES = 'com_sdv_oem_user_preferences_UserPreferencesServiceBundle_default'
+    SERVER_USER_PREFERENCES = 'com_android_sdv_sample_user_preferences_UserPreferencesServiceBundle_default'
 
-    SERVER_USER_CREATED_LOG = 'I com_sdv_oem_user_preferences_UserPreferencesServiceBundle_default:' \
+    SERVER_USER_CREATED_LOG = 'I com_android_sdv_sample_user_preferences_UserPreferencesServiceBundle_default:' \
             ' user_preferences_service_stable::admin_service_impl:' \
             ' Successfully added user: User { id: 1, flags: 1 }'
 
-    SERVER_USER_DELETED_LOG = 'I com_sdv_oem_user_preferences_UserPreferencesServiceBundle_default:' \
+    SERVER_USER_DELETED_LOG = 'I com_android_sdv_sample_user_preferences_UserPreferencesServiceBundle_default:' \
             ' user_preferences_service_stable::admin_service_impl:' \
             ' User 1 was successfully deleted'
 
