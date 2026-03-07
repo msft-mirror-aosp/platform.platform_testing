@@ -36,25 +36,17 @@ class AtestGoldenWatcher(GoldenWatcher):
         self.refresh_golden_files()
 
     def clean(self):
-        self.cached_goldens = {}
+        # Deletion is disabled for Atest mode to prevent unintended data loss
+        # and because results persist in /tmp.
+        pass
 
     def refresh_golden_files(self):
-
-        # Atest writes the files with a wide variety of filenames. Examples
-        # log/stub/local_atest/inv_8184127433410125702/light_portrait_pagingRight.actual.json_4383267726505225616.txt.gz
-        # log/invocation_3042186109657619915/inv_5155363728971335727/recordMotion_captureCrossfade.actual_10536896158799342698.json
-        # log/stub/local_atest/inv_6860054371355660320/light_portrait_noOverscrollRight.actual_118505410949600545.json.gz
-
-        # log/stub/local_atest/inv_6860054371355660320/light_portrait_noOverscrollRight.actual_12613191689435798576.mp4
-        # log/invocation_3042186109657619915/inv_5155363728971335727/recordMotion_captureCrossfade.actual_1988198704080929506.mp4
-        # log/stub/local_atest/inv_8184127433410125702/light_portrait_pagingRight.actual.mp4_1617964025478041468.txt.gz
 
         pattern_type = (
             r".*/(?P<name>.*)\.actual((\.(?P<ext1>[a-zA-Z0-9]+)_(?P<hash1>\d+)\.txt)|(_(?P<hash2>\d+)\.(?P<ext2>[a-zA-Z0-9]+)))(?P<compressed>\.gz)?"
         )
 
         # Output from on-device runs
-        # Modifying the search regex to handle files not ending with json as given above.
         for filename in glob.iglob(
             f"{self.atest_latest_dir}//**/*.actual*json*", recursive=True
         ):
@@ -77,11 +69,9 @@ class AtestGoldenWatcher(GoldenWatcher):
                 mp4Pattern = f"{self.atest_latest_dir}/**/{golden_name}.actual*.mp4*"
                 zipPattern = f"{self.atest_latest_dir}/**/{golden_name}.actual*.zip*"
 
-                # Create iterators for each pattern
                 mp4_iterator = glob.iglob(mp4Pattern, recursive=True)
                 zip_iterator = glob.iglob(zipPattern, recursive=True)
 
-                # Chain the iterators together
                 combined_iter = itertools.chain(mp4_iterator, zip_iterator)
                 for video_filename in combined_iter:
 

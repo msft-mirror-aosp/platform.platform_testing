@@ -50,17 +50,21 @@ class MotionService:
 
     def resolve_file_path(self, root_directory, file_relative_to_root):
         resolved_path = path.abspath(path.join(root_directory, file_relative_to_root))
-        if path.commonprefix([resolved_path, root_directory]) == root_directory and path.isfile(resolved_path):
-            if resolved_path.endswith("screenshots.zip"):
-                if ZipToVideoConverter.process_single_zip(pathlib.Path(resolved_path)):
-                    video_path = resolved_path.replace(".zip", ".mp4")
-                    if path.isfile(video_path):
-                        return video_path, "video/mp4"
-                return None, "Zip to Video converter failed"
-            
-            mime_type = mimetypes.guess_type(resolved_path)[0]
-            return resolved_path, mime_type
-        
+        try:
+            if path.commonpath([resolved_path, root_directory]) == root_directory and path.isfile(resolved_path):
+                if resolved_path.endswith("screenshots.zip"):
+                    if ZipToVideoConverter.process_single_zip(pathlib.Path(resolved_path)):
+                        video_path = resolved_path.replace(".zip", ".mp4")
+                        if path.isfile(video_path):
+                            return video_path, "video/mp4"
+                    return None, "Zip to Video converter failed"
+
+                mime_type = mimetypes.guess_type(resolved_path)[0]
+                return resolved_path, mime_type
+        except ValueError:
+             # This happens if paths are on different drives or totally unrelated
+             pass
+
         return None, f"File not found: {resolved_path}"
 
     def update_goldens(self, update_golden_id_set, cached_goldens):
@@ -119,11 +123,11 @@ class MotionService:
         artifacts = test_entity.download_client.download_presubmit_test_artifact_for_test_name(test_name)
         if artifacts:
             test_entity.golden_watcher.refresh_golden_files(artifacts, test_name)
-        
+
         for golden in test_entity.golden_watcher.cached_goldens.values():
             if golden.golden_name == test_name:
                 return golden, None
-        
+
         return None, "Golden not found for test name: " + test_name
 
     def refresh_goldens(self, test_entity, clear):
