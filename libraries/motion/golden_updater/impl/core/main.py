@@ -22,6 +22,7 @@ from impl.utils.argument_parser import ArgumentParser
 from impl.utils.token_generator import TokenGenerator
 from impl.core.context import MotionWatcherContext
 from impl.core.motion_service import MotionService
+from impl.models.motion_constants import MOTION_CACHE_DIR
 
 def main():
 
@@ -34,7 +35,7 @@ def main():
     android_build_top = args.android_build_top
 
     this_server_address = f"http://localhost:{args.port}"
-    tmpdir = os.path.join(os.path.expanduser("~/.cache"),"motion_tool_watcher")
+    tmpdir = MOTION_CACHE_DIR
     secret_token = TokenGenerator.get_token()
 
     context = MotionWatcherContext(
