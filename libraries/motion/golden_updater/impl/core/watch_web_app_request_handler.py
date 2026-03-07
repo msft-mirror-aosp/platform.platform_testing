@@ -170,6 +170,10 @@ class WatchWebAppRequestHandler(http.server.BaseHTTPRequestHandler):
 
     def fetch_gerrit_artifacts(self, linkPairs):
         golden_list = WatchWebAppRequestHandler.service.fetch_gerrit_artifacts(linkPairs)
+
+        # Sort golden list by goldenName if available, else by its keys
+        golden_list.sort(key=lambda x: x.get("goldenName") or str(x))
+
         testEntity = TestEntity(goldens_list=golden_list)
         WatchWebAppRequestHandler.test_entity_cache[GoldenWatcherTypes.GERRIT.value] = testEntity
         self.send_json(golden_list)
@@ -182,6 +186,9 @@ class WatchWebAppRequestHandler(http.server.BaseHTTPRequestHandler):
 
         for golden in WatchWebAppRequestHandler.test_entity.golden_watcher.cached_goldens.values():
             goldens_list.append(self.create_golden_data(golden))
+
+        # Sort the goldens list by goldenName to ensure consistent UI order
+        goldens_list.sort(key=lambda x: x.get("goldenName") or "")
 
         # Update the goldens list
         WatchWebAppRequestHandler.test_entity.goldens_list = goldens_list
@@ -250,6 +257,10 @@ class WatchWebAppRequestHandler(http.server.BaseHTTPRequestHandler):
             presubmit_data_json = {}
             presubmit_data_json["testname"] = test
             presubmit_data.append(presubmit_data_json)
+
+        # Sort presubmit data by testname
+        presubmit_data.sort(key=lambda x: x.get("testname") or "")
+
         # Update the goldens list
         WatchWebAppRequestHandler.test_entity.goldens_list = presubmit_data
         self.send_json(presubmit_data)
