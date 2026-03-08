@@ -19,7 +19,7 @@ import os
 import gzip
 import shutil
 import itertools
-from impl.cached_golden import CachedGolden
+from impl.models.cached_golden import CachedGolden
 from impl.golden_watchers.golden_watcher import GoldenWatcher
 
 
@@ -36,6 +36,9 @@ class PresubmitGoldenWatcher(GoldenWatcher):
 
     def clean(self):
         self.cached_goldens = {}
+        if os.path.exists(self.temp_dir):
+            shutil.rmtree(self.temp_dir)
+        os.makedirs(self.temp_dir, exist_ok=True)
 
     def refresh_golden_files(self, filenames, test_name):
 
@@ -67,11 +70,9 @@ class PresubmitGoldenWatcher(GoldenWatcher):
                 mp4Pattern = f"{self.artifacts_download_dir}/**/{golden_name}.actual*.mp4*"
                 zipPattern = f"{self.artifacts_download_dir}/**/{golden_name}.actual*.zip*"
 
-                # Create iterators for each pattern
                 mp4_iterator = glob.iglob(mp4Pattern, recursive=True)
                 zip_iterator = glob.iglob(zipPattern, recursive=True)
 
-                # Chain the iterators together
                 combined_iter = itertools.chain(mp4_iterator, zip_iterator)
                 for video_filename in combined_iter:
 

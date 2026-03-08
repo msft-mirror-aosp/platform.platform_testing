@@ -15,7 +15,7 @@
 
 import argparse
 import os
-from impl.port_finder import PortFinder
+from impl.utils.port_finder import PortFinder
 
 class ArgumentParser:
 
@@ -30,30 +30,6 @@ class ArgumentParser:
             default = PortFinder.find_free_port(),
             type=int,
             help="Port to run test at watcher web UI on.",
-        )
-
-        parser.add_argument(
-            "--atest",
-            default=False,
-            help="Deprecated. DO NOT USE",
-        )
-
-        parser.add_argument(
-            "--robolectricTest",
-            default=False,
-            help="Deprecated. DO NOT USE",
-        )
-
-        parser.add_argument(
-            "--none",
-            action="store_true",
-            help="Deprecated. DO NOT USE"
-        )
-
-        parser.add_argument(
-            "--serial",
-            default=None,
-            help="Deprecated. DO NOT USE",
         )
 
         parser.add_argument(

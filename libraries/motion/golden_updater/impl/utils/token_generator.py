@@ -15,7 +15,7 @@
 
 import secrets
 import os
-from impl.constants import GOLDEN_ACCESS_TOKEN_LOCATION
+from impl.models.motion_constants import GOLDEN_ACCESS_TOKEN_LOCATION
 
 class TokenGenerator:
 

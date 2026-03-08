@@ -13,10 +13,11 @@
 # limitations under the License.
 #
 
-import enum
+import unittest
 
-class GoldenWatcherTypes(enum.Enum):
-    ATEST = "atest"
-    ADB = "adb"
-    PRESUBMIT = "presubmit"
-    GERRIT = "gerrit"
+class MainTest(unittest.TestCase):
+    def test_stub(self):
+        self.assertTrue(True)
+
+if __name__ == "__main__":
+    unittest.main()

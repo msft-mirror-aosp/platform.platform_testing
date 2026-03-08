@@ -16,53 +16,7 @@
 # limitations under the License.
 #
 
-import socketserver
-import os
-import sys
-import tempfile
-import webbrowser
-from impl.watch_web_app_request_handler import WatchWebAppRequestHandler
-from impl.argument_parser import ArgumentParser
-from impl.token_generator import TokenGenerator
-from colors import Colors
-
-def main():
-
-    args = ArgumentParser.get_args()
-
-    if args.android_build_top is None or not os.path.exists(args.android_build_top):
-        print("ANDROID_BUILD_TOP not set. Have you sourced envsetup.sh?")
-        sys.exit(1)
-
-    android_build_top = args.android_build_top
-
-    if args.atest or args.robolectricTest or args.none or args.serial:
-        print(f"{Colors.RED}Warning!! Flags like 'atest', 'robolectricTest',"
-              "'none' and 'serial' are deprecated!! Please DO NOT USE!")
-        print(f"{Colors.YELLOW}Instead select test mode from UI.{Colors.RESET}")
-
-    this_server_address = f"http://localhost:{args.port}"
-    tmpdir = os.path.join(os.path.expanduser("~/.cache"),"motion_tool_watcher")
-    secret_token = TokenGenerator.get_token()
-
-    WatchWebAppRequestHandler.secret_token = secret_token
-    WatchWebAppRequestHandler.android_build_top = android_build_top
-    WatchWebAppRequestHandler.temp_dir = tmpdir
-    WatchWebAppRequestHandler.this_server_address = this_server_address
-
-    with socketserver.TCPServer(
-        ("localhost", args.port), WatchWebAppRequestHandler
-    ) as httpd:
-        uiAddress = f"{args.client_url}?token={secret_token}&port={args.port}"
-        print(f"Open UI at {uiAddress}")
-        webbrowser.open(uiAddress)
-        try:
-            httpd.serve_forever()
-        except KeyboardInterrupt:
-            httpd.shutdown()
-            print("Shutting down")
-
-
+from impl.core.main import main
 
 if __name__ == "__main__":
     main()
