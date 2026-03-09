@@ -22,12 +22,12 @@ from sdv_test_fw.verification import polling
 SD_AGENT_FQIN = 'google.sdv.service_discovery.discovery.IServiceDiscoveryAgent/default'
 LC_AGENT_FQIN = 'google.sdv.lifecycle.ILifecycleManager/default'
 
-CUJ23_FQIN_FOO = 'com.sdv.google.sample.someip.ServiceBundleCuj23Foo/instance'
-CUJ23_FQIN_BAR = 'com.sdv.google.sample.someip.ServiceBundleCuj23Bar/instance'
-CUJ23_UNIT_TYPE_INTERFACE = 'com.sdv.google.sample.someip.Cuj23SdvInterface'
-CUJ23_SERVICE_UNIT_INTERFACE = 'com-sdv-google-sample-someip-cuj23-sdv-interface'
-CUJ23_UNIT_TYPE_PAYLOAD = 'com.sdv.google.sample.someip.Cuj23SdvPayload'
-CUJ23_SERVICE_UNIT_PAYLOAD = 'com-sdv-google-sample-someip-cuj23-sdv-payload-unique'
+CUJ23_FQIN_FOO = 'com.android.sdv.sample.someip.ServiceBundleCuj23Foo/instance'
+CUJ23_FQIN_BAR = 'com.android.sdv.sample.someip.ServiceBundleCuj23Bar/instance'
+CUJ23_UNIT_TYPE_INTERFACE = 'com.android.sdv.sample.someip.Cuj23SdvInterface'
+CUJ23_SERVICE_UNIT_INTERFACE = 'com-android-sdv-sample-someip-cuj23-sdv-interface'
+CUJ23_UNIT_TYPE_PAYLOAD = 'com.android.sdv.sample.someip.Cuj23SdvPayload'
+CUJ23_SERVICE_UNIT_PAYLOAD = 'com-android-sdv-sample-someip-cuj23-sdv-payload-unique'
 
 def _wait_and_verify_expected_logs(adb_device, log_entry_to_find):
     polling.wait_and_verify_expected_logs(

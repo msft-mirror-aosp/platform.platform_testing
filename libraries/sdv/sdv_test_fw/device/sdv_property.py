@@ -18,13 +18,13 @@ import enum
 class SdvDeviceProperty(enum.Enum):
     # Persistent
     BURST_INTERVAL_SYS = (
-        "persist.com.sdv.google.sample.someip.benchmark_interval"
+        "persist.com.android.sdv.sample.someip.benchmark_interval"
     )
-    BENCH_MODE_SYS = "persist.com.sdv.google.sample.someip.benchmark_mode"
+    BENCH_MODE_SYS = "persist.com.android.sdv.sample.someip.benchmark_mode"
     MSG_PER_BURST_SYS = (
-        "persist.com.sdv.google.sample.someip.benchmark_msg_per_burst"
+        "persist.com.android.sdv.sample.someip.benchmark_msg_per_burst"
     )
-    NR_BURST_SYS = "persist.com.sdv.google.sample.someip.benchmark_num_burst"
+    NR_BURST_SYS = "persist.com.android.sdv.sample.someip.benchmark_num_burst"
     LOG_TAG = "persist.log.tag"
     HEALTH_MONITOR_CONFIG_PATH = "persist.sdv.health_monitor.config_path"
     ORCHESTRATOR_CONFIG_PATH = "persist.sdv.orchestrator_config_path"
