@@ -21,9 +21,9 @@ from sdv_test_fw.verification import polling
 
 SD_AGENT_FQIN = 'google.sdv.service_discovery.discovery.IServiceDiscoveryAgent/default'
 LC_AGENT_FQIN = 'google.sdv.lifecycle.ILifecycleManager/default'
-CUJ26_FQIN = 'com.sdv.google.sample.someip.ServiceBundleCuj26/instance'
-CUJ26_UNIT_TYPE = 'com.sdv.google.sample.someip.Cuj26SdvPayload'
-CUJ26_SERVICE_UNIT = 'com-sdv-google-sample-someip-cuj26-sdv-payload-unique'
+CUJ26_FQIN = 'com.android.sdv.sample.someip.ServiceBundleCuj26/instance'
+CUJ26_UNIT_TYPE = 'com.android.sdv.sample.someip.Cuj26SdvPayload'
+CUJ26_SERVICE_UNIT = 'com-android-sdv-sample-someip-cuj26-sdv-payload-unique'
 
 class SdvSampleCujCore26Test(sdv_base_test.SdvBaseTestClass):
 
