@@ -30,8 +30,8 @@ triggers {
 sources {
   name: "someip_dt_tire_pressure_publisher"
   data_source {
-    source_identifier: "com.sdv.google.sample.someip.RearTireService#"
-                       "SomeIpTirePressure|com-sdv-google-sample-someip-some-"
+    source_identifier: "com.android.sdv.sample.someip.RearTireService#"
+                       "SomeIpTirePressure|com-android-sdv-sample-someip-some-"
                        "ip-"
                        "tire-pressure-rear-right"
     connection_type: SUBSCRIPTION
