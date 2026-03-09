@@ -121,7 +121,7 @@ object JsonGoldenSerializer {
     private const val KEY_FEATURE_DATAPOINTS = "data_points"
 
     private val unknownType: DataPointType<Any> =
-        DataPointType(
+        DataPointType.create(
             "unknown",
             jsonToValue = { throw UnknownTypeException() },
             valueToJson = { throw AssertionError() },
@@ -135,10 +135,10 @@ fun TimeSeries.createTypeRegistry(): Map<String, DataPointType<*>> = buildMap {
             if (dataPoint is ValueDataPoint) {
                 val type = dataPoint.type
                 val alreadyRegisteredType = put(type.typeName, type)
-                if (alreadyRegisteredType != null && alreadyRegisteredType != type) {
-                    throw AssertionError(
+                if (alreadyRegisteredType != null) {
+                    check(alreadyRegisteredType.isTypeCompatible(type)) {
                         "Type [${type.typeName}] with multiple different implementations"
-                    )
+                    }
                 }
             }
         }

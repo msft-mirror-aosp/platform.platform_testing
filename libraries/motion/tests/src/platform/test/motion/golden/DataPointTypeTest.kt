@@ -19,6 +19,8 @@ package platform.test.motion.golden
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import org.json.JSONObject
+import org.junit.Assert
+import org.junit.Assert.fail
 import org.junit.Test
 import org.junit.runner.RunWith
 import platform.test.motion.golden.DataPoint.Companion.notFound
@@ -29,7 +31,7 @@ class DataPointTypeTest {
     data class Native(val id: String)
 
     private val subject =
-        DataPointType(
+        DataPointType.create(
             "native",
             jsonToValue = { jsonValue ->
                 jsonToValueInvocations++
@@ -92,5 +94,115 @@ class DataPointTypeTest {
 
         assertThat(json).isEqualTo("one")
         assertThat(valueToJsonInvocations).isEqualTo(1)
+    }
+
+    @Test
+    fun withoutTolerance_throwsWhenSettingUpdatedTolerance() {
+        val underTest =
+            DataPointType.create("foo", jsonToValue = { it as Float }, valueToJson = { it })
+
+        Assert.assertThrows(IllegalStateException::class.java) {
+            underTest.withAdjustedTolerance(1f)
+        }
+    }
+
+    @Test
+    fun withoutTolerance_comparesDataPoints() {
+        val underTest =
+            DataPointType.create("foo", jsonToValue = { it as Int }, valueToJson = { it })
+
+        assertThat(underTest.isEqualWithinTolerance(expected = 1, actual = 1)).isTrue()
+        assertThat(underTest.isEqualWithinTolerance(expected = 1, actual = 2)).isFalse()
+    }
+
+    @Test
+    fun tolerance_toleranceAwareEquality_returnsTrue_dataPointsAreEqual() {
+        val underTest =
+            DataPointType.createWithTolerance(
+                "foo",
+                jsonToValue = { it as Float },
+                valueToJson = { it },
+                tolerance = .1f,
+                toleranceAwareEquality = { a, b, tolerance -> true },
+            )
+
+        assertThat(underTest.isEqualWithinTolerance(expected = 1f, actual = 2f)).isTrue()
+    }
+
+    @Test
+    fun tolerance_toleranceAwareEquality_returnsFalse_dataPointsAreEqual() {
+        val underTest =
+            DataPointType.createWithTolerance(
+                "foo",
+                jsonToValue = { it as Float },
+                valueToJson = { it },
+                tolerance = .1f,
+                toleranceAwareEquality = { a, b, tolerance -> false },
+            )
+
+        assertThat(underTest.isEqualWithinTolerance(expected = 1f, actual = 2f)).isFalse()
+    }
+
+    @Test
+    fun tolerance_toleranceAwareEquality_returnsTrue_forEqualDataPoints() {
+        val underTest =
+            DataPointType.createWithTolerance(
+                "foo",
+                jsonToValue = { it as Float },
+                valueToJson = { it },
+                tolerance = .1f,
+                toleranceAwareEquality = { a, b, tolerance ->
+                    fail("must not be called for equal values")
+                    false
+                },
+            )
+
+        assertThat(underTest.isEqualWithinTolerance(expected = 1f, actual = 1f)).isTrue()
+    }
+
+    @Test
+    fun tolerance_toleranceAwareEquality_valuesArePassedToCorrectArgument() {
+        val underTest =
+            DataPointType.createWithTolerance(
+                "foo",
+                jsonToValue = { it as Float },
+                valueToJson = { it },
+                tolerance = 0f,
+                toleranceAwareEquality = { expected, actual, tolerance ->
+                    assertThat(expected).isEqualTo(1f)
+                    assertThat(actual).isEqualTo(2f)
+                    assertThat(tolerance).isEqualTo(0f)
+
+                    true
+                },
+            )
+
+        underTest.isEqualWithinTolerance(expected = 1f, actual = 2f)
+    }
+
+    @Test
+    fun tolerance_whenUpdated_isPassedToArgument() {
+
+        val tolerances = mutableListOf<Float>()
+
+        val original =
+            DataPointType.createWithTolerance(
+                "foo",
+                jsonToValue = { it as Float },
+                valueToJson = { it },
+                tolerance = 0f,
+                toleranceAwareEquality = { a, b, tolerance ->
+                    tolerances.add(tolerance)
+                    true
+                },
+            )
+
+        val updated = original.withAdjustedTolerance(1f)
+
+        original.isEqualWithinTolerance(0f, 1f)
+        updated.isEqualWithinTolerance(0f, 1f)
+        original.isEqualWithinTolerance(0f, 1f)
+
+        assertThat(tolerances).containsExactly(0f, 1f, 0f).inOrder()
     }
 }

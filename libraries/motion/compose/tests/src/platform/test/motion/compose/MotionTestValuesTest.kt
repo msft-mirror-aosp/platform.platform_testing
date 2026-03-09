@@ -34,11 +34,11 @@ import platform.test.motion.compose.values.EnableMotionTestValueCollection
 import platform.test.motion.compose.values.MotionTestValueKey
 import platform.test.motion.compose.values.motionTestValues
 import platform.test.motion.golden.DataPoint
-import platform.test.motion.golden.DataPointTypes
 import platform.test.motion.golden.FeatureCapture
 import platform.test.motion.golden.TimeSeries
 import platform.test.motion.golden.TimeSeriesCaptureScope
 import platform.test.motion.golden.asDataPoint
+import platform.test.motion.golden.dataPointType
 import platform.test.motion.testing.createGoldenPathManager
 
 @RunWith(AndroidJUnit4::class)
@@ -98,7 +98,7 @@ class MotionTestValuesTest {
             val motion =
                 recordMotion(
                     content = { Box(Modifier.size(10.dp).motionTestValues { .5f exportAs foo }) },
-                    singleFrame { feature(foo, DataPointTypes.float) },
+                    singleFrame { feature(foo, Float.dataPointType) },
                 )
 
             motion.timeSeries.assertSingleFeatureMatches("foo", .5f.asDataPoint())
@@ -116,7 +116,7 @@ class MotionTestValuesTest {
                             }
                         )
                     },
-                    singleFrame { feature(foo, DataPointTypes.float, matcher = hasTestTag("foo")) },
+                    singleFrame { feature(foo, Float.dataPointType, matcher = hasTestTag("foo")) },
                 )
 
             motion.timeSeries.assertSingleFeatureMatches("foo", .5f.asDataPoint())
@@ -129,7 +129,7 @@ class MotionTestValuesTest {
                 recordMotion(
                     content = { Box(Modifier.size(10.dp).motionTestValues { .5f exportAs foo }) },
                     singleFrame {
-                        feature(foo, DataPointTypes.float, matcher = hasTestTag("unknown"))
+                        feature(foo, Float.dataPointType, matcher = hasTestTag("unknown"))
                     },
                 )
 
@@ -142,7 +142,7 @@ class MotionTestValuesTest {
             val motion =
                 recordMotion(
                     content = { Box(Modifier.size(10.dp).motionTestValues { .5f exportAs foo }) },
-                    singleFrame { feature(foo, DataPointTypes.float, name = "bar") },
+                    singleFrame { feature(foo, Float.dataPointType, name = "bar") },
                 )
 
             motion.timeSeries.assertSingleFeatureMatches("bar", .5f.asDataPoint())
@@ -228,6 +228,6 @@ class MotionTestValuesTest {
 
     companion object {
         val foo = MotionTestValueKey<Float>("foo")
-        val times3 = FeatureCapture<Float, Float>("times3") { (it * 3).asDataPoint() }
+        val times3 = FeatureCapture<Float, Float>("times3", Float.dataPointType) { it * 3 }
     }
 }
