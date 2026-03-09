@@ -44,12 +44,17 @@ class TimestampFactory(private val realTimestampFormatter: (Long) -> String = { 
         systemUptimeNanos: Long? = null,
         unixNanos: Long? = null,
     ): Timestamp {
-        return Timestamp(
-            elapsedNanos ?: 0L,
-            systemUptimeNanos ?: 0L,
-            unixNanos ?: 0L,
-            realTimestampFormatter,
-        )
+        if (!android.tracing.Flags.nativeProtoLogging()) {
+            return Timestamp(
+                elapsedNanos ?: 0L,
+                systemUptimeNanos ?: 0L,
+                unixNanos ?: 0L,
+                realTimestampFormatter,
+            )
+        }
+
+        require(elapsedNanos != null) { "Elapsed timestamp should be provided" }
+        return Timestamp(elapsedNanos, 0L, 0L, realTimestampFormatter)
     }
 
     fun from(
