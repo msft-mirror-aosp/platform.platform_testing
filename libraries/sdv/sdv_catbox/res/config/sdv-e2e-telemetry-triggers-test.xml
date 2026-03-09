@@ -101,6 +101,10 @@
         key="lifecycle_triggers.textproto"
         value="/data/local/tmp/lifecycle_triggers.textproto"
       />
+      <option name="push-file"
+        key="lifecycle_triggers_retaining_aggregators.textproto"
+        value="/data/local/tmp/lifecycle_triggers_retaining_aggregators.textproto"
+      />
 
       <!-- Periodic Triggers Test -->
       <option name="push-file"

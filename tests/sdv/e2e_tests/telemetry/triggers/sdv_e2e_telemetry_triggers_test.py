@@ -17,7 +17,7 @@
 from datetime import timedelta
 from pathlib import Path
 from typing import List, Optional
-from mobly import asserts
+from mobly import asserts, expects
 from sdv_telemetry_test_execution import telemetry_base_test
 from sdv_telemetry_test_execution.telemetry_utils import shlex_join
 from sdv_test_fw.device import sdv_device
@@ -92,13 +92,25 @@ class JourneyStatusFirstOnParams:
     SIM_ACTIONS_FILE_NAME = "journey_config_sim_actions.textproto"
 
 
-# Validate that the data collection is performed only in-between Start and End
+# Validate that the data collection is performed only in-between Start and Stop
 # Trigger and that Finish Trigger deactivates the Metrics Config.
 class LifecycleTriggersParams:
     SIMULATION_TIME = timedelta(seconds=5)
     METRICS_CONFIG_UUID = "27f28563-9352-4f39-86d9-d5e67e793084"
     METRICS_REPORT_NAME = "report"
     METRICS_CONFIG_FILE_NAME = "lifecycle_triggers.textproto"
+    HOST_METRICS_CONFIG_PATH = (
+        Path("lifecycle_triggers") / METRICS_CONFIG_FILE_NAME
+    )
+    METRICS_PUBLISHER_PATHS = [Path("lifecycle_publisher.textproto")]
+
+# Validate that the data collection is performed only in-between Start and Stop
+# Trigger and that aggregator state is retained.
+class LifecycleTriggersRetainingAggregatorsParams:
+    SIMULATION_TIME = timedelta(seconds=5)
+    METRICS_CONFIG_UUID = "54c844f4-2437-4ecd-8bd4-2288baf2ac75"
+    METRICS_REPORT_NAME = "report"
+    METRICS_CONFIG_FILE_NAME = "lifecycle_triggers_retaining_aggregators.textproto"
     HOST_METRICS_CONFIG_PATH = (
         Path("lifecycle_triggers") / METRICS_CONFIG_FILE_NAME
     )
@@ -210,7 +222,7 @@ class SdvE2ETelemetryTriggersTest(
                     report_name=report_name,
                 )
             )
-            asserts.assert_equal(
+            expects.expect_equal(
                 report_count,
                 1,
                 "Expected to generate a single Metrics Report with name:"
@@ -239,16 +251,16 @@ class SdvE2ETelemetryTriggersTest(
             host_metrics_config_path=AggregateReportFinishParams.HOST_METRICS_CONFIG_PATH,
         )
 
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.value, [1, 1, -2, -2], "Unexpected report value"
         )
 
     # Verifies the intended behavior of Start, End and Finish Triggers. In
     # particular, when Start Trigger fires, it should start data collection and
     # activate End Trigger. Similarly, End Trigger fire event should pause data
-    # collection and activate Start Trigger back. Finish Trigger finishes the
-    # Metrics Config, i.e. it completely stops data collection and deactivates
-    # the config.
+    # collection, reset the state of aggregators, and activate Start Trigger back.
+    # Finish Trigger finishes the Metrics Config, i.e. it completely stops data
+    # collection and deactivates the config.
     #
     # The Metrics Config used contains Start Trigger being Periodic Trigger with
     # an interval of 500ms, and End Trigger being Periodic Trigger with an
@@ -289,7 +301,7 @@ class SdvE2ETelemetryTriggersTest(
             report_number=1,
             host_metrics_config_path=LifecycleTriggersParams.HOST_METRICS_CONFIG_PATH,
         )
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.value,
             [5, 6, 7, 8],
             "Unexpected report value",
@@ -302,7 +314,51 @@ class SdvE2ETelemetryTriggersTest(
             report_number=2,
             host_metrics_config_path=LifecycleTriggersParams.HOST_METRICS_CONFIG_PATH,
         )
+        expects.expect_equal(
+            report_payload.value,
+            [14, 15, 16, 17],
+            "Unexpected report value",
+        )
+
+    # Similar to `test_lifecycle_triggers` but sets the `retain_aggregations_on_end` flag in MetricsConfig
+    # to avoid resetting the vector aggregation on stop_trigger.
+    def test_lifecycle_retaining_aggregators_triggers(self):
+        self._run_simulation(LifecycleTriggersRetainingAggregatorsParams)
+
+        # Validate that exactly 2 Metrics Report were generated
+        report_count = len(
+            self.find_report_paths(
+                device=self.sdv_device,
+                simulator_out_dir=self._SIMULATOR_OUT_DIR,
+                config_uuid=LifecycleTriggersRetainingAggregatorsParams.METRICS_CONFIG_UUID,
+                report_name=LifecycleTriggersRetainingAggregatorsParams.METRICS_REPORT_NAME,
+            )
+        )
         asserts.assert_equal(
+            report_count, 2, "Expected to generate two Metrics Reports"
+        )
+
+        # Validate the contents of the first Metrics Report
+        report_payload = self._read_report(
+            config_uuid=LifecycleTriggersRetainingAggregatorsParams.METRICS_CONFIG_UUID,
+            report_name=LifecycleTriggersRetainingAggregatorsParams.METRICS_REPORT_NAME,
+            report_number=1,
+            host_metrics_config_path=LifecycleTriggersRetainingAggregatorsParams.HOST_METRICS_CONFIG_PATH,
+        )
+        expects.expect_equal(
+            report_payload.value,
+            [5, 6, 7, 8],
+            "Unexpected report value",
+        )
+
+        # Validate the contents of the second Metrics Report
+        report_payload = self._read_report(
+            config_uuid=LifecycleTriggersRetainingAggregatorsParams.METRICS_CONFIG_UUID,
+            report_name=LifecycleTriggersRetainingAggregatorsParams.METRICS_REPORT_NAME,
+            report_number=2,
+            host_metrics_config_path=LifecycleTriggersRetainingAggregatorsParams.HOST_METRICS_CONFIG_PATH,
+        )
+        expects.expect_equal(
             report_payload.value,
             [5, 6, 7, 8, 14, 15, 16, 17],
             "Unexpected report value",
@@ -329,7 +385,7 @@ class SdvE2ETelemetryTriggersTest(
                 report_name=PeriodicTriggerParams.METRICS_REPORT_NAME,
             )
         )
-        asserts.assert_equal(
+        expects.expect_equal(
             report_count,
             2,
             "The periodic trigger should have fired exactly twice "
@@ -349,7 +405,7 @@ class SdvE2ETelemetryTriggersTest(
             report_number=1,
             host_metrics_config_path=DistanceTraveledParams.HOST_METRICS_CONFIG_PATH,
         )
-        asserts.assert_equal(report_payload.value, 7, "Unexpected report value")
+        expects.expect_equal(report_payload.value, 7, "Unexpected report value")
 
     # Test's metrics configuration contains a data source which publishes
     # current vehicle journey status. The test verifies that Telemetry Service
@@ -380,7 +436,7 @@ class SdvE2ETelemetryTriggersTest(
                     report_name=params.METRICS_REPORT_NAME,
                 )
             )
-            asserts.assert_equal(
+            expects.expect_equal(
                 report_count,
                 6,
                 "Expected 6 metrics reports: there are 3 intervals of data"
