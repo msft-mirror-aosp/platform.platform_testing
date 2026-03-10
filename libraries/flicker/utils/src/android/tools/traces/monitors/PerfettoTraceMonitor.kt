@@ -22,6 +22,7 @@ import com.android.internal.protolog.common.LogLevel
 import java.io.File
 import java.util.concurrent.locks.ReentrantLock
 import perfetto.protos.PerfettoConfig
+import perfetto.protos.PerfettoConfig.AndroidInputEventConfig
 import perfetto.protos.PerfettoConfig.DataSourceConfig
 import perfetto.protos.PerfettoConfig.FtraceConfig
 import perfetto.protos.PerfettoConfig.InputMethodConfig
@@ -136,6 +137,19 @@ open class PerfettoTraceMonitor(
         private var incrementalTimeoutMs: Int? = null
         private var uniqueSessionName: String? = null
         private var jankCujEnabled = false
+
+        fun enableInputTrace(): Builder = apply {
+            val config =
+                DataSourceConfig.newBuilder()
+                    .setName(INPUT_DATA_SOURCE)
+                    .setAndroidInputEventConfig(
+                        AndroidInputEventConfig.newBuilder()
+                            .setMode(AndroidInputEventConfig.TraceMode.TRACE_MODE_TRACE_ALL)
+                            .build()
+                    )
+                    .build()
+            enableCustomTrace(config)
+        }
 
         fun enableImeTrace(
             client: Boolean = true,
@@ -475,6 +489,7 @@ open class PerfettoTraceMonitor(
     companion object {
         private const val TRACE_BUFFER_SIZE_KB = 1024 * 1024
 
+        const val INPUT_DATA_SOURCE = "android.input.inputevent"
         const val IME_DATA_SOURCE = "android.inputmethod"
         const val SF_LAYERS_DATA_SOURCE = "android.surfaceflinger.layers"
         const val SF_TRANSACTIONS_DATA_SOURCE = "android.surfaceflinger.transactions"
