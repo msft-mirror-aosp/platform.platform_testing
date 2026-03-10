@@ -51,8 +51,11 @@ class LayerTraceEntryBuilderTest {
         Truth.assertThat(entry.clockTimestamp).isEqualTo(600)
 
         Truth.assertThat(entry.timestamp.elapsedNanos).isEqualTo(110)
-        Truth.assertThat(entry.timestamp.systemUptimeNanos).isEqualTo(100)
-        Truth.assertThat(entry.timestamp.unixNanos).isEqualTo(600)
+
+        if (!android.tracing.Flags.nativeProtoLogging()) {
+            Truth.assertThat(entry.timestamp.systemUptimeNanos).isEqualTo(100)
+            Truth.assertThat(entry.timestamp.unixNanos).isEqualTo(600)
+        }
     }
 
     @Test
@@ -70,8 +73,10 @@ class LayerTraceEntryBuilderTest {
         Truth.assertThat(entry.clockTimestamp).isEqualTo(null)
 
         Truth.assertThat(entry.timestamp.elapsedNanos).isEqualTo(110)
-        Truth.assertThat(entry.timestamp.systemUptimeNanos).isEqualTo(100)
-        Truth.assertThat(entry.timestamp.unixNanos).isEqualTo(Timestamps.empty().unixNanos)
+        if (!android.tracing.Flags.nativeProtoLogging()) {
+            Truth.assertThat(entry.timestamp.systemUptimeNanos).isEqualTo(100)
+            Truth.assertThat(entry.timestamp.unixNanos).isEqualTo(Timestamps.empty().unixNanos)
+        }
     }
 
     @Test

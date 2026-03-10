@@ -43,8 +43,8 @@ class LayerTraceEntryTest {
         val reader = getLayerTraceReaderFromAsset("layers_trace_emptyregion.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         Truth.assertThat(trace.entries).isNotEmpty()
-        Truth.assertThat(trace.entries.first().timestamp.systemUptimeNanos).isEqualTo(922839428857)
-        Truth.assertThat(trace.entries.last().timestamp.systemUptimeNanos).isEqualTo(941432656959)
+        Truth.assertThat(trace.entries.first().timestamp.elapsedNanos).isEqualTo(922839428857)
+        Truth.assertThat(trace.entries.last().timestamp.elapsedNanos).isEqualTo(941432656959)
         Truth.assertThat(trace.entries.last().flattenedLayers).hasSize(57)
     }
 
@@ -52,7 +52,7 @@ class LayerTraceEntryTest {
     fun canParseVisibleLayers() {
         val reader = getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
-        val entry = trace.getEntryExactlyAt(Timestamps.from(systemUptimeNanos = 90493757372977))
+        val entry = trace.getEntryExactlyAt(Timestamps.from(elapsedNanos = 90493757372977))
         val visibleLayers = entry.visibleLayers
         Truth.assertThat(entry.flattenedLayers).hasSize(82)
         val msg = "Visible Layers:\n" + visibleLayers.joinToString("\n") { "\t" + it.name }
@@ -71,8 +71,8 @@ class LayerTraceEntryTest {
         val reader = getLayerTraceReaderFromAsset("layers_trace_emptyregion.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         Truth.assertThat(trace.entries).isNotEmpty()
-        Truth.assertThat(trace.entries.first().timestamp.systemUptimeNanos).isEqualTo(922839428857)
-        Truth.assertThat(trace.entries.last().timestamp.systemUptimeNanos).isEqualTo(941432656959)
+        Truth.assertThat(trace.entries.first().timestamp.elapsedNanos).isEqualTo(922839428857)
+        Truth.assertThat(trace.entries.last().timestamp.elapsedNanos).isEqualTo(941432656959)
         Truth.assertThat(trace.entries.first().flattenedLayers).hasSize(57)
         val layers = trace.entries.first().children
         Truth.assertThat(layers.first().children).hasSize(3)
@@ -110,7 +110,7 @@ class LayerTraceEntryTest {
             .isNotEmpty()
 
         Truth.assertWithMessage("Expected state 4d4h41m14s193ms to be empty")
-            .that(emptyStates.first().timestamp.systemUptimeNanos)
+            .that(emptyStates.first().timestamp.elapsedNanos)
             .isEqualTo(362474193519965)
     }
 
@@ -128,8 +128,11 @@ class LayerTraceEntryTest {
                 _rootLayers = emptyList(),
             )
         Truth.assertThat(entry.timestamp.elapsedNanos).isEqualTo(110)
-        Truth.assertThat(entry.timestamp.systemUptimeNanos).isEqualTo(100)
-        Truth.assertThat(entry.timestamp.unixNanos).isEqualTo(600)
+
+        if (!android.tracing.Flags.nativeProtoLogging()) {
+            Truth.assertThat(entry.timestamp.systemUptimeNanos).isEqualTo(100)
+            Truth.assertThat(entry.timestamp.unixNanos).isEqualTo(600)
+        }
 
         entry =
             LayerTraceEntry(
@@ -143,15 +146,18 @@ class LayerTraceEntryTest {
                 _rootLayers = emptyList(),
             )
         Truth.assertThat(entry.timestamp.elapsedNanos).isEqualTo(110)
-        Truth.assertThat(entry.timestamp.systemUptimeNanos).isEqualTo(100)
-        Truth.assertThat(entry.timestamp.unixNanos).isEqualTo(Timestamps.empty().unixNanos)
+
+        if (!android.tracing.Flags.nativeProtoLogging()) {
+            Truth.assertThat(entry.timestamp.systemUptimeNanos).isEqualTo(100)
+            Truth.assertThat(entry.timestamp.unixNanos).isEqualTo(Timestamps.empty().unixNanos)
+        }
     }
 
     @Test
     fun canGetLayerWithBuffer() {
         val reader = getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
-        val entry = trace.getEntryExactlyAt(Timestamps.from(systemUptimeNanos = 90480846872160))
+        val entry = trace.getEntryExactlyAt(Timestamps.from(elapsedNanos = 90480846872160))
         val component =
             ComponentNameMatcher(
                 "com.google.android.apps.nexuslauncher",
@@ -171,7 +177,7 @@ class LayerTraceEntryTest {
     fun canGetLayerWithBufferReturnsNullForEmptyBuffer() {
         val reader = getLayerTraceReaderFromAsset("layers_trace_emptyregion.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
-        val entry = trace.getEntryExactlyAt(Timestamps.from(systemUptimeNanos = 922839428857))
+        val entry = trace.getEntryExactlyAt(Timestamps.from(elapsedNanos = 922839428857))
         // Secondary Divider Dim#0 has layer id 42 and null active buffer
         val layer = entry.getLayerById(42)
         Truth.assertThat(layer).isNotNull()
@@ -182,7 +188,7 @@ class LayerTraceEntryTest {
     fun canGetLayerById() {
         val reader = getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
-        val entry = trace.getEntryExactlyAt(Timestamps.from(systemUptimeNanos = 90480846872160))
+        val entry = trace.getEntryExactlyAt(Timestamps.from(elapsedNanos = 90480846872160))
         // com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity#0 has id 648 in this trace
         val layer = entry.getLayerById(648)
         Truth.assertThat(layer).isNotNull()
@@ -197,7 +203,7 @@ class LayerTraceEntryTest {
     fun canGetLayerByIdReturnsNullForNotFound() {
         val reader = getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
-        val entry = trace.getEntryExactlyAt(Timestamps.from(systemUptimeNanos = 90480846872160))
+        val entry = trace.getEntryExactlyAt(Timestamps.from(elapsedNanos = 90480846872160))
         val layer = entry.getLayerById(99999) // Non-existent ID
         Truth.assertThat(layer).isNull()
     }
@@ -206,7 +212,7 @@ class LayerTraceEntryTest {
     fun canCheckIsVisible() {
         val reader = getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
-        val entry = trace.getEntryExactlyAt(Timestamps.from(systemUptimeNanos = 90480846872160))
+        val entry = trace.getEntryExactlyAt(Timestamps.from(elapsedNanos = 90480846872160))
         val component =
             ComponentNameMatcher(
                 "com.google.android.apps.nexuslauncher",
@@ -219,7 +225,7 @@ class LayerTraceEntryTest {
     fun canCheckIsVisibleReturnsFalseForInvisibleLayer() {
         val reader = getLayerTraceReaderFromAsset("layers_trace_launch_split_screen.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
-        val entry = trace.getEntryExactlyAt(Timestamps.from(systemUptimeNanos = 90480846872160))
+        val entry = trace.getEntryExactlyAt(Timestamps.from(elapsedNanos = 90480846872160))
         // Assuming there's an invisible layer in this trace, e.g., a hidden app
         val component = ComponentNameMatcher("", "com.android.systemui.recents.RecentsActivity#0")
         Truth.assertThat(entry.isVisible(component)).isFalse()

@@ -68,7 +68,7 @@ class LayersTraceTest {
     fun canTestLayerOccludedByAppLayerHasVisibleRegion() {
         val reader = getLayerTraceReaderFromAsset("layers_trace_occluded.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
-        val entry = trace.getEntryExactlyAt(Timestamps.from(systemUptimeNanos = 1700382131522L))
+        val entry = trace.getEntryExactlyAt(Timestamps.from(elapsedNanos = 1700382131522L))
         val component =
             ComponentNameMatcher("", "com.android.server.wm.flicker.testapp.SimpleActivity#0")
         val layer = entry.getLayerWithBuffer(component)
@@ -96,7 +96,7 @@ class LayersTraceTest {
         val component = ComponentNameMatcher("", layerName)
         val reader = getLayerTraceReaderFromAsset("layers_trace_occluded.perfetto-trace")
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
-        val entry = trace.getEntryExactlyAt(Timestamps.from(systemUptimeNanos = 1700382131522L))
+        val entry = trace.getEntryExactlyAt(Timestamps.from(elapsedNanos = 1700382131522L))
         val layer = entry.getLayerWithBuffer(component)
         val visibilityReason: Collection<String> = layer?.visibilityReason ?: emptyList<String>()
         val occludedBy: Collection<Int> = layer?.occludedBy ?: emptyList<Int>()
@@ -124,7 +124,7 @@ class LayersTraceTest {
         val matchingEntry = trace.getFirstEntryWithOnDisplayAfter(Timestamps.min())
 
         Truth.assertThat(matchingEntry.timestamp)
-            .isEqualTo(Timestamps.from(null, 20143030557279, 1685030549975607247))
+            .isEqualTo(Timestamps.from(20143030557279, 20143030557279, 1685030549975607247))
 
         try {
             trace.getFirstEntryWithOnDisplayAfter(Timestamps.max())
@@ -141,7 +141,7 @@ class LayersTraceTest {
         val matchingEntry = trace.getLastEntryWithOnDisplayBefore(Timestamps.max())
 
         Truth.assertThat(matchingEntry.timestamp)
-            .isEqualTo(Timestamps.from(null, 20147964614573, 1685030554909664541))
+            .isEqualTo(Timestamps.from(20147964614573, 20147964614573, 1685030554909664541))
 
         try {
             trace.getLastEntryWithOnDisplayBefore(Timestamps.min())
@@ -156,12 +156,11 @@ class LayersTraceTest {
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val component =
             ComponentNameMatcher("", "com.android.server.wm.flicker.testapp.SimpleActivity#0")
-        val timestamp = Timestamps.from(systemUptimeNanos = 1700382131522L)
+        val timestamp = Timestamps.from(elapsedNanos = 1700382131522L)
 
         val lastVisibleTimestamp = trace.getLastVisibleTimestamp(component, timestamp)
         Truth.assertThat(lastVisibleTimestamp).isNotNull()
-        Truth.assertThat(lastVisibleTimestamp!!.systemUptimeNanos)
-            .isLessThan(timestamp.systemUptimeNanos)
+        Truth.assertThat(lastVisibleTimestamp!!.elapsedNanos).isLessThan(timestamp.elapsedNanos)
         Truth.assertThat(trace.getEntryExactlyAt(lastVisibleTimestamp).isVisible(component))
             .isTrue()
     }
@@ -172,12 +171,11 @@ class LayersTraceTest {
         val trace = reader.readLayersTrace() ?: error("Unable to read layers trace")
         val component =
             ComponentNameMatcher("", "com.android.server.wm.flicker.testapp.SimpleActivity#0")
-        val timestamp = Timestamps.from(systemUptimeNanos = 1700382131522L)
+        val timestamp = Timestamps.from(elapsedNanos = 1700382131522L)
 
         val lastInvisibleTimestamp = trace.getLastInvisibleTimestamp(component, timestamp)
         Truth.assertThat(lastInvisibleTimestamp).isNotNull()
-        Truth.assertThat(lastInvisibleTimestamp!!.systemUptimeNanos)
-            .isLessThan(timestamp.systemUptimeNanos)
+        Truth.assertThat(lastInvisibleTimestamp!!.elapsedNanos).isLessThan(timestamp.elapsedNanos)
         Truth.assertThat(trace.getEntryExactlyAt(lastInvisibleTimestamp).isVisible(component))
             .isFalse()
     }

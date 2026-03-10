@@ -38,24 +38,28 @@ object TestUtils {
     }
 
     private fun validateEqualTo(time: Timestamp, name: String, expectedValue: Timestamp) {
-        Truth.assertWithMessage("$name - systemUptimeNanos")
-            .that(time.systemUptimeNanos)
-            .isEqualTo(expectedValue.systemUptimeNanos)
-        Truth.assertWithMessage("$name - unixNanos")
-            .that(time.unixNanos)
-            .isEqualTo(expectedValue.unixNanos)
+        if (!android.tracing.Flags.nativeProtoLogging()) {
+            Truth.assertWithMessage("$name - systemUptimeNanos")
+                .that(time.systemUptimeNanos)
+                .isEqualTo(expectedValue.systemUptimeNanos)
+            Truth.assertWithMessage("$name - unixNanos")
+                .that(time.unixNanos)
+                .isEqualTo(expectedValue.unixNanos)
+        }
         Truth.assertWithMessage("$name - elapsedNanos")
             .that(time.elapsedNanos)
             .isEqualTo(expectedValue.elapsedNanos)
     }
 
     private fun validateTimeGreaterThan(time: Timestamp, name: String, minValue: Timestamp) {
-        Truth.assertWithMessage("$name - systemUptimeNanos")
-            .that(time.systemUptimeNanos)
-            .isGreaterThan(minValue.systemUptimeNanos)
-        Truth.assertWithMessage("$name - unixNanos")
-            .that(time.unixNanos)
-            .isGreaterThan(minValue.unixNanos)
+        if (!android.tracing.Flags.nativeProtoLogging()) {
+            Truth.assertWithMessage("$name - systemUptimeNanos")
+                .that(time.systemUptimeNanos)
+                .isGreaterThan(minValue.systemUptimeNanos)
+            Truth.assertWithMessage("$name - unixNanos")
+                .that(time.unixNanos)
+                .isGreaterThan(minValue.unixNanos)
+        }
         Truth.assertWithMessage("$name - elapsedNanos")
             .that(time.elapsedNanos)
             .isGreaterThan(minValue.elapsedNanos)

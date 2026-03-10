@@ -30,6 +30,7 @@ import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.systemui.Flags.enableViewCaptureTracing
 import com.google.common.truth.Truth
+import com.google.common.truth.TruthJUnit.assume
 import java.io.File
 import org.junit.Assume
 import org.junit.Before
@@ -88,6 +89,10 @@ class FlickerServiceTracesCollectorTest {
 
     @Test
     fun reportedTraceFileContainsAllTraces() {
+        // Once this flag is enabled we only collect a Perfetto trace, which means the trace is no
+        // longer a zip with different artifact types but a single Perfetto trace.
+        assume().that(android.tracing.Flags.nativeProtoLogging()).isFalse()
+
         var possibleExpectedTraces = listOf(EXPECTED_TRACES_LAUNCHER_ONLY)
         if (enableViewCaptureTracing()) {
             possibleExpectedTraces =

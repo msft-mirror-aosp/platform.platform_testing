@@ -29,17 +29,63 @@ object Utils {
     const val LOG_TAG = "FlickerExtractorUtils"
 
     fun interpolateStartTimestampFromTransition(transition: Transition, reader: Reader): Timestamp {
+        if (!android.tracing.Flags.nativeProtoLogging()) {
+            return interpolateStartTimestampFromTransitionOld(transition, reader)
+        }
+
         val wmTrace = reader.readWmTrace() ?: error("Missing WM trace")
         val layersTrace = reader.readLayersTrace() ?: error("Missing layers trace")
         val transactionsTrace =
             reader.readTransactionsTrace() ?: error("Missing transactions trace")
 
-        val lastWmEntryBeforeTransitionWasSentToShell = try {
-            wmTrace.getEntryAt(transition.sendTime)
-        } catch (e: Exception) {
-            throw RuntimeException(
-                "Failed to get last WM entry before transition was sent to shell: $transition", e)
+        val lastWmEntryBeforeTransitionWasSentToShell =
+            try {
+                wmTrace.getEntryAt(transition.sendTime)
+            } catch (e: Exception) {
+                throw RuntimeException(
+                    "Failed to get last WM entry before transition was sent to shell: $transition",
+                    e,
+                )
+            }
+        val lastWmEntryTs = lastWmEntryBeforeTransitionWasSentToShell.timestamp.elapsedNanos
+
+        val startTransactionAppliedTimestamp =
+            transition.getStartTransaction(transactionsTrace)?.let {
+                layersTrace.getEntryForTransaction(it).timestamp
+            }
+
+        if (startTransactionAppliedTimestamp != null) {
+            require(startTransactionAppliedTimestamp.elapsedNanos != 0L) {
+                "Start transaction applied timestamp is missing system uptime"
+            }
         }
+
+        // If we don't have a startTransactionAppliedTimestamp it's likely because the start
+        // transaction was merged into another transaction so we can't match the id, so we need to
+        // fallback on the send time reported on the WM side.
+        val elapsedNanos = startTransactionAppliedTimestamp?.elapsedNanos ?: lastWmEntryTs
+
+        return Timestamps.from(elapsedNanos, 0L, 0L)
+    }
+
+    fun interpolateStartTimestampFromTransitionOld(
+        transition: Transition,
+        reader: Reader,
+    ): Timestamp {
+        val wmTrace = reader.readWmTrace() ?: error("Missing WM trace")
+        val layersTrace = reader.readLayersTrace() ?: error("Missing layers trace")
+        val transactionsTrace =
+            reader.readTransactionsTrace() ?: error("Missing transactions trace")
+
+        val lastWmEntryBeforeTransitionWasSentToShell =
+            try {
+                wmTrace.getEntryAt(transition.sendTime)
+            } catch (e: Exception) {
+                throw RuntimeException(
+                    "Failed to get last WM entry before transition was sent to shell: $transition",
+                    e,
+                )
+            }
         val elapsedNanos = lastWmEntryBeforeTransitionWasSentToShell.timestamp.elapsedNanos
         val unixNanos = lastWmEntryBeforeTransitionWasSentToShell.timestamp.unixNanos
 
@@ -133,16 +179,18 @@ object Utils {
 
             sfEntryAtTransitionFinished =
                 layersTrace.entries.firstOrNull { it.timestamp.unixNanos >= unixNanos }
-                    ?: error("Could not find finish transaction#${transition.finishTransactionId}" +
-                        " associated with this scenario or it was not applied/merged into another" +
-                        " transaction. Falling back to using the finish time reported on the WM " +
-                        "side: $unixNanos. But no layers entry was found after this timestamp. " +
-                        "First layers trace entry at: " +
-                        "${layersTrace.entries.first().timestamp.unixNanos}, " +
-                        "Last layers trace entry at: " +
-                        "${layersTrace.entries.last().timestamp.unixNanos}, " +
-                        "${layersTrace.entries.size} entries in layers trace. " +
-                        "Debug string: $debugString")
+                    ?: error(
+                        "Could not find finish transaction#${transition.finishTransactionId}" +
+                            " associated with this scenario or it was not applied/merged into another" +
+                            " transaction. Falling back to using the finish time reported on the WM " +
+                            "side: $unixNanos. But no layers entry was found after this timestamp. " +
+                            "First layers trace entry at: " +
+                            "${layersTrace.entries.first().timestamp.unixNanos}, " +
+                            "Last layers trace entry at: " +
+                            "${layersTrace.entries.last().timestamp.unixNanos}, " +
+                            "${layersTrace.entries.size} entries in layers trace. " +
+                            "Debug string: $debugString"
+                    )
             systemUptimeNanos = sfEntryAtTransitionFinished.timestamp.systemUptimeNanos
         } else {
             elapsedNanos =

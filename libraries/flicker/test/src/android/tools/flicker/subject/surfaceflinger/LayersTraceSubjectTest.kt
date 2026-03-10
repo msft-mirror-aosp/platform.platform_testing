@@ -413,8 +413,8 @@ class LayersTraceSubjectTest {
         val reader =
             getLayerTraceReaderFromAsset(
                 "layers_trace_snapshotStartingWindowLayerCoversExactlyApp.perfetto-trace",
-                from = Timestamps.from(systemUptimeNanos = 1688243428961872440),
-                to = Timestamps.from(systemUptimeNanos = 1688243432147782644),
+                from = Timestamps.from(elapsedNanos = 1688243428961872440),
+                to = Timestamps.from(elapsedNanos = 1688243432147782644),
             )
         val component =
             ComponentNameMatcher(FLICKER_APP_PACKAGE, "$FLICKER_APP_PACKAGE.ImeActivity")
