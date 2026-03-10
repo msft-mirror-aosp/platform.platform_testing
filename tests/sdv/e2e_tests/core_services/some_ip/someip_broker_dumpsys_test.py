@@ -22,7 +22,7 @@ from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 
 class SdvSomeIpBrokerDumpsysTest(sdv_base_test.SdvBaseTestClass):
     EXPECTED_DUMPSYS_BEFORE_EXECUTING_SAMPLE = r"""AGENT NAME: SDV Agent dump - SOME/IP Broker
-AGENT FQIN: vm:com\.sdv\.someip\.SomeIpBroker/default
+AGENT FQIN: vm:com\.android\.sdv\.someip\.SomeIpBroker/default
 AGENT STATE: someip_broker_agent has started successfully
 ----------------
 ----------------
@@ -33,7 +33,7 @@ INTERNAL STATE REPORTERS:
 Summary \(accumulated time in window\):"""
 
     EXPECTED_DUMPSYS_AFTER_EXECUTING_SAMPLE = r"""AGENT NAME: SDV Agent dump - SOME/IP Broker
-AGENT FQIN: vm:com\.sdv\.someip\.SomeIpBroker/default
+AGENT FQIN: vm:com\.android\.sdv\.someip\.SomeIpBroker/default
 AGENT STATE: someip_broker_agent has started successfully
 ----------------
 ----------------
@@ -41,7 +41,7 @@ INTERNAL STATE REPORTERS:
 
 \*NAME: SOME/IP Broker Translation Benchmark
 \*REPORT:
-Statistics for com\.sdv\.someip\.BenchmarkInterface:
+Statistics for com\.android\.sdv\.someip\.BenchmarkInterface:
 Messages Counter = [0-9]+
 Sum = [0-9]+ us
 Average = [0-9]+ us
@@ -50,7 +50,7 @@ Max = [0-9]+ us
 Median = [0-9]+ us
 P90 = [0-9]+ us
 Summary \(accumulated time in window\):
-com\.sdv\.someip\.BenchmarkInterface: [0-9]+ us"""
+com\.android\.sdv\.someip\.BenchmarkInterface: [0-9]+ us"""
 
     SOMEIP_BROKER_DUMP_BINDER_NAME = "com.google.sdv.ISdvAgent/someip_broker"
 
@@ -72,7 +72,7 @@ com\.sdv\.someip\.BenchmarkInterface: [0-9]+ us"""
 
         self._start_someip_tester()
 
-        self._start_sdv_bundle("local-vm", "com.sdv.google.sample.someip.SomeIpBenchmark", "instance1")
+        self._start_sdv_bundle("local-vm", "com.android.sdv.sample.someip.SomeIpBenchmark", "instance1")
 
         self._wait_for_logcat(
             "someip_benchmark",

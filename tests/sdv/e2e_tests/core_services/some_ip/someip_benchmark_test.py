@@ -100,7 +100,7 @@ class SdvSomeIpBenchmarkTest(sdv_base_test.SdvBaseTestClass, parameterized.TestC
 
         self._start_sdv_bundle(
             "local-vm",
-            "com.sdv.google.sample.someip.SomeIpBenchmark",
+            "com.android.sdv.sample.someip.SomeIpBenchmark",
             "instance1")
 
         polling.wait_and_verify_expected_logs(
