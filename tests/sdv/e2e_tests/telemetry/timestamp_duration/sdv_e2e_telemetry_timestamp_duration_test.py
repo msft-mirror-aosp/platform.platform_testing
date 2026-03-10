@@ -14,11 +14,10 @@
 
 """SDV Telemetry Timestamp and Duration Test"""
 
-from mobly import asserts
 from pathlib import Path
 from time import sleep
 
-from sdv_telemetry_test_execution import telemetry_base_test
+from sdv_telemetry_test_execution import expects, telemetry_base_test
 from sdv_telemetry_test_execution.telemetry_utils import shlex_join
 from sdv_test_fw.device import sdv_device
 from sdv_test_fw.test_execution import sdv_test_runner
@@ -73,12 +72,12 @@ class SdvE2ETelemetryTimestampDurationTest(
             self.metrics_config.descriptor_protos, report
         )
         # Evaluate payload
-        asserts.assert_equal(
+        expects.expect_equal(
             report.metrics_config_uuid,
             self.METRICS_CONFIG_UUID,
             'Unexpected UUID',
         )
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.duration_rounded, 1, 'Unexpected Duration'
         )
 

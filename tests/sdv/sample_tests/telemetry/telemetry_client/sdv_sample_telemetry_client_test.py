@@ -17,10 +17,9 @@
 Tests Telemetry Rust Client on one SDV VM
 """
 
-from mobly import asserts
 from pathlib import Path
-
-from sdv_telemetry_test_execution import telemetry_base_test
+from mobly import asserts
+from sdv_telemetry_test_execution import expects, telemetry_base_test
 from sdv_telemetry_test_execution.telemetry_utils import shlex_join
 from sdv_test_fw.device import sdv_device
 from sdv_test_fw.test_execution import sdv_test_runner
@@ -80,7 +79,7 @@ class SdvSampleTelemetryClientTest(
             ]
 
             for service_result in expected_telemetry_service_results:
-                asserts.assert_in(
+                expects.expect_in(
                     service_result,
                     actual_result,
                     f'Actual result "{actual_result}" does not contain expected'

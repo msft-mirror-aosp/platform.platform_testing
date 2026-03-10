@@ -14,10 +14,9 @@
 
 """E2E Test to validate operators used in Telemetry Service expression evaluations"""
 
-from mobly import asserts
 from datetime import timedelta
 from pathlib import Path
-from sdv_telemetry_test_execution import telemetry_base_test
+from sdv_telemetry_test_execution import expects, telemetry_base_test
 from sdv_telemetry_test_execution.telemetry_utils import shlex_join
 from sdv_test_fw.device import sdv_device
 from sdv_test_fw.test_execution import sdv_test_runner
@@ -117,49 +116,49 @@ class SdvE2ETelemetryOperatorsTest(
         )
 
         # Evaluate payload
-        asserts.assert_equal(
+        expects.expect_equal(
             report.metrics_config_uuid,
             self.METRICS_CONFIG_UUID,
             "Unexpected UUID",
         )
         # value of integer
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.integer, 30, "Unexpected value of integer"
         )
 
         # Relational operators
         # integer == 30.0
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.relational_equal,
             True,
             "Unexpected evaluation of operator 'Equal'",
         )
         # integer != 30
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.relational_not_equal,
             False,
             "Unexpected evaluation of operator 'Not Equal'",
         )
         # integer > 30
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.relational_greater_than,
             False,
             "Unexpected evaluation of operator 'Greater'",
         )
         # 30 >= integer
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.relational_greater_equal_than,
             True,
             "Unexpected evaluation of operator 'Greater or Equal'",
         )
         # integer < 30
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.relational_less_than,
             False,
             "Unexpected evaluation of operator 'Less'",
         )
         # integer <= 30
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.relational_less_equal_than,
             True,
             "Unexpected evaluation of operator 'Less or Equal'",
@@ -167,75 +166,75 @@ class SdvE2ETelemetryOperatorsTest(
 
         # Arithmetic operators
         # integer + 2.5
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.arithmetic_add,
             32.5,
             "Unexpected evaluation of operator 'Add'",
         )
         # 10 - integer
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.arithmetic_subtract,
             -20,
             "Unexpected evaluation of operator 'Subtract'",
         )
         # 7 * integer
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.arithmetic_multiply,
             210,
             "Unexpected evaluation of operator 'Multiply'",
         )
         # integer / 20
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.arithmetic_divide,
             1.5,
             "Unexpected evaluation of operator 'Divide'",
         )
         # -integer
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.arithmetic_unary_minus,
             -30,
             "Unexpected evaluation of operator 'Unary Minus'",
         )
         # integer % 7
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.arithmetic_modulo_trunc,
             2,
             "Unexpected evaluation of operator 'Modulo Trunc'",
         )
         # -42 % (-integer)
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.arithmetic_modulo_trunc_negative,
             -12,
             "Unexpected evaluation of operator 'Modulo Trunc' with negative"
             " arguments",
         )
         # integer ** 2
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.arithmetic_power_2,
             900,
             "Unexpected evaluation of operator 'Power' with exponent 2",
         )
         # integer ** 1.5
-        asserts.assert_equal(
+        expects.expect_equal(
             round(report_payload.arithmetic_power_1_5, 2),
             164.32,
             "Unexpected evaluation of operator 'Power' with exponent 1.5",
         )
         # integer ** (-1)
-        asserts.assert_equal(
+        expects.expect_equal(
             round(report_payload.arithmetic_power_minus_1, 3),
             0.033,
             "Unexpected evaluation of operator 'Power' with exponent -1",
         )
         # abs(integer)
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.arithmetic_absolute_positive,
             30,
             "Unexpected evaluation of operator 'Absolute' with positive"
             " argument",
         )
         # abs(-integer)
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.arithmetic_absolute_negative,
             30,
             "Unexpected evaluation of operator 'Absolute' with negative"
@@ -259,43 +258,43 @@ class SdvE2ETelemetryOperatorsTest(
         )
 
         # Evaluate payload
-        asserts.assert_equal(
+        expects.expect_equal(
             report.metrics_config_uuid,
             self.METRICS_CONFIG_UUID,
             "Unexpected UUID",
         )
         # value of integer_list
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.integer_list,
             [30],
             "Unexpected value of integer_list",
         )
         # contains(integer_list, 30)
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.relational_contains_30,
             True,
             "Unexpected evaluation of operator 'Contains' with argument 30",
         )
         # contains(integer_list, 30.0)
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.relational_contains_30_0,
             False,
             "Unexpected evaluation of operator 'Contains' with argument 30.0",
         )
         # contains(integer_list, 10)
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.relational_contains_10,
             False,
             "Unexpected evaluation of operator 'Contains' with argument 10",
         )
         # doesnotcontain(integer_list, 30)
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.relational_does_not_contain,
             False,
             "Unexpected evaluation of operator 'Does Not Contain'",
         )
         # allequal(integer_list, 30)
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.relational_all_equal_to,
             True,
             "Unexpected evaluation of operator 'All Equal'",
@@ -318,31 +317,31 @@ class SdvE2ETelemetryOperatorsTest(
         )
 
         # Evaluate payload
-        asserts.assert_equal(
+        expects.expect_equal(
             report.metrics_config_uuid,
             self.METRICS_CONFIG_UUID,
             "Unexpected UUID",
         )
         # value of float
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.float, 30.5, "Unexpected value of float"
         )
 
         # Rounding operators
         # floor(float)
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.rounding_floor,
             30,
             "Unexpected evaluation of operator 'Floor'",
         )
         # round(float)
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.rounding_round,
             31,
             "Unexpected evaluation of operator 'Round'",
         )
         # ceil(float)
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.rounding_ceil,
             31,
             "Unexpected evaluation of operator 'Ceil'",
@@ -365,98 +364,98 @@ class SdvE2ETelemetryOperatorsTest(
         )
 
         # Evaluate payload
-        asserts.assert_equal(
+        expects.expect_equal(
             report.metrics_config_uuid,
             self.METRICS_CONFIG_UUID,
             "Unexpected UUID",
         )
         # value of boolean
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.boolean, True, "Unexpected value of boolean"
         )
 
         # Logical Operators
         # NOT boolean
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.logical_not_true,
             False,
             "Unexpected evaluation of `NOT true`",
         )
         # NOT (NOT boolean)
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.logical_not_false,
             True,
             "Unexpected evaluation of `NOT false`",
         )
         # In the metrics configuration, expressions below are defined using `boolean` message field as True, and `!boolean` as False
         # true AND true
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.logical_and_true_true,
             True,
             "Unexpected evaluation of `true AND true`",
         )
         # true AND false
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.logical_and_true_false,
             False,
             "Unexpected evaluation of `true AND false`",
         )
         # false AND true
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.logical_and_false_true,
             False,
             "Unexpected evaluation of `false AND true`",
         )
         # false AND false
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.logical_and_false_false,
             False,
             "Unexpected evaluation of `false AND false`",
         )
         # true OR true
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.logical_or_true_true,
             True,
             "Unexpected evaluation of `true OR true`",
         )
         # true OR false
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.logical_or_true_false,
             True,
             "Unexpected evaluation of `true OR false`",
         )
         # false OR true
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.logical_or_false_true,
             True,
             "Unexpected evaluation of `false OR true`",
         )
         # false OR false
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.logical_or_false_false,
             False,
             "Unexpected evaluation of `false OR false`",
         )
         # true XOR true
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.logical_xor_true_true,
             False,
             "Unexpected evaluation of `true XOR true`",
         )
         # true XOR false
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.logical_xor_true_false,
             True,
             "Unexpected evaluation of `true XOR false`",
         )
         # false XOR true
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.logical_xor_false_true,
             True,
             "Unexpected evaluation of `false XOR true`",
         )
         # false XOR false
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.logical_xor_false_false,
             False,
             "Unexpected evaluation of `false XOR false`",

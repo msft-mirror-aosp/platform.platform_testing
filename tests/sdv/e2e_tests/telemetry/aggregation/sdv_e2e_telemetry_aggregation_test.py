@@ -14,10 +14,9 @@
 
 """E2E Test to test all Metrics Config Aggregations"""
 
-from mobly import asserts
 from datetime import timedelta
 from pathlib import Path
-from sdv_telemetry_test_execution import telemetry_base_test
+from sdv_telemetry_test_execution import expects, telemetry_base_test
 from sdv_telemetry_test_execution.telemetry_utils import shlex_join
 from sdv_test_fw.device import sdv_device
 from sdv_test_fw.test_execution import sdv_test_runner
@@ -115,40 +114,40 @@ class SdvE2ETelemetryAggregationTest(
             self.metrics_config.descriptor_protos, report
         )
         # Evaluate payload
-        asserts.assert_equal(
+        expects.expect_equal(
             report.metrics_config_uuid,
             self.METRICS_CONFIG_UUID,
             'Unexpected UUID',
         )
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.meters_per_hour, -20.0, 'Unexpected Last Value'
         )
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.vec_meters_per_hour,
             [30.0, 10.0, -10.0, -20.0],
             'Unexpected Vector Value',
         )
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.max_meters_per_hour, 30.0, 'Unexpected Max Value'
         )
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.min_meters_per_hour, -20.0, 'Unexpected Min Value'
         )
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.avg_meters_per_hour, 2.5, 'Unexpected Avg Value'
         )
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.count_meters_per_hour, 4, 'Unexpected Value Count'
         )
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.sum_meters_per_hour, 10, 'Unexpected Sum Value'
         )
-        asserts.assert_equal(
+        expects.expect_equal(
             round(report_payload.stddev_meters_per_hour, 2),
             19.20,
             'Unexpected StdDev Value',
         )
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.delta_meters_per_hour,
             -10.0,
             'Unexpected Delta Value',

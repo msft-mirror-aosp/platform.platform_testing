@@ -14,10 +14,9 @@
 
 """E2E Test to validate Cumulative Elevation Gain functionality"""
 
-from mobly import asserts
 from datetime import timedelta
 from pathlib import Path
-from sdv_telemetry_test_execution import telemetry_base_test
+from sdv_telemetry_test_execution import expects, telemetry_base_test
 from sdv_telemetry_test_execution.telemetry_utils import shlex_join
 from sdv_test_fw.device import sdv_device
 from sdv_test_fw.test_execution import sdv_test_runner
@@ -114,15 +113,15 @@ class SdvE2ETelemetryCumulativeElevationGainTest(
             self.metrics_config.descriptor_protos, report
         )
 
-        asserts.assert_equal(
+        expects.expect_equal(
             report.metrics_config_uuid,
             self.METRICS_CONFIG_UUID,
             "Unexpected UUID",
         )
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.deltas, [50, 120, 20, 70], "Unexpected gain deltas"
         )
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.cumulative_elevation_gain,
             260,
             "Unexpected cumulative_elevation_gain value",
@@ -144,15 +143,15 @@ class SdvE2ETelemetryCumulativeElevationGainTest(
             self.metrics_config.descriptor_protos, report
         )
 
-        asserts.assert_equal(
+        expects.expect_equal(
             report.metrics_config_uuid,
             self.METRICS_CONFIG_UUID,
             "Unexpected UUID",
         )
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.deltas, [80, 30, 50, 10], "Unexpected loss deltas"
         )
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.cumulative_elevation_loss,
             170,
             "Unexpected cumulative_elevation_loss value",

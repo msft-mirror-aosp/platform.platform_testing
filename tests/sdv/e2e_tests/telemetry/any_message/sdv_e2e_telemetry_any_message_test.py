@@ -14,16 +14,16 @@
 
 """E2E Test to test reporting messages as google.protobuf.any"""
 
-from mobly import asserts
 from datetime import timedelta
 from math import isclose
 from pathlib import Path
 from google.protobuf import any_pb2, descriptor_pb2
-from sdv_telemetry_test_execution import telemetry_base_test
+from mobly import asserts
+from platform_testing.tests.sdv.e2e_tests.telemetry.any_message.message_pb2 import Message
+from sdv_telemetry_test_execution import expects, telemetry_base_test
 from sdv_telemetry_test_execution.telemetry_utils import shlex_join
 from sdv_test_fw.device import sdv_device
 from sdv_test_fw.test_execution import sdv_test_runner
-from platform_testing.tests.sdv.e2e_tests.telemetry.any_message.message_pb2 import Message
 
 
 class SdvE2ETelemetryAnyMessageTest(
@@ -91,15 +91,15 @@ class SdvE2ETelemetryAnyMessageTest(
         )
 
         # Validate correctness of received message
-        asserts.assert_equal(
+        expects.expect_equal(
             message.int_value, 42, "Unexpected int_value received"
         )
-        asserts.assert_true(
+        expects.expect_true(
             isclose(message.float_value, -0.32, rel_tol=1e-6, abs_tol=1e-6),
             f"Unexpected float_value received: {message.float_value}, expected:"
             f" {-0.32}",
         )
-        asserts.assert_equal(
+        expects.expect_equal(
             message.string_value,
             "Test Message",
             "Unexpected string_value received",

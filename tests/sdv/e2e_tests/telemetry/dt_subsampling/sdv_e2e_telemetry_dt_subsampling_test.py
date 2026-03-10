@@ -14,10 +14,10 @@
 
 """SDV E2E Telemetry DT Subsampling Test"""
 
-from mobly import asserts
 from datetime import timedelta
 from pathlib import Path
-from sdv_telemetry_test_execution import telemetry_base_test
+from mobly import asserts
+from sdv_telemetry_test_execution import expects, telemetry_base_test
 from sdv_telemetry_test_execution.telemetry_utils import shlex_join
 from sdv_test_fw.device import sdv_device
 from sdv_test_fw.test_execution import sdv_test_runner
@@ -85,14 +85,14 @@ class SdvE2ETelemetryDTSubsamplingTest(
             " or three reports are expected",
         )
 
-        asserts.assert_equal(
+        expects.expect_equal(
             self._read_report(
                 self._METRICS_CONFIG_UUID, 1, self.metrics_config
             ),
             42,
             "Unexpected report",
         )
-        asserts.assert_equal(
+        expects.expect_equal(
             self._read_report(
                 self._METRICS_CONFIG_UUID, 2, self.metrics_config
             ),
@@ -100,7 +100,7 @@ class SdvE2ETelemetryDTSubsamplingTest(
             "Unexpected report",
         )
         if report_count == 3:
-            asserts.assert_equal(
+            expects.expect_equal(
                 self._read_report(
                     self._METRICS_CONFIG_UUID, 3, self.metrics_config
                 ),
@@ -127,7 +127,7 @@ class SdvE2ETelemetryDTSubsamplingTest(
             " or two reports are expected",
         )
 
-        asserts.assert_equal(
+        expects.expect_equal(
             self._read_report(
                 self._LONGER_INTERVAL_METRICS_CONFIG_UUID,
                 1,
@@ -138,7 +138,7 @@ class SdvE2ETelemetryDTSubsamplingTest(
         )
 
         if report_count == 2:
-            asserts.assert_equal(
+            expects.expect_equal(
                 self._read_report(
                     self._LONGER_INTERVAL_METRICS_CONFIG_UUID,
                     2,

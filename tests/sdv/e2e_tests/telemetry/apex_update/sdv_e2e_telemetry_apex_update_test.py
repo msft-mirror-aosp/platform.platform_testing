@@ -14,12 +14,12 @@
 
 """SDV Telemetry APEX Update Test"""
 
-from mobly import asserts
 from pathlib import Path
 import re
 from time import sleep
 
-from sdv_telemetry_test_execution import telemetry_base_test
+from mobly import asserts
+from sdv_telemetry_test_execution import expects, telemetry_base_test
 from sdv_telemetry_test_execution.telemetry_utils import shlex_join
 from sdv_test_fw.device import sdv_device
 from sdv_test_fw.test_execution import sdv_test_runner
@@ -103,12 +103,12 @@ class SdvE2ETelemetryApexUpdateTest(
                 r'\s*tire_pressure_fl: \d+'
             )
 
-        asserts.assert_regex(
+        expects.expect_regex(
             dt_result,
             make_report_summary_regex(self.DT_METRICS_CONFIG_REPORT_NAME),
             'Unexpected DT report summary received.',
         )
-        asserts.assert_regex(
+        expects.expect_regex(
             rpc_result,
             make_report_summary_regex(self.RPC_METRICS_CONFIG_REPORT_NAME),
             'Unexpected RPC report summary received.',
