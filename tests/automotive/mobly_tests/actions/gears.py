@@ -13,20 +13,11 @@
 #  limitations under the License.
 
 
-from spectatio_host_tf.core import test_base, test_runner
+from spectatio_host_tf.core import test_runner
+from functional_test.test_base import functional_test_base
 
 
-class VhalGears(test_base.SpectatioHostBaseTestClass):
-    def setup_class(self):
-        super().setup_class()
-        self.mbs = self.device1.load_bundled_snippets()
-        self.device1.adb.root()
-
-    def setup_test(self):
-        pass
-
-    def teardown_test(self):
-        pass
+class VhalGears(functional_test_base.FunctionalTestBaseClass):
 
     def test_transmission(self):
         """Shift the car to park and check the UI for the gear indicator change."""

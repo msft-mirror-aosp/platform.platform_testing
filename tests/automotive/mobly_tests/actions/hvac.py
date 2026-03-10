@@ -14,25 +14,13 @@
 
 from file_utils_library.file_util import find_resource_path
 from image_comparison_library import image_comparison
-from screenshot_util_library.screenshot_util import ScreenshotUtil
-from spectatio_host_tf.core import test_base, test_runner
+from spectatio_host_tf.core import test_runner
+from functional_test.test_base import functional_test_base
 
 import time
+import logging
 
-
-class VhalHvac(test_base.SpectatioHostBaseTestClass):
-    def setup_class(self):
-        super().setup_class()
-        self.mbs = self.device1.load_bundled_snippets()
-        self.device1.adb.root()
-
-        self.register_service_factory('screenshot', ScreenshotUtil)
-
-    def setup_test(self):
-        pass
-
-    def teardown_test(self):
-        pass
+class VhalHvac(functional_test_base.FunctionalTestBaseClass):
 
     def test_ac_by_property(self):
         """Set the AC property and check that the HVAC UI reflects the setting."""
@@ -223,33 +211,33 @@ class VhalHvac(test_base.SpectatioHostBaseTestClass):
         self.mbs.disableHvacAutoMode()
 
         FAN_OFF = 1
-        FAN_SPEED_RECT = 297, 208, 783, 262
+        FAN_SPEED_RECT = (297, 208, 783, 262)
 
         self.mbs.setHvacFanSpeed(FAN_OFF)
         ANIMATION_WAIT_SECONDS = 0.2
         time.sleep(ANIMATION_WAIT_SECONDS)
-        strategy = ScreenshotUtil.ScreenshotStrategy.DISPLAY_SCREENSHOT_USING_ADB.value
 
-        off_test_path = 'fan_off.png'
-        off_golden_path = find_resource_path(
-            'actions_golden_images',
-            'golden_images/fan_off_golden.png'
-        )
-        self.screenshot.take_screenshot(
-            screenshot_strategy = strategy,
-            device = self.device1,
-            screenshot_path = off_test_path,
+        fan_off_golden_image_path = self.get_golden_image_path(
+                  golden_image_name='fan_off_golden.png',
+                  pkg_name='actions_golden_images'
         )
 
-        off_check = image_comparison.CompareImagesUsingMSE(
-            off_test_path,
-            off_golden_path,
-            diff_threshold=0.5,
+        fan_off_test_path = self.get_output_path_for_image(
+                 image_name='fan_off_test.png'
+        )
+
+        fan_off_diff_path = self.get_output_path_for_image(
+                 image_name='fan_off_diff.png'
+        )
+
+        self.take_device_screenshot(fan_off_test_path)
+
+        is_similar = self.compare_images(
+            fan_off_golden_image_path,
+            fan_off_test_path,
+            fan_off_diff_path,
             include_area=FAN_SPEED_RECT
         )
-        is_similar = off_check.are_images_similar()
-        diff_path = 'fan_off_diff.png'
-        off_check.save_diff_image(diff_path)
 
         FAN_MAX = 6
         self.mbs.setHvacFanSpeed(FAN_MAX)
@@ -259,22 +247,28 @@ class VhalHvac(test_base.SpectatioHostBaseTestClass):
             'actions_golden_images',
             'golden_images/fan_max_golden.png'
         )
-        self.screenshot.take_screenshot(
-            screenshot_strategy = strategy,
-            device = self.device1,
-            screenshot_path = max_test_path,
+
+        fan_max_golden_image_path = self.get_golden_image_path(
+                  golden_image_name='fan_max_golden.png',
+                  pkg_name='actions_golden_images'
         )
 
-        max_check = image_comparison.CompareImagesUsingMSE(
-            max_test_path,
-            max_golden_path,
-            diff_threshold=0.5,
-            include_area=FAN_SPEED_RECT
+        fan_max_test_path = self.get_output_path_for_image(
+                 image_name='fan_max_test.png'
         )
-        max_is_similar = max_check.are_images_similar()
 
-        diff_path = 'fan_max_diff.png'
-        max_check.save_diff_image(diff_path)
+        fan_max_diff_path = self.get_output_path_for_image(
+                 image_name='fan_max_diff.png'
+        )
+
+        self.take_device_screenshot(fan_max_test_path)
+
+        max_is_similar = self.compare_images(
+            fan_max_test_path,
+            fan_max_golden_image_path,
+            fan_max_diff_path,
+            include_area=(297, 208, 783, 262)
+        )
 
         self.mbs.hideHvac()
         self.asserts.assert_true(is_similar, "Fan speed off matches golden")
