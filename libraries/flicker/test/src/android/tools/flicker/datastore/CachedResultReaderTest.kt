@@ -38,7 +38,7 @@ class CachedResultReaderTest {
     @Test
     fun readFromStore() {
         val writer = newTestResultWriter(TEST_SCENARIO_KEY)
-        writer.addTraceResult(TraceType.EVENT_LOG, TestTraces.EventLog.FILE)
+        writer.addTraceResult(TraceType.PERFETTO, TestTraces.ProtoLogTrace.FILE)
         val result = writer.write()
         DataStore.addResult(TEST_SCENARIO_KEY, result)
         val reader = CachedResultReader(TEST_SCENARIO_KEY)

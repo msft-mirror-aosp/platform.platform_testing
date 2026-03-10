@@ -81,16 +81,14 @@ class FlickerBuilder(
         this.rules.addAll(rules)
     }
 
-    data class TraceFiles(val wmTrace: File, val perfetto: File, val eventLog: File)
+    data class TraceFiles(val perfetto: File)
 
     /** Use pre-executed results instead of running transitions to get the traces */
     fun usingExistingTraces(_traceFiles: () -> TraceFiles): FlickerBuilder = apply {
         val traceFiles = _traceFiles()
         // Remove all trace monitor and use only monitor that read from existing trace file
         this.traceMonitors.clear()
-        addMonitor(NoTraceMonitor { it.addTraceResult(TraceType.WM, traceFiles.wmTrace) })
         addMonitor(NoTraceMonitor { it.addTraceResult(TraceType.PERFETTO, traceFiles.perfetto) })
-        addMonitor(NoTraceMonitor { it.addTraceResult(TraceType.EVENT_LOG, traceFiles.eventLog) })
 
         // Remove all transitions execution
         this.transitionCommands.clear()
