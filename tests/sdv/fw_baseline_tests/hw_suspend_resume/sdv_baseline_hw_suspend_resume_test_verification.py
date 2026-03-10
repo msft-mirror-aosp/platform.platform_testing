@@ -30,6 +30,24 @@ import sdv_baseline_hw_suspend_resume_mixin as hw_suspend_resume
 class SdvBaselineHwSuspendResumeTestVerification:
     VERIFY_CONNECTION_TEXT = "Connection works"
 
+    def log_vm_status(self, vm_config):
+        """Log VM status and QVM pid for debugging.
+
+        Args:
+            vm_config: The VM config for the device to debug.
+        """
+        # _device_status and extract_current_qvm_pid log the data for debugging
+        # purposes. We log the information at info level in purpose to appear as
+        # part of the main logs of the test.
+        status = self._device_status(vm_config)
+        logging.info(f"{vm_config.sdv_guest_name} VM status: {status}")
+
+        qvm_processes_info = qnx_process_management.query_processes_info(
+            command_executor=self.host_command, process_identifier="qvm"
+        )
+        qvm_pid = vm_config.extract_current_qvm_pid(qvm_processes_info)
+        logging.info(f"{vm_config.sdv_guest_name} qvm process pid: {qvm_pid}")
+
     def verify_host_connection(self):
         """Verifies the connection to the QNX hypervisor.
 

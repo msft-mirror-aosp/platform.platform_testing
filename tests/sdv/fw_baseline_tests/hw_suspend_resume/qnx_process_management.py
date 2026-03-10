@@ -17,7 +17,7 @@ import logging
 _RUNNING_PROCESSES_CMD = "pidin -f aA | grep {process}"
 
 
-def _query_processes_info(
+def query_processes_info(
     command_executor, process_identifier: str
 ) -> list[str]:
     output_lines = command_executor(
@@ -36,17 +36,23 @@ def _query_processes_info(
     return processes_info
 
 
+def get_pid_from_process_info(process_info) -> str | None:
+    # The pid is expected to be the first element
+    # 000000 process_info
+    info = process_info.split()
+    if info and info[0].isdigit():
+        return info[0]
+
+
 def _spawned_processes_pids(
     command_executor, process_identifier: str
 ) -> list[str]:
-    processes_info = _query_processes_info(command_executor, process_identifier)
+    processes_info = query_processes_info(command_executor, process_identifier)
     pids = []
     for info in processes_info:
-        pidin_output = info.split()
-        # The pid is expected to be the first element
-        # 000000 process_info
-        if pidin_output and pidin_output[0].isdigit():
-            pids.append(pidin_output[0])
+        pid = get_pid_from_process_info(info)
+        if pid is not None:
+            pids.append(pid)
 
     logging.debug(f"Spawned processes pids: {pids}")
     return pids

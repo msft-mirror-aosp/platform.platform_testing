@@ -57,6 +57,10 @@ class SdvBaselineHwSuspendResumeTwoVMTest(
     def setup_test(self):
         super().setup_test()
 
+        # Useful for debugging specific errors in the test.
+        self.log_vm_status(self.DEVICE1_VM_CONFIG)
+        self.log_vm_status(self.DEVICE2_VM_CONFIG)
+
         # Open sessions for Power Management
         self.sdv_device1_pwm_session = (
             self.sdv_device1.adb().interactive_session(label="PWM")
@@ -67,6 +71,11 @@ class SdvBaselineHwSuspendResumeTwoVMTest(
 
     def teardown_test(self):
         logging.info("Cleaning up after test case.")
+
+        # Useful for debugging specific errors in the test.
+        self.log_vm_status(self.DEVICE1_VM_CONFIG)
+        self.log_vm_status(self.DEVICE2_VM_CONFIG)
+
         # end Power Management session
         self.sdv_device1_pwm_session.close()
         self.sdv_device2_pwm_session.close()
@@ -77,6 +86,7 @@ class SdvBaselineHwSuspendResumeTwoVMTest(
         # Concluding the sleep process makes adb connection to get lost
         # because the device hangs. We cannot clean up the spawned processes
         # in QNX. This is a known limitation of the current approach.
+        # See b/487626556 for details.
         logging.debug(
             "Not possible to fully clean spawned daemon for powerbtn in QNX."
             " This is a known limitation"
