@@ -18,6 +18,7 @@ import re
 import os
 import gzip
 import shutil
+import datetime
 from impl.models.cached_golden import CachedGolden
 from impl.golden_watchers.golden_watcher import GoldenWatcher
 import itertools
@@ -61,9 +62,11 @@ class AtestGoldenWatcher(GoldenWatcher):
             hash = match.group("hash1") or match.group("hash2")
             is_compressed = match.group("compressed") == ".gz"
 
+            file_time = datetime.datetime.fromtimestamp(os.path.getmtime(filename)).isoformat()
+
             local_file = os.path.join(self.temp_dir, f"{golden_name}_{hash}.actual.json")
             self.copy_file(filename, local_file, is_compressed)
-            golden = self.cached_golden_service(filename, local_file)
+            golden = self.cached_golden_service(filename, local_file, test_time=file_time)
 
             if golden.video_location:
                 mp4Pattern = f"{self.atest_latest_dir}/**/{golden_name}.actual*.mp4*"

@@ -171,8 +171,10 @@ class WatchWebAppRequestHandler(http.server.BaseHTTPRequestHandler):
     def fetch_gerrit_artifacts(self, linkPairs):
         golden_list = WatchWebAppRequestHandler.service.fetch_gerrit_artifacts(linkPairs)
 
-        # Sort golden list by goldenName if available, else by its keys
+        # Sort by goldenName first (ascending), then by testTime (descending)
+        # to ensure newest runs are on top with consistent alphabetical order within.
         golden_list.sort(key=lambda x: x.get("goldenName") or str(x))
+        golden_list.sort(key=lambda x: x.get("testTime") or "", reverse=True)
 
         testEntity = TestEntity(goldens_list=golden_list)
         WatchWebAppRequestHandler.test_entity_cache[GoldenWatcherTypes.GERRIT.value] = testEntity
@@ -187,8 +189,10 @@ class WatchWebAppRequestHandler(http.server.BaseHTTPRequestHandler):
         for golden in WatchWebAppRequestHandler.test_entity.golden_watcher.cached_goldens.values():
             goldens_list.append(self.create_golden_data(golden))
 
-        # Sort the goldens list by goldenName to ensure consistent UI order
+        # Sort by goldenName first (ascending), then by testTime (descending)
+        # to ensure newest runs are on top with consistent alphabetical order within.
         goldens_list.sort(key=lambda x: x.get("goldenName") or "")
+        goldens_list.sort(key=lambda x: x.get("testTime") or "", reverse=True)
 
         # Update the goldens list
         WatchWebAppRequestHandler.test_entity.goldens_list = goldens_list
