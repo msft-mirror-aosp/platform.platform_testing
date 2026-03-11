@@ -34,6 +34,7 @@ class TestDeviceAdb:
   _DEFAULT_TIMEOUT_BOOT_COMPLETION_SECOND = 5 * 60
   _DEFAULT_TIMEOUT_LOGCAT_SECONDS = 10
   _LOGCAT_NON_EMPTY_LINES_GREP_TEXT = '.'
+  _LOGCAT_EXCLUDED_GREP_TEXT = 'adbd'
 
   def __init__(self, android_device):
     self._android_device: android_device.AndroidDevice = android_device
@@ -409,7 +410,8 @@ class TestDeviceAdb:
         logcat_args: Additional arguments for logcat.
         grep_args: Additional arguments for grep.
     """
-    grep_command = 'grep'
+    # we need to filter the debugging logs out due to changes made in this bug: //b/477728797
+    grep_command = f'grep -v {self._LOGCAT_EXCLUDED_GREP_TEXT} | grep'
     if grep_args:
       grep_command += f' {grep_args}'
 
@@ -432,7 +434,8 @@ class TestDeviceAdb:
     """
     logcat_args = f' {logcat_args}' if logcat_args else ''
 
-    logcat_command = f'logcat{logcat_args} -e {grep_text}'
+    # we need to filter the debugging logs out due to changes made in this bug: //b/477728797
+    logcat_command = f'logcat{logcat_args} -e {grep_text} | grep -v {self._LOGCAT_EXCLUDED_GREP_TEXT}'
     return self.execute_shell_command_in_subprocess_with_log(
         logcat_command
     )
