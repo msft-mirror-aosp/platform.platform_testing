@@ -55,8 +55,12 @@ class SdvBaselineHwSuspendResumeOneVMTest(
     def setup_test(self):
         super().setup_test()
 
+        self.infra_error_if_device_is_not_responsive(
+            self.sdv_device1, self.DEVICE1_VM_CONFIG
+        )
+
         # Useful for debugging specific failures in the test.
-        self.log_vm_status(self.DEVICE1_VM_CONFIG)
+        self.log_vm_info(self.DEVICE1_VM_CONFIG)
 
         # Open session for Power Management
         self.sdv_device1_pwm_session = (
@@ -67,7 +71,7 @@ class SdvBaselineHwSuspendResumeOneVMTest(
         logging.info("Cleaning up after test case.")
 
         # Useful for debugging specific errors in the test.
-        self.log_vm_status(self.DEVICE1_VM_CONFIG)
+        self.log_vm_info(self.DEVICE1_VM_CONFIG)
 
         # end Power Management session
         self.sdv_device1_pwm_session.close()
