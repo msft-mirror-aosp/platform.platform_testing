@@ -78,7 +78,8 @@ public class DockTest {
 
     @Test
     public void testClickAndVerifyConstantAppsOnDock() {
-        mHomeHelper.get().clickMapsAppOnDock();
+        //mHomeHelper.get().clickMapsAppOnDock(); // Feature change b/490563637
+        // Can be removed once TT is updated
         // Uncomment this after bug b/455634890 is fixed
         /* assertFalse(
         "Maps app is not opened",

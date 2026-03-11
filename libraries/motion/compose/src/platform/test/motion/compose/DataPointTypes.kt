@@ -17,6 +17,7 @@
 package platform.test.motion.compose
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.isFinite
 import androidx.compose.ui.geometry.isUnspecified
 import androidx.compose.ui.unit.Dp
@@ -27,40 +28,60 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import org.json.JSONObject
 import platform.test.motion.golden.DataPointType
+import platform.test.motion.golden.FloatTolerances
 import platform.test.motion.golden.UnknownTypeException
-import platform.test.motion.isApproximatelyEqualTo
 
-fun Dp.asDataPoint() = DataPointTypes.dp.makeDataPoint(this)
+fun Dp?.asDataPoint() = DataPointTypes.dp.makeDataPoint(this)
 
-fun IntSize.asDataPoint() = DataPointTypes.intSize.makeDataPoint(this)
+val Dp.Companion.dataPointType
+    get() = DataPointTypes.dp
 
-fun Offset.asDataPoint() = DataPointTypes.offset.makeDataPoint(this)
+fun IntSize?.asDataPoint() = DataPointTypes.intSize.makeDataPoint(this)
 
-fun DpSize.asDataPoint() = DataPointTypes.dpSize.makeDataPoint(this)
+val IntSize.Companion.dataPointType
+    get() = DataPointTypes.intSize
 
-fun DpOffset.asDataPoint() = DataPointTypes.dpOffset.makeDataPoint(this)
+fun Offset?.asDataPoint() = DataPointTypes.offset.makeDataPoint(this)
+
+val Offset.Companion.dataPointType
+    get() = DataPointTypes.offset
+
+fun Size?.asDataPoint() = DataPointTypes.size.makeDataPoint(this)
+
+val Size.Companion.dataPointType
+    get() = DataPointTypes.size
+
+fun DpSize?.asDataPoint() = DataPointTypes.dpSize.makeDataPoint(this)
+
+val DpSize.Companion.dataPointType
+    get() = DataPointTypes.dpSize
+
+fun DpOffset?.asDataPoint() = DataPointTypes.dpOffset.makeDataPoint(this)
+
+val DpOffset.Companion.dataPointType
+    get() = DataPointTypes.dpOffset
 
 object DataPointTypes {
 
     val dp: DataPointType<Dp> =
-        DataPointType(
-            "dp",
-            jsonToValue = {
-                when (it) {
-                    is Float -> it.dp
-                    is Number -> it.toFloat().dp
-                    is String -> it.toFloatOrNull()?.dp ?: throw UnknownTypeException()
-                    else -> throw UnknownTypeException()
-                }
-            },
-            valueToJson = { it.value },
-            isApproximateEqual = { actual, expected ->
-                actual.value.isApproximatelyEqualTo(expected.value)
-            }
-        )
+        DataPointType.createWithTolerance(
+                "dp",
+                jsonToValue = {
+                    when (it) {
+                        is Float -> it.dp
+                        is Number -> it.toFloat().dp
+                        is String -> it.toFloatOrNull()?.dp ?: throw UnknownTypeException()
+                        else -> throw UnknownTypeException()
+                    }
+                },
+                valueToJson = { it.value },
+                tolerance = 0.dp,
+                toleranceAwareEquality = DpTolerances::isWithinTolerance,
+            )
+            .withAdjustedTolerance(1.dp)
 
     val intSize: DataPointType<IntSize> =
-        DataPointType(
+        DataPointType.create(
             "intSize",
             jsonToValue = {
                 with(it as? JSONObject ?: throw UnknownTypeException()) {
@@ -76,7 +97,7 @@ object DataPointTypes {
         )
 
     val intOffset: DataPointType<IntOffset> =
-        DataPointType(
+        DataPointType.create(
             "intOffset",
             jsonToValue = {
                 with(it as? JSONObject ?: throw UnknownTypeException()) {
@@ -88,11 +109,11 @@ object DataPointTypes {
                     put("x", it.x)
                     put("y", it.y)
                 }
-            }
+            },
         )
 
     val dpSize: DataPointType<DpSize> =
-        DataPointType(
+        DataPointType.createWithTolerance(
             "dpSize",
             jsonToValue = {
                 with(it as? JSONObject ?: throw UnknownTypeException()) {
@@ -105,14 +126,40 @@ object DataPointTypes {
                     put("height", it.height.value)
                 }
             },
-             isApproximateEqual = { actual, expected ->
-                 actual.width.value.isApproximatelyEqualTo(expected.width.value) &&
-                 actual.height.value.isApproximatelyEqualTo(expected.height.value)
-            }
+            tolerance = DpSize.Zero,
+            toleranceAwareEquality = { a, b, t ->
+                with(DpTolerances) {
+                    isWithinTolerance(a.width, b.width, t.width) &&
+                        isWithinTolerance(a.height, b.height, t.height)
+                }
+            },
+        )
+
+    val size: DataPointType<Size> =
+        DataPointType.createWithTolerance(
+            "size",
+            jsonToValue = {
+                with(it as? JSONObject ?: throw UnknownTypeException()) {
+                    Size(getDouble("width").toFloat(), getDouble("height").toFloat())
+                }
+            },
+            valueToJson = {
+                JSONObject().apply {
+                    put("width", it.width)
+                    put("height", it.height)
+                }
+            },
+            tolerance = Size.Zero,
+            toleranceAwareEquality = { a, b, t ->
+                with(FloatTolerances) {
+                    isWithinTolerance(a.width, b.width, t.width) &&
+                        isWithinTolerance(a.height, b.height, t.height)
+                }
+            },
         )
 
     val dpOffset: DataPointType<DpOffset> =
-        DataPointType(
+        DataPointType.createWithTolerance(
             "dpOffset",
             jsonToValue = {
                 with(it as? JSONObject ?: throw UnknownTypeException()) {
@@ -125,14 +172,16 @@ object DataPointTypes {
                     put("y", it.y.value)
                 }
             },
-            isApproximateEqual = { actual, expected ->
-                actual.x.value.isApproximatelyEqualTo(expected.x.value) &&
-                        actual.y.value.isApproximatelyEqualTo(expected.y.value)
-            }
+            tolerance = DpOffset.Zero,
+            toleranceAwareEquality = { a, b, t ->
+                with(DpTolerances) {
+                    isWithinTolerance(a.x, b.x, t.x) && isWithinTolerance(a.y, b.y, t.y)
+                }
+            },
         )
 
     val offset: DataPointType<Offset> =
-        DataPointType(
+        DataPointType.createWithTolerance(
             "offset",
             jsonToValue = {
                 when (it) {
@@ -154,14 +203,11 @@ object DataPointTypes {
                         }
                 }
             },
-            isApproximateEqual = { actual, expected ->
-                when(expected){
-                    Offset.Unspecified -> actual == Offset.Unspecified
-                    Offset.Infinite -> actual == Offset.Infinite
-                    Offset.Zero -> actual.x.isApproximatelyEqualTo(0f) && actual.y.isApproximatelyEqualTo(0f)
-                    else -> actual.x.isApproximatelyEqualTo(expected.x)
-                            && actual.y.isApproximatelyEqualTo(expected.y)
+            tolerance = Offset.Zero,
+            toleranceAwareEquality = { a, b, t ->
+                with(FloatTolerances) {
+                    isWithinTolerance(a.x, b.x, t.x) && isWithinTolerance(a.y, b.y, t.y)
                 }
-            }
+            },
         )
 }

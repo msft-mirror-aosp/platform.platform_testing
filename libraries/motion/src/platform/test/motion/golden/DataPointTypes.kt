@@ -17,21 +17,32 @@
 package platform.test.motion.golden
 
 import org.json.JSONArray
-import platform.test.motion.isApproximatelyEqualTo
 
-fun Float.asDataPoint() = DataPointTypes.float.makeDataPoint(this)
+fun Float?.asDataPoint() = DataPointTypes.float.makeDataPoint(this)
 
-fun Boolean.asDataPoint() = DataPointTypes.boolean.makeDataPoint(this)
+val Float.Companion.dataPointType
+    get() = DataPointTypes.float
 
-fun Int.asDataPoint() = DataPointTypes.int.makeDataPoint(this)
+fun Boolean?.asDataPoint() = DataPointTypes.boolean.makeDataPoint(this)
 
-fun String.asDataPoint() = DataPointTypes.string.makeDataPoint(this)
+val Boolean.Companion.dataPointType
+    get() = DataPointTypes.boolean
+
+fun Int?.asDataPoint() = DataPointTypes.int.makeDataPoint(this)
+
+val Int.Companion.dataPointType
+    get() = DataPointTypes.int
+
+fun String?.asDataPoint() = DataPointTypes.string.makeDataPoint(this)
+
+val String.Companion.dataPointType
+    get() = DataPointTypes.string
 
 /** [DataPointType] implementations for core Kotlin types. */
 object DataPointTypes {
 
     val boolean: DataPointType<Boolean> =
-        DataPointType(
+        DataPointType.create(
             "boolean",
             jsonToValue = {
                 when {
@@ -49,7 +60,7 @@ object DataPointTypes {
     private const val NEGATIVE_INFINITY_STRING = "-∞"
 
     val float: DataPointType<Float> =
-        DataPointType(
+        DataPointType.createWithTolerance(
             "float",
             jsonToValue = {
                 when (it) {
@@ -71,18 +82,12 @@ object DataPointTypes {
                     else -> it
                 }
             },
-            isApproximateEqual = { actual, expected ->
-                when{
-                    expected.isNaN() -> actual.isNaN()
-                    expected == Float.NEGATIVE_INFINITY -> actual == Float.NEGATIVE_INFINITY
-                    expected == Float.POSITIVE_INFINITY -> actual == Float.POSITIVE_INFINITY
-                    else -> actual.isApproximatelyEqualTo(expected)
-                }
-            }
+            tolerance = 0f,
+            toleranceAwareEquality = FloatTolerances::isWithinTolerance,
         )
 
     val int: DataPointType<Int> =
-        DataPointType(
+        DataPointType.create(
             "int",
             jsonToValue = {
                 when (it) {
@@ -96,17 +101,13 @@ object DataPointTypes {
         )
 
     val string: DataPointType<String> =
-        DataPointType(
-            "string",
-            jsonToValue = { it.toString() },
-            valueToJson = { it },
-        )
+        DataPointType.create("string", jsonToValue = { it.toString() }, valueToJson = { it })
 
     /**
      * Creates a [DataPointType] to serialize a list of values in an array, using [dataPointType].
      */
     fun <T : Any> listOf(dataPointType: DataPointType<T>): DataPointType<List<T>> {
-        return DataPointType(
+        return DataPointType.create(
             "${dataPointType.typeName}[]",
             jsonToValue = {
                 when (it) {
@@ -123,7 +124,7 @@ object DataPointTypes {
             },
             valueToJson = {
                 JSONArray().apply { it.forEach { value -> put(dataPointType.toJson(value)) } }
-            }
+            },
         )
     }
 }

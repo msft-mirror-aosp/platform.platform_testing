@@ -58,9 +58,28 @@ class TimeSeriesCaptureScope<T>(
 /**
  * Captures a time-series feature of an observed [T].
  *
+ * [captureFn] extracts the feature value of [T], and will be called once on every frame.
+ *
+ * [type] converts the extracted value to a [DataPoint] of the respective value. The tolerance of
+ * the [DataPointType] can be adjusted using [withTolerance]; the returned [FeatureCapture] will
+ * accept all values within the new tolerance.
+ *
  * A [DataPoint] of type [V] is recorded at each frame.
  */
-class FeatureCapture<T, V : Any>(val name: String, val capture: (T) -> DataPoint<V>)
+class FeatureCapture<T, V : Any>(
+    val name: String,
+    val type: DataPointType<V>,
+    val captureFn: (T) -> V?,
+) {
+
+    fun withTolerance(tolerance: V): FeatureCapture<T, V> {
+        return FeatureCapture(name, type.withAdjustedTolerance(tolerance), captureFn)
+    }
+
+    fun capture(value: T): DataPoint<V> {
+        return DataPoint.of(captureFn(value), type)
+    }
+}
 
 /**
  * Records a [DataPoint], extracted [capture] the specified [FeatureCapture] and stored in the

@@ -86,7 +86,6 @@ java_library {
         "androidx.core_core-ktx",
         "perfetto_config-lite",
         "platformprotosnano",
-        "WindowManager-Shell-proto",
         "com_android_wm_shell_flags_lib",
     ],
 }
