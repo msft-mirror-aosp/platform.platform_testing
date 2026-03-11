@@ -26,6 +26,7 @@ from mobly.controllers.android_device_lib.adb import AdbError
 from sdv_test_fw.device import sdv_property
 from sdv_test_fw.logcat import log_processor
 from sdv_test_fw.session.interactive_session import Session
+from sdv_test_fw.verification import polling
 
 
 class SdvAdb:
@@ -165,6 +166,29 @@ class SdvAdb:
         dumpsys_command = 'dumpsys '
         return self.execute_shell_command(dumpsys_command + service_name)
 
+    def is_shell_reachable(self):
+        """Checks if the device is responsive.
+
+        Attempt a simple shell command. If it succeeds, the device is online and
+        reachable. If it raises an Exception, the device is considered offline
+        or unreachable.
+
+        Returns:
+          Bool, true if the device is responsive or false if it is offline or
+          unreachable.
+        """
+        try:
+            # Using "true" as a minimal, standard shell command.
+            self.execute_shell_command('true', raise_exception=True)
+            self.log().info('Device is responsive to ADB shell')
+            return True
+        except Exception as e:
+            self.log().info(
+                'Device not reachable to ADB shell; considering it offline.'
+                f' (Exception: {e}).'
+            )
+            return False
+
     def wait_for_device_online(self, timeout=DEFAULT_WAIT_TIMEOUT_SECONDS):
         """Waits for the devices to be online.
 
@@ -178,41 +202,24 @@ class SdvAdb:
         return self.__android_device.adb.wait_for_device(timeout=timeout)
 
     def wait_for_device_offline(self, timeout=DEFAULT_WAIT_TIMEOUT_SECONDS):
-        """Waits for the devices to be offline.
+        """Waits for the device to be offline.
 
         Args:
-            timeout: How long to wait for devices to be offline (default 60
+            timeout: How long to wait for the device to be offline (default 60
               seconds).
 
         Raises:
-            Exception: If devices is not offline within the timeout.
+            Exception: If device is not offline within the timeout.
         """
-        end_time = time.time() + timeout
-
         self.log().info(
             f'Waiting for device to go offline for up to {timeout}s...'
         )
-        while time.time() < end_time:
-            try:
-                # Attempt a simple shell command. If it succeeds, the device is still online.
-                # If it raises Exception, the device is considered offline or unreachable.
-                # Using "true" as a minimal, standard shell command.
-                self.execute_shell_command('true', raise_exception=True)
-                # If the command succeeded, the device is still responsive.
-                self.log().info(
-                    'Device is still responsive to ADB shell. Continuing to'
-                    ' wait...'
-                )
-            except Exception as e:
-                # Exception implies the device is not reachable via shell.
-                self.log().info(
-                    f'Device not responsive to ADB shell (Exception: {e}).'
-                    ' Considering it offline.'
-                )
-                return
-            time.sleep(0.1)
-
-        raise Exception('Devices is not offline')
+        polling.wait_for_true_or_raise_exception(
+            lambda: not self.is_shell_reachable(),
+            timeout=timeout,
+            exception_msg='Device is not offline',
+            poll_interval=0.1,
+        )
 
     def wait_for_boot_complete(self):
         """Waits for the boot flag to be set.
