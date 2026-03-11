@@ -19,12 +19,12 @@ import json
 
 class CachedGolden:
 
-    def __init__(self, remote_file, local_file):
+    def __init__(self, remote_file, local_file, test_time=None):
         self.id = hashlib.sha256(remote_file.encode("utf-8")).hexdigest()
         self.remote_file = remote_file
         self.local_file = local_file
         self.updated = False
-        self.test_time = datetime.datetime.now().isoformat()
+        self.test_time = test_time or datetime.datetime.now().isoformat()
         self.golden_name = None
         # Checksum is the time the test data was loaded, forcing unique URLs
         # every time the golden is reloaded

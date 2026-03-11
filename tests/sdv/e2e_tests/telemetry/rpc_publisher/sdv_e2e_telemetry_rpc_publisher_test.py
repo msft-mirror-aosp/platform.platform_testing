@@ -14,10 +14,9 @@
 
 """SDV E2E Telemetry RPC Publisher Test"""
 
-from mobly import asserts
 from datetime import timedelta
 from pathlib import Path
-from sdv_telemetry_test_execution import telemetry_base_test
+from sdv_telemetry_test_execution import expects, telemetry_base_test
 from sdv_telemetry_test_execution.telemetry_utils import shlex_join
 from sdv_test_fw.device import sdv_device
 from sdv_test_fw.test_execution import sdv_test_runner
@@ -70,7 +69,7 @@ class SdvE2ETelemetryRpcPublisherTest(
             self.metrics_config.descriptor_protos, report
         )
 
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.tire_pressure_fl, 992, "Unexpected report"
         )
 

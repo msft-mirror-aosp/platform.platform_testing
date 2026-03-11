@@ -24,6 +24,7 @@
     <template-include name="device-config" default="sdv-device-config/generic/one-device" />
 
     <!-- ACTUAL TEST -->
+    <option name="remove-module-buffering" value="true" />
     <option name="compatibility:include-filter" value="BootTimeTest android.boottime.BootTimeTest#testSuccessiveBoots"/>
     <option name="compatibility:test-arg" value="com.android.tradefed.testtype.HostTest:set-option:boot-delay:20000" />
     <option name="compatibility:test-arg" value="com.android.tradefed.testtype.HostTest:set-option:boot-count:10" />

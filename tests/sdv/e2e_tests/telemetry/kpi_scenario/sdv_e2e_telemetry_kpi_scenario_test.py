@@ -26,7 +26,7 @@ from metrics import calculate_metrics
 from mobly import asserts
 from sdv_perfetto import perfetto_collector, perfetto_trace_processor
 from sdv_telemetry_scenario_generator.generate import WORST_CASE_SCENARIO, generate
-from sdv_telemetry_test_execution import telemetry_base_test
+from sdv_telemetry_test_execution import expects, telemetry_base_test
 from sdv_telemetry_test_execution.telemetry_utils import shlex_join
 from sdv_test_fw.device import sdv_device
 from sdv_test_fw.test_execution import sdv_test_runner
@@ -180,13 +180,13 @@ class SdvE2ETelemetryKpiScenarioTest(
 
         # Since there is some randomness involved, we treat a report count
         # within 10% of the expected value as passing.
-        asserts.assert_greater_equal(
+        expects.expect_greater_equal(
             report_count,
             self.EXPECTED_REPORT_COUNT * 0.9,
             f'report_count {report_count} should be'
             f' {self.EXPECTED_REPORT_COUNT * 0.9} or more.',
         )
-        asserts.assert_less_equal(
+        expects.expect_less_equal(
             report_count,
             self.EXPECTED_REPORT_COUNT * 1.1,
             f'report_count {report_count} should be'

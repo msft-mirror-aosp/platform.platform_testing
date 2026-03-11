@@ -33,6 +33,7 @@ class SdvAdb:
     DEFAULT_TIMEOUT_BOOT_COMPLETION_SECOND = 5 * 60
     DEFAULT_TIMEOUT_LOGCAT_SECONDS = 10
     LOGCAT_NON_EMPTY_LINES_GREP_TEXT = '.'
+    LOGCAT_EXCLUDED_GREP_TEXT = 'adbd'
 
     def __init__(self, android_device):
         self.__android_device = android_device
@@ -428,7 +429,8 @@ class SdvAdb:
         logcat_args: args for logcat
         grep_args: args for grep
         """
-        grep_command = 'grep'
+        # we need to filter the debugging logs out due to changes made in this bug: //b/477728797
+        grep_command = f'grep -v {self.LOGCAT_EXCLUDED_GREP_TEXT} | grep'
         if grep_args:
             grep_command += f' {grep_args}'
 

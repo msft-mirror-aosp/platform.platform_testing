@@ -33,6 +33,7 @@ be provided by the framework directly to allow seamless VPM testing.
 
 import dataclasses
 import logging
+from typing import List
 
 from mobly import asserts
 import pexpect
@@ -41,10 +42,16 @@ import qnx_process_management
 from sdv_test_fw.verification import polling
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass()
 class QnxVmConfig:
     dev_file: str
     sdv_guest_id: str
+    # Because of b/484317350, for suspend resume we need to keep track of the
+    # pid of qvm process to ensure it did not silently restart. Its value is
+    # handled by the logic itself.
+    _qvm_pid: str | None = dataclasses.field(
+        init=False, default=None, repr=False
+    )
 
     @property
     def sdv_guest_name(self) -> str:
@@ -53,6 +60,29 @@ class QnxVmConfig:
     @property
     def daemon_label(self) -> str:
         return f"powerbtn-daemon-{self.sdv_guest_name}"
+
+    @property
+    def qvm_pid(self) -> str | None:
+        return self._qvm_pid
+
+    def extract_current_qvm_pid(self, qvm_processes: List[str]) -> str | None:
+        for qvm_process_info in qvm_processes:
+            # We store the pid of the qvm for the corresponding VM.
+            if self.sdv_guest_name not in qvm_process_info:
+                continue
+
+            qvm_pid = qnx_process_management.get_pid_from_process_info(
+                qvm_process_info
+            )
+
+            logging.debug(f"{self.sdv_guest_name} qvm pid {qvm_pid}")
+            return qvm_pid
+
+        logging.error(f"No qvm process found for {self.sdv_guest_name}")
+
+    @qvm_pid.setter
+    def qvm_pid(self, qvm_processes: List[str]):
+        self._qvm_pid = self.extract_current_qvm_pid(qvm_processes)
 
 
 class SdvBaselineHwSuspendResumeMixin:
@@ -64,14 +94,9 @@ class SdvBaselineHwSuspendResumeMixin:
     SSH_USERNAME = "root"
     SSH_PASSWORD = "root"
 
-    # Current logic assumes a static mapping:
-    #   device1 -> sdv-1
-    #   device2 -> sdv-2
-    # This holds true for CI/CD and CATBox environments but may not be
-    # guaranteed during local execution with `atest`.
-    # TODO(crisguerrero): Look into dynamically resolve configuration based on
-    # device info (e.g., serial number, instance, etc). This is not important
-    # for verifying the functionality is stable in CI/CD.
+    # Framework setup ensures a static mapping:
+    #   device1 -> instance1 (sdv-1)
+    #   device2 -> instance3 (sdv-2)
     DEVICE1_VM_CONFIG = QnxVmConfig(dev_file="/dev/ttyp6", sdv_guest_id="1")
     DEVICE2_VM_CONFIG = QnxVmConfig(dev_file="/dev/ttyp7", sdv_guest_id="2")
 
@@ -248,12 +273,23 @@ class SdvBaselineHwSuspendResumeMixin:
             output_last_line_only=True,
         )
         logging.debug(f"{vm_config.sdv_guest_name} VM status: {status}")
-        asserts.assert_not_equal(
-            status,
-            self.VM_STATUS_NOT_AVAILABLE,
-            "Not possible to check status of the"
-            f" {vm_config.sdv_guest_name} VM",
-        )
+
+        # If the VM is not available, we log an error and continue to be able to
+        # check if it is a temporary issue and autostart fixes it. We retrieve
+        # qvm pid to verify if the VM is running or not.
+        if status == self.VM_STATUS_NOT_AVAILABLE:
+            logging.error(
+                "Not possible to check status of the"
+                f" {vm_config.sdv_guest_name} VM"
+            )
+
+            qvm_processes_info = qnx_process_management.query_processes_info(
+                command_executor=self.host_command, process_identifier="qvm"
+            )
+            # extract_current_qvm_pid logs the pid of the qvm process so we only
+            # need to call it for debugging.
+            vm_config.extract_current_qvm_pid(qvm_processes_info)
+
         return status
 
     def _device_is_suspended(self, vm_config):
@@ -269,6 +305,20 @@ class SdvBaselineHwSuspendResumeMixin:
     def pwm_suspend_to_ram(self, pwm_session, vm_config):
         logging.info(
             f"Suspend {vm_config.sdv_guest_name} VM using Power Management"
+        )
+
+        # To ensure the verification of suspend resume is reliable, we store
+        # the pid of the running VM to verify it has not changed when we resume.
+        qvm_processes_info = qnx_process_management.query_processes_info(
+            command_executor=self.host_command, process_identifier="qvm"
+        )
+        vm_config.qvm_pid = qvm_processes_info
+        asserts.assert_is_not_none(
+            vm_config.qvm_pid,
+            msg=(
+                "Not possible to obtain the pid for the"
+                f" {vm_config.sdv_guest_name} VM"
+            ),
         )
 
         pwm_session.send_command_and_wait_for_outputs(
@@ -319,14 +369,41 @@ class SdvBaselineHwSuspendResumeMixin:
             assert_msg=f"{vm_config.sdv_guest_name} did not resume",
         )
 
-        # TODO(crisguerrero): This seems to be flaky sometimes when the device
-        # is idle for 15s, as the session is disconnected and we are not
-        # able to access the final output of the session.
-        # Verify session is active before attempting to read the output of PWM.
-        pwm_session.expect_outputs([
-            self.VEPSM_POWER_STATE_OUTPUT.format(
-                vpm_status="SUSPEND_TO_RAM_EXIT"
+        try:
+            pwm_session.expect_outputs([
+                self.VEPSM_POWER_STATE_OUTPUT.format(
+                    vpm_status="SUSPEND_TO_RAM_EXIT"
+                )
+            ])
+        except pexpect.EOF:
+            # Extended idle periods of the suspended device may cause the PWM
+            # session to disconnect, resulting in a `pexpect.EOF` when reading
+            # the output. Since the device has already been verified as
+            # online/running, we treat this as a non-fatal issue. We log the
+            # disconnection to aid in debugging potential side effects
+            # and restart the interactive session so it is available if needed.
+            logging.debug(
+                f"PWM session for {vm_config.sdv_guest_name} was disconnected"
+                " while the device was suspended. It was not possible to"
+                " verify power-state-report log after resuming."
             )
-        ])
+            pwm_session.reconnect()
+
+        logging.info(
+            f"Verify VM has not been silently restarted to ensure the"
+            f" reliability of test"
+        )
+        qvm_processes_info = qnx_process_management.query_processes_info(
+            command_executor=self.host_command, process_identifier="qvm"
+        )
+        asserts.assert_equal(
+            vm_config.extract_current_qvm_pid(qvm_processes_info),
+            vm_config.qvm_pid,
+            msg=(
+                f"{vm_config.sdv_guest_name} VM restarted silently during the"
+                " test, so suspend resume cycle cannot be validated. See"
+                " b/484317350"
+            ),
+        )
 
         logging.info(f"{vm_config.sdv_guest_name} VM resumed successfully")

@@ -14,14 +14,14 @@
 
 """SDV E2E Telemetry DT Publisher Test"""
 
-from mobly import asserts
 from datetime import timedelta
 from pathlib import Path
-from google.protobuf.descriptor import FieldDescriptor
-from sdv_telemetry_test_execution import telemetry_base_test
+from mobly import asserts
+from sdv_telemetry_test_execution import expects, telemetry_base_test
 from sdv_telemetry_test_execution.telemetry_utils import shlex_join
 from sdv_test_fw.device import sdv_device
 from sdv_test_fw.test_execution import sdv_test_runner
+
 
 class SdvE2ETelemetryDtPublisherTest(
     telemetry_base_test.SdvTelemetryBaseTestClass
@@ -103,7 +103,7 @@ class SdvE2ETelemetryDtPublisherTest(
             self.sdv_metrics_config.descriptor_protos, report
         )
 
-        asserts.assert_equal(
+        expects.expect_equal(
             report_payload.tire_pressure_fl, 42, "Unexpected report"
         )
 
@@ -130,12 +130,12 @@ class SdvE2ETelemetryDtPublisherTest(
             self.sdv_vsidl_metrics_config.descriptor_protos, report
         )
 
-        asserts.assert_greater_equal(
+        expects.expect_greater_equal(
             report_payload.pressure,
             0,
             f"Pressure value {report_payload.pressure} is too low (min 0)",
         )
-        asserts.assert_less_equal(
+        expects.expect_less_equal(
             report_payload.pressure,
             100,
             f"Pressure value {report_payload.pressure} is too high (max 100)",
@@ -164,12 +164,12 @@ class SdvE2ETelemetryDtPublisherTest(
             self.someip_metrics_config.descriptor_protos, report
         )
 
-        asserts.assert_greater_equal(
+        expects.expect_greater_equal(
             report_payload.pressure,
             10,
             f"Pressure value {report_payload.pressure} is too low (min 10)",
         )
-        asserts.assert_less_equal(
+        expects.expect_less_equal(
             report_payload.pressure,
             40,
             f"Pressure value {report_payload.pressure} is too high (max 40)",

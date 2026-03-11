@@ -255,8 +255,8 @@ public class StatusBar {
                         getUiDevice()
                                 .wait(
                                         Until.hasObject(
-                                                statusBarSelector(STATUS_ICON_CONTAINER_ID)
-                                                        .hasChild(
+                                                statusBarSelector(UI_SYSTEM_ICONS_ID)
+                                                        .hasDescendant(
                                                                 By.desc(AIRPLANE_MODE_ICON_DESC))),
                                         SHORT_WAIT.toMillis()))
                 .isTrue();
@@ -268,8 +268,9 @@ public class StatusBar {
                         getUiDevice()
                                 .wait(
                                         Until.hasObject(
-                                                statusBarSelector(STATUS_ICON_CONTAINER_ID)
-                                                        .hasChild(By.desc(DATA_SAVER_ICON_DESC))),
+                                                statusBarSelector(UI_SYSTEM_ICONS_ID)
+                                                        .hasDescendant(
+                                                                By.desc(DATA_SAVER_ICON_DESC))),
                                         SHORT_WAIT.toMillis()))
                 .isTrue();
     }
@@ -332,8 +333,8 @@ public class StatusBar {
                         getUiDevice()
                                 .wait(
                                         Until.hasObject(
-                                                statusBarSelector(STATUS_ICON_CONTAINER_ID)
-                                                        .hasChild(
+                                                statusBarSelector(UI_SYSTEM_ICONS_ID)
+                                                        .hasDescendant(
                                                                 statusBarDescContainsSelector(
                                                                         DND_ICON_DESC))),
                                         LONG_WAIT.toMillis()))
@@ -370,8 +371,9 @@ public class StatusBar {
     /** Assert that silent icon is visible. */
     public void verifySilentIconIsVisible() {
         DeviceHelpers.INSTANCE.assertVisible(
-                statusBarSelector(STATUS_ICON_CONTAINER_ID)
-                        .hasChild(statusBarDescContainsSelector(SILENT_ICON_DESC_PREFIX_STRING)),
+                statusBarSelector(UI_SYSTEM_ICONS_ID)
+                        .hasDescendant(
+                                statusBarDescContainsSelector(SILENT_ICON_DESC_PREFIX_STRING)),
                 LONG_WAIT,
                 () -> "Silent icon should be visible in status bar.");
     }
@@ -447,8 +449,9 @@ public class StatusBar {
     public void assertVibrateIconVisibility(boolean visible) {
         DeviceHelpers.INSTANCE.assertVisibility(
                 /* UiDevice= */ getUiDevice(),
-                /* selector= */ statusBarSelector(STATUS_ICON_CONTAINER_ID)
-                        .hasChild(statusBarDescContainsSelector(VIBRATE_ICON_DESC_PREFIX_STRING)),
+                /* selector= */ statusBarSelector(UI_SYSTEM_ICONS_ID)
+                        .hasDescendant(
+                                statusBarDescContainsSelector(VIBRATE_ICON_DESC_PREFIX_STRING)),
                 /* visible= */ visible,
                 /* timeout= */ LONG_WAIT);
     }

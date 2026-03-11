@@ -15,6 +15,8 @@
 
 import os
 import hashlib
+import shutil
+import datetime
 from impl.models.cached_golden import CachedGolden
 from impl.golden_watchers.golden_watcher import GoldenWatcher
 
@@ -38,14 +40,25 @@ class GoldenFileWatcher(GoldenWatcher):
         os.makedirs(self.temp_dir, exist_ok=True)
 
     def refresh_golden_files(self):
-        command = f"find /data/user/0/ -type f -name *.actual.json"
-        updated_goldens = self.run_adb_command(["shell", command]).splitlines()
-        print(f"Updating goldens - found {len(updated_goldens)} files")
+        device_now = int(self.run_adb_command(["shell", "date +%s"]).strip())
+        host_now = int(datetime.datetime.now().timestamp())
+        offset = host_now - device_now
 
-        for golden_remote_file in updated_goldens:
+        command = f"find /data/user/0/ -type f -name *.actual.json -printf '%T@ %p\\n'"
+        updated_goldens_raw = self.run_adb_command(["shell", command]).splitlines()
+        print(f"Updating goldens - found {len(updated_goldens_raw)} files")
+
+        for line in updated_goldens_raw:
+            parts = line.split(" ", 1)
+            if len(parts) != 2: continue
+            file_device_time = float(parts[0])
+            golden_remote_file = parts[1]
+
+            file_host_time = datetime.datetime.fromtimestamp(file_device_time + offset).isoformat()
+
             local_file = self.adb_pull(golden_remote_file)
 
-            golden = self.cached_golden_service(golden_remote_file, local_file)
+            golden = self.cached_golden_service(golden_remote_file, local_file, test_time=file_host_time)
             if golden.video_location:
                 self.adb_pull_image(golden.device_local_path, golden.video_location)
 

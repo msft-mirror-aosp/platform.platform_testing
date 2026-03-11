@@ -37,4 +37,4 @@ NOTIFY_AS_NATIVE=0.0.0.0:6520 out/host/linux-x86/catbox/android-catbox/tools/cat
 
 ## CI/CD execution
 
-Name: `sdv/e2e/sdv_recovery_critical_services_test`
+Name: `sdv/e2e/recovery_critical_services_test`

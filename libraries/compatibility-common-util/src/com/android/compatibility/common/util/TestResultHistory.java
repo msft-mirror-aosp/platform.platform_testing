@@ -20,6 +20,7 @@ import org.xmlpull.v1.XmlSerializer;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -30,7 +31,7 @@ import java.util.Set;
  */
 public class TestResultHistory implements Serializable {
 
-    private static final long serialVersionUID = 10L;
+    private static final long SERIAL_VERSION_UID = 10L;
 
     private static final String ENCODING = "UTF-8";
     private static final String TYPE = "org.kxml2.io.KXmlParser,org.kxml2.io.KXmlSerializer";
@@ -42,9 +43,13 @@ public class TestResultHistory implements Serializable {
     private static final String START_TIME_ATTR = "start";
     private static final String END_TIME_ATTR = "end";
     private static final String IS_AUTOMATED_ATTR = "isAutomated";
+    private static final String TEST_DETAILS_TAG = "TestDetails";
+    private static final String TEST_DETAILS_NAME_ATTR = "name";
+    private static final String TEST_DETAILS_DETAILS_ATTR = "Details";
 
     private final String mTestName;
     private final Set<ExecutionRecord> mExecutionRecords;
+    private final List<TestDetails> mTestDetails;
 
     /**
      * Constructor of test result history.
@@ -53,8 +58,21 @@ public class TestResultHistory implements Serializable {
      * @param executionRecords a Set of ExecutionRecords.
      */
     public TestResultHistory(String testName, Set<ExecutionRecord> executionRecords) {
+        this(testName, executionRecords, null);
+    }
+
+    /**
+     * Constructor of test result history.
+     *
+     * @param testName a string of test name.
+     * @param executionRecords a Set of ExecutionRecords.
+     * @param testDetails a List of TestDetails.
+     */
+    public TestResultHistory(String testName, Set<ExecutionRecord> executionRecords,
+            List<TestDetails> testDetails) {
         this.mTestName = testName;
         this.mExecutionRecords = executionRecords;
+        this.mTestDetails = testDetails;
     }
 
     /** Get test name */
@@ -65,6 +83,11 @@ public class TestResultHistory implements Serializable {
     /** Get a set of ExecutionRecords. */
     public Set<ExecutionRecord> getExecutionRecords() {
         return mExecutionRecords;
+    }
+
+    /** Get a list of TestDetails. */
+    public List<TestDetails> getTestDetails() {
+        return mTestDetails;
     }
 
     /** {@inheritDoc} */
@@ -78,13 +101,14 @@ public class TestResultHistory implements Serializable {
         }
         TestResultHistory that = (TestResultHistory) o;
         return Objects.equals(mTestName, that.mTestName)
-                && Objects.equals(mExecutionRecords, that.mExecutionRecords);
+                && Objects.equals(mExecutionRecords, that.mExecutionRecords)
+                && Objects.equals(mTestDetails, that.mTestDetails);
     }
 
     /** {@inheritDoc} */
     @Override
     public int hashCode() {
-        return Objects.hash(mTestName, mExecutionRecords);
+        return Objects.hash(mTestName, mExecutionRecords, mTestDetails);
     }
 
     /**
@@ -117,6 +141,14 @@ public class TestResultHistory implements Serializable {
                     null, IS_AUTOMATED_ATTR, String.valueOf(execRecord.getIsAutomated()));
             serializer.endTag(null, RUN_TAG);
         }
+        if (resultHistory.getTestDetails() != null) {
+            for (TestDetails details : resultHistory.getTestDetails()) {
+                serializer.startTag(null, TEST_DETAILS_TAG);
+                serializer.attribute(null, TEST_DETAILS_NAME_ATTR, details.name);
+                serializer.attribute(null, TEST_DETAILS_DETAILS_ATTR, details.details);
+                serializer.endTag(null, TEST_DETAILS_TAG);
+            }
+        }
         serializer.endTag(null, RUN_HISTORY_TAG);
     }
 
@@ -134,10 +166,35 @@ public class TestResultHistory implements Serializable {
         return subTestName;
     }
 
+    /** Test Details with name and details */
+    public static class TestDetails implements Serializable {
+        private static final long SERIAL_VERSION_UID = 0L;
+        public final String name;
+        public final String details;
+
+        public TestDetails(String name, String details) {
+            this.name = name;
+            this.details = details;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            TestDetails that = (TestDetails) o;
+            return Objects.equals(name, that.name) && Objects.equals(details, that.details);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name, details);
+        }
+    }
+
     /** Execution Record about start time, end time and isAutomated */
     public static class ExecutionRecord implements Serializable {
 
-        private static final long serialVersionUID = 0L;
+        private static final long SERIAL_VERSION_UID = 0L;
         // Start time of test case.
         private final long startTime;
         // End time of test case.

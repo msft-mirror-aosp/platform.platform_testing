@@ -46,8 +46,11 @@ NOTIFY_AS_NATIVE=127.0.0.1:15555 ./out/host/linux-x86/catbox/android-catbox/tool
 
 ### Two VMs
 
-Because of known limitations in the infrastructure that arbitrarily assigns the
-devices to device1 and device2, this test should be run in CATBox or CI/CD.
+#### Atest
+
+```
+NOTIFY_AS_NATIVE=127.0.0.1:15555,127.0.0.1:15556 atest SdvBaselineHwSuspendResumeTwoVMTest
+```
 
 #### CATBox
 

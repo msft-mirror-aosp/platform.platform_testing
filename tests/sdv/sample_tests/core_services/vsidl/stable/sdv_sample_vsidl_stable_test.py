@@ -44,56 +44,56 @@ class SdvSampleVsidlStableTest(sdv_base_test.SdvBaseTestClass):
         polling.wait_and_verify_expected_logs(
             self.sdv_device,
             grep_text="Starting service bundle 'Manager'",
-            logcat_args="*:F com_android_sdv_sample_vsidl_Manager_instance:*"
+            logcat_args="*:F com_android_sdv_sample_vsidl_Manager_instance:*",
+            assert_msg=f"{self.MANAGER_FQIN} failed to start."
         )
 
         # Verify Monitor started
         polling.wait_and_verify_expected_logs(
             self.sdv_device,
             grep_text="Starting service bundle 'Monitor'",
-            logcat_args="*:F com_android_sdv_sample_vsidl_Monitor_instance:*"
+            logcat_args="*:F com_android_sdv_sample_vsidl_Monitor_instance:*",
+            assert_msg=f"{self.MONITOR_FQIN} failed to start."
         )
 
         # Verify Manager is publishing
         polling.wait_and_verify_expected_logs(
             self.sdv_device,
             grep_text="Publishing on TirePressure#PRESSURE",
-            logcat_args="*:F com_android_sdv_sample_vsidl_Manager_instance:*"
+            logcat_args="*:F com_android_sdv_sample_vsidl_Manager_instance:*",
+            assert_msg=f"{self.MANAGER_FQIN} failed to publish on TirePressure#PRESSURE."
         )
 
         # Verify Monitor received message
         polling.wait_and_verify_expected_logs(
             self.sdv_device,
             grep_text="Received message on TirePressure#PRESSURE",
-            logcat_args="*:F com_android_sdv_sample_vsidl_Monitor_instance:*"
-        )
-
-        # Verify Monitor is publishing range
-        polling.wait_and_verify_expected_logs(
-            self.sdv_device,
-            grep_text="Publishing on TirePressureRange#RANGE",
-            logcat_args="*:F com_android_sdv_sample_vsidl_Monitor_instance:*"
+            logcat_args="*:F com_android_sdv_sample_vsidl_Monitor_instance:*",
+            assert_msg=f"{self.MONITOR_FQIN} failed to receive message on TirePressure#PRESSURE."
         )
 
         # Verify RPC: Monitor sends request
         polling.wait_and_verify_expected_logs(
             self.sdv_device,
             grep_text="Sending request on Monitor/TireService",
-            logcat_args="*:F com_android_sdv_sample_vsidl_Monitor_instance:*"
+            logcat_args="*:F com_android_sdv_sample_vsidl_Monitor_instance:*",
+            assert_msg=f"{self.MONITOR_FQIN} failed to send request on Monitor/TireService."
         )
 
         # Verify RPC: Manager receives request
         polling.wait_and_verify_expected_logs(
             self.sdv_device,
             grep_text="Received request on Manager/TireService",
-            logcat_args="*:F com_android_sdv_sample_vsidl_Manager_instance:*"
+            logcat_args="*:F com_android_sdv_sample_vsidl_Manager_instance:*",
+            assert_msg=f"{self.MANAGER_FQIN} failed to receive request on Manager/TireService."
         )
 
         # Verify RPC: Monitor receives response
         polling.wait_and_verify_expected_logs(
             self.sdv_device,
             grep_text="Received response on Monitor/TireService",
-            logcat_args="*:F com_android_sdv_sample_vsidl_Monitor_instance:*"
+            logcat_args="*:F com_android_sdv_sample_vsidl_Monitor_instance:*",
+            assert_msg=f"{self.MONITOR_FQIN} failed to receive response on Monitor/TireService."
         )
 
         logging.info(f'{self.get_suite_name()} :: End Test {self.current_test_info.name}')

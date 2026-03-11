@@ -16,9 +16,7 @@
 package android.platform.uiautomatoraccessibility
 
 import android.platform.test.microbenchmark.Microbenchmark
-import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.uiautomator.UiDevice
-import com.google.android.apps.common.testing.accessibility.framework.integrations.common.AccessibilityNodeInfoValidator
+import android.platform.uiautomatoraccessibility.reporting.ResultsWriter
 import com.google.android.apps.common.testing.accessibility.framework.integrations.uiautomator.UiAutomatorAccessibilityTestRuleBase
 import org.junit.runner.Description
 import org.junit.runner.RunWith
@@ -76,6 +74,12 @@ constructor(
         runA11yCheckAfterTest,
         deferCheckExceptions,
     ) {
+
+    private val resultsWriter =
+        ResultsWriter().also {
+            addOnBeforeListener(it::setTestDescription)
+            validator.addCheckResultsListener(it::saveResults)
+        }
 
     init {
         validator.setRunChecksFromRootView(true)
