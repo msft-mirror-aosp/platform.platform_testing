@@ -234,6 +234,57 @@ class TestWaitForCondition(unittest.TestCase):
         )
         mock_sleep.assert_called_once_with(0.2)
 
+    def test_wait_for_true_or_raise_exception_success(self):
+        def test_function():
+            return True
+
+        self.assertTrue(polling.wait_for_true_or_raise_exception(test_function))
+
+    def test_wait_for_true_or_raise_exception_default_exception(self):
+        def test_function():
+            return False
+
+        with self.assertRaisesRegex(
+            Exception, 'Timeout for waiting is reached'
+        ):
+            polling.wait_for_true_or_raise_exception(test_function, timeout=0.1)
+
+    def test_wait_for_true_or_raise_exception_custom_message(self):
+        def test_function():
+            return False
+
+        custom_message = 'Custom failure message'
+        with self.assertRaisesRegex(Exception, custom_message):
+            polling.wait_for_true_or_raise_exception(
+                test_function, timeout=0.1, exception_msg=custom_message
+            )
+
+    def test_wait_for_true_or_raise_exception_custom_exception_class(self):
+        class CustomError(Exception):
+            pass
+
+        def test_function():
+            return False
+
+        with self.assertRaises(CustomError):
+            polling.wait_for_true_or_raise_exception(
+                test_function, timeout=0.1, exception_class=CustomError
+            )
+
+    def test_wait_for_true_or_raise_exception_with_args(self):
+        def test_function_with_args(arg1, arg2):
+            return arg1 == arg2
+
+        self.assertTrue(
+            polling.wait_for_true_or_raise_exception(
+                test_function_with_args, 5, 5
+            )
+        )
+        with self.assertRaises(Exception):
+            polling.wait_for_true_or_raise_exception(
+                test_function_with_args, 5, 6, timeout=0.1
+            )
+
 
 if __name__ == '__main__':
     unittest.main()
