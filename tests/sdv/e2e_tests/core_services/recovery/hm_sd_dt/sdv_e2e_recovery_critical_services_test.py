@@ -42,6 +42,7 @@ class SdvE2ERecoveryCriticalServicesTest(sdv_base_test.SdvBaseTestClass, paramet
     VM_HEALTHY_EXPECTED_LOG = "VM is HEALTHY"
     VM_UNHEALTHY_EXPECTED_LOG = "VM is UNHEALTHY"
     HEALTH_EXPECTED_LOG = "VM is"
+    LOGCAT_ARGS_FOR_VM_HEALTH_SUB = "-s vm_health_sub"
     DEVICE_NAME = "device1"
 
     def log_is_empty(self, log):
@@ -108,6 +109,7 @@ class SdvE2ERecoveryCriticalServicesTest(sdv_base_test.SdvBaseTestClass, paramet
         polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.VM_HEALTHY_EXPECTED_LOG,
+            logcat_args=self.LOGCAT_ARGS_FOR_VM_HEALTH_SUB,
             assert_msg="VM is not healthy",
         )
 
@@ -127,6 +129,7 @@ class SdvE2ERecoveryCriticalServicesTest(sdv_base_test.SdvBaseTestClass, paramet
         polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.VM_UNHEALTHY_EXPECTED_LOG,
+            logcat_args=self.LOGCAT_ARGS_FOR_VM_HEALTH_SUB,
             assert_msg="VM is still healthy after killing the agent",
         )
 
@@ -139,6 +142,7 @@ class SdvE2ERecoveryCriticalServicesTest(sdv_base_test.SdvBaseTestClass, paramet
         polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.VM_HEALTHY_EXPECTED_LOG,
+            logcat_args=self.LOGCAT_ARGS_FOR_VM_HEALTH_SUB,
             assert_msg="VM is not healthy",
         )
 
@@ -160,6 +164,7 @@ class SdvE2ERecoveryCriticalServicesTest(sdv_base_test.SdvBaseTestClass, paramet
         polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.VM_HEALTHY_EXPECTED_LOG,
+            logcat_args=self.LOGCAT_ARGS_FOR_VM_HEALTH_SUB,
             assert_msg="VM is not healthy",
         )
 
@@ -173,9 +178,11 @@ class SdvE2ERecoveryCriticalServicesTest(sdv_base_test.SdvBaseTestClass, paramet
         # Health reports are generated in the 100 ms range, ensure no reports have appeared in 1s.
         time.sleep(1)
         monitoring_logs = self.sdv_device.grep_from_logcat(
-            self.HEALTH_EXPECTED_LOG)
+            self.HEALTH_EXPECTED_LOG,
+            logcat_args=self.LOGCAT_ARGS_FOR_VM_HEALTH_SUB,
+        )
         asserts.assert_false(
-            monitoring_logs, "Health reports were published")
+            monitoring_logs, f"Health reports were published {monitoring_logs}")
 
         # Emulate OEM action for restarting a broken VM.
         self.sdv_device.reboot_device_and_verify_logcat()
@@ -188,6 +195,7 @@ class SdvE2ERecoveryCriticalServicesTest(sdv_base_test.SdvBaseTestClass, paramet
         polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.VM_HEALTHY_EXPECTED_LOG,
+            logcat_args=self.LOGCAT_ARGS_FOR_VM_HEALTH_SUB,
             assert_msg="VM is not healthy",
         )
 
