@@ -14,6 +14,13 @@
 #
 
 import unittest
+import sys
+from unittest.mock import MagicMock
+
+# Mock 'requests' module before it's imported by any implementation file.
+# This avoids the need for the real library during unit testing.
+mock_requests = MagicMock()
+sys.modules["requests"] = mock_requests
 
 # Import all tests for discovery
 from tests.adb_client_test import AdbClientTest
@@ -21,6 +28,7 @@ from tests.adb_serial_finder_test import ADBSerialFinderTest
 from tests.argument_parser_test import ArgumentParserTest
 from tests.atest_golden_watcher_test import AtestGoldenWatcherTest
 from tests.cached_golden_test import CachedGoldenTest
+from tests.fetch_presubmit_test_artifact_test import FetchPresubmitTestArtifactsTest
 from tests.gerrit_downloader_test import GerritDownloaderTest
 from tests.golden_file_watcher_test import GoldenFileWatcherTest
 from tests.golden_watcher_factory_test import GoldenWatcherFactoryTest
