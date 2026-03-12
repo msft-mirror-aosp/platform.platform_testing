@@ -33,6 +33,7 @@ from tests.gerrit_downloader_test import GerritDownloaderTest
 from tests.golden_file_watcher_test import GoldenFileWatcherTest
 from tests.golden_watcher_factory_test import GoldenWatcherFactoryTest
 from tests.motion_constants_test import MotionConstantsTest
+from tests.motion_service_test import MotionServiceTest
 from tests.port_finder_test import PortFinderTest
 from tests.presubmit_golden_watcher_test import PresubmitGoldenWatcherTest
 from tests.token_generator_test import TokenGeneratorTest
