@@ -69,6 +69,7 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
             "showmap_%s_bytes_imperceptible";
     public static final String OUTPUT_FILE_PATH_KEY = "showmap_output_file";
     public static final String SYSTEM_THREADS_FILE_PATH_KEY = "system_threads_output_file";
+    public static final String SYSTEM_PROCESS_FILE_PATH_KEY = "system_process_output_file";
     public static final String PROCESS_COUNT = "process_count";
     public static final String PERSISTENT_PROCESS_COUNT = "persistent_process_count";
     public static final String CHILD_PROCESS_COUNT_PREFIX = "child_processes_count";
@@ -85,6 +86,7 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
     private String mTestOutputDir = null;
     private String mTestOutputFile = null;
     private String mSysThreadsDebugFile = null;
+    private String mSysProcessFile = null;
     private int mDropCacheOption;
     private boolean mCollectForAllProcesses = false;
     private UiDevice mUiDevice;
@@ -200,6 +202,34 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
             mSysThreadsDebugFile = sysThreadsDebugFilePath;
         }
 
+        // Prepare system processes output debugging file
+        String sysProcessFilePath =
+                String.format(
+                        "%s/system_processes_snapshot%d.txt",
+                        mTestOutputDir, UUID.randomUUID().hashCode());
+        File sysProcessFile = new File(sysProcessFilePath);
+
+        try {
+            if (sysProcessFile.exists() && !sysProcessFile.delete()) {
+                Log.e(
+                        TAG,
+                        String.format("Failed to delete system processes file %s", sysProcessFile));
+            }
+            if (!sysProcessFile.createNewFile()) {
+                Log.e(
+                        TAG,
+                        String.format("Failed to create system processes file %s", sysProcessFile));
+                return false;
+            }
+        } catch (IOException e) {
+            Log.e(
+                    TAG,
+                    String.format("Failed to create system processes file %s", sysProcessFile),
+                    e);
+            return false;
+        }
+        mSysProcessFile = sysProcessFilePath;
+
         return true;
     }
 
@@ -304,6 +334,33 @@ public class ShowmapSnapshotHelper implements ICollectorHelper<String> {
                     PERSISTENT_PROCESS_COUNT, Integer.toString(persistentProcessNames.size()));
             writer.close();
             mMemoryMap.put(OUTPUT_FILE_PATH_KEY, mTestOutputFile);
+
+            // Write system process names to the separate debugging file
+            try (FileWriter processWriter = new FileWriter(new File(mSysProcessFile), true)) {
+                processWriter.write(
+                        "\n"
+                            + " >>> Persistent Processes contributing to persistent_process_count"
+                            + " <<<\n");
+                for (String name : persistentProcessNames) {
+                    processWriter.write(name + "\n");
+                }
+                processWriter.write("\n >>> All processes contributing to process_count <<<\n");
+                for (String name : mProcessNames) {
+                    processWriter.write(name + "\n");
+                }
+                mMemoryMap.put(SYSTEM_PROCESS_FILE_PATH_KEY, mSysProcessFile);
+
+            } catch (IOException e) {
+                Log.e(
+                        TAG,
+                        String.format(
+                                "Failed to write to persistent process file %s", mSysProcessFile),
+                        e);
+            }
+
+            // Add the file path to the metrics map
+            mMemoryMap.put(SYSTEM_PROCESS_FILE_PATH_KEY, mSysProcessFile);
+
         } catch (RuntimeException e) {
             Log.e(TAG, e.getMessage(), e.getCause());
         } catch (IOException e) {
