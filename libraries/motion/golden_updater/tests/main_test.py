@@ -37,6 +37,7 @@ from tests.motion_service_test import MotionServiceTest
 from tests.port_finder_test import PortFinderTest
 from tests.presubmit_golden_watcher_test import PresubmitGoldenWatcherTest
 from tests.token_generator_test import TokenGeneratorTest
+from tests.watch_web_app_request_handler_test import WatchWebAppRequestHandlerTest
 
 if __name__ == "__main__":
     unittest.main()
