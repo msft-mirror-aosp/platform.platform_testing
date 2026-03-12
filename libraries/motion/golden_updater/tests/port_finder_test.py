@@ -14,13 +14,18 @@
 #
 
 import unittest
+import socket
+from impl.utils.port_finder import PortFinder
 
-# Import all tests for discovery
-from tests.argument_parser_test import ArgumentParserTest
-from tests.cached_golden_test import CachedGoldenTest
-from tests.motion_constants_test import MotionConstantsTest
-from tests.port_finder_test import PortFinderTest
-from tests.token_generator_test import TokenGeneratorTest
+class PortFinderTest(unittest.TestCase):
 
-if __name__ == "__main__":
-    unittest.main()
+    def test_find_free_port(self):
+        port = PortFinder.find_free_port()
+        self.assertIsInstance(port, int)
+        self.assertGreater(port, 0)
+        self.assertLess(port, 65536)
+
+        # Verify the port is actually free by trying to bind to it
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind(("", port))
+            self.assertEqual(s.getsockname()[1], port)
