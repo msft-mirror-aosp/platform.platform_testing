@@ -98,6 +98,35 @@ class SdvSampleVsidlCompatibilityTest(sdv_base_test.SdvBaseTestClass):
                 assert_msg=f"Latest bundle failed to receive CabinTemp update from {source}"
             )
 
+        # RPC: TireStatus
+        logging.info("Verifying TireStatus RPC compatibility...")
+
+        # Latest
+        for grep_text in [
+            r"Sending request on.*TireStatus",
+            r"Received response on.*TireStatus.*",
+            r"Received request on.*TireStatus.*"
+        ]:
+            polling.wait_and_verify_expected_logs(
+                self.sdv_device,
+                grep_text=grep_text,
+                logcat_args=f"*:F {self.LATEST_TAG}:*",
+                assert_msg=f"Latest bundle failed RPC check: {grep_text}"
+            )
+
+        # Stable
+        for grep_text in [
+            r"Sending request on.*TireStatus",
+            r"Received response on.*TireStatus.*",
+            r"Received request.*TireStatus.*"
+        ]:
+            polling.wait_and_verify_expected_logs(
+                self.sdv_device,
+                grep_text=grep_text,
+                logcat_args=f"*:F {self.STABLE_TAG}:*",
+                assert_msg=f"Stable bundle failed RPC check: {grep_text}"
+            )
+
         logging.info(f'{self.get_suite_name()} :: End Test {self.current_test_info.name}')
 
 if __name__ == '__main__':
