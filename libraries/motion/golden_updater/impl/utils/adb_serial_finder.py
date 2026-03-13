@@ -18,7 +18,7 @@ import subprocess
 class ADBSerialFinder:
 
     def __init__(self):
-        self.model_serial_map = {} # stores {model_serialno: <localhost:port>}
+        self.model_serial_map = {} # stores {model_identifier: <adb_serial>}
         self.update_model_serial_map()
 
     def update_model_serial_map(self):
@@ -29,14 +29,7 @@ class ADBSerialFinder:
             ).stdout.decode("utf-8")
             lines = [s for s in devices_response.splitlines() if s.strip()]
 
-            '''
-            Example output of 'adb devices -l':
-
-            List of devices attached
-            127.0.0.1:42093        device product:cf_x86_64_phone model:Cuttlefish_GMS_x86_64 device:vsoc_x86_64 transport_id:5
-            localhost:35725        device product:panther model:Pixel_7 device:panther transport_id:4
-            '''
-            if len(lines) == 1:
+            if len(lines) <= 1:
                 print("no adb devices found")
                 return None
             self.__update_model_serial_map_with_device_info(lines[1:])
@@ -50,18 +43,28 @@ class ADBSerialFinder:
         {'Pixel_7_2A121FDH200F40': 'localhost:35725'}
         '''
 
-        for device in devices:
-            device_info = [info for info in device.split(" ") if info != ""]
-            serial_number = self.__find_serial_number(device_info[0])
-            model_key = f'{device_info[3].split(":")[1]}_{serial_number}'
-            self.model_serial_map[model_key] = device_info[0]
+        for device_line in devices:
+            parts = [p for p in device_line.split(" ") if p != ""]
+            if not parts:
+                continue
+
+            adb_identifier = parts[0]
+            model = "unknown_model"
+            for part in parts:
+                if part.startswith("model:"):
+                    model = part.split(":", 1)[1]
+                    break
+
+            # Use the adb_identifier (e.g., 0.0.0.0:6520) as part of the key
+            # to ensure uniqueness when multiple devices of same model are connected.
+            model_key = f'{model}_{adb_identifier}'
+            self.model_serial_map[model_key] = adb_identifier
 
     def __find_serial_number(self, socket_info):
-        ''' Find the serial number of the device connected in the socket: <localhost:port> '''
         '''
-            Example output of 'adb -s localhost:35725 shell getprop ro.serialno'
-
-            2A121FDH200F40
+        Find the serial number of the device connected in the socket: <localhost:port>
+        TODO: Remove this method once the current version (using adb_identifier in model_key)
+        is verified to be bug-free.
         '''
         if not socket_info:
             return ""

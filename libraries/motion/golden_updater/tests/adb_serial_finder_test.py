@@ -28,16 +28,41 @@ class ADBSerialFinderTest(unittest.TestCase):
             b"localhost:35725        device product:panther model:Pixel_7 device:panther transport_id:4\n"
         )
 
-        # Mock 'adb -s localhost:35725 shell getprop ro.serialno'
-        mock_serial_output = MagicMock()
-        mock_serial_output.stdout = b"2A121FDH200F40\n"
-
-        mock_run.side_effect = [mock_devices_output, mock_serial_output]
+        mock_run.return_value = mock_devices_output
 
         finder = ADBSerialFinder()
 
-        expected_map = {'Pixel_7_2A121FDH200F40': 'localhost:35725'}
+        # New format: {model}_{adb_identifier}
+        expected_map = {'Pixel_7_localhost:35725': 'localhost:35725'}
         self.assertEqual(finder.model_serial_map, expected_map)
+
+    @patch("subprocess.run")
+    def test_update_model_serial_map_multiple_devices(self, mock_run):
+        # Mock 'adb devices -l' with the specific values provided by the user
+        mock_devices_output = MagicMock()
+        mock_devices_output.stdout = (
+            b"List of devices attached\n"
+            b"0.0.0.0:6520           device product:cf_x86_64_phone model:Cuttlefish_GMS_x86_64 device:vsoc_x86_64 transport_id:28\n"
+            b"0.0.0.0:6521           device product:cf_x86_64_phone model:Cuttlefish_GMS_x86_64 device:vsoc_x86_64 transport_id:32\n"
+            b"0.0.0.0:6522           device product:cf_x86_64_phone model:Cuttlefish_GMS_x86_64 device:vsoc_x86_64 transport_id:31\n"
+            b"0.0.0.0:6523           device product:cf_x86_64_phone model:Cuttlefish_GMS_x86_64 device:vsoc_x86_64 transport_id:29\n"
+            b"0.0.0.0:6524           device product:cf_x86_64_phone model:Cuttlefish_GMS_x86_64 device:vsoc_x86_64 transport_id:30\n"
+            b"localhost:34917        device product:panther model:Pixel_7 device:panther transport_id:34\n"
+            b"localhost:38669        device product:husky model:Pixel_8_Pro device:husky transport_id:33\n"
+        )
+
+        mock_run.return_value = mock_devices_output
+
+        finder = ADBSerialFinder()
+
+        self.assertEqual(len(finder.model_serial_map), 7)
+        self.assertIn('Cuttlefish_GMS_x86_64_0.0.0.0:6520', finder.model_serial_map)
+        self.assertIn('Cuttlefish_GMS_x86_64_0.0.0.0:6521', finder.model_serial_map)
+        self.assertIn('Cuttlefish_GMS_x86_64_0.0.0.0:6522', finder.model_serial_map)
+        self.assertIn('Cuttlefish_GMS_x86_64_0.0.0.0:6523', finder.model_serial_map)
+        self.assertIn('Cuttlefish_GMS_x86_64_0.0.0.0:6524', finder.model_serial_map)
+        self.assertIn('Pixel_7_localhost:34917', finder.model_serial_map)
+        self.assertIn('Pixel_8_Pro_localhost:38669', finder.model_serial_map)
 
     @patch("subprocess.run")
     def test_update_model_serial_map_no_devices(self, mock_run):
