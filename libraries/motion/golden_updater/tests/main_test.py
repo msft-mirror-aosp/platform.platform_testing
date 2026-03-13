@@ -20,6 +20,7 @@ from tests.adb_client_test import AdbClientTest
 from tests.adb_serial_finder_test import ADBSerialFinderTest
 from tests.argument_parser_test import ArgumentParserTest
 from tests.cached_golden_test import CachedGoldenTest
+from tests.golden_watcher_factory_test import GoldenWatcherFactoryTest
 from tests.motion_constants_test import MotionConstantsTest
 from tests.port_finder_test import PortFinderTest
 from tests.token_generator_test import TokenGeneratorTest
