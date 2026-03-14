@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 package {
     default_team: "trendy_team_automotive",
     default_applicable_licenses: ["sdv_tests_license"],

@@ -17,11 +17,11 @@ python_test_host {
     name: "golden_updater_test",
     main: "tests/main_test.py",
     srcs: [
-        "tests/main_test.py",
+        "impl/**/*.py",
+        "tests/*.py",
     ],
     test_suites: ["general-tests"],
     test_options: {
         unit_test: true,
     },
 }
-

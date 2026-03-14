@@ -16,6 +16,8 @@
 package android.platform.test.rule
 
 import android.os.Build
+import android.platform.test.rule.DeviceProduct.BRYA
+import android.platform.test.rule.DeviceProduct.CF_DESKTOP
 import android.platform.test.rule.DeviceProduct.CF_PHONE
 import android.platform.test.rule.DeviceProduct.CF_TABLET
 import android.util.Log
@@ -49,6 +51,9 @@ annotation class ScreenshotTestDevices(vararg val allowed: DeviceProduct = [CF_P
 
 /** Does not run the test in deviceless envs */
 @Retention(RUNTIME) @Target(FUNCTION, CLASS) @Inherited annotation class SkipOnDeviceless
+
+/** Does not run the test in desktop environments. */
+@Retention(RUNTIME) @Target(FUNCTION, CLASS) @Inherited annotation class SkipOnDesktop
 
 /**
  * Only runs the test on [flakyProducts] if this configuration is running flaky tests (see
@@ -123,6 +128,10 @@ class LimitDevicesRule(
             }
         }
 
+        if (description.skipOnDesktop()) {
+            return "Skipping test as $thisDevice is in denied desktop devices list"
+        }
+
         val allowedDevices = description.allowedDevices()
         if (allowedDevices.isEmpty() || thisDevice in allowedDevices) {
             return null
@@ -147,6 +156,10 @@ class LimitDevicesRule(
     private fun Description.flakyDevices(): List<String> =
         listOf(getMostSpecificAnnotation<FlakyDevices>()?.flaky).collectProducts()
 
+    private fun Description.skipOnDesktop(): Boolean =
+        getMostSpecificAnnotation<SkipOnDesktop>() != null &&
+            Build.PRODUCT in DESKTOP_DEVICE_PRODUCTS
+
     private fun Description.limitDevicesAnnotation(): Set<Annotation> =
         listOfNotNull(
                 getMostSpecificAnnotation<AllowedDevices>(),
@@ -154,6 +167,7 @@ class LimitDevicesRule(
                 getMostSpecificAnnotation<SkipOnDeviceless>(),
                 getMostSpecificAnnotation<ScreenshotTestDevices>(),
                 getMostSpecificAnnotation<FlakyDevices>(),
+                getMostSpecificAnnotation<SkipOnDesktop>(),
             )
             .toSet()
 
@@ -181,6 +195,7 @@ class LimitDevicesRule(
         fun readParamsFromInstrumentation(thisDevice: String = Build.PRODUCT) =
             LimitDevicesRule(thisDevice, isRunningFlakyTests())
 
+        private val DESKTOP_DEVICE_PRODUCTS = setOf(CF_DESKTOP.product, BRYA.product)
         private const val RUNNING_FLAKY_TESTS_KEY = "running-flaky-tests"
         private const val TAG = "LimitDevicesRule"
     }
