@@ -73,19 +73,11 @@ class ShellTransitionScenarioExtractorTest {
         Truth.assertThat(slices).hasSize(1)
         Truth.assertThat(slices.first().startTimestamp)
             .isEqualTo(
-                Timestamps.from(
-                    unixNanos = 1682433275377688307,
-                    systemUptimeNanos = 2766599071189,
-                    elapsedNanos = 2766217681356,
-                )
+                Timestamps.from(unixNanos = 0L, systemUptimeNanos = 0L, elapsedNanos = 747345992145)
             )
         Truth.assertThat(slices.first().endTimestamp)
             .isEqualTo(
-                Timestamps.from(
-                    unixNanos = 1682433277025674745,
-                    systemUptimeNanos = 2767865667794,
-                    elapsedNanos = 2767949503328,
-                )
+                Timestamps.from(unixNanos = 0L, systemUptimeNanos = 0L, elapsedNanos = 747883720213)
             )
         Truth.assertThat(slices.first().associatedTransition)
             .isEqualTo(transitions.first { it.type == TransitionType.OPEN })

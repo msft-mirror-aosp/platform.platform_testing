@@ -19,12 +19,16 @@ package android.tools.io
 import android.tools.Timestamp
 import android.tools.testutils.TestTraces
 import android.tools.traces.io.ResultReader
+import android.tracing.Flags
+import com.google.common.truth.TruthJUnit.assume
+import org.junit.BeforeClass
 import org.junit.FixMethodOrder
 import org.junit.runners.MethodSorters
 
 /** Tests for [ResultReader] parsing event log */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class ResultReaderParseEventLogTest : BaseResultReaderTestParseTrace() {
+
     override val assetFiles = mapOf(TraceType.EVENT_LOG to TestTraces.EventLog.FILE)
     override val traceName = "Event Log"
     override val startTimeTrace = TestTraces.EventLog.START_TIME
@@ -36,4 +40,12 @@ class ResultReaderParseEventLogTest : BaseResultReaderTestParseTrace() {
     override fun doParse(reader: ResultReader) = reader.readEventLogTrace()
 
     override fun getTime(traceTime: Timestamp) = traceTime.unixNanos
+
+    companion object {
+        @JvmStatic
+        @BeforeClass
+        fun before() {
+            assume().that(Flags.nativeProtoLogging()).isFalse()
+        }
+    }
 }

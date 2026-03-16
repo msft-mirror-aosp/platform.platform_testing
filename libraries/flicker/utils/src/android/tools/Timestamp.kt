@@ -32,6 +32,16 @@ internal constructor(
     val unixNanos: Long = 0L,
     private val realTimestampFormatter: (Long) -> String,
 ) : Comparable<Timestamp> {
+    init {
+        // Only support elapsedNanos, we want to unify to a single timestamp
+        if (android.tracing.Flags.nativeProtoLogging()) {
+            require(systemUptimeNanos == 0L && unixNanos == 0L) {
+                "We are deprecating support for multiple timestamps. " +
+                    "Only elapsedNanos should be used."
+            }
+        }
+    }
+
     val hasElapsedTimestamp = elapsedNanos != 0L
     val hasSystemUptimeTimestamp = systemUptimeNanos != 0L
     val hasUnixTimestamp = unixNanos != 0L

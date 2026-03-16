@@ -38,12 +38,12 @@ class CachedResultReaderTest {
     @Test
     fun readFromStore() {
         val writer = newTestResultWriter(TEST_SCENARIO_KEY)
-        writer.addTraceResult(TraceType.EVENT_LOG, TestTraces.EventLog.FILE)
+        writer.addTraceResult(TraceType.PERFETTO, TestTraces.LayerTrace.FILE)
         val result = writer.write()
         DataStore.addResult(TEST_SCENARIO_KEY, result)
         val reader = CachedResultReader(TEST_SCENARIO_KEY)
-        val actual = reader.readEventLogTrace()
-        Truth.assertWithMessage("Event log size").that(actual).isNotNull()
+        val actual = reader.readLayersTrace()
+        Truth.assertWithMessage("Layers trace size").that(actual).isNotNull()
     }
 
     companion object {

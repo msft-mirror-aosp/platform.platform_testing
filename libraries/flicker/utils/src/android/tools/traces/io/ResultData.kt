@@ -53,12 +53,17 @@ open class ResultData(
 
     /** {@inheritDoc} */
     override fun slice(startTimestamp: Timestamp, endTimestamp: Timestamp) = apply {
-        require(startTimestamp.hasAllTimestamps) {
-            "startTimestamp ($startTimestamp) has missing timestamps"
+        if (!android.tracing.Flags.nativeProtoLogging()) {
+            require(startTimestamp.hasAllTimestamps) {
+                "startTimestamp ($startTimestamp) has missing timestamps"
+            }
+            require(endTimestamp.hasAllTimestamps) {
+                "endTimestamp ($endTimestamp) has missing timestamps"
+            }
         }
-        require(endTimestamp.hasAllTimestamps) {
-            "endTimestamp ($endTimestamp) has missing timestamps"
-        }
+
+        require(startTimestamp.elapsedNanos != 0L) { "startTimestamp is missing" }
+        require(endTimestamp.elapsedNanos != 0L) { "startTimestamp is missing" }
         return ResultData(
             artifacts,
             TransitionTimeRange(startTimestamp, endTimestamp),

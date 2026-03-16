@@ -85,10 +85,10 @@ class FlickerServiceJUnit4ClassRunnerTest {
 
         Truth.assertWithMessage("Test rule start should run before test block")
             .that(testRuleStartTs ?: error("testRuleStartTs must not be null"))
-            .isLessThan(testStateTs)
+            .isLessThan(testStateTs ?: error("testStateTs must not be null"))
         Truth.assertWithMessage("Test rule end should run after test block")
-            .that(testStateTs ?: error("testStateTs must not be null"))
-            .isLessThan(testRuleEndTs)
+            .that(testStateTs)
+            .isLessThan(testRuleEndTs ?: error("testRuleEndTs must not be null"))
 
         Truth.assertWithMessage("Test rule ran the wrong number of times")
             .that(testRuleExecutionCount)
@@ -291,8 +291,8 @@ class FlickerServiceJUnit4ClassRunnerTest {
                                             // Check to make sure we are running this assertion on
                                             // the debug trace
                                             flicker.assertLayersStart {
-                                                Truth.assertThat(this.timestamp.unixNanos)
-                                                    .isEqualTo(1743439123983024118)
+                                                Truth.assertThat(this.timestamp.elapsedNanos)
+                                                    .isEqualTo(78812153537)
                                             }
                                         }
                                     } to AssertionInvocationGroup.BLOCKING
