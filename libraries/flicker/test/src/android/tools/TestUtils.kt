@@ -21,10 +21,8 @@ import android.tools.flicker.AbstractFlickerTestData
 import android.tools.flicker.FlickerBuilder
 import android.tools.flicker.FlickerTestData
 import android.tools.flicker.datastore.CachedResultWriter
-import android.tools.io.PERFETTO_EXT
 import android.tools.io.Reader
 import android.tools.io.WINSCOPE_EXT
-import android.tools.parsers.events.EventLogParser
 import android.tools.testrules.DataStoreCleanupRule
 import android.tools.testutils.CleanFlickerEnvironmentRule
 import android.tools.testutils.ParsedTracesReader
@@ -34,10 +32,12 @@ import android.tools.traces.monitors.ITransitionMonitor
 import android.tools.traces.monitors.PerfettoTraceMonitor
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.tools.traces.parsers.perfetto.LayersTraceParser
+import android.tools.traces.parsers.perfetto.ProtoLogTraceParser
 import android.tools.traces.parsers.perfetto.TraceProcessorSession
 import android.tools.traces.parsers.perfetto.TransactionsTraceParser
 import android.tools.traces.parsers.perfetto.TransitionsTraceParser
 import android.tools.traces.parsers.perfetto.WindowManagerTraceParser
+import android.tools.traces.protolog.ProtoLogTrace
 import android.tools.traces.surfaceflinger.LayersTrace
 import android.tools.traces.surfaceflinger.TransactionsTrace
 import android.tools.traces.wm.TransitionsTrace
@@ -60,6 +60,7 @@ internal fun getTraceReaderFromScenario(scenario: String): Reader {
         val transactionsTrace: TransactionsTrace,
         val transitionsTrace: TransitionsTrace,
         val wmTrace: WindowManagerTrace,
+        val protologTrace: ProtoLogTrace,
     )
 
     val traces =
@@ -68,7 +69,8 @@ internal fun getTraceReaderFromScenario(scenario: String): Reader {
             val transactionsTrace = TransactionsTraceParser().parse(session)
             val transitionsTrace = TransitionsTraceParser().parse(session)
             val wmTrace = WindowManagerTraceParser().parse(session)
-            Traces(layersTrace, transactionsTrace, transitionsTrace, wmTrace)
+            val protoLogTrace = ProtoLogTraceParser().parse(session)
+            Traces(layersTrace, transactionsTrace, transitionsTrace, wmTrace, protoLogTrace)
         }
 
     return ParsedTracesReader(
@@ -77,20 +79,13 @@ internal fun getTraceReaderFromScenario(scenario: String): Reader {
         layersTrace = traces.layersTrace,
         transitionsTrace = traces.transitionsTrace,
         transactionsTrace = traces.transactionsTrace,
-        eventLog = EventLogParser().parse(scenarioTraces.eventLog.readBytes()),
+        protoLogTrace = traces.protologTrace,
     )
 }
 
 fun getScenarioTraces(scenario: String): FlickerBuilder.TraceFiles {
-    lateinit var wmTrace: File
     lateinit var perfettoTrace: File
-    lateinit var eventLog: File
-    val traces =
-        mapOf<String, (File) -> Unit>(
-            "wm_trace.$WINSCOPE_EXT" to { wmTrace = it },
-            "trace.$PERFETTO_EXT" to { perfettoTrace = it },
-            "eventlog.$WINSCOPE_EXT" to { eventLog = it },
-        )
+    val traces = mapOf<String, (File) -> Unit>("trace.$WINSCOPE_EXT" to { perfettoTrace = it })
     for ((traceFileName, resultSetter) in traces.entries) {
         val traceBytes = readAsset("scenarios/$scenario/$traceFileName")
         val traceFile = File.createTempFile(traceFileName, "")
@@ -98,7 +93,7 @@ fun getScenarioTraces(scenario: String): FlickerBuilder.TraceFiles {
         resultSetter.invoke(traceFile)
     }
 
-    return FlickerBuilder.TraceFiles(wmTrace, perfettoTrace, eventLog)
+    return FlickerBuilder.TraceFiles(perfettoTrace)
 }
 
 fun createMockedFlicker(

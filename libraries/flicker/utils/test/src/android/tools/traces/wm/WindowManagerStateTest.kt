@@ -58,7 +58,10 @@ class WindowManagerStateTest {
                     ),
             )
         Truth.assertThat(entry.timestamp.elapsedNanos).isEqualTo(100)
-        Truth.assertThat(entry.timestamp.unixNanos).isEqualTo(600)
+
+        if (!android.tracing.Flags.nativeProtoLogging()) {
+            Truth.assertThat(entry.timestamp.unixNanos).isEqualTo(600)
+        }
 
         entry =
             WindowManagerState(

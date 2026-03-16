@@ -202,35 +202,36 @@ class EventLogSubjectTest {
     companion object {
         @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
 
-        private val FOCUS_EVENTS_A_B_C =
-            listOf(
-                FocusEvent(
-                    Timestamps.from(unixNanos = 0),
-                    "WinA",
-                    FocusEvent.Type.GAINED,
-                    "test",
-                    0,
-                    "0",
-                    0,
-                ),
-                FocusEvent(
-                    Timestamps.from(unixNanos = 1),
-                    "WinB",
-                    FocusEvent.Type.GAINED,
-                    "test",
-                    0,
-                    "0",
-                    0,
-                ),
-                FocusEvent(
-                    Timestamps.from(unixNanos = 2),
-                    "WinC",
-                    FocusEvent.Type.GAINED,
-                    "test",
-                    0,
-                    "0",
-                    0,
-                ),
-            )
+        private val FOCUS_EVENTS_A_B_C
+            get() =
+                listOf(
+                    FocusEvent(
+                        Timestamps.from(unixNanos = 0),
+                        "WinA",
+                        FocusEvent.Type.GAINED,
+                        "test",
+                        0,
+                        "0",
+                        0,
+                    ),
+                    FocusEvent(
+                        Timestamps.from(unixNanos = 1),
+                        "WinB",
+                        FocusEvent.Type.GAINED,
+                        "test",
+                        0,
+                        "0",
+                        0,
+                    ),
+                    FocusEvent(
+                        Timestamps.from(unixNanos = 2),
+                        "WinC",
+                        FocusEvent.Type.GAINED,
+                        "test",
+                        0,
+                        "0",
+                        0,
+                    ),
+                )
     }
 }

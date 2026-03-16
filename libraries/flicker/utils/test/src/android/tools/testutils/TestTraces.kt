@@ -21,9 +21,9 @@ import android.tools.Timestamps
 object TestTraces {
     object LayerTrace {
         private const val ASSET = "layers_trace.perfetto-trace"
-        val START_TIME = Timestamps.from(systemUptimeNanos = 1618663562444)
-        val SLICE_TIME = Timestamps.from(systemUptimeNanos = 1618715108595)
-        val END_TIME = Timestamps.from(systemUptimeNanos = 1620770824112)
+        val START_TIME = Timestamps.from(elapsedNanos = 1618663562444)
+        val SLICE_TIME = Timestamps.from(elapsedNanos = 1618715108595)
+        val END_TIME = Timestamps.from(elapsedNanos = 1620770824112)
         val FILE
             get() = readAssetAsFile(ASSET)
     }
@@ -48,9 +48,9 @@ object TestTraces {
 
     object EventLog {
         private const val ASSET = "eventlog.winscope"
-        val START_TIME = Timestamps.from(unixNanos = 1670594369069951546)
-        val SLICE_TIME = Timestamps.from(unixNanos = 1670594384516466159)
-        val END_TIME = Timestamps.from(unixNanos = 1670594389958451901)
+        val START_TIME = Timestamps.from(elapsedNanos = -1L, unixNanos = 1670594369069951546)
+        val SLICE_TIME = Timestamps.from(elapsedNanos = -1L, unixNanos = 1670594384516466159)
+        val END_TIME = Timestamps.from(elapsedNanos = -1L, unixNanos = 1670594389958451901)
         val FILE
             get() = readAssetAsFile(ASSET)
     }
@@ -61,7 +61,8 @@ object TestTraces {
             Timestamps.from(systemUptimeNanos = 1556111744859, elapsedNanos = 1556111744859)
         val VALID_SLICE_TIME =
             Timestamps.from(systemUptimeNanos = 1556147625539, elapsedNanos = 1556147625539)
-        val INVALID_SLICE_TIME = Timestamps.from(systemUptimeNanos = 1622127714039 + 1)
+        val INVALID_SLICE_TIME =
+            Timestamps.from(systemUptimeNanos = 1622127714039 + 1, elapsedNanos = 1622127714039 + 1)
         val END_TIME =
             Timestamps.from(systemUptimeNanos = 1622127714039, elapsedNanos = 1622127714039)
         val FILE

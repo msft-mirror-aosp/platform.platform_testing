@@ -53,18 +53,22 @@ class TransitionsTraceParserTest {
         TraceProcessorSession.loadPerfettoTrace(readAsset("transitions.perfetto-trace")) { session
             ->
             val trace = TransitionsTraceParser().parse(session)
-            Truth.assertWithMessage("Has all timestamps")
-                .that(trace.entries.first().timestamp.hasAllTimestamps)
-                .isTrue()
-            Truth.assertWithMessage("Has unix timestamps")
-                .that(trace.entries.first().timestamp.unixNanos)
-                .isEqualTo(1700573425428925648L)
+
+            if (!android.tracing.Flags.nativeProtoLogging()) {
+                Truth.assertWithMessage("Has all timestamps")
+                    .that(trace.entries.first().timestamp.hasAllTimestamps)
+                    .isTrue()
+                Truth.assertWithMessage("Has unix timestamps")
+                    .that(trace.entries.first().timestamp.unixNanos)
+                    .isEqualTo(1700573425428925648L)
+                Truth.assertWithMessage("Has uptime timestamps")
+                    .that(trace.entries.first().timestamp.systemUptimeNanos)
+                    .isEqualTo(479583450997L)
+            }
+
             Truth.assertWithMessage("Has elapsed timestamps")
                 .that(trace.entries.first().timestamp.elapsedNanos)
                 .isEqualTo(479583450794L)
-            Truth.assertWithMessage("Has uptime timestamps")
-                .that(trace.entries.first().timestamp.systemUptimeNanos)
-                .isEqualTo(479583450997L)
         }
     }
 

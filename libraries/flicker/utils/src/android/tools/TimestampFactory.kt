@@ -18,9 +18,19 @@ package android.tools
 
 class TimestampFactory(private val realTimestampFormatter: (Long) -> String = { it.toString() }) {
     private val empty by lazy { Timestamp(0L, 0L, 0L, realTimestampFormatter) }
-    private val min by lazy { Timestamp(1, 1, 1, realTimestampFormatter) }
+    private val min by lazy {
+        if (android.tracing.Flags.nativeProtoLogging()) {
+            Timestamp(1, 0, 0, realTimestampFormatter)
+        } else {
+            Timestamp(1, 1, 1, realTimestampFormatter)
+        }
+    }
     private val max by lazy {
-        Timestamp(Long.MAX_VALUE, Long.MAX_VALUE, Long.MAX_VALUE, realTimestampFormatter)
+        if (android.tracing.Flags.nativeProtoLogging()) {
+            Timestamp(Long.MAX_VALUE, 0, 0, realTimestampFormatter)
+        } else {
+            Timestamp(Long.MAX_VALUE, Long.MAX_VALUE, Long.MAX_VALUE, realTimestampFormatter)
+        }
     }
 
     fun min(): Timestamp = min
@@ -34,12 +44,17 @@ class TimestampFactory(private val realTimestampFormatter: (Long) -> String = { 
         systemUptimeNanos: Long? = null,
         unixNanos: Long? = null,
     ): Timestamp {
-        return Timestamp(
-            elapsedNanos ?: 0L,
-            systemUptimeNanos ?: 0L,
-            unixNanos ?: 0L,
-            realTimestampFormatter,
-        )
+        if (!android.tracing.Flags.nativeProtoLogging()) {
+            return Timestamp(
+                elapsedNanos ?: 0L,
+                systemUptimeNanos ?: 0L,
+                unixNanos ?: 0L,
+                realTimestampFormatter,
+            )
+        }
+
+        require(elapsedNanos != null) { "Elapsed timestamp should be provided" }
+        return Timestamp(elapsedNanos, 0L, 0L, realTimestampFormatter)
     }
 
     fun from(
@@ -55,11 +70,15 @@ class TimestampFactory(private val realTimestampFormatter: (Long) -> String = { 
     }
 
     fun from(elapsedNanos: Long, elapsedOffsetNanos: Long): Timestamp {
-        return Timestamp(
-            elapsedNanos = elapsedNanos,
-            unixNanos = elapsedNanos + elapsedOffsetNanos,
-            realTimestampFormatter = realTimestampFormatter,
-        )
+        if (!android.tracing.Flags.nativeProtoLogging()) {
+            return Timestamp(
+                elapsedNanos = elapsedNanos,
+                unixNanos = elapsedNanos + elapsedOffsetNanos,
+                realTimestampFormatter = realTimestampFormatter,
+            )
+        }
+
+        return Timestamp(elapsedNanos, 0L, 0L, realTimestampFormatter)
     }
 
     fun from(elapsedNanos: String, elapsedOffsetNanos: String): Timestamp {

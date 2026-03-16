@@ -27,11 +27,13 @@ data class TraceSlice(
     val associatedCuj: ICujType? = null,
 ) {
     init {
-        require(startTimestamp.hasAllTimestamps) {
-            "startTimestamp ($startTimestamp) has missing timestamps"
-        }
-        require(endTimestamp.hasAllTimestamps) {
-            "endTimestamp ($endTimestamp) has missing timestamps"
+        if (!android.tracing.Flags.nativeProtoLogging()) {
+            require(startTimestamp.hasAllTimestamps) {
+                "startTimestamp ($startTimestamp) has missing timestamps"
+            }
+            require(endTimestamp.hasAllTimestamps) {
+                "endTimestamp ($endTimestamp) has missing timestamps"
+            }
         }
     }
 }

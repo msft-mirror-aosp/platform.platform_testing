@@ -26,6 +26,7 @@ import android.tools.traces.deleteIfExists
 import android.tools.traces.io.ResultData
 import android.tools.traces.io.ResultReader
 import com.google.common.truth.Truth
+import com.google.common.truth.TruthJUnit.assume
 import java.io.FileNotFoundException
 import kotlin.io.path.createTempDirectory
 import org.junit.Before
@@ -69,10 +70,13 @@ class ResultReaderTest {
 
     @Test
     fun canReadFromMultipleArtifacts() {
+        // If this flag is toggled then we should only be supporting Perfetto traces in Flicker
+        assume().that(android.tracing.Flags.nativeProtoLogging()).isFalse()
+
         val writer1 =
             newTestResultWriter()
                 .withOutputDir(createTempDirectory().toFile())
-                .addTraceResult(TraceType.EVENT_LOG, TestTraces.EventLog.FILE)
+                .addTraceResult(TraceType.PERFETTO, TestTraces.EventLog.FILE)
         val result1 = writer1.write()
 
         val writer2 =
