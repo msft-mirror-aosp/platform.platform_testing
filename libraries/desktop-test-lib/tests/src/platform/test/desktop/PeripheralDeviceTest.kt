@@ -183,4 +183,8 @@ class PeripheralDeviceTest {
         )
         assertThat(peripheralDeviceRule.getPeripherals().devices).hasSize(0)
     }
+
+    @HostDrivenTest @Test fun testExample_beforeUserSwitch() {}
+
+    @HostDrivenTest @Test fun testExample_afterUserSwitch() {}
 }
