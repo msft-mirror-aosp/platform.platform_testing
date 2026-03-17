@@ -21,7 +21,7 @@ This test confirms that SDV Gateway starts on boot up of the IVI VM.
 
 Read [SDV Testing instructions](/vendor/google_testing/software_defined_vehicle/README.md) for detailed information.
 
-Follow [Setup Section](/vendor/google_testing/software_defined_vehicle/tests/sample_tests/gateway/car_monitor_test_app/README.md) for testing environment setup.
+Follow [Setup Section](/platform_testing/tests/sdv/sample_tests/sdv_gateway/car_monitor_test_app/README.md) for testing environment setup.
 
 ### Mobly
 
@@ -34,7 +34,6 @@ atest SdvSampleSdvGatewayServiceCheckTest
 ```
 NOTIFY_AS_NATIVE=0.0.0.0:6520 ./tools/catbox-tradefed run commandAndExit sdv-sample-sdv-gateway-service-check-test --{device1}serial 0.0.0.0:6520
 ```
-
 
 ## CI/CD execution
 
