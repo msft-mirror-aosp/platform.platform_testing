@@ -16,7 +16,7 @@
 ## Sample
 
 This test automates
-[the Deadline scheduling service bundle sample](/system/software_defined_vehicle/core_services/samples/lifecycle/deadline_scheduling/README.md)
+[the Deadline scheduling service bundle sample](/system/software_defined_vehicle/samples/service_bundles_lifecycle/deadline_scheduling/README.md)
 that tests both changing deadline scheduling parameters and CPU affinity.
 
 ## Test Execution

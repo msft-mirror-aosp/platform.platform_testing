@@ -16,7 +16,7 @@
 ## Sample
 
 This test automates the
-[User Preferences sample](system/software_defined_vehicle/samples/user_preferences/README.md).
+[User Preferences sample](/system/software_defined_vehicle/samples/user_preferences/v1/README.md).
 
 ## Test Execution
 

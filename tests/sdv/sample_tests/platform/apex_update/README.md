@@ -19,7 +19,7 @@ Read [SDV Testing instructions](/vendor/google_testing/software_defined_vehicle/
 
 ## Sample 1
 
-This test automates the [APEX Update sample](/system/software_defined_vehicle/core_services/samples/apex/apex_update_with_service_bundles/README.md).
+This test automates the [APEX Update sample](/system/software_defined_vehicle/samples/apex/apex_update_with_service_bundles/README.md).
 
 ### atest
 
@@ -39,7 +39,7 @@ Name: `sdv/sample/apex_update_test`
 
 ## Sample 2
 
-This test automates the [SDV/IVI APEX Update sample](/system/software_defined_vehicle/core_services/samples/apex/apex_update_ivi/README.md).
+This test automates the [SDV/IVI APEX Update sample](/system/software_defined_vehicle/samples/apex/apex_update_ivi/README.md).
 
 For local testing, ensure the IVI and SDV VMs have ports 6520 and 6521 respectively, mirroring the CI environment setup.
 
@@ -84,7 +84,7 @@ Name: `sdv/sample/ivi_apex_update_test`
 
 ## Sample 3
 
-This test automates the [Brand-new APEX sample](/system/software_defined_vehicle/core_services/samples/apex/brand_new_apex/README.md).
+This test automates the [Brand-new APEX sample](/system/software_defined_vehicle/samples/apex/brand_new_apex/README.md).
 
 ### atest
 

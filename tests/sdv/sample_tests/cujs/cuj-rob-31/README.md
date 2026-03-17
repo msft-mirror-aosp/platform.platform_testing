@@ -15,7 +15,7 @@
 
 ## Sample
 
-This test automates the [CUJ-ROB-031](/system/software_defined_vehicle/core_services/samples/some_ip/robustness/README.md).
+This test automates the [CUJ-ROB-031](/system/software_defined_vehicle/samples/some_ip/robustness/README.md).
 
 ## Test Execution
 
