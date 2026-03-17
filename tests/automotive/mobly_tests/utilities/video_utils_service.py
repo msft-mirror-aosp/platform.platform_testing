@@ -27,11 +27,16 @@ class VideoRecording:
         self.thread.start()
 
     # Stop screen recording for device
+
+    # TODO: b/495599063
     def stop_screen_recording(self):
         logging.info("Stop screen recording on %s", self._device)
-        self._device.adb.shell(constants.STOP_VIDEO_RECORDING)
+        try:
+            self._device.adb.shell(constants.STOP_VIDEO_RECORDING)
+        except Exception as e:
+            logging.warning("Failed to stop screen recording gracefully: %s", e)
         if self.thread is not None:
-            self.thread.join()
+            self.thread.join(timeout=5)
 
     # Move recorded video file to logs
     def pull_recording_file(self, log_path):
