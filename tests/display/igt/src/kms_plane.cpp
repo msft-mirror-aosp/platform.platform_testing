@@ -42,8 +42,8 @@ IgtSubtestParams subtests[] = {
     {.name = "planar-pixel-format-settings",
      .desc = "verify planar settings for pixel format are handled correctly",
      .rationale = "hardware correctly handles planar pixel formats"},
-    {.name = "pixel-format",
-     .desc = "verify the pixel formats for given plane and pipe",
+    {.name = "pixel-format-*-modifier",
+     .desc = "verify the pixel formats for given plane and pipe with all supported modifiers",
      .rationale = "broader test of formats"},
     // eDP Validation Tests
     {.name = "plane-position-hole",
