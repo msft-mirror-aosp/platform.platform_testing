@@ -42,7 +42,9 @@ class DisplaySafetyScreenshotUtil(screenshot_util.ScreenshotUtil):
       Takes a screenshot on a HAR device.
     """
     logging.info(f'{self._LOG_TAG}: Taking HAR screenshot.')
-    path_on_device = device.adb.execute_shell_command('sdv_screencap')
+    output = device.adb.execute_shell_command('sdv_screencap')
+    path_on_device = output.strip().split('\n')[-1]
+    logging.info(f'{self._LOG_TAG}: HAR screenshot saved on device at: {path_on_device}')
     device.adb.pull([path_on_device, screenshot_path])
     device.adb.remove_file(path_on_device)
 

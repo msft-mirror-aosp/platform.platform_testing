@@ -72,7 +72,7 @@ class DisplaySafetyLogVerificationTest(
       self._post_and_verify_log(
           client.post_vehicle_speed,
           expected_log_msg=f'"vehicle_speed"={speed}; processed',
-          topic='VEHICLE_SPEED',
+          topic='vehicle-speed',
           value=speed,
       )
 
@@ -90,7 +90,7 @@ class DisplaySafetyLogVerificationTest(
       self._post_and_verify_log(
           client.post_current_gear,
           expected_log_msg=f'"vehicle_gear"="{gear}"; processed',
-          topic='GEAR',
+          topic='current-gear',
           gear_value=gear,
       )
     logging.info(
@@ -102,13 +102,13 @@ class DisplaySafetyLogVerificationTest(
     """
     logging.info(
         f'{self.test_class_name}: Running test: {self.current_test_info.name}')
-    telltale = 'SEATBELT_PASSENGER'
+    telltale = 'seatbelt_passenger'
     is_on = True
     with self.display_safety_client() as client:
       self._post_and_verify_log(
           client.post_telltale_status,
           expected_log_msg=f'"{telltale}"={is_on}; processed'.lower(),
-          topic=telltale,
+          topic='seatbelt-passenger',
           is_on=is_on,
       )
     logging.info(
@@ -122,7 +122,7 @@ class DisplaySafetyLogVerificationTest(
         f'{self.test_class_name}: Running test: {self.current_test_info.name}')
     pressure = 36
     with self.display_safety_client() as client:
-      status = client.post_tire_pressure(topic='FRONT_LEFT', value=pressure)
+      status = client.post_tire_pressure(topic='front-left', value=pressure)
       self.asserts.assert_equal(status, 1, 'Failed to post tire pressure.')
     logging.info(
         f'{self.test_class_name}: Completed test: {self.current_test_info.name}')
@@ -138,7 +138,7 @@ class DisplaySafetyLogVerificationTest(
       self._post_and_verify_log(
           client.post_engine_rpm,
           expected_log_msg=f'"engine_rpm"={rpm}; processed',
-          topic='ENGINE_RPM',
+          topic='engine-rpm',
           value=rpm,
       )
     logging.info(
