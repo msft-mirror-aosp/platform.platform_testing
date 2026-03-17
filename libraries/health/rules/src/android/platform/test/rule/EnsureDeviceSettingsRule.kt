@@ -22,7 +22,7 @@ class EnsureDeviceSettingsRule : TestWatcher() {
     }
 
     private fun checkAdbRootEnabled() {
-        val adbIdResult = uiDevice.shell("id -u").trim()
+        val adbIdResult = shell("id -u").trim()
 
         if (adbIdResult != "0") {
             setupErrors.add(
@@ -36,12 +36,16 @@ class EnsureDeviceSettingsRule : TestWatcher() {
 
     private fun checkTestHarnessEnabled() {
         val mobileHarnessModeEnabled = SystemProperties.getBoolean(TEST_HARNESS_PROP, false)
-        if (!mobileHarnessModeEnabled) {
+        val newerMobileHarnessModeEnabled =
+            SystemProperties.getBoolean(TEST_HARNESS_PROP_NEW, false)
+
+        if (!mobileHarnessModeEnabled || !newerMobileHarnessModeEnabled) {
             setupErrors.add(
                 SetupError(
                     description = "Test harness' mode is required but disabled.",
                     adbCommandToFixIt =
                         "adb shell setprop $TEST_HARNESS_PROP 1; " +
+                            "adb shell setprop $TEST_HARNESS_PROP_NEW 1; " +
                             // Prevents device from rebooting when it has no adb in test harness
                             "adb shell setprop persist.adb.watchdog.timeout_secs 0; " +
                             "adb shell am force-stop $LAUNCHER_PACKAGE",
@@ -94,6 +98,7 @@ class EnsureDeviceSettingsRule : TestWatcher() {
 
     private companion object {
         const val TEST_HARNESS_PROP = "ro.test_harness"
+        const val TEST_HARNESS_PROP_NEW = "persist.sys.test_harness"
         const val LAUNCHER_PACKAGE = "com.google.android.apps.nexuslauncher"
     }
 }
