@@ -15,7 +15,7 @@
 
 ## Sample
 
-This test automates the [RsRPC sample](system/software_defined_vehicle/core_services/samples/sdv_comms/rs/README.md).
+This test automates the [RsRPC sample](/system/software_defined_vehicle/samples/middleware/sdv_comms/rs/README.md).
 
 
 ### Test Execution
@@ -38,7 +38,7 @@ NOTIFY_AS_NATIVE=0.0.0.0:6520,0.0.0.0:6521 ./tools/catbox-tradefed run commandAn
 
 ## Performance
 
-This test automates the [performance measurment](system/software_defined_vehicle/core_services/samples/sdv_comms/rs/README.md).
+This test automates the [performance measurment](/system/software_defined_vehicle/samples/middleware/sdv_comms/rs/README.md).
 
 
 ### Test Execution

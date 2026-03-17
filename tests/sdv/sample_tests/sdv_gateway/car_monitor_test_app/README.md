@@ -15,7 +15,7 @@
 
 ## Sample
 
-This test automates the [SdvCarMonitorTestApp sample](system/software_defined_vehicle/core_services/samples/sdv_gateway/README.md).
+This test automates the [SdvCarMonitorTestApp sample](/system/software_defined_vehicle/samples/sdv_gateway/README.md).
 
 ## Test Execution
 
@@ -55,7 +55,6 @@ atest SdvSampleCarMonitorAppTest
 NOTIFY_AS_NATIVE=0.0.0.0:6520,0.0.0.0:6521 ./tools/catbox-tradefed run commandAndExit sdv-sample-car-monitor-app-test --{device1}serial 0.0.0.0:6520 --{device2}serial 0.0.0.0:6521
 ```
 
-
 ## CI/CD execution
 
-- Name: `sdv/sample/sdv_car_monitor_app_test`
+- Name: `sdv/sample/car_monitor_app_test`

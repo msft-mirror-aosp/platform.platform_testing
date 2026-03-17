@@ -15,13 +15,13 @@
 
 ## Sample
 
-This test automates the [Native SDV Gateway sample](system/software_defined_vehicle/core_services/samples/sdv_gateway/NativeSdvGatewayTestApp/README.md).
+This test automates the [Native SDV Gateway sample](/system/software_defined_vehicle/samples/sdv_gateway/NativeSdvGatewayTestApp/README.md).
 
 ## Test Execution
 
 Read [SDV Testing instructions](/vendor/google_testing/software_defined_vehicle/README.md) for detailed information.
 
-Follow [Setup Section](/vendor/google_testing/software_defined_vehicle/tests/sample_tests/gateway/car_monitor_test_app/README.md) for testing environment setup.
+Follow [Setup Section](/platform_testing/tests/sdv/sample_tests/sdv_gateway/car_monitor_test_app/README.md) for testing environment setup.
 
 ### Mobly
 
@@ -34,7 +34,6 @@ atest SdvSampleNativeSdvGatewayTest
 ```
 NOTIFY_AS_NATIVE=0.0.0.0:6520,0.0.0.0:6521 ./tools/catbox-tradefed run commandAndExit sdv-sample-native-sdv-gateway-test --{device1}serial 0.0.0.0:6520 --{device2}serial 0.0.0.0:6521
 ```
-
 
 ## CI/CD execution
 

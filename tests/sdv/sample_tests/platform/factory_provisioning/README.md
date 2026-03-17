@@ -15,7 +15,7 @@
 
 ## Sample
 
-This test automates the [factory provisioning](system/software_defined_vehicle/platform/tools/sdv-cf/README.md).
+This test automates the [factory provisioning](/system/software_defined_vehicle/platform/tools/sdv-cf/README.md).
 
 ## Test Execution
 

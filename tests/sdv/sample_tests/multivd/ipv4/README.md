@@ -15,7 +15,7 @@
 
 ## Sample
 
-This test automates the [SDV Sample MultiVD IPv4 communication sample](/system/software_defined_vehicle/core_services/samples/multivd/ipv4/README.md).
+This test automates the [SDV Sample MultiVD IPv4 communication sample](/system/software_defined_vehicle/samples/multivd/ipv4/README.md).
 
 ## Test Execution
 

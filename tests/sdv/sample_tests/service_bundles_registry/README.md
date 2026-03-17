@@ -15,7 +15,7 @@
 
 ## Sample
 
-This test automates the special case of Service Bundles Registry for the [Service Bundles Registry samples](/system/software_defined_vehicle/core_services/samples/service_bundles_registry/README.md).
+This test automates the special case of Service Bundles Registry for the [Service Bundles Registry samples](/system/software_defined_vehicle/samples/service_bundles_registry/README.md).
 
 ## Test Execution
 

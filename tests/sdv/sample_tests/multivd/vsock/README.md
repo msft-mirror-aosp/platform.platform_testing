@@ -15,7 +15,7 @@
 
 ## Sample
 
-This test automates the [SDV MultiVD Vsock communication sample](/system/software_defined_vehicle/core_services/samples/multivd/vsock/README.md).
+This test automates the [SDV MultiVD Vsock communication sample](/system/software_defined_vehicle/samples/multivd/vsock/README.md).
 
 ## Test Execution
 

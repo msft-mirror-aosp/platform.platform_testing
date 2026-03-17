@@ -15,7 +15,7 @@
 
 ## Sample
 
-This test automates the [Audio playback](system/software_defined_vehicle/platform/samples/media/audio/README.md).
+This test automates the [Audio playback](/system/software_defined_vehicle/samples/media/audio/README.md).
 
 ## Test Execution
 

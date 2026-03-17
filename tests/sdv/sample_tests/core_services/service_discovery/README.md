@@ -15,7 +15,7 @@
 
 ## Sample
 
-This test automates the [Service Discovery sample](/system/software_defined_vehicle/core_services/samples/service_discovery/README.md).
+This test automates the [Service Discovery sample](/system/software_defined_vehicle/middleware/service_discovery/README.md).
 
 ## Test Execution
 

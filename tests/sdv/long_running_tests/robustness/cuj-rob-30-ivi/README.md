@@ -15,7 +15,7 @@
 
 ## Sample
 
-This test automates the [CUJ-ROB-030](/vendor/google_testing/software_defined_vehicle/tests/sample_tests/cujs/cuj-rob-30/README.md) for an IVI device.
+This test automates the [CUJ-ROB-030](/platform_testing/tests/sdv/sample_tests/cujs/cuj-rob-30/README.md) for an IVI device.
 
 ## Test Execution
 

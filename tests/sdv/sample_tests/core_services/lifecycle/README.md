@@ -16,9 +16,9 @@
 ## Sample
 
 This test automates
-[the C++ Service Bundle Lifecycle sample](/system/software_defined_vehicle/core_services/samples/lifecycle/cpp/README.md)
+[the C++ Service Bundle Lifecycle sample](/system/software_defined_vehicle/samples/service_bundles_lifecycle/cpp/README.md)
 and
-[the Rust Service Bundle Lifecycle sample](/system/software_defined_vehicle/core_services/samples/lifecycle/rust/README.md).
+[the Rust Service Bundle Lifecycle sample](/system/software_defined_vehicle/samples/service_bundles_lifecycle/rust/README.md).
 
 ## Test Execution
 

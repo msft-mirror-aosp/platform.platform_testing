@@ -26,6 +26,7 @@ from mobly.signals import TestSkip, TestError, TestFailure
 
 from chromiumos.test.lab.api import pasit_host_pb2
 from lib.pasit.passport import passport_host
+from lib.pasit.android import android_pasit_device
 
 # Set up logging for the module
 _LOG = logging.getLogger(__name__)
@@ -69,6 +70,8 @@ class DesktopTestBase(base_instrumentation_test.BaseInstrumentationTestClass):
     overall_result: OverallResult = OverallResult.PASS
     overall_details: str = ''
     overall_extras: Dict = {}
+    guest_id: str = ''
+    primary_user_id: str = ''
 
     def set_apk_info(self, apk_name: str, package: str, runner: Optional[str] = None) -> None:
         """Sets the APK and instrumentation details for the test class.
@@ -91,6 +94,7 @@ class DesktopTestBase(base_instrumentation_test.BaseInstrumentationTestClass):
         """
         _LOG.info("Setup class")
         self.dut: android_device.AndroidDevice = self.register_controller(android_device)[0]
+        self.primary_user_id = str(self.dut.adb.current_user_id)
 
         if self.apk_name is None:
             return
@@ -136,6 +140,8 @@ class DesktopTestBase(base_instrumentation_test.BaseInstrumentationTestClass):
 
     def teardown_test(self):
         """Teardown steps after each test is executed."""
+        if self.guest_id:
+            self.leave_guest_mode()
         if self.passport_host:
             self.passport_host.reset()
         super().teardown_test()
@@ -184,6 +190,23 @@ class DesktopTestBase(base_instrumentation_test.BaseInstrumentationTestClass):
         )
 
         self._update_overall_result()
+
+    def enter_guest_mode(self):
+        _LOG.info('Creating guest user on DUT: %s', self.dut.serial)
+        self.guest_id = self.dut.adb.shell(['pm', 'create-user', 'Guest', '--guest']).decode().strip().split()[-1]
+        _LOG.info('Switching to guest user on DUT: %s %s -> %s', self.dut.serial, self.primary_user_id, self.guest_id)
+        self.dut.adb.shell(['am', 'switch-user', '-w', self.guest_id])
+
+    def leave_guest_mode(self):
+        if not self.guest_id:
+            _LOG.warning('Not in guest mode on DUT: %s', self.dut.serial)
+            return
+        _LOG.info('Leaving guest mode on DUT: %s %s -> %s', self.dut.serial, self.guest_id, self.primary_user_id)
+        self.dut.adb.shell(['am', 'switch-user', '-w', self.primary_user_id])
+
+        result = self.dut.adb.shell(['pm', 'remove-user', self.guest_id]).decode().strip()
+        _LOG.info('Removing guest user on DUT: %s result=%s', self.dut.serial, result)
+        self.guest_id = ''
 
     def _get_instrumentation_options(self,
             test_name: str,

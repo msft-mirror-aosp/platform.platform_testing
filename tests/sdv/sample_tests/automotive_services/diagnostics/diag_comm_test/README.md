@@ -15,7 +15,7 @@
 
 ## Sample
 
-This test automates the [SDV Diagnostics middleware generation and implementation example Sample](/system/software_defined_vehicle/samples/diagnostics/README.md).
+This test automates the [SDV Diagnostics middleware generation and implementation example Sample](/system/software_defined_vehicle/samples/diagnostics/v1/README.md).
 
 ## Test Execution
 

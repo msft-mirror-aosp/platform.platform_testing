@@ -15,7 +15,7 @@
 
 ## Sample
 
-This test automates the [Apex Discovery sample](system/software_defined_vehicle/core_services/samples/apex/apex_discovery/README).
+This test automates the [Apex Discovery sample](/system/software_defined_vehicle/samples/apex/apex_discovery/README).
 
 ## Test Execution
 

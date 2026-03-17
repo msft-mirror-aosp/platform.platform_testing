@@ -15,7 +15,7 @@
 
 ## Sample
 
-This test automates the [Custom user id sample](/system/software_defined_vehicle/core_services/samples/lifecycle/custom_user_id/README.md).
+This test automates the [Custom user id sample](/system/software_defined_vehicle/samples/service_bundles_lifecycle/custom_user_id/README.md).
 
 ## Test Execution
 

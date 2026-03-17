@@ -15,7 +15,7 @@
 
 ## Sample
 
-This test automates the [C++ gRPC sample](/system/software_defined_vehicle/core_services/samples/sdv_gateway/grpc_cpp/README.md).
+This test automates the [C++ gRPC sample](/system/software_defined_vehicle/samples/sdv_gateway/README.md).
 
 ## Test Execution
 

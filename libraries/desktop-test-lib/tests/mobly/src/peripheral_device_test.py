@@ -46,7 +46,7 @@ class PeripheralDeviceTest(DesktopTestBase, unittest.TestCase):
         # assuming 'DesktopTestLibTests' is the file name containing the APK/tests.
         self.set_apk_info(
             apk_name='DesktopTestLibTests',
-            package='platform.test.desktop'
+            package='platform.test.desktop.tests'
         )
 
     def setup_class(self):
@@ -112,6 +112,31 @@ class PeripheralDeviceTest(DesktopTestBase, unittest.TestCase):
         self.run_instrumentation_test(test_after_reboot, [TestOption.KEEP_PERIPHERALS_BEFORE_TEST])
 
         self.assert_overall_result()
+
+    def test_with_user_switch(self) -> None:
+        """Tests user switch"""
+        # Define the full test names
+        test_before_user_switch: str = (
+            'platform.test.desktop.PeripheralDeviceTest#testExample_beforeUserSwitch'
+        )
+        test_after_user_switch: str = (
+            'platform.test.desktop.PeripheralDeviceTest#testExample_afterUserSwitch'
+        )
+
+        # 1. Run the test before user-switch
+        _LOG.info('Starting before-user-switch test: %s', test_before_user_switch)
+        self.run_instrumentation_test(test_before_user_switch, [TestOption.KEEP_PERIPHERALS_AFTER_TEST])
+
+        # 2. Execute the user switch
+        self.enter_guest_mode()
+        self.leave_guest_mode()
+
+        # 4. Run the test after user switch
+        _LOG.info('Starting after-user-switch test: %s', test_after_user_switch)
+        self.run_instrumentation_test(test_after_user_switch, [TestOption.KEEP_PERIPHERALS_BEFORE_TEST])
+
+        self.assert_overall_result()
+
 
     def run_instrumentation_test(self,
             test_name: str,

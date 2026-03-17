@@ -15,7 +15,7 @@
 
 ## Sample
 
-This test automates the [CUJ 23](/system/software_defined_vehicle/core_services/samples/some_ip/cuj_core_23/README.md).
+This test automates the [CUJ 23](/system/software_defined_vehicle/samples/some_ip/cuj_core_23/README.md).
 
 ## Test Execution
 

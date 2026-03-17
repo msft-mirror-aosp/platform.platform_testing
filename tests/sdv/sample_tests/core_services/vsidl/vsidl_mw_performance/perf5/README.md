@@ -15,7 +15,7 @@
 
 ## Sample
 
-This test automates the [VSIDL Middleware Performance 5 Scenario](/system/software_defined_vehicle/core_services/samples/vsidl/perf5/README.md).
+This test automates the [VSIDL Middleware Performance 5 Scenario](/system/software_defined_vehicle/samples/vsidl/perf5/README.md).
 
 ## Test Execution
 

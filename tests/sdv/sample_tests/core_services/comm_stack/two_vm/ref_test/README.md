@@ -15,9 +15,9 @@
 
 ## Sample
 
-This test automates the [CommStack sample](/system/software_defined_vehicle/core_services/samples/sdv_comms/rs/README.md) in the form of a reference test (basic publish & subscribe),
+This test automates the [CommStack sample](/system/software_defined_vehicle/samples/middleware/sdv_comms/rs/README.md) in the form of a reference test (basic publish & subscribe),
 with various parameters to track the performance of the CommStack through the recording of a Perfetto trace.
-The values of the parameters are defined in the [helper](/vendor/google_testing/software_defined_vehicle/tests/sample_tests/comm_stack/common/helper.py) module:
+The values of the parameters are defined in the [helper](/platform_testing/tests/sdv/sample_tests/core_services/comm_stack/common/helper.py) module:
 
 - Payload sizes for message: 1 KB, 3 KB, 10 KB, 32 KB
 - Waiting times until a new message is published (not waiting for response/notification etc.): 10 ms, 50 ms, 100 ms, 250 ms, 500 ms

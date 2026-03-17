@@ -15,7 +15,7 @@
 
 ## Sample
 
-This test automates the [C++ User Preferences Client Sample](system/software_defined_vehicle/core_services/samples/sdv_gateway/grpc_cpp/integration_tests/README.md).
+This test automates the [C++ User Preferences Client Sample](/system/software_defined_vehicle/samples/sdv_gateway/rpc/integration_tests/README.md).
 
 ## Test Execution
 
