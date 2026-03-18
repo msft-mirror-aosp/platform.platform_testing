@@ -27,7 +27,7 @@ import com.android.tradefed.build.IBuildInfo;
 public class CodecDbResultReporter {
 
     private static final String REPORT_LOG_NAME = "CodecDbTestCases";
-    private static final String STREAM_NAME = "veq_test";
+    private static final String STREAM_NAME = "veq_results";
 
     private final IBuildInfo mBuildInfo;
     private final String mAbi;

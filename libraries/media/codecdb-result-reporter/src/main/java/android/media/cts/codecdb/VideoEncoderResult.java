@@ -23,8 +23,14 @@ import com.google.common.collect.ImmutableList;
 
 /**
  * Data class representing the result of a video encoder test.
+ *
+ * @param bitrates A list of actual bitrates of the encoded outputs.
+ * @param vmafs A list of VMAF scores of the encoded outputs.
+ * @param transcodingFps A list of transcoding FPS values (throughput of the decode/encode operation).
+ * @param encodeFps A list of encode FPS values (average FPS of the produced content).
  */
-public final record VideoEncoderResult(ImmutableList<Double> bitrates, ImmutableList<Double> vmafs)
+public final record VideoEncoderResult(ImmutableList<Double> bitrates, ImmutableList<Double> vmafs,
+                                       ImmutableList<Double> transcodingFps, ImmutableList<Double> encodeFps)
         implements ReportLoggable {
 
     private static final String KEY_PREFIX = "result_";
@@ -45,6 +51,16 @@ public final record VideoEncoderResult(ImmutableList<Double> bitrates, Immutable
                 vmafs.stream().mapToDouble(Double::doubleValue).toArray(),
                 ResultType.HIGHER_BETTER,
                 ResultUnit.SCORE);
+        log.addValues(
+                KEY_PREFIX + "transcoding_fps",
+                transcodingFps.stream().mapToDouble(Double::doubleValue).toArray(),
+                ResultType.HIGHER_BETTER,
+                ResultUnit.FPS);
+        log.addValues(
+                KEY_PREFIX + "encode_fps",
+                encodeFps.stream().mapToDouble(Double::doubleValue).toArray(),
+                ResultType.HIGHER_BETTER,
+                ResultUnit.FPS);
     }
 
     /**
@@ -80,6 +96,30 @@ public final record VideoEncoderResult(ImmutableList<Double> bitrates, Immutable
 
         default Builder addVmafs(ImmutableList<Double> vmafs) {
             vmafsBuilder().addAll(vmafs);
+            return this;
+        }
+
+        ImmutableList.Builder<Double> transcodingFpsBuilder();
+
+        default Builder addTranscodingFps(double transcodingFps) {
+            transcodingFpsBuilder().add(transcodingFps);
+            return this;
+        }
+
+        default Builder addTranscodingFpsList(ImmutableList<Double> transcodingFps) {
+            transcodingFpsBuilder().addAll(transcodingFps);
+            return this;
+        }
+
+        ImmutableList.Builder<Double> encodeFpsBuilder();
+
+        default Builder addEncodeFps(double encodeFps) {
+            encodeFpsBuilder().add(encodeFps);
+            return this;
+        }
+
+        default Builder addEncodeFpsList(ImmutableList<Double> encodeFps) {
+            encodeFpsBuilder().addAll(encodeFps);
             return this;
         }
 
