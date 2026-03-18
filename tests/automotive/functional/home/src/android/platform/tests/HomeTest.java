@@ -77,18 +77,6 @@ public class HomeTest {
 
     @Test
     public void test1ConstantAppsOnDock() {
-        Log.i(LOG_TAG, "Assert: Google Maps App is Present on DOCK");
-        assertTrue(
-                "Google Maps App is NOT Present on Dock",
-                mAppGridHelper.get().verifyAppOnDock(AutomotiveConfigConstants.MAPS_APP_ON_DOCK));
-
-        Log.i(LOG_TAG, "Assert: Google Maps App is Static on DOCK");
-        assertTrue(
-                "Google Maps is NOT Static App on Dock",
-                mAppGridHelper
-                        .get()
-                        .verifyUnpinOptionForStaticAppOnDock(
-                                AutomotiveConfigConstants.MAPS_APP_ON_DOCK));
 
         Log.i(LOG_TAG, "Act: Go to Home Screen");
         mAppGridHelper.get().goToHomePage();

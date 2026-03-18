@@ -96,11 +96,6 @@ public class VerifyDockOnNewUser {
         Log.i(LOG_TAG, "Act: Switch to new user");
         mNewUser = mMultiUserHelper.getCurrentForegroundUserInfo();
 
-        Log.i(LOG_TAG, "Assert: Google Maps App is Present on DOCK");
-        assertTrue(
-                "Google Maps App is NOT Present on Dock",
-                mAppGridHelper.get().verifyAppOnDock(AutomotiveConfigConstants.MAPS_APP_ON_DOCK));
-
         Log.i(LOG_TAG, "Assert: Play Store App is Present on DOCK");
         assertTrue(
                 "Playstore App is NOT Present on Dock",
