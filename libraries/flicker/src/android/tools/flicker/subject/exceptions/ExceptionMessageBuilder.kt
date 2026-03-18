@@ -21,6 +21,7 @@ import android.tools.Timestamps
 import android.tools.flicker.assertions.Fact
 import android.tools.flicker.subject.FlickerSubject
 import android.tools.io.Reader
+import android.tools.traces.formatRealTimestamp
 
 /** Class to build flicker exception messages */
 class ExceptionMessageBuilder {
@@ -32,6 +33,7 @@ class ExceptionMessageBuilder {
     private var headerDescription = ""
     private var extraDescription = mutableListOf<Fact>()
     private var customSections = mutableMapOf<String, List<String>>()
+    private var reader: Reader? = null
 
     fun forSubject(value: FlickerSubject) = apply {
         setTimestamp(value.timestamp)
@@ -80,7 +82,8 @@ class ExceptionMessageBuilder {
         customSections[title] = content.toList()
     }
 
-    fun setReader(value: Reader) {
+    fun setReader(value: Reader) = apply {
+        this.reader = value
         for (artifact in value.artifacts) {
             addExtraDescription("${artifact.type} Artifact", artifact)
         }
@@ -102,7 +105,19 @@ class ExceptionMessageBuilder {
 
         if (!timestamp.isEmpty) {
             appendLine("Where?")
-            appendLine(timestamp.toString().prependIndent("\t"))
+            val converter = reader?.getTimestampConverter()
+            val realtime =
+                if (converter != null && timestamp.hasElapsedTimestamp) {
+                    converter.toRealTime(timestamp.elapsedNanos)
+                } else {
+                    null
+                }
+
+            if (realtime != null) {
+                appendLine("${formatRealTimestamp(realtime)} (${realtime}ns)".prependIndent("\t"))
+            } else {
+                appendLine(timestamp.toString().prependIndent("\t"))
+            }
         }
 
         if (expected.isNotEmpty() || actual.isNotEmpty() || customSections.isNotEmpty()) {

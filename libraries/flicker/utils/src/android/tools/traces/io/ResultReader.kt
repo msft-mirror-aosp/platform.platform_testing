@@ -29,6 +29,7 @@ import android.tools.traces.events.EventLog
 import android.tools.traces.parsers.perfetto.CujTraceParser
 import android.tools.traces.parsers.perfetto.LayersTraceParser
 import android.tools.traces.parsers.perfetto.ProtoLogTraceParser
+import android.tools.traces.parsers.perfetto.TimestampConverter
 import android.tools.traces.parsers.perfetto.TraceProcessorSession
 import android.tools.traces.parsers.perfetto.TransactionsTraceParser
 import android.tools.traces.parsers.perfetto.TransitionsTraceParser
@@ -52,6 +53,46 @@ open class ResultReader(result: IResultData) : Reader {
     @VisibleForTesting
     var result = result
         internal set
+
+    private var timestampConverter: TimestampConverter? = null
+
+    private fun extractTimestampConverterFromSession(session: TraceProcessorSession) {
+        if (timestampConverter == null) {
+            val snapshots =
+                session.query(
+                    """
+                SELECT
+                  snapshot_id,
+                  MAX(CASE WHEN clock_id = $CLOCK_ID_BOOTTIME THEN clock_value ELSE NULL END) as boottime,
+                  MAX(CASE WHEN clock_id = $CLOCK_ID_REALTIME THEN clock_value ELSE NULL END) as realtime,
+                  MAX(CASE WHEN clock_id = $CLOCK_ID_MONOTONIC THEN clock_value ELSE NULL END) as monotonic
+                FROM clock_snapshot
+                GROUP BY snapshot_id
+                """
+                ) { rows ->
+                    rows.map { row ->
+                        TimestampConverter.ClockSnapshot(
+                            snapshotId = row["snapshot_id"]?.toString()?.toLong() ?: 0L,
+                            boottime = row["boottime"]?.toString()?.toLongOrNull(),
+                            realtime = row["realtime"]?.toString()?.toLongOrNull(),
+                            monotonic = row["monotonic"]?.toString()?.toLongOrNull(),
+                        )
+                    }
+                }
+            timestampConverter = TimestampConverter(snapshots)
+        }
+    }
+
+    override fun getTimestampConverter(): TimestampConverter? {
+        if (timestampConverter != null) {
+            return timestampConverter
+        }
+        val traceData = readBytes(ResultArtifactDescriptor(TraceType.PERFETTO)) ?: return null
+        TraceProcessorSession.loadPerfettoTrace(traceData) { session ->
+            extractTimestampConverterFromSession(session)
+        }
+        return timestampConverter
+    }
 
     override val artifacts: Array<Artifact>
         get() = result.artifacts
@@ -93,9 +134,7 @@ open class ResultReader(result: IResultData) : Reader {
             Log.d(FLICKER_IO_TAG, "Reading WM trace descriptor=$descriptor from $result")
             val traceData = readBytes(descriptor)
             traceData?.let {
-                TraceProcessorSession.loadPerfettoTrace(it) { session ->
-                    WindowManagerTraceParser().parse(session)
-                }
+                loadPerfettoTrace(it) { session -> WindowManagerTraceParser().parse(session) }
             }
         }
     }
@@ -110,7 +149,7 @@ open class ResultReader(result: IResultData) : Reader {
         return withTracing("readWmTrace") {
             val traceData = readBytes(ResultArtifactDescriptor(TraceType.PERFETTO))
             traceData?.let {
-                TraceProcessorSession.loadPerfettoTrace(traceData) { session ->
+                loadPerfettoTrace(traceData) { session ->
                     WindowManagerTraceParser()
                         .parse(
                             session,
@@ -132,7 +171,7 @@ open class ResultReader(result: IResultData) : Reader {
         return withTracing("readLayersTrace") {
             val descriptor = ResultArtifactDescriptor(TraceType.PERFETTO)
             readBytes(descriptor)?.let {
-                TraceProcessorSession.loadPerfettoTrace(it) { session ->
+                loadPerfettoTrace(it) { session ->
                     LayersTraceParser()
                         .parse(
                             session,
@@ -156,7 +195,7 @@ open class ResultReader(result: IResultData) : Reader {
         return withTracing("readLayersDump#$tag") {
             val descriptor = ResultArtifactDescriptor(TraceType.PERFETTO, tag)
             readBytes(descriptor)?.let {
-                TraceProcessorSession.loadPerfettoTrace(it) { session ->
+                loadPerfettoTrace(it) { session ->
                     LayersTraceParser().parse(session, clearCache = true)
                 }
             }
@@ -178,7 +217,7 @@ open class ResultReader(result: IResultData) : Reader {
         val traceData = readBytes(ResultArtifactDescriptor(TraceType.PERFETTO))
         return traceData?.let {
             val trace =
-                TraceProcessorSession.loadPerfettoTrace(traceData) { session ->
+                loadPerfettoTrace(traceData) { session ->
                     TransactionsTraceParser().parse(session, from, to, addInitialEntry = true)
                 }
             require(trace.entries.isNotEmpty()) { "Transactions trace cannot be empty" }
@@ -195,7 +234,7 @@ open class ResultReader(result: IResultData) : Reader {
     override fun readTransitionsTrace(): TransitionsTrace? {
         return withTracing("readTransitionsTrace") {
             readBytes(ResultArtifactDescriptor(TraceType.PERFETTO))?.let {
-                TraceProcessorSession.loadPerfettoTrace(it) { session ->
+                loadPerfettoTrace(it) { session ->
                     TransitionsTraceParser()
                         .parse(
                             session,
@@ -218,7 +257,7 @@ open class ResultReader(result: IResultData) : Reader {
             val traceData = readBytes(ResultArtifactDescriptor(TraceType.PERFETTO))
 
             traceData?.let {
-                TraceProcessorSession.loadPerfettoTrace(traceData) { session ->
+                loadPerfettoTrace(traceData) { session ->
                     ProtoLogTraceParser()
                         .parse(
                             session,
@@ -257,7 +296,7 @@ open class ResultReader(result: IResultData) : Reader {
             val traceData = readBytes(ResultArtifactDescriptor(TraceType.PERFETTO))
 
             traceData?.let {
-                TraceProcessorSession.loadPerfettoTrace(traceData) { session ->
+                loadPerfettoTrace(traceData) { session ->
                     CujTraceParser()
                         .parse(
                             session,
@@ -284,5 +323,25 @@ open class ResultReader(result: IResultData) : Reader {
     fun hasTraceFile(traceType: TraceType, tag: String = Tag.ALL): Boolean {
         val descriptor = ResultArtifactDescriptor(traceType, tag)
         return result.artifacts.any { it.hasTrace(descriptor) }
+    }
+
+    private fun <T> loadPerfettoTrace(
+        traceData: ByteArray,
+        block: (TraceProcessorSession) -> T,
+    ): T {
+        return TraceProcessorSession.loadPerfettoTrace(traceData) { session ->
+            if (timestampConverter == null) {
+                extractTimestampConverterFromSession(session)
+            }
+            block(session)
+        }
+    }
+
+    companion object {
+        // These clock ids are defined in the perfetto repo, see
+        // protos/perfetto/common/builtin_clock.proto
+        @VisibleForTesting const val CLOCK_ID_REALTIME = 1
+        @VisibleForTesting const val CLOCK_ID_MONOTONIC = 3
+        @VisibleForTesting const val CLOCK_ID_BOOTTIME = 6
     }
 }
