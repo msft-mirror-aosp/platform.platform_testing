@@ -36,7 +36,7 @@ public class Scroll {
 
     @Test
     public void testScrollUpAndDown() {
-        sHelper.get().scrollDownOnePage();
-        sHelper.get().scrollUpOnePage();
+        sHelper.get().scrollMultiplePages(2, true);  // Scroll down 2 pages
+        sHelper.get().scrollMultiplePages(2, false); // Scroll up 2 pages
     }
 }

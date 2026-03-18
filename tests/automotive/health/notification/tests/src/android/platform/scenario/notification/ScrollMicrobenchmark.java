@@ -26,7 +26,7 @@ public class ScrollMicrobenchmark extends Scroll {
     @BeforeClass
     public static void openApp() {
         // Populate Notifications
-        sNotificationsMockingHelper.get().postNotifications(5);
+        sNotificationsMockingHelper.get().postNotifications(30);
         // Open Notifications
         sHelper.get().open();
     }

@@ -141,4 +141,12 @@ public interface IAutoNotificationHelper extends Scrollable, IAppHelper {
      * @param title of the notification.
      */
     String getSmsNotificationContent(String title);
+
+    /**
+     * Scroll multiple pages in the notification list.
+     *
+     * @param pages Number of pages to scroll.
+     * @param forward True to scroll down, False to scroll up.
+     */
+    void scrollMultiplePages(int pages, boolean forward);
 }
