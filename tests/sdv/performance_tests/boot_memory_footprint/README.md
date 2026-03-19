@@ -20,13 +20,13 @@ Read [SDV Testing instructions](/vendor/google_testing/software_defined_vehicle/
 ### Mobly
 
 ```bash
-atest BootMemoryFootprintTest
+atest SdvPerformanceBootMemoryFootprintTest
 ```
 
 ## Catbox
 
 ```bash
-NOTIFY_AS_NATIVE=0.0.0.0:6520 catbox-tradefed run commandAndExit boot-memory-footprint-test --serial 0.0.0.0:6520
+NOTIFY_AS_NATIVE=0.0.0.0:6520 catbox-tradefed run commandAndExit sdv-performance-boot-memory-footprint-test --serial 0.0.0.0:6520
 ```
 
 ## CI/CD execution

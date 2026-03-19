@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Boot Memory Footprint Test."""
+"""Boot Performance Memory Footprint Test."""
 
 import logging
 import time
@@ -22,7 +22,7 @@ from sdv_test_fw.test_execution import sdv_base_test
 from sdv_test_fw.test_execution import sdv_test_runner
 
 
-class BootMemoryFootprintTest(sdv_base_test.SdvBaseTestClass):
+class SdvPerformanceBootMemoryFootprintTest(sdv_base_test.SdvBaseTestClass):
   """Measures memory footprint (RSS, SHR) of top 50 processes."""
 
   def setup_class(self):
