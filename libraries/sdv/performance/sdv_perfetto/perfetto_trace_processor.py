@@ -265,7 +265,7 @@ def _convert_string_to_float(obj: Any) -> Dict[str, Any]:
     for item in obj:
       _convert_string_to_float(item)
 
-# deprecated:use crystalball_utils.export_to_crystalball instead
+# deprecated:use crystalball_exporter.export_to_crystalball instead
 def export_to_crystalball(
     data: Dict[str, Any],
     output_dir: str,
