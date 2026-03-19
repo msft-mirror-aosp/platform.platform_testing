@@ -139,6 +139,42 @@ class ResultReaderTest {
         }
     }
 
+    @Test
+    fun validatesClockIdsMatchPerfettoNames() {
+        assume().that(android.tracing.Flags.nativeProtoLogging()).isFalse()
+
+        val writer =
+            newTestResultWriter()
+                .withOutputDir(createTempDirectory().toFile())
+                .addTraceResult(TraceType.PERFETTO, TestTraces.LayerTrace.FILE)
+        val result = writer.write()
+        val reader = ResultReader(result)
+
+        val traceData = reader.readBytes(TraceType.PERFETTO)
+        requireNotNull(traceData)
+
+        android.tools.traces.parsers.perfetto.TraceProcessorSession.loadPerfettoTrace(traceData) {
+            session ->
+            val snapshots =
+                session.query(
+                    "SELECT clock_id, clock_name FROM clock_snapshot GROUP BY clock_id, clock_name"
+                ) { rows ->
+                    rows.map {
+                        Pair(it["clock_id"].toString().toInt(), it["clock_name"].toString())
+                    }
+                }
+
+            val nameMap = snapshots.filter { it.second.isNotEmpty() }.toMap()
+
+            // Check mapping if names were exposed in the Perfetto trace SQL table
+            if (nameMap.isNotEmpty()) {
+                Truth.assertThat(nameMap[ResultReader.CLOCK_ID_BOOTTIME]).contains("BOOTTIME")
+                Truth.assertThat(nameMap[ResultReader.CLOCK_ID_REALTIME]).contains("REALTIME")
+                Truth.assertThat(nameMap[ResultReader.CLOCK_ID_MONOTONIC]).contains("MONOTONIC")
+            }
+        }
+    }
+
     companion object {
         @ClassRule @JvmField val ENV_CLEANUP = CleanFlickerEnvironmentRule()
     }

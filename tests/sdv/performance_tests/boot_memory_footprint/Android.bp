@@ -17,12 +17,11 @@ package {
     default_applicable_licenses: ["sdv_tests_license"],
 }
 
+// SDV memory footprint test.
 python_test_host {
-    name: "SdvServiceDiscoveryTest",
-    main: "sdv_service_discovery_test.py",
-    srcs: [
-        "sdv_service_discovery_test.py",
-    ],
+    name: "BootMemoryFootprintTest",
+    main: "boot_memory_footprint_test.py",
+    srcs: ["boot_memory_footprint_test.py"],
     data: [
         ":sdv_test_fw_device_configs",
     ],
@@ -31,9 +30,8 @@ python_test_host {
     },
     defaults: [
         "sdv_test_fw_defaults",
+        "sdv_perfetto_defaults",
+        "sdv_perfetto_trace_processor_defaults",
     ],
-    libs: [
-        "sdv_service_discovery_test_client",
-    ],
-    test_config_template: ":sdv_two_devices",
+    test_config_template: ":sdv_one_device",
 }

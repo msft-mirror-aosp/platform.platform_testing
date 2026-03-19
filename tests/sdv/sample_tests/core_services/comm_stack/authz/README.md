@@ -15,7 +15,7 @@
 
 ## Authz
 
-This test automates the [Authz Negative paths](/system/software_defined_vehicle/middleware/service_authz/testing/README.md).
+This test automates the [Authz ACLs Negative paths](/system/software_defined_vehicle/middleware/service_authz/testing/acls/README.md) and [Authz Permissions Negative paths](/system/software_defined_vehicle/middleware/service_authz/testing/permissions/README.md).
 
 ## Test Execution
 

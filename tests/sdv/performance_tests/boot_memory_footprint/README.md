@@ -10,13 +10,25 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<configuration description="SDV Service Discovery Test">
-    <!-- Template for Device Configuration -->
-    <template-include name="device-config" default="sdv-device-config/two-devices" />
 
-    <!-- Plan. Use the same name as the file name -->
-    <option name="plan" value="sdv-service-discovery-test"/>
+# SDV Memory Footprint Performance Test
 
-    <!-- Test: mobly-par-file-name should match the module name -->
-    <option name="mobly-host:mobly-par-file-name" value="SdvServiceDiscoveryTest" />
-</configuration>
+## Test Execution
+
+Read [SDV Testing instructions](/vendor/google_testing/software_defined_vehicle/README.md) for detailed information.
+
+### Mobly
+
+```bash
+atest BootMemoryFootprintTest
+```
+
+## Catbox
+
+```bash
+NOTIFY_AS_NATIVE=0.0.0.0:6520 catbox-tradefed run commandAndExit boot-memory-footprint-test --serial 0.0.0.0:6520
+```
+
+## CI/CD execution
+
+* Name: `sdv/performance/boot_memory_footprint_test`
