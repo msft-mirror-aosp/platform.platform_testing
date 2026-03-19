@@ -61,6 +61,12 @@ interface Reader {
     /** @return a [ProtoLogTrace] for the part of the trace we want to run the assertions on */
     fun readProtoLogTrace(): ProtoLogTrace?
 
+    /**
+     * @return the timestamp converter loaded with clock snapshots from the trace, or null if
+     *   unknown
+     */
+    fun getTimestampConverter(): android.tools.traces.parsers.perfetto.TimestampConverter?
+
     /** @return an [Reader] for the subsection of the trace we are reading in this reader */
     fun slice(startTimestamp: Timestamp, endTimestamp: Timestamp): Reader
 

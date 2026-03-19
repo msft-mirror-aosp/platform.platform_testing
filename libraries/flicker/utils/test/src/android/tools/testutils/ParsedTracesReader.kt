@@ -23,6 +23,7 @@ import android.tools.io.RunStatus
 import android.tools.io.TraceType
 import android.tools.traces.events.CujTrace
 import android.tools.traces.events.EventLog
+import android.tools.traces.parsers.perfetto.TimestampConverter
 import android.tools.traces.protolog.ProtoLogTrace
 import android.tools.traces.surfaceflinger.LayersTrace
 import android.tools.traces.surfaceflinger.TransactionsTrace
@@ -39,6 +40,7 @@ class ParsedTracesReader(
     private val eventLog: EventLog? = null,
     private val protoLogTrace: ProtoLogTrace? = null,
     private val cujTrace: CujTrace? = null,
+    private val timestampConverter: TimestampConverter? = null,
     private val layerDumps: Map<String, LayersTrace> = emptyMap(),
     private val wmDumps: Map<String, WindowManagerTrace> = emptyMap(),
 ) : Reader {
@@ -61,6 +63,8 @@ class ParsedTracesReader(
 
     override fun readProtoLogTrace(): ProtoLogTrace? = protoLogTrace
 
+    override fun getTimestampConverter(): TimestampConverter? = timestampConverter
+
     override fun slice(startTimestamp: Timestamp, endTimestamp: Timestamp): ParsedTracesReader {
         return ParsedTracesReader(
             artifacts,
@@ -71,6 +75,7 @@ class ParsedTracesReader(
             eventLog?.slice(startTimestamp, endTimestamp),
             protoLogTrace?.slice(startTimestamp, endTimestamp),
             cujTrace?.slice(startTimestamp, endTimestamp),
+            timestampConverter,
             layerDumps,
             wmDumps,
         )
