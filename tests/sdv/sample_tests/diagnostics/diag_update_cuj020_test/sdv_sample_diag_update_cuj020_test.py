@@ -21,6 +21,7 @@ import logging
 import time
 import os
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
+from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 from sdv_test_fw.update.update_manager_base_class import UpdateManagerBaseClass
 from sdv_test_fw.verification import polling
 
@@ -40,8 +41,16 @@ class SdvSampleDiagUpdateTest(sdv_base_test.SdvBaseTestClass, UpdateManagerBaseC
 
     def setup_class(self):
         super().setup_class()
+
         self.init_update_manager_base_class(
             self.APEX_NAME, local_artifact_dir="out/host/**")
+
+        # Save the current values of sdv.authz.enable
+        self.sdv_authz_enable_value = (
+            self.sdv_device.adb().prop.get(SdvDeviceProperty.AUTHZ_ENABLE)
+        )
+        # Enforce SDV Comm Stack authorization
+        self.sdv_device.adb().prop.set(SdvDeviceProperty.AUTHZ_ENABLE, 'permissions_only')
 
     def teardown_class(self):
         self.adb_shell(self.DESTROY_BUNDLE_COMMAND)
@@ -52,6 +61,10 @@ class SdvSampleDiagUpdateTest(sdv_base_test.SdvBaseTestClass, UpdateManagerBaseC
         except Exception as e:
             logging.info(
                 f"Exception in teardown/rollback update. Test failed earlier. Exception: {e}")
+
+        # Restore the original value of sdv.authz.enable
+        self.sdv_device.adb().prop.set(SdvDeviceProperty.AUTHZ_ENABLE, self.sdv_authz_enable_value)
+
         super().teardown_class()
 
     def test_diagnostics_behaviour_across_apex_update(self):
