@@ -50,17 +50,22 @@ from mobly import asserts
 import logging
 import time
 
-from absl.testing import parameterized
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 from sdv_test_fw.verification import polling
 
-class SdvAuthzNegativeTest(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
-
-    TESTING_SERVICES_LOGCAT_ARGS = '*:F com_android_sdv_test_authz_foo_AuthzTestedService_instance com_android_sdv_test_authz_bar_AuthzTestDriver_instance'
+class SdvAuthzNegativeTest(sdv_base_test.SdvBaseTestClass):
 
     CREATE_SERVICE_BUNDLE_COMMAND = 'sdv_service_bundle create {service_fqin}'
     START_SERVICE_BUNDLE_COMMAND = 'sdv_service_bundle start {service_fqin}'
     DESTROY_SERVICE_BUNDLE_COMMAND = 'sdv_service_bundle destroy {service_fqin}'
+
+    ACLS_TESTING_SERVICES_LOGCAT_ARGS = '*:F com_android_sdv_test_authz_foo_AuthzTestedService_instance com_android_sdv_test_authz_bar_AuthzTestDriver_instance'
+    ACLS_TESTED_SERVICE_FQIN = 'instance1:com.android.sdv.test.authz.foo.AuthzTestedService/instance'
+    ACLS_TEST_DRIVER_FQIN = 'instance1:com.android.sdv.test.authz.bar.AuthzTestDriver/instance'
+
+    PERMISSIONS_TESTING_SERVICES_LOGCAT_ARGS = '*:F com_android_sdv_test_permissions_foo_AuthzTestedService_instance com_android_sdv_test_permissions_bar_AuthzTestDriver_instance'
+    PERMISSIONS_TESTED_SERVICE_FQIN = 'instance1:com.android.sdv.test.permissions.foo.AuthzTestedService/instance'
+    PERMISSIONS_TEST_DRIVER_FQIN = 'instance1:com.android.sdv.test.permissions.bar.AuthzTestDriver/instance'
 
     ##################################################
     ## Setup/teardown for the test suite and tests. ##
@@ -69,28 +74,32 @@ class SdvAuthzNegativeTest(sdv_base_test.SdvBaseTestClass, parameterized.TestCas
     def setup_class(self):
         super().setup_class()
         self.adb_devices = {}
-        self.adb_devices['tested_service_device'] = self.setup_device_testing_service(
-            'device1', 'instance1:com.android.sdv.test.authz.foo.AuthzTestedService/instance')
-        self.adb_devices['test_driver_device'] = self.setup_device_testing_service(
-            'device2', 'instance1:com.android.sdv.test.authz.bar.AuthzTestDriver/instance')
+        # We don't start the service bundles in setup_class.
+        # It's done at the beginning of each test case.
+        self.adb_devices['tested_service_device'] = self.get_device('device1').adb()
+        self.adb_devices['test_driver_device'] = self.get_device('device2').adb()
 
     def setup_test(self):
         # Avoid parent `clear_all_devices` to store the start up logs from VMs.
         logging.info('Custom Authz negative test setup')
+        self.log_enter()
+        if self.current_test_info.name == 'test_acls':
+            self.setup_services_for_test(self.ACLS_TESTED_SERVICE_FQIN, self.ACLS_TEST_DRIVER_FQIN)
+        elif self.current_test_info.name == 'test_permissions':
+            self.setup_services_for_test(self.PERMISSIONS_TESTED_SERVICE_FQIN, self.PERMISSIONS_TEST_DRIVER_FQIN)
 
     def teardown_test(self):
         # Avoid parent `clear_all_devices` to store the start up logs from VMs.
         logging.info('Custom Authz negative test teardown')
+        if self.current_test_info.name == 'test_acls':
+            self.teardown_services_for_test(self.ACLS_TESTED_SERVICE_FQIN, self.ACLS_TEST_DRIVER_FQIN)
+        elif self.current_test_info.name == 'test_permissions':
+            self.teardown_services_for_test(self.PERMISSIONS_TESTED_SERVICE_FQIN, self.PERMISSIONS_TEST_DRIVER_FQIN)
+        self.log_exit()
 
     def teardown_class(self):
         # Explicitly clear devices, since we avoid it in `setup_test` and `teardown_test`.
         logging.info('Custom Authz negative test class teardown')
-
-        self.teardown_device_testing_service(
-            'device1', 'instance1:com.android.sdv.test.authz.foo.AuthzTestedService/instance')
-        self.teardown_device_testing_service(
-            'device2', 'instance1:com.android.sdv.test.authz.bar.AuthzTestDriver/instance')
-
         self.clear_all_devices()
         super().teardown_class()
 
@@ -98,23 +107,28 @@ class SdvAuthzNegativeTest(sdv_base_test.SdvBaseTestClass, parameterized.TestCas
     ##            Utility functions.              ##
     ################################################
 
-    def setup_device_testing_service(self, device_name, service_fqin):
-        """ Setup testing service on VM with `device_name`. """
-        sdv_device = self.get_device(device_name)
-        adb_device = sdv_device.adb()
-        adb_device.wait_for_device_online()
-        adb_device.reboot_device()
-        adb_device.wait_for_device_online()
-        adb_device.verify_logcat_is_running()
-        adb_device.execute_shell_command(self.CREATE_SERVICE_BUNDLE_COMMAND.format(service_fqin = service_fqin))
-        adb_device.execute_shell_command(self.START_SERVICE_BUNDLE_COMMAND.format(service_fqin = service_fqin))
-        return adb_device
+    def setup_services_for_test(self, tested_service_fqin, test_driver_fqin):
+        """ Setup testing services on VMs. """
+        for device_key, fqin in [
+            ('tested_service_device', tested_service_fqin),
+            ('test_driver_device', test_driver_fqin)
+        ]:
+            adb_device = self.adb_devices[device_key]
+            adb_device.wait_for_device_online()
+            adb_device.reboot_device()
+            adb_device.wait_for_device_online()
+            adb_device.verify_logcat_is_running()
+            adb_device.execute_shell_command(self.CREATE_SERVICE_BUNDLE_COMMAND.format(service_fqin = fqin))
+            adb_device.execute_shell_command(self.START_SERVICE_BUNDLE_COMMAND.format(service_fqin = fqin))
 
-    def teardown_device_testing_service(self, device_name, service_fqin):
-        """ Teardown testing service on VM with `device_name`. """
-        sdv_device = self.get_device(device_name)
-        adb_device = sdv_device.adb()
-        adb_device.execute_shell_command(self.DESTROY_SERVICE_BUNDLE_COMMAND.format(service_fqin = service_fqin))
+    def teardown_services_for_test(self, tested_service_fqin, test_driver_fqin):
+        """ Teardown testing services on VMs. """
+        for device_key, fqin in [
+            ('tested_service_device', tested_service_fqin),
+            ('test_driver_device', test_driver_fqin)
+        ]:
+            adb_device = self.adb_devices[device_key]
+            adb_device.execute_shell_command(self.DESTROY_SERVICE_BUNDLE_COMMAND.format(service_fqin = fqin))
 
     def log_enter(self):
         """ Unified logging enter test suit. """
@@ -128,7 +142,7 @@ class SdvAuthzNegativeTest(sdv_base_test.SdvBaseTestClass, parameterized.TestCas
     ##          Assert-like validators.           ##
     ################################################
 
-    def assert_logcat(self, sdv_device, grep_text, assert_msg):
+    def assert_logcat(self, sdv_device, logcat_args, grep_text, assert_msg):
         """Assert-like validator to grep logcat with the `grep_text`.
 
         Args:
@@ -137,7 +151,7 @@ class SdvAuthzNegativeTest(sdv_base_test.SdvBaseTestClass, parameterized.TestCas
         """
 
         if not polling.wait_and_verify_expected_logs(sdv_device, grep_text):
-            logcat_grep_result = sdv_device.grep_from_logcat(grep_text, self.TESTING_SERVICES_LOGCAT_ARGS)
+            logcat_grep_result = sdv_device.grep_from_logcat(grep_text, logcat_args)
             asserts.assert_in(
                 grep_text,
                 logcat_grep_result,
@@ -145,40 +159,52 @@ class SdvAuthzNegativeTest(sdv_base_test.SdvBaseTestClass, parameterized.TestCas
             )
 
     ################################################
-    ##          Test expected log message.        ##
+    ##                 Test Cases                 ##
     ################################################
-    @parameterized.named_parameters(
-        {
-            'testcase_name': 'rpc_discovery_negative',
-            'grep_text': 'Non-connectable RPC server was not discovered due to ACLs configuration as it was expected.',
-            'assert_msg' : '\n[FAILURE]: RPC client is expected to fail to discover the RPC server due to ACLs configuration.'
-        },
-        {
-            'testcase_name': 'rpc_connect_negative',
-            'grep_text': 'Non-connectable RPC server denied connection due to ACLs configuration as it was expected.',
-            'assert_msg' : '\n[FAILURE]: RPC client is expected to fail to connect to the RPC server due to ACLs configuration.'
-        },
-        {
-            'testcase_name': 'dt_discovery_negative',
-            'grep_text': 'Non-connectable DT publisher was not discovered due to ACLs configuration as it was expected.',
-            'assert_msg' : '\n[FAILURE]: DT subscriber is expected to fail to discover the DT publisher due to ACLs configuration.'
-        },
-        {
-            'testcase_name': 'dt_connect_negative',
-            'grep_text': 'Non-connectable DT publisher denied connection due to ACLs configuration as it was expected.',
-            'assert_msg' : '\n[FAILURE]: DT subscriber is expected to fail to connect to the DT publisher due to ACLs configuration.'
-        },
-    )
-    def test_log_message(self, grep_text, assert_msg):
-        self.log_enter()
 
-        self.assert_logcat(
-            sdv_device = self.adb_devices['test_driver_device'],
-            grep_text = grep_text,
-            assert_msg = assert_msg,
-        )
+    def _get_expected_logs(self, authz_type):
+        return [
+            (
+                f'Non-connectable RPC server was not discovered due to {authz_type} configuration as it was expected.',
+                f'\n[FAILURE]: RPC client is expected to fail to discover the RPC server due to {authz_type} configuration.'
+            ),
+            (
+                f'Non-connectable RPC server denied connection due to {authz_type} configuration as it was expected.',
+                f'\n[FAILURE]: RPC client is expected to fail to connect to the RPC server due to {authz_type} configuration.'
+            ),
+            (
+                f'Non-connectable DT publisher was not discovered due to {authz_type} configuration as it was expected.',
+                f'\n[FAILURE]: DT subscriber is expected to fail to discover the DT publisher due to {authz_type} configuration.'
+            ),
+            (
+                f'Non-connectable DT publisher denied connection due to {authz_type} configuration as it was expected.',
+                f'\n[FAILURE]: DT subscriber is expected to fail to connect to the DT publisher due to {authz_type} configuration.'
+            )
+        ]
 
-        self.log_exit()
+    def test_acls(self):
+        """Tests the Authz ACLs configuration."""
+        test_driver_device = self.adb_devices['test_driver_device']
+
+        for grep_text, assert_msg in self._get_expected_logs('ACLs'):
+            self.assert_logcat(
+                sdv_device=test_driver_device,
+                logcat_args=self.ACLS_TESTING_SERVICES_LOGCAT_ARGS,
+                grep_text=grep_text,
+                assert_msg=assert_msg
+            )
+
+    def test_permissions(self):
+        """Tests the Authz permissions configuration."""
+        test_driver_device = self.adb_devices['test_driver_device']
+
+        for grep_text, assert_msg in self._get_expected_logs('permissions'):
+            self.assert_logcat(
+                sdv_device=test_driver_device,
+                logcat_args=self.PERMISSIONS_TESTING_SERVICES_LOGCAT_ARGS,
+                grep_text=grep_text,
+                assert_msg=assert_msg
+            )
 
 if __name__ == '__main__':
     # Start Test Execution Using SDV Test Framework ( STF )
