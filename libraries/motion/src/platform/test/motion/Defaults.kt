@@ -30,6 +30,15 @@ object Defaults {
      */
     fun captureScreenshots(): Boolean {
         return "true" == InstrumentationRegistry.getArguments().getString("captureScreenshots") ||
-            MotionTestRule.isRobolectricRuntime()
+            MotionTestRule.isRobolectricRuntime() ||
+            retryAttempt() > 0
+    }
+
+    /**
+     * The current retry attempt number provided by TradeFederation. Returns 0 if this is the first
+     * attempt or if the argument was not provided.
+     */
+    fun retryAttempt(): Int {
+        return InstrumentationRegistry.getArguments().getString("retry_attempt")?.toIntOrNull() ?: 0
     }
 }
