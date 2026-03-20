@@ -60,6 +60,9 @@ class BundleManagementMetricsCollectionTest(sdv_base_test.SdvBaseTestClass):
 
         self.architecture = self.sdv_device_adb.prop.get(SdvDeviceProperty.CPU_ARCH)
 
+        self.original_authz_enable = self.sdv_device_adb.prop.get(SdvDeviceProperty.AUTHZ_ENABLE)
+        self.sdv_device_adb.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, "permissions_only")
+
         # logd spam causes logcat to miss logs. Reduce verbosity, as test relies on logged events:
         self.sdv_device_adb.prop.set(SdvDeviceProperty.LOG_TAG, "I")
 
@@ -70,6 +73,7 @@ class BundleManagementMetricsCollectionTest(sdv_base_test.SdvBaseTestClass):
             "bundle_management",
             omit_base_name=False,
         )
+        self.sdv_device_adb.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, self.original_authz_enable)
         super().teardown_class()
 
     def set_and_wait_for_default_vm_state(self):
