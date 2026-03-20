@@ -19,9 +19,9 @@ package {
 
 // SDV memory footprint test.
 python_test_host {
-    name: "BootMemoryFootprintTest",
-    main: "boot_memory_footprint_test.py",
-    srcs: ["boot_memory_footprint_test.py"],
+    name: "SdvPerformanceBootMemoryFootprintTest",
+    main: "sdv_performance_boot_memory_footprint_test.py",
+    srcs: ["sdv_performance_boot_memory_footprint_test.py"],
     data: [
         ":sdv_test_fw_device_configs",
     ],

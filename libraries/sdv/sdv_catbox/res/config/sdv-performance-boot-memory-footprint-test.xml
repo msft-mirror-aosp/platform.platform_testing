@@ -15,9 +15,9 @@
     <template-include name="device-config" default="sdv-device-config/one-device" />
 
     <!-- Plan. Use the same name as the file name -->
-    <option name="plan" value="sdv-boot-memory-footprint-test"/>
+    <option name="plan" value="sdv-performance-boot-memory-footprint-test"/>
 
     <!-- Test: mobly-par-file-name should match the module name -->
-    <option name="mobly-host:mobly-par-file-name" value="BootMemoryFootprintTest" />
+    <option name="mobly-host:mobly-par-file-name" value="SdvPerformanceBootMemoryFootprintTest" />
 </configuration>
 
