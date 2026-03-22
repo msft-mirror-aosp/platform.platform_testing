@@ -240,7 +240,7 @@ class SdvSampleConCalServerAndClientTest(sdv_base_test.SdvBaseTestClass):
             SdvDeviceProperty.AUTHZ_ENABLE)
 
         # Enforce SDV Comm Stack authorization
-        self.sdv_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, "true")
+        self.sdv_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, "permissions_only")
 
     def teardown_class(self):
         # Reset SDV Comm Stack authorization
