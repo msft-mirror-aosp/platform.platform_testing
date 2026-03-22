@@ -21,6 +21,7 @@ from mobly import asserts
 import logging
 from sdv_test_fw.verification import polling
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
+from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 
 
 class SdvHmRamSuspendResumeTest(sdv_base_test.SdvBaseTestClass):
@@ -30,6 +31,13 @@ class SdvHmRamSuspendResumeTest(sdv_base_test.SdvBaseTestClass):
         self.sdv_device_adb.execute_shell_command(
             'setprop persist.sdv.orchestrator_config_path /product/etc/orch/hm_suspend_to_ram_test_global_orch_config.textproto')
         self.sdv_device_adb.reboot_device_and_verify_logcat()
+
+        self.sdv_authz_enable_value = self.sdv_device_adb.prop.get(SdvDeviceProperty.AUTHZ_ENABLE)
+        self.sdv_device_adb.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, "permissions_only")
+
+    def teardown_class(self):
+        self.sdv_device_adb.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, self.sdv_authz_enable_value)
+        super().teardown_class()
 
     def suspend_resume_device(self):
         session = self.sdv_device_adb.interactive_session()

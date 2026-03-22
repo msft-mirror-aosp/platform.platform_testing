@@ -20,6 +20,7 @@ import time
 
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 from sdv_test_fw.verification import polling
+from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 
 
 class SdvHmDeviceIntegrationTest(sdv_base_test.SdvBaseTestClass):
@@ -50,7 +51,11 @@ class SdvHmDeviceIntegrationTest(sdv_base_test.SdvBaseTestClass):
         super().setup_class()
         self.sdv_device = self.get_device(self.DEVICE_NAME).adb()
 
+        self.sdv_authz_enable_value = self.sdv_device.prop.get(SdvDeviceProperty.AUTHZ_ENABLE)
+        self.sdv_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, "permissions_only")
+
     def teardown_class(self):
+        self.sdv_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, self.sdv_authz_enable_value)
         super().teardown_class()
 
     def log_enter(self):

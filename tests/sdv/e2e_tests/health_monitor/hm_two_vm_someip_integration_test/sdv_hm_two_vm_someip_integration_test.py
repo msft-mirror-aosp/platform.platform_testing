@@ -29,6 +29,7 @@ The test simulates unhealthy scenarios by briefly stopping heartbeat publishing 
 import time
 import logging
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
+from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 import re
 
 # Commands for monitored service bundle
@@ -85,6 +86,16 @@ class SdvHmTwoVmSomeIpIntegrationTest(
         self.device2_name = self.device2.execute_shell_command(
             'getprop ro.boot.sdv.instance_name', raise_exception=True
         )
+
+        self.sdv_authz_enable_value_device1 = self.device1.prop.get(SdvDeviceProperty.AUTHZ_ENABLE)
+        self.device1.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, "permissions_only")
+        self.sdv_authz_enable_value_device2 = self.device2.prop.get(SdvDeviceProperty.AUTHZ_ENABLE)
+        self.device2.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, "permissions_only")
+
+    def teardown_class(self):
+        self.device1.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, self.sdv_authz_enable_value_device1)
+        self.device2.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, self.sdv_authz_enable_value_device2)
+        super().teardown_class()
 
     def setup_test(self):
         # Avoid parent `clear_all_devices` to store the start up logs from VMs.

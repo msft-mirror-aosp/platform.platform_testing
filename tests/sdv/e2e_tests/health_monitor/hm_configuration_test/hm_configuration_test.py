@@ -19,6 +19,7 @@ import time
 import logging
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 from sdv_test_fw.verification import polling
+from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 
 
 class SdvHmConfigurationIntegrationTest(sdv_base_test.SdvBaseTestClass):
@@ -31,6 +32,13 @@ class SdvHmConfigurationIntegrationTest(sdv_base_test.SdvBaseTestClass):
         self.hm_config_path_property_original_value = self.device.adb().execute_shell_command(
             f"getprop {self.HM_CONFIG_PATH_PROPERTY}"
         )
+
+        self.sdv_authz_enable_value = self.device.adb().prop.get(SdvDeviceProperty.AUTHZ_ENABLE)
+        self.device.adb().prop.set(SdvDeviceProperty.AUTHZ_ENABLE, "permissions_only")
+
+    def teardown_class(self):
+        self.device.adb().prop.set(SdvDeviceProperty.AUTHZ_ENABLE, self.sdv_authz_enable_value)
+        super().teardown_class()
 
     def teardown_test(self):
         super().teardown_test()
