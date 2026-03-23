@@ -18,6 +18,7 @@
 from mobly import asserts
 from sdv_perfetto import perfetto_collector, perfetto_trace_processor, collector_config
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
+from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 from typing import Callable
 import time
 import numpy as np
@@ -35,6 +36,9 @@ class SdvHmMetricsCollectionTest(sdv_base_test.SdvBaseTestClass):
         self.sdv_device.execute_shell_command('setprop persist.log.tag W')
         self.metrics = {}
 
+        self.sdv_authz_enable_value = self.sdv_device.prop.get(SdvDeviceProperty.AUTHZ_ENABLE)
+        self.sdv_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, "permissions_only")
+
     def teardown_class(self):
         perfetto_trace_processor.export_to_crystalball(
             data=self.metrics,
@@ -42,6 +46,7 @@ class SdvHmMetricsCollectionTest(sdv_base_test.SdvBaseTestClass):
             test_name="HM performance metric collection test",
             omit_base_name=False
         )
+        self.sdv_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, self.sdv_authz_enable_value)
         super().teardown_class()
 
     def test_hm_trace_processing_and_reporting(self):

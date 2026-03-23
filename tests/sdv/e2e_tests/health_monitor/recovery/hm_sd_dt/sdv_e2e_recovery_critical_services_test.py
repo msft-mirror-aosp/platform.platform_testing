@@ -52,6 +52,13 @@ class SdvE2ERecoveryCriticalServicesTest(sdv_base_test.SdvBaseTestClass, paramet
         super().setup_class()
         self.sdv_device = self.get_device(self.DEVICE_NAME).adb()
 
+        self.sdv_authz_enable_value = self.sdv_device.prop.get(SdvDeviceProperty.AUTHZ_ENABLE)
+        self.sdv_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, "permissions_only")
+
+    def teardown_class(self):
+        self.sdv_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, self.sdv_authz_enable_value)
+        super().teardown_class()
+
     def log_enter(self):
         """ Unified logging enter test suit. """
         logging.info(

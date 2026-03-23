@@ -46,7 +46,11 @@ class SdvHmMetricsCollectionTwoVMTest(
             self.device1)
         self.metrics = {}
 
+        self.sdv_authz_enable_value_device1 = self.device1.prop.get(SdvDeviceProperty.AUTHZ_ENABLE)
+        self.device1.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, "permissions_only")
+
     def teardown_class(self):
+        self.device1.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, self.sdv_authz_enable_value_device1)
         perfetto_trace_processor.export_to_crystalball(
             data=self.metrics,
             output_dir=self.device1.log_path(),

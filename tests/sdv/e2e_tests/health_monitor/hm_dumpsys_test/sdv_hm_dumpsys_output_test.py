@@ -18,6 +18,7 @@
 from mobly import asserts
 import logging
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
+from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 import random
 import time
 
@@ -30,6 +31,13 @@ class SdvHmDumpsysOutputTest(sdv_base_test.SdvBaseTestClass):
         super().setup_class()
         self.sdv_device = self.get_device('device1').adb()
         self.sdv_device.root_device()
+
+        self.sdv_authz_enable_value = self.sdv_device.prop.get(SdvDeviceProperty.AUTHZ_ENABLE)
+        self.sdv_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, "permissions_only")
+
+    def teardown_class(self):
+        self.sdv_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, self.sdv_authz_enable_value)
+        super().teardown_class()
 
     def wait_for_bundles_to_register(self, timeout=10):
         registration_proof = "Registered health configuration:"
