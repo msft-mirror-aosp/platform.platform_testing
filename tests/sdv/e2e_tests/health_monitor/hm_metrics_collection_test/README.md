@@ -23,6 +23,14 @@ Should be ran on sdv_core_perf* image.
 
 Read [SDV Testing instructions](/vendor/google_testing/software_defined_vehicle/README.md) for detailed information.
 
+Set environment with:
+
+```
+source build/envsetup.sh
+lunch sdv_core_perf_cf-trunk_staging-userdebug
+cvd create --config=sdv_core_instance1 --extra_kernel_cmdline="androidboot.sdv.someip.enable=true"
+```
+
 ### Mobly
 
 ```
