@@ -526,8 +526,8 @@ class SdvSampleDiagCommunicationTest(
         )
 
         # Enforce SDV Comm Stack authorization
-        self.sdv_device_server.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, 'true')
-        self.sdv_device_client.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, 'true')
+        self.sdv_device_server.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, 'permissions_only')
+        self.sdv_device_client.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, 'permissions_only')
 
         dump_lines_expected_before = [
             self.DIAGNOSTICS_AGENT_SUCCESSFUL_LOAD_MESSAGE,

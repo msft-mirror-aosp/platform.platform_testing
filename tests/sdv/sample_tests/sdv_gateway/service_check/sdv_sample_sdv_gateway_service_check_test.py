@@ -25,12 +25,11 @@ class SdvSampleSdvGatewayServiceCheckTest(sdv_base_test.SdvBaseTestClass):
     EXPECTED_SDV_GATEWAY_SERVICE_RESPONSE = "Service google.sdv.gateway.ISdvGateway/default: found"
     ERROR_SDV_GATEWAY_SERVICE = "Could not find sdv gateway as a running service"
 
-    SDV_GATEWAY_NETWORKING_LOG_TAG = "SdvGatewayNetworking"
-    EXPECTED_POWER_STATE_LISTENER_LOG = "Added PowerPolicyListener for CarPowerManager"
+    SDV_GATEWAY_LOG_TAG = "sdv_gateway:"
     # 2 is CarPowerState::SUSPEND_ENTER
-    EXPECTED_POWER_STATE_SUSPEND_LOG = "Car power state changed: 2"
+    EXPECTED_POWER_STATE_SUSPEND_LOG = "CarPowerState changed to 2"
     # 6 is CarPowerState::ON
-    EXPECTED_POWER_STATE_POWER_ON_LOG = "Car power state changed: 6"
+    EXPECTED_POWER_STATE_POWER_ON_LOG = "CarPowerState changed to 6"
 
     def setup_class(self):
         super().setup_class()
@@ -48,14 +47,14 @@ class SdvSampleSdvGatewayServiceCheckTest(sdv_base_test.SdvBaseTestClass):
 
         polling.wait_and_verify_expected_logs(
             sdv_device=self.ivi_vm_device,
-            grep_text=self.SDV_GATEWAY_NETWORKING_LOG_TAG,
+            grep_text=self.SDV_GATEWAY_LOG_TAG,
             expected_result=self.EXPECTED_POWER_STATE_SUSPEND_LOG,
             assert_msg="Log not found for power state change to 2",
         )
 
         polling.wait_and_verify_expected_logs(
             sdv_device=self.ivi_vm_device,
-            grep_text=self.SDV_GATEWAY_NETWORKING_LOG_TAG,
+            grep_text=self.SDV_GATEWAY_LOG_TAG,
             expected_result=self.EXPECTED_POWER_STATE_POWER_ON_LOG,
             assert_msg="Log not found for power state change to 6",
         )

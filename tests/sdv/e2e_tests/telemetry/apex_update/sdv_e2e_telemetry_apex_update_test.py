@@ -23,6 +23,7 @@ from sdv_telemetry_test_execution import expects, telemetry_base_test
 from sdv_telemetry_test_execution.telemetry_utils import shlex_join
 from sdv_test_fw.device import sdv_device
 from sdv_test_fw.test_execution import sdv_test_runner
+from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 from update_manager_client import UpdateManagerClient
 
 
@@ -203,9 +204,17 @@ class SdvE2ETelemetryApexUpdateTest(
         super().setup_class()
 
         self.sdv_device1 = self.get_device('device1')
+
+        self.original_authz_enable1 = self.sdv_device1.adb().prop.get(SdvDeviceProperty.AUTHZ_ENABLE)
+        self.sdv_device1.adb().prop.set(SdvDeviceProperty.AUTHZ_ENABLE, 'permissions_only')
+
         self.sdv_device1.adb().root_device()
 
         self.sdv_device2 = self.get_device('device2')
+
+        self.original_authz_enable2 = self.sdv_device2.adb().prop.get(SdvDeviceProperty.AUTHZ_ENABLE)
+        self.sdv_device2.adb().prop.set(SdvDeviceProperty.AUTHZ_ENABLE, 'permissions_only')
+
         self.sdv_device2.adb().root_device()
 
         self.update_manager_client1 = UpdateManagerClient(
@@ -217,6 +226,8 @@ class SdvE2ETelemetryApexUpdateTest(
 
     def teardown_class(self):
         # Custom teardown here
+        self.sdv_device1.adb().prop.set(SdvDeviceProperty.AUTHZ_ENABLE, self.original_authz_enable1)
+        self.sdv_device2.adb().prop.set(SdvDeviceProperty.AUTHZ_ENABLE, self.original_authz_enable2)
         super().teardown_class()
 
     def setup_test(self):
