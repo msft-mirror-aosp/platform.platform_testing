@@ -66,10 +66,18 @@ class SdvE2ETelemetryVpmIntegrationTest(
             str(simulator_out_dir),
         ])
 
+    def teardown_class(self):
+        self.sdv_device.adb().prop.set(SdvDeviceProperty.AUTHZ_ENABLE, self.original_authz_enable)
+        super().teardown_class()
+
     def setup_class(self):
         super().setup_class()
 
         self.sdv_device = self.get_device('device1')
+
+        self.original_authz_enable = self.sdv_device.adb().prop.get(SdvDeviceProperty.AUTHZ_ENABLE)
+        self.sdv_device.adb().prop.set(SdvDeviceProperty.AUTHZ_ENABLE, 'permissions_only')
+
         self.sdv_device.adb().root_device()
 
     def execute_vepsm_command(self, *args: List[str]) -> None:

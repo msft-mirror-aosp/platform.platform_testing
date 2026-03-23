@@ -21,6 +21,7 @@ from sdv_telemetry_test_execution import telemetry_base_test
 from sdv_telemetry_test_execution.telemetry_utils import shlex_join
 from sdv_test_fw.device import sdv_device
 from sdv_test_fw.test_execution import sdv_test_runner
+from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 
 
 class SdvE2ETelemetryAfterEventCollectionTest(
@@ -44,6 +45,10 @@ class SdvE2ETelemetryAfterEventCollectionTest(
     def setup_class(self):
         super().setup_class()
         self.sdv_device = self.get_device("device1")
+
+        self.original_authz_enable = self.sdv_device.adb().prop.get(SdvDeviceProperty.AUTHZ_ENABLE)
+        self.sdv_device.adb().prop.set(SdvDeviceProperty.AUTHZ_ENABLE, "permissions_only")
+
         self.sdv_device.adb().root_device()
 
         self.metrics_config = self.parse_textproto_metrics_config(
@@ -52,6 +57,7 @@ class SdvE2ETelemetryAfterEventCollectionTest(
 
     def teardown_class(self):
         # Custom teardown here
+        self.sdv_device.adb().prop.set(SdvDeviceProperty.AUTHZ_ENABLE, self.original_authz_enable)
         super().teardown_class()
 
     def setup_test(self):
