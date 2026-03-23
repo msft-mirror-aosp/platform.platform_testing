@@ -27,7 +27,7 @@ class SdvFeatureFlagUsageTest(sdv_base_test.SdvBaseTestClass):
         super().setup_class()
         self.sdv_device = self.get_device('device1')
 
-    @skip_if_feature_disabled("new_feature")
+    @skip_if_feature_disabled("com.android.sdv.samples.flags.code_flag_blueprint")
     def test_feature_flag_usage(self):
         try:
             self.sdv_device.adb().wait_for_device_online()
