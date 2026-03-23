@@ -16,6 +16,7 @@ import unittest
 from unittest import mock
 
 from sdv_test_fw.host import api_client
+from sdv_test_fw.host import cvd_common
 from sdv_test_fw.host import ho_requests
 from sdv_test_fw.host import host_orchestrator
 
@@ -174,7 +175,7 @@ class HostOrchestratorInterfaceTest(BaseHostOrchestratorTest):
         self.ho.powerwash(0)
 
         expected_request = ho_requests.cvd_action(
-            "g1", "cvd-1", ho_requests.CvdAction.POWERWASH, payload=None
+            "g1", "cvd-1", cvd_common.CvdAction.POWERWASH, payload=None
         )
         self.mock_api_client.execute.assert_any_call(expected_request)
 
@@ -184,7 +185,7 @@ class HostOrchestratorInterfaceTest(BaseHostOrchestratorTest):
         self.ho.powerbtn(0)
 
         expected_request = ho_requests.cvd_action(
-            "g1", "cvd-1", ho_requests.CvdAction.POWERBTN, payload=None
+            "g1", "cvd-1", cvd_common.CvdAction.POWER_BUTTON, payload=None
         )
         self.mock_api_client.execute.assert_any_call(expected_request)
 
@@ -194,7 +195,7 @@ class HostOrchestratorInterfaceTest(BaseHostOrchestratorTest):
         self.ho.start(0)
 
         expected_request = ho_requests.cvd_action(
-            "g1", "cvd-1", ho_requests.CvdAction.START, payload={}
+            "g1", "cvd-1", cvd_common.CvdAction.START, payload={}
         )
         self.mock_api_client.execute.assert_any_call(expected_request)
 
@@ -204,7 +205,7 @@ class HostOrchestratorInterfaceTest(BaseHostOrchestratorTest):
         self.ho.stop(0)
 
         expected_request = ho_requests.cvd_action(
-            "g1", "cvd-1", ho_requests.CvdAction.STOP, payload=None
+            "g1", "cvd-1", cvd_common.CvdAction.STOP, payload=None
         )
         self.mock_api_client.execute.assert_any_call(expected_request)
 

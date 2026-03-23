@@ -15,6 +15,7 @@
 import unittest
 
 from sdv_test_fw.host import api_client
+from sdv_test_fw.host import cvd_common
 from sdv_test_fw.host import ho_requests
 
 
@@ -116,7 +117,7 @@ class HoRequestsFactoryTest(unittest.TestCase):
         request = ho_requests.cvd_action(
             group="cvd-group",
             name="cvd-1",
-            action=ho_requests.CvdAction.START,
+            action=cvd_common.CvdAction.START,
             payload={"some": "config"},
         )
 
@@ -127,7 +128,7 @@ class HoRequestsFactoryTest(unittest.TestCase):
     def test_cvd_action_stop(self):
         """Verifies the STOP action request format."""
         request = ho_requests.cvd_action(
-            group="cvd-group", name="cvd-1", action=ho_requests.CvdAction.STOP
+            group="cvd-group", name="cvd-1", action=cvd_common.CvdAction.STOP
         )
 
         self.assertEqual(request.path, "cvds/cvd-group/cvd-1/:stop")
@@ -139,7 +140,7 @@ class HoRequestsFactoryTest(unittest.TestCase):
         request = ho_requests.cvd_action(
             group="cvd-group",
             name="cvd-1",
-            action=ho_requests.CvdAction.POWERWASH,
+            action=cvd_common.CvdAction.POWERWASH,
         )
 
         self.assertEqual(request.path, "cvds/cvd-group/cvd-1/:powerwash")
@@ -151,7 +152,7 @@ class HoRequestsFactoryTest(unittest.TestCase):
         request = ho_requests.cvd_action(
             group="cvd-group",
             name="cvd-1",
-            action=ho_requests.CvdAction.POWERBTN,
+            action=cvd_common.CvdAction.POWER_BUTTON,
         )
 
         self.assertEqual(request.path, "cvds/cvd-group/cvd-1/:powerbtn")

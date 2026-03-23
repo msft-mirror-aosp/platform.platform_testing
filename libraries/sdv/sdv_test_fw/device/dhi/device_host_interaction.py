@@ -29,9 +29,11 @@ class DeviceHostInteraction(abc.ABC):
         self.__device_info = device_info
 
     def _not_implemented_error(self, name):
-        """Raises controller error with implementation information"""
-        raise signals.ControllerError(
-            f'{name} has not been implemented for {self.implementation_info}'
+        """Raises NotImplementedError with information about the method"""
+        raise NotImplementedError(
+            f"{name} is not been implemented for {self.implementation_info}."
+            " Please make sure you are running the test in the right"
+            " environment"
         )
 
     @property
@@ -64,5 +66,5 @@ class DeviceHostInteraction(abc.ABC):
         """Re-initializes and restarts the VM"""
 
     @abc.abstractmethod
-    def power_button(self):
+    def powerbtn(self):
         """Trigger power button event on the VM"""
