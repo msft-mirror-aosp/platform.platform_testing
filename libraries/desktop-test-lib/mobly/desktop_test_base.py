@@ -117,6 +117,9 @@ class DesktopTestBase(base_instrumentation_test.BaseInstrumentationTestClass):
         # If PASIT info is contained in configs, then set up the controller.
         self.passport_host = None
         if 'PassportHost' in self.controller_configs:
+            passport_host.update_passport_host_params(
+                self.user_params, self.controller_configs
+            )
             self.passport_host = self.register_controller(passport_host)[0]
             self.passport_host.save_topology_diagram(self.log_path)
 
