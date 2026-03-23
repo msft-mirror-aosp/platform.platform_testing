@@ -66,7 +66,7 @@ class SdvSampleVpmTest(sdv_base_test.SdvBaseTestClass):
 
         # Enforce SDV Comm Stack authorization
         self.sdv_device.adb().execute_shell_command(
-            'setprop sdv.authz.enable true'
+            'setprop sdv.authz.enable permissions_only'
         )
 
         # Start VPM State Listener
