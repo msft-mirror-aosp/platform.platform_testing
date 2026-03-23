@@ -21,7 +21,6 @@ from vpm.sdv_vpm import SdvVpm
 class SdvCuj22Base():
     ERROR_MESSAGE_AUTHZ_PUBLISHER_GREP = \
         '\n[FAILURE]: Service Bundle expected to be authorized to publish messages'
-    AUTHZ_RPC_SERVICE_UNIT_LOG = 'instance.*:com.android.sdv.sample.foo.ServiceBundleFoo/instance#com-android-sdv-sample-foo-foo-rpc allows access to instance.*:com.android.sdv.sample.bar.ServiceBundleBar/instance'
     ERROR_MESSAGE_AUTHZ_RPC_CLIENT_GREP = \
         '\n[FAILURE]: Service Bundle expected to be authorized to call RPC server'
 
@@ -127,7 +126,7 @@ class SdvCuj22Base():
         """
         Verify logs that Pub is authorized
         """
-        authz_pubsub_unit_type_log = 'com.android.sdv.sample.foo.FooMessage allows access to instance.*:com.android.sdv.sample.foo.ServiceBundleFoo/instance'
+        authz_pubsub_unit_type_log = 'instance1:com.android.sdv.sample.foo.ServiceBundleFoo/instance declares permission to access com.android.sdv.sample.foo.FooMessage'
 
         # Publisher is authorized to publish message.
         polling.wait_and_verify_expected_logs(
@@ -141,7 +140,7 @@ class SdvCuj22Base():
         """
         Verify logs that Sub is authorized
         """
-        authz_pubsub_service_unit_log = 'instance.*:com.android.sdv.sample.foo.ServiceBundleFoo/instance#com-android-sdv-sample-foo-foo-message-core allows access to instance.*:com.android.sdv.sample.bar.ServiceBundleBar/instance'
+        authz_pubsub_service_unit_log = 'instance2:com.android.sdv.sample.bar.ServiceBundleBar/instance declares permission to access instance1:com.android.sdv.sample.foo.ServiceBundleFoo/instance#main'
 
         # Subscriber is authorized to discover and to subscribe
         # to the publisher.
@@ -155,31 +154,27 @@ class SdvCuj22Base():
         """
         Verify logs that RPC server is authorized
         """
-        authz_rpc_unit_type_log = 'com.android.sdv.sample.foo.FooRPC allows access to instance.*:com.android.sdv.sample.foo.ServiceBundleFoo/instance'
+        authz_rpc_server_log = "instance1:com.android.sdv.sample.foo.ServiceBundleFoo/instance declares permission to access com.android.sdv.sample.foo.FooRPC, audit message: Permitted by 'server' permission on service 'com.android.sdv.sample.foo.FooRPC'"
         error_message_authz_rpc_server_grep = \
             '\n[FAILURE]: Service Bundle expected to be authorized to implement RPC interface'
 
         # RPC server is authorized to implement RPC interface.
         polling.wait_and_verify_expected_logs(
             sdv_device = self.adb_device_server,
-            grep_text = authz_rpc_unit_type_log,
+            grep_text = authz_rpc_server_log,
             assert_msg = error_message_authz_rpc_server_grep,
-        )
-        # RPC client is authorized to connect to the RPC server.
-        polling.wait_and_verify_expected_logs(
-            sdv_device = self.adb_device_server,
-            grep_text = self.AUTHZ_RPC_SERVICE_UNIT_LOG,
-            assert_msg = self.ERROR_MESSAGE_AUTHZ_RPC_CLIENT_GREP,
         )
 
     def verify_logs_authz_rpc_client(self):
         """
         Verify logs that RPC client is authorized
         """
+        authz_rpc_client_log = "instance2:com.android.sdv.sample.bar.ServiceBundleBar/instance declares permission to access instance1:com.android.sdv.sample.foo.ServiceBundleFoo/instance#main, audit message: Permitted by 'client' permission on service 'com.android.sdv.sample.foo.FooRPC' with channel 'main'"
+
         # RPC client is authorized to discover the RPC server.
         polling.wait_and_verify_expected_logs(
             sdv_device = self.adb_device_client,
-            grep_text = self.AUTHZ_RPC_SERVICE_UNIT_LOG,
+            grep_text = authz_rpc_client_log,
             assert_msg = self.ERROR_MESSAGE_AUTHZ_RPC_CLIENT_GREP,
         )
 
