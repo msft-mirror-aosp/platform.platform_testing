@@ -52,6 +52,7 @@ import time
 
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 from sdv_test_fw.verification import polling
+from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 
 class SdvAuthzNegativeTest(sdv_base_test.SdvBaseTestClass):
 
@@ -73,19 +74,27 @@ class SdvAuthzNegativeTest(sdv_base_test.SdvBaseTestClass):
 
     def setup_class(self):
         super().setup_class()
-        self.adb_devices = {}
+
         # We don't start the service bundles in setup_class.
         # It's done at the beginning of each test case.
-        self.adb_devices['tested_service_device'] = self.get_device('device1').adb()
-        self.adb_devices['test_driver_device'] = self.get_device('device2').adb()
+        self.tested_service_device = self.get_device('device1').adb()
+        self.test_driver_device = self.get_device('device2').adb()
 
     def setup_test(self):
         # Avoid parent `clear_all_devices` to store the start up logs from VMs.
         logging.info('Custom Authz negative test setup')
         self.log_enter()
+
+        self.tested_service_device_original_authz = self.tested_service_device.prop.get(SdvDeviceProperty.AUTHZ_ENABLE)
+        self.test_driver_device_original_authz = self.test_driver_device.prop.get(SdvDeviceProperty.AUTHZ_ENABLE)
+
         if self.current_test_info.name == 'test_acls':
+            self.tested_service_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, "acls_only")
+            self.test_driver_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, "acls_only")
             self.setup_services_for_test(self.ACLS_TESTED_SERVICE_FQIN, self.ACLS_TEST_DRIVER_FQIN)
         elif self.current_test_info.name == 'test_permissions':
+            self.tested_service_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, "permissions_only")
+            self.test_driver_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, "permissions_only")
             self.setup_services_for_test(self.PERMISSIONS_TESTED_SERVICE_FQIN, self.PERMISSIONS_TEST_DRIVER_FQIN)
 
     def teardown_test(self):
@@ -95,6 +104,9 @@ class SdvAuthzNegativeTest(sdv_base_test.SdvBaseTestClass):
             self.teardown_services_for_test(self.ACLS_TESTED_SERVICE_FQIN, self.ACLS_TEST_DRIVER_FQIN)
         elif self.current_test_info.name == 'test_permissions':
             self.teardown_services_for_test(self.PERMISSIONS_TESTED_SERVICE_FQIN, self.PERMISSIONS_TEST_DRIVER_FQIN)
+
+        self.tested_service_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, self.tested_service_device_original_authz)
+        self.test_driver_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, self.test_driver_device_original_authz)
         self.log_exit()
 
     def teardown_class(self):
@@ -109,11 +121,10 @@ class SdvAuthzNegativeTest(sdv_base_test.SdvBaseTestClass):
 
     def setup_services_for_test(self, tested_service_fqin, test_driver_fqin):
         """ Setup testing services on VMs. """
-        for device_key, fqin in [
-            ('tested_service_device', tested_service_fqin),
-            ('test_driver_device', test_driver_fqin)
+        for adb_device, fqin in [
+            (self.tested_service_device, tested_service_fqin),
+            (self.test_driver_device, test_driver_fqin)
         ]:
-            adb_device = self.adb_devices[device_key]
             adb_device.wait_for_device_online()
             adb_device.reboot_device()
             adb_device.wait_for_device_online()
@@ -123,11 +134,10 @@ class SdvAuthzNegativeTest(sdv_base_test.SdvBaseTestClass):
 
     def teardown_services_for_test(self, tested_service_fqin, test_driver_fqin):
         """ Teardown testing services on VMs. """
-        for device_key, fqin in [
-            ('tested_service_device', tested_service_fqin),
-            ('test_driver_device', test_driver_fqin)
+        for adb_device, fqin in [
+            (self.tested_service_device, tested_service_fqin),
+            (self.test_driver_device, test_driver_fqin)
         ]:
-            adb_device = self.adb_devices[device_key]
             adb_device.execute_shell_command(self.DESTROY_SERVICE_BUNDLE_COMMAND.format(service_fqin = fqin))
 
     def log_enter(self):
@@ -184,11 +194,10 @@ class SdvAuthzNegativeTest(sdv_base_test.SdvBaseTestClass):
 
     def test_acls(self):
         """Tests the Authz ACLs configuration."""
-        test_driver_device = self.adb_devices['test_driver_device']
 
         for grep_text, assert_msg in self._get_expected_logs('ACLs'):
             self.assert_logcat(
-                sdv_device=test_driver_device,
+                sdv_device=self.test_driver_device,
                 logcat_args=self.ACLS_TESTING_SERVICES_LOGCAT_ARGS,
                 grep_text=grep_text,
                 assert_msg=assert_msg
@@ -196,11 +205,10 @@ class SdvAuthzNegativeTest(sdv_base_test.SdvBaseTestClass):
 
     def test_permissions(self):
         """Tests the Authz permissions configuration."""
-        test_driver_device = self.adb_devices['test_driver_device']
 
         for grep_text, assert_msg in self._get_expected_logs('permissions'):
             self.assert_logcat(
-                sdv_device=test_driver_device,
+                sdv_device=self.test_driver_device,
                 logcat_args=self.PERMISSIONS_TESTING_SERVICES_LOGCAT_ARGS,
                 grep_text=grep_text,
                 assert_msg=assert_msg
