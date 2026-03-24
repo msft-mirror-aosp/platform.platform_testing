@@ -13,10 +13,34 @@
 # limitations under the License.
 
 from sdv_test_fw.device.dhi import device_host_interaction
+from sdv_test_fw.host import host_orchestrator
 
 
 class RemoteCuttlefishDHI(device_host_interaction.DeviceHostInteraction):
     """Implements device interaction with CF remotely."""
+
+    def __init__(self, adb_device, device_info, user_params):
+        super().__init__(adb_device, device_info)
+
+        # Requires a Host Orchestrator URL that should be provided by user_params
+        ho_api_url = user_params.get('ho_base_url', None)
+        if ho_api_url is None:
+            raise device_host_interaction.DeviceHostInteractionError(
+                'RemoteCuttlefishDHI requires Host Orchestrator API URL. Please'
+                ' ensure the test is being run in the right environment and'
+                ' setup.'
+            )
+
+        self._host_orchestrator = host_orchestrator.HostOrchestrator(ho_api_url)
+
+    @property
+    def _device_id(self) -> int:
+        """Returns the identifier of the device for Host Orchestrator."""
+        # Host orchestrator receives requests for devices in a 0 to N_DEVICES-1
+        # format. It is assumed the devices are in order so the instances
+        # correlate with the index in the list (e.g., 0 - instance1,
+        # 1 - instance2, 2 - instance3, etc.).
+        return self._device_info.instance_number - 1
 
     @property
     def implementation_info(self):

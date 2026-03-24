@@ -15,6 +15,7 @@
 import unittest
 from unittest import mock
 
+from sdv_test_fw.device.dhi import device_host_interaction
 from sdv_test_fw.device.dhi import hardware_dhi
 from sdv_test_fw.device.dhi import local_cuttlefish_dhi
 from sdv_test_fw.device.dhi import remote_cuttlefish_dhi
@@ -79,8 +80,19 @@ class RemoteCuttlefishTest(DhiTestCase):
 
         mock_adb_device = mock.MagicMock()
         mock_device_info = mock.MagicMock()
+        mock_device_info.instance_number = 1
+        user_params = {'ho_base_url': 'http://localhost'}
+
+        # Patch host_orchestrator since it is required by RemoteCuttlefishDHI
+        patcher = mock.patch(
+            'sdv_test_fw.device.dhi.remote_cuttlefish_dhi.host_orchestrator',
+            create=True,
+        )
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
         self.dhi = remote_cuttlefish_dhi.RemoteCuttlefishDHI(
-            mock_adb_device, mock_device_info
+            mock_adb_device, mock_device_info, user_params
         )
 
     def test_not_implemented_methods_raise_error(self):
@@ -92,6 +104,25 @@ class RemoteCuttlefishTest(DhiTestCase):
     def test_implementation(self):
         # Verify the implementation is instantiated correctly by retrieving its info.
         self.assertEqual(self.dhi.implementation_info, 'remote CF VM')
+
+    def test_device_id_calculation(self):
+        # setUp uses instance_number = 1, so device_id should be 0.
+        self.assertEqual(self.dhi._device_id, 0)
+
+
+class RemoteCuttlefishInitTest(unittest.TestCase):
+
+    def test_init_fails_without_ho_url(self):
+        mock_adb_device = mock.MagicMock()
+        mock_device_info = mock.MagicMock()
+        user_params = {}  # No ho_base_url
+
+        with self.assertRaises(
+            device_host_interaction.DeviceHostInteractionError
+        ):
+            remote_cuttlefish_dhi.RemoteCuttlefishDHI(
+                mock_adb_device, mock_device_info, user_params
+            )
 
 
 if __name__ == '__main__':
