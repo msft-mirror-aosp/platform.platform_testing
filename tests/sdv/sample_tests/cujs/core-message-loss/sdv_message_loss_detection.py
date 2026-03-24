@@ -27,6 +27,7 @@ import logging
 import math
 import time
 from absl.testing import parameterized
+from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 
 class SdvSampleCujMessageLossDetection(sdv_base_test.SdvBaseTestClass, parameterized.TestCase):
@@ -57,6 +58,23 @@ class SdvSampleCujMessageLossDetection(sdv_base_test.SdvBaseTestClass, parameter
         super().setup_class()
         self.sdv_device_foo = self.get_device('device1')
         self.sdv_device_qux = self.get_device('device2')
+
+        # AuthZ permissions migration: save the current status of AuthZ
+        self.sdv_authz_enable_value_foo = self.sdv_device_foo.adb().prop.get(
+            SdvDeviceProperty.AUTHZ_ENABLE)
+        self.sdv_device_foo.adb().prop.set(SdvDeviceProperty.AUTHZ_ENABLE, 'disabled')
+
+        self.sdv_authz_enable_value_qux = self.sdv_device_qux.adb().prop.get(
+            SdvDeviceProperty.AUTHZ_ENABLE)
+        self.sdv_device_qux.adb().prop.set(SdvDeviceProperty.AUTHZ_ENABLE, 'disabled')
+
+    def teardown_class(self):
+        # AuthZ permissions migration: Reset SDV Comm Stack authorization
+        self.sdv_device_foo.adb().prop.set(
+            SdvDeviceProperty.AUTHZ_ENABLE, self.sdv_authz_enable_value_foo)
+        self.sdv_device_qux.adb().prop.set(
+            SdvDeviceProperty.AUTHZ_ENABLE, self.sdv_authz_enable_value_qux)
+        super().teardown_class()
 
     def setup_test(self):
         # Stop Qux and Foo bundles to avoid issues with starting them as a part of the test.
