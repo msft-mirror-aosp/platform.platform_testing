@@ -43,6 +43,7 @@ public class AutoNotificationHelperImpl extends AbstractStandardAppHelper
     private BySelector mScrollableElementSelector;
     private ScrollDirection mScrollDirection;
     private static final int WAIT_MS = 30000;
+    private static final long DURATION = 500;
 
     public AutoNotificationHelperImpl(Instrumentation instr) {
         super(instr);
@@ -386,6 +387,21 @@ public class AutoNotificationHelperImpl extends AbstractStandardAppHelper
     }
 
     @Override
+    public void scrollMultiplePages(int pages, boolean forward) {
+        for (int i = 0; i < pages; i++) {
+            if (!isAppInForeground()) {
+                open();
+            }
+            boolean success = forward ? scrollDownOnePage() : scrollUpOnePage();
+            if (!success) {
+                RunUtil.getDefault().sleep(DURATION);
+                if (forward) scrollDownOnePage(); else scrollUpOnePage();
+            }
+            RunUtil.getDefault().sleep(DURATION);
+        }
+    }
+
+    @Override
     public boolean isRecentNotification() {
         BySelector recentNotificationsPanel =
                 getUiElementFromConfig(AutomotiveConfigConstants.RECENT_NOTIFICATIONS);
@@ -459,6 +475,20 @@ public class AutoNotificationHelperImpl extends AbstractStandardAppHelper
         open();
         UiObject2 manage_btn = findInNotificationList(selector);
         return manage_btn != null;
+    }
+
+    private static class RunUtil {
+        private static RunUtil sInstance;
+        private RunUtil() {}
+        private static RunUtil getDefault() {
+            if (sInstance == null) {
+                sInstance = new RunUtil();
+            }
+            return sInstance;
+        }
+        private void sleep(long duration) {
+            android.os.SystemClock.sleep(duration);
+        }
     }
 
 }
