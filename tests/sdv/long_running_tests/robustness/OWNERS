@@ -6,7 +6,7 @@ include platform/system/software_defined_vehicle/automotive_services:main:/OWNER
 
 # Core services
 # Bug component: 1307790
-include platform/system/software_defined_vehicle/core_services:main:/OWNERS
+include platform/system/software_defined_vehicle/samples:main:/OWNERS
 
 # Platform:
 # Bug component: 1307789

@@ -12,13 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""SDV Feature Flag"""
+import enum
 
-#This class is a stub for future implementation.
-# At the moment every feature is considered enabled and no actual flag value is checked
-class SdvFeatureFlag:
 
-    NAMESPACE = ""
+class CvdAction(enum.Enum):
+    """Available actions for Cuttlefish Virtual Devices."""
 
-    def get_flag_value(self, feature):
-        return True
+    STATUS = 'status'
+    START = 'start'
+    STOP = 'stop'
+    RESTART = 'restart'
+    POWERWASH = 'powerwash'
+    POWER_BUTTON = 'powerbtn'

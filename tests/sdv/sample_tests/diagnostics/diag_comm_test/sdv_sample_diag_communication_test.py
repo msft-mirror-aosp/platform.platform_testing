@@ -220,6 +220,7 @@ class SdvSampleDiagCommunicationTest(
                 extended_data_message_name: \"com\.android\.sdv\.sample\.oem\.diagnostics\.OverheatingData\",
                 fault_listener_mask: 1,
                 service_unit_name: \"overheating-event\",
+                topic: \"\",
                 special_fields: SpecialFields \{
                     unknown_fields: UnknownFields \{
                         fields: None,
@@ -236,6 +237,7 @@ class SdvSampleDiagCommunicationTest(
             extended_data_message_name: \"com\.android\.sdv\.sample\.oem\.diagnostics\.OverheatingData\",
             fault_listener_mask: 1,
             service_unit_name: \"overheating-event\",
+            topic: \"\",
             special_fields: SpecialFields \{
                 unknown_fields: UnknownFields \{
                     fields: None,
@@ -447,6 +449,7 @@ class SdvSampleDiagCommunicationTest(
                 extended_data_message_name: \"com\.android\.sdv\.sample\.oem\.diagnostics\.LowPressureData\",
                 fault_listener_mask: 3,
                 service_unit_name: \"\",
+                topic: \"\",
                 special_fields: SpecialFields \{
                     unknown_fields: UnknownFields \{
                         fields: None,
@@ -461,6 +464,7 @@ class SdvSampleDiagCommunicationTest(
                 extended_data_message_name: \"com\.android\.sdv\.sample\.oem\.diagnostics\.Pressure\",
                 fault_listener_mask: 0,
                 service_unit_name: \"pressure-change-publisher\",
+                topic: \"\",
                 special_fields: SpecialFields \{
                     unknown_fields: UnknownFields \{
                         fields: None,
@@ -477,6 +481,7 @@ class SdvSampleDiagCommunicationTest(
             extended_data_message_name: \"com\.android\.sdv\.sample\.oem\.diagnostics\.LowPressureData\",
             fault_listener_mask: 3,
             service_unit_name: \"\",
+            topic: \"\",
             special_fields: SpecialFields \{
                 unknown_fields: UnknownFields \{
                     fields: None,
@@ -496,6 +501,7 @@ class SdvSampleDiagCommunicationTest(
             extended_data_message_name: \"com\.android\.sdv\.sample\.oem\.diagnostics\.Pressure\",
             fault_listener_mask: 0,
             service_unit_name: \"pressure-change-publisher\",
+            topic: \"\",
             special_fields: SpecialFields \{
                 unknown_fields: UnknownFields \{
                     fields: None,

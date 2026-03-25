@@ -15,11 +15,10 @@
 """Factory functions and data models for Host Orchestrator API interaction."""
 
 import dataclasses
-import enum
 from typing import Any, Dict, Optional
 
 from sdv_test_fw.host import api_client
-
+from sdv_test_fw.host import cvd_common
 
 # ==============================================================================
 # Data Models
@@ -61,20 +60,6 @@ class Operation:
 
 
 # ==============================================================================
-# Enums
-# ==============================================================================
-
-
-class CvdAction(enum.Enum):
-    """Available cvd actions."""
-
-    POWERWASH = "powerwash"
-    POWERBTN = "powerbtn"
-    START = "start"
-    STOP = "stop"
-
-
-# ==============================================================================
 # Request Factories
 # ==============================================================================
 
@@ -98,7 +83,7 @@ def get_operation(operation_name: str) -> api_client.ApiRequest:
 def cvd_action(
     group: str,
     name: str,
-    action: CvdAction,
+    action: cvd_common.CvdAction,
     payload: Optional[Dict[str, Any]] = None,
 ) -> api_client.ApiRequest:
     """Returns the ApiRequest for a specific cvd action."""

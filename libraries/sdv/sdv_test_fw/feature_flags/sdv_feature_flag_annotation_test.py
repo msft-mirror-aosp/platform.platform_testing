@@ -13,82 +13,77 @@
 # limitations under the License.
 
 import unittest
-from unittest.mock import patch
+from unittest import mock
 
-from sdv_test_fw.feature_flags.sdv_feature_flag_annotation import skip_if_feature_disabled
+from sdv_test_fw.feature_flags import sdv_feature_flag_annotation
 from mobly import signals
 
 # Define a minimal TestClass that the decorator expects 'self' to be
 class MockTestClass(unittest.TestCase):
     """A mock test class to be used with the decorator."""
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.feature_flags = None
+
     def mock_test_method(self):
         return "Test Executed"
 
 class TestSkipIfFeatureDisabled(unittest.TestCase):
 
-    @patch('sdv_test_fw.feature_flags.sdv_feature_flag_annotation.SdvFeatureFlag')
-    def test_feature_enabled_runs_test(self, MockSdvFeatureFlag):
-        """Test that the decorated method runs when the feature is True."""
+    def test_feature_enabled_runs_test(self):
+        """Test that the decorated method runs when the feature is enabled."""
 
-        # Setup the mock to return True
-        mock_instance = MockSdvFeatureFlag.return_value
-        mock_instance.get_flag_value.return_value = True
+        mock_flags = mock.MagicMock()
+        mock_flags.is_feature_enabled.return_value = True
 
         TEST_FEATURE_NAME = 'my_test_feature'
-        decorated_method = skip_if_feature_disabled(TEST_FEATURE_NAME)(
+        decorated_method = sdv_feature_flag_annotation.skip_if_feature_disabled(TEST_FEATURE_NAME)(
             MockTestClass.mock_test_method
         )
 
         test_instance = MockTestClass()
+        test_instance.feature_flags = mock_flags
         result = decorated_method(test_instance)
 
         self.assertEqual(result, "Test Executed")
+        mock_flags.is_feature_enabled.assert_called_once_with(TEST_FEATURE_NAME)
 
-        MockSdvFeatureFlag.assert_called_once()
-        mock_instance.get_flag_value.assert_called_once_with(TEST_FEATURE_NAME)
-
-
-    @patch('sdv_test_fw.feature_flags.sdv_feature_flag_annotation.SdvFeatureFlag')
-    def test_feature_disabled_skips_test(self, MockSdvFeatureFlag):
+    def test_feature_disabled_skips_test(self):
         """Test that the decorated method skips when the feature is disabled."""
 
-        # Setup the mock to return a disabled state
-        mock_instance = MockSdvFeatureFlag.return_value
-        mock_instance.get_flag_value.return_value = False
+        mock_flags = mock.MagicMock()
+        mock_flags.is_feature_enabled.return_value = False
 
         TEST_FEATURE_NAME = 'my_disabled_feature'
-        decorated_method = skip_if_feature_disabled(TEST_FEATURE_NAME)(
+        decorated_method = sdv_feature_flag_annotation.skip_if_feature_disabled(TEST_FEATURE_NAME)(
             MockTestClass.mock_test_method
         )
 
         test_instance = MockTestClass()
+        test_instance.feature_flags = mock_flags
         expected_message = (
-            f"Skipping test: feature '{TEST_FEATURE_NAME}' is disabled in the config."
+            f"Skipping test: feature '{TEST_FEATURE_NAME}' is disabled on the device."
         )
 
         with self.assertRaisesRegex(signals.TestSkip, expected_message):
             decorated_method(test_instance)
 
-        MockSdvFeatureFlag.assert_called_once()
-        mock_instance.get_flag_value.assert_called_once_with(TEST_FEATURE_NAME)
+        mock_flags.is_feature_enabled.assert_called_once_with(TEST_FEATURE_NAME)
 
-    @patch('sdv_test_fw.feature_flags.sdv_feature_flag_annotation.SdvFeatureFlag')
-    def test_feature_none_skips_test(self, MockSdvFeatureFlag):
-        """Test that the decorated method skips when the feature returns None (e.g., not set)."""
-
-        # Setup the mock to return None
-        mock_instance = MockSdvFeatureFlag.return_value
-        mock_instance.get_flag_value.return_value = None
+    def test_no_flags_initialized_skips_test(self):
+        """Test that the decorated method skips when no flag source is initialized."""
 
         TEST_FEATURE_NAME = 'another_feature'
-        decorated_method = skip_if_feature_disabled(TEST_FEATURE_NAME)(
+        decorated_method = sdv_feature_flag_annotation.skip_if_feature_disabled(TEST_FEATURE_NAME)(
             MockTestClass.mock_test_method
         )
 
         test_instance = MockTestClass()
+        test_instance.feature_flags = None
+
         expected_message = (
-            f"Skipping test: feature '{TEST_FEATURE_NAME}' is disabled in the config."
+            f"Skipping test: Feature flags not initialized in MockTestClass."
         )
 
         with self.assertRaisesRegex(signals.TestSkip, expected_message):

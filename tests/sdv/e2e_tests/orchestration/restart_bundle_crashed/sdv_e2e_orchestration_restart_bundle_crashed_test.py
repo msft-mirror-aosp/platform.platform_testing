@@ -43,6 +43,7 @@ class SdvE2EOrchestrationRestartBundleCrashedTest(
     MODE_CRASH_ON_START_NO_RESTARTS = "crash-on-start-no-restarts"
     MODE_CRASH_ON_CREATE_RESTARTS = "crash-on-create-restarts"
     MODE_CRASH_ON_CREATE_NO_RESTARTS = "crash-on-create-no-restarts"
+    MODE_CRASH_ON_START_DEFAULT_RETRIES = "crash-on-start-default-retries"
 
     LM_TRANSITION_REQUEST_LOG = r'Request for moving service bundle .* "com.android.sdv.test.orchestrator", .*: "OrchestratorSampleRustServiceBundle", .*: "{instance}" }} to {lifecycle} state was .*'
     NOTIFYING_SUBSCRIBERS_INSTANCE_STATE_LOG = r'Notifying subscribers .* "com.android.sdv.test.orchestrator", .*: "OrchestratorSampleRustServiceBundle", .*: "{instance}" .* r#?{recovery} .* r#?{lifecycle}'
@@ -155,6 +156,34 @@ class SdvE2EOrchestrationRestartBundleCrashedTest(
             f"{self.get_suite_name()}#{self.current_test_info.name} completed."
         )
 
+    def test_bundle_restarted_with_default_retries_if_crashed_on_start(self):
+        logging.info(
+            f"{self.get_suite_name()}#{self.current_test_info.name} started"
+        )
+
+        # Must be the same value used in boot params for the `ro.boot.sdv.orchestrator.recovery.max_retries`
+        retries = 2
+
+        # Make sure we start the test with clean logcat
+        self.sdv_device.clear_logcat()
+
+        # Trigger initial start of the service bundle
+        self.sdv_device.execute_shell_command_in_subprocess(self.MODE_CRASH_ON_START_DEFAULT_RETRIES, self.SEND_CUSTOM_MODE_COMMAND.format(state=self.MODE_CRASH_ON_START_DEFAULT_RETRIES))
+        # Wait until the mode has finished enforcing to make sure all expected logs are
+        # already there.
+        self.wait_for_logcat(self.FINISHED_ENFORCING_CUSTOM_MODE_SUCCESS_LOG.format(state=self.MODE_CRASH_ON_START_DEFAULT_RETRIES))
+
+        lm_request_message = self.LM_TRANSITION_REQUEST_LOG.format(
+            instance=self.MODE_CRASH_ON_START_DEFAULT_RETRIES, lifecycle=self.LIFECYCLE_STATE_STARTED
+        )
+        # Verify that the start request was attempted exactly 3 times: 2 from restart and 1 from
+        # initial trigger.
+        self.verify_message_exactly_n_times(self.sdv_device.advance_logcat(), lm_request_message, retries + 1)
+
+        logging.info(
+            f"{self.get_suite_name()}#{self.current_test_info.name} completed."
+        )
+
     def test_bundle_restarted_after_crash_notification(self):
         logging.info(
             f"{self.get_suite_name()}#{self.current_test_info.name} started"
@@ -162,7 +191,7 @@ class SdvE2EOrchestrationRestartBundleCrashedTest(
 
         # GIVEN
         # Start the bundle that will be killed later in the test
-        self.sdv_device.execute_shell_command_in_subprocess("crash_notifiy_process", self.SEND_CUSTOM_MODE_COMMAND.format(state="crash-notify"))
+        self.sdv_device.execute_shell_command_in_subprocess("crash_notify_process", self.SEND_CUSTOM_MODE_COMMAND.format(state="crash-notify"))
         transition_completed_timestamp = self.wait_for_logcat(self.CRASHED_NOTIFICATION_BUNDLE_STARTED_SUCCESS_LOG)
 
         # WHEN the bundle is killed
