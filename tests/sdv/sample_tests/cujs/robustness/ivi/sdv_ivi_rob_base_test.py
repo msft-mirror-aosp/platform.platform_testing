@@ -405,6 +405,19 @@ class SdvIviRobBaseTest(
             expected_result=r"sample: Received: x1 FooMessage\(s\)",
         )
 
+    def wait_for_ivi_app_foreground(self):
+        # Define a helper to run the command and check the condition
+        def is_app_in_recents():
+            cmd = "dumpsys activity recents | grep 'Recent #0' | grep 'com.android.testapp.sdvcarmonitor'"
+            output = self.ivi_vm_device.execute_shell_command(cmd)
+            return 'com.android.testapp.sdvcarmonitor' in output
+
+        polling.wait_for_true(
+            is_app_in_recents,
+            timeout=30,
+            assert_msg="App 'com.android.testapp.sdvcarmonitor' did not appear in Recent #0 within 30s"
+        )
+
     def wait_for_ivi_app_ready(self):
         polling.wait_and_verify_expected_logs(
             sdv_device=self.ivi_vm_device,

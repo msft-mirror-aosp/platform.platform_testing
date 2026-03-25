@@ -49,6 +49,7 @@ class SdvLongRunningCujRob051IviTest(
         )
         # AND GIVEN SdvCarMonitorTestApp is running.
         self.ivi_vm_device.execute_shell_command(self.OPEN_APP_CMD)
+        self.wait_for_ivi_app_foreground()
 
         # AND GIVEN IVI receives messages
         self.verify_new_message_received_on_ivi()
@@ -79,6 +80,7 @@ class SdvLongRunningCujRob051IviTest(
 
         # AND GIVEN SdvCarMonitorTestApp is running (publisher).
         self.ivi_vm_device.execute_shell_command(self.OPEN_APP_CMD)
+        self.wait_for_ivi_app_foreground()
 
         # WHEN IVI app publishes messages.
         stop_event, publishing_thread = self._start_continuous_ivi_publishing()
@@ -99,6 +101,7 @@ class SdvLongRunningCujRob051IviTest(
 
         # AND WHEN the IVI app (publisher) is started again.
         self.ivi_vm_device.execute_shell_command(self.OPEN_APP_CMD)
+        self.wait_for_ivi_app_foreground()
 
         # AND WHEN IVI app publishes messages again.
         stop_event, publishing_thread = self._start_continuous_ivi_publishing()
