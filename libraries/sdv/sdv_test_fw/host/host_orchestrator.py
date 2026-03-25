@@ -18,6 +18,7 @@ import logging
 from typing import Any, Dict, List, Optional
 
 from sdv_test_fw.host import api_client
+from sdv_test_fw.host import cvd_common
 from sdv_test_fw.host import ho_requests
 from sdv_test_fw.verification import polling
 
@@ -60,7 +61,7 @@ class HostOrchestrator:
             api_client.ApiClientError: If the underlying API request fails.
             TimeoutError: If the operation does not complete within the timeout.
         """
-        self._perform_action(device_index, ho_requests.CvdAction.POWERWASH)
+        self._perform_action(device_index, cvd_common.CvdAction.POWERWASH)
 
     def powerbtn(self, device_index: int):
         """Simulates a power button press on a specific CVD.
@@ -75,7 +76,7 @@ class HostOrchestrator:
             api_client.ApiClientError: If the underlying API request fails.
             TimeoutError: If the operation does not complete within the timeout.
         """
-        self._perform_action(device_index, ho_requests.CvdAction.POWERBTN)
+        self._perform_action(device_index, cvd_common.CvdAction.POWER_BUTTON)
 
     def start(self, device_index: int):
         """Starts a stopped CVD.
@@ -92,7 +93,7 @@ class HostOrchestrator:
         """
         # The original code sent empty JSON "{}" for start
         self._perform_action(
-            device_index, ho_requests.CvdAction.START, payload={}
+            device_index, cvd_common.CvdAction.START, payload={}
         )
 
     def stop(self, device_index: int):
@@ -108,7 +109,7 @@ class HostOrchestrator:
             api_client.ApiClientError: If the underlying API request fails.
             TimeoutError: If the operation does not complete within the timeout.
         """
-        self._perform_action(device_index, ho_requests.CvdAction.STOP)
+        self._perform_action(device_index, cvd_common.CvdAction.STOP)
 
     # ==========================================================================
     # Internal Logic
@@ -185,7 +186,7 @@ class HostOrchestrator:
     def _perform_action(
         self,
         device_index: int,
-        action: ho_requests.CvdAction,
+        action: cvd_common.CvdAction,
         payload: Optional[Dict[str, Any]] = None,
     ):
         """Executes a generic action on a CVD and waits for completion.

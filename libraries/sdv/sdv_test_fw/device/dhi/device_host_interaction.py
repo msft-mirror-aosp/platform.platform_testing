@@ -17,6 +17,12 @@ import abc
 from mobly import signals
 
 
+class DeviceHostInteractionError(signals.ControllerError):
+    """Base exception for all Device Host Interaction (DHI) errors."""
+
+    pass
+
+
 class DeviceHostInteraction(abc.ABC):
     """Device Host Interaction Interface
 
@@ -25,13 +31,15 @@ class DeviceHostInteraction(abc.ABC):
     """
 
     def __init__(self, adb_device, device_info):
-        self.__adb_device = adb_device
-        self.__device_info = device_info
+        self._adb_device = adb_device
+        self._device_info = device_info
 
     def _not_implemented_error(self, name):
-        """Raises controller error with implementation information"""
-        raise signals.ControllerError(
-            f'{name} has not been implemented for {self.implementation_info}'
+        """Raises NotImplementedError with information about the method"""
+        raise NotImplementedError(
+            f"{name} is not been implemented for {self.implementation_info}."
+            " Please make sure you are running the test in the right"
+            " environment"
         )
 
     @property
@@ -64,5 +72,5 @@ class DeviceHostInteraction(abc.ABC):
         """Re-initializes and restarts the VM"""
 
     @abc.abstractmethod
-    def power_button(self):
+    def powerbtn(self):
         """Trigger power button event on the VM"""

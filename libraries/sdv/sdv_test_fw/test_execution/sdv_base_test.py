@@ -116,12 +116,13 @@ class SdvBaseTestClass(base_test.BaseTestClass):
         for index in range(1, self.__num_of_devices + 1):
             device_tag = sdv_info.build_device_tag(index)
 
-            # The Device Host Interaction (DHI) strategy depends on the execution environment.
-            # We explicitly pass the environment context (local vs. remote) because the
-            # device object cannot infer it otherwise.
+            # The Device Host Interaction (DHI) strategy depends on the execution
+            # environment. We pass user_params so the device object can extract
+            # the necessary configuration (e.g. environment context,
+            # Host Orchestrator URL) to instantiate the right controller.
             device = sdv_device.SdvDevice(
                 android_device.get_device(self.__ads, label=device_tag),
-                is_local_run=self.is_local_run(),
+                user_params=self.user_params,
             )
 
             # Test creation expects the devices are mapped to the corresponding
