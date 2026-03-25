@@ -89,13 +89,9 @@ class SdvAuthzNegativeTest(sdv_base_test.SdvBaseTestClass):
         self.test_driver_device_original_authz = self.test_driver_device.prop.get(SdvDeviceProperty.AUTHZ_ENABLE)
 
         if self.current_test_info.name == 'test_acls':
-            self.tested_service_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, "acls_only")
-            self.test_driver_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, "acls_only")
-            self.setup_services_for_test(self.ACLS_TESTED_SERVICE_FQIN, self.ACLS_TEST_DRIVER_FQIN)
+            self.setup_services_for_test(self.ACLS_TESTED_SERVICE_FQIN, self.ACLS_TEST_DRIVER_FQIN, "acls_only")
         elif self.current_test_info.name == 'test_permissions':
-            self.tested_service_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, "permissions_only")
-            self.test_driver_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, "permissions_only")
-            self.setup_services_for_test(self.PERMISSIONS_TESTED_SERVICE_FQIN, self.PERMISSIONS_TEST_DRIVER_FQIN)
+            self.setup_services_for_test(self.PERMISSIONS_TESTED_SERVICE_FQIN, self.PERMISSIONS_TEST_DRIVER_FQIN, "permissions_only")
 
     def teardown_test(self):
         # Avoid parent `clear_all_devices` to store the start up logs from VMs.
@@ -119,7 +115,7 @@ class SdvAuthzNegativeTest(sdv_base_test.SdvBaseTestClass):
     ##            Utility functions.              ##
     ################################################
 
-    def setup_services_for_test(self, tested_service_fqin, test_driver_fqin):
+    def setup_services_for_test(self, tested_service_fqin, test_driver_fqin, authz_mode):
         """ Setup testing services on VMs. """
         for adb_device, fqin in [
             (self.tested_service_device, tested_service_fqin),
@@ -128,6 +124,10 @@ class SdvAuthzNegativeTest(sdv_base_test.SdvBaseTestClass):
             adb_device.wait_for_device_online()
             adb_device.reboot_device()
             adb_device.wait_for_device_online()
+
+            self.tested_service_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, authz_mode)
+            self.test_driver_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, authz_mode)
+
             adb_device.verify_logcat_is_running()
             adb_device.execute_shell_command(self.CREATE_SERVICE_BUNDLE_COMMAND.format(service_fqin = fqin))
             adb_device.execute_shell_command(self.START_SERVICE_BUNDLE_COMMAND.format(service_fqin = fqin))
