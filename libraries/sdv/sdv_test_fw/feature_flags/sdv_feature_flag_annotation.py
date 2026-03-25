@@ -16,19 +16,23 @@
 
 import functools
 from mobly import signals
-from sdv_test_fw.feature_flags.sdv_feature_flag import SdvFeatureFlag
 
 def skip_if_feature_disabled(feature_name):
-    """Decorator that skips a test if a feature flag is False in user_params."""
+    """Decorator that skips a test if a feature flag is disabled on the device."""
 
     def decorator(test_func):
         @functools.wraps(test_func)
         def wrapper(self, *args, **kwargs):
-            self.sdv_feature_flag = SdvFeatureFlag()
-            flag = self.sdv_feature_flag.get_flag_value(feature_name)
-            if not flag:
+            flags = getattr(self, 'feature_flags', None)
+
+            if flags is None:
                 raise signals.TestSkip(
-                    f"Skipping test: feature '{feature_name}' is disabled in the config."
+                    f"Skipping test: Feature flags not initialized in {self.__class__.__name__}."
+                )
+
+            if not flags.is_feature_enabled(feature_name):
+                raise signals.TestSkip(
+                    f"Skipping test: feature '{feature_name}' is disabled on the device."
                 )
             return test_func(self, *args, **kwargs)
         return wrapper
