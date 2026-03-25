@@ -22,6 +22,7 @@ import time
 from absl.testing import parameterized
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 from sdv_test_fw.verification import polling
+from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 
 
 class SdvSampleVsidlProviderTest(
@@ -123,32 +124,20 @@ class SdvSampleVsidlProviderTest(
 
         # Save the current values of sdv.authz.enable
         self.sdv_authz_enable_value_server = (
-            self.sdv_device_server.adb().execute_shell_command(
-                'getprop sdv.authz.enable'
-            )
+            self.sdv_device_server.adb().prop.get(SdvDeviceProperty.AUTHZ_ENABLE)
         )
         self.sdv_authz_enable_value_client = (
-            self.sdv_device_client.adb().execute_shell_command(
-                'getprop sdv.authz.enable'
-            )
+            self.sdv_device_client.adb().prop.get(SdvDeviceProperty.AUTHZ_ENABLE)
         )
 
         # Enforce SDV Comm Stack authorization
-        self.sdv_device_server.adb().execute_shell_command(
-            'setprop sdv.authz.enable true'
-        )
-        self.sdv_device_client.adb().execute_shell_command(
-            'setprop sdv.authz.enable true'
-        )
+        self.sdv_device_server.adb().prop.set(SdvDeviceProperty.AUTHZ_ENABLE, 'permissions_only')
+        self.sdv_device_client.adb().prop.set(SdvDeviceProperty.AUTHZ_ENABLE, 'permissions_only')
 
     def teardown_class(self):
         # Reset SDV Comm Stack authorization
-        self.sdv_device_server.adb().execute_shell_command(
-            f'setprop sdv.authz.enable {self.sdv_authz_enable_value_server}'
-        )
-        self.sdv_device_client.adb().execute_shell_command(
-            f'setprop sdv.authz.enable {self.sdv_authz_enable_value_client}'
-        )
+        self.sdv_device_server.adb().prop.set(SdvDeviceProperty.AUTHZ_ENABLE, self.sdv_authz_enable_value_server)
+        self.sdv_device_client.adb().prop.set(SdvDeviceProperty.AUTHZ_ENABLE, self.sdv_authz_enable_value_client)
         super().teardown_class()
 
     def check_vsidl_provider_agent_started(self, device):

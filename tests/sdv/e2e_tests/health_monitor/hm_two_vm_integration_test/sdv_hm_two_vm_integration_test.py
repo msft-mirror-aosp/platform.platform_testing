@@ -61,9 +61,8 @@ class MonitoredServiceBundleConfiguration:
     num_periods: int
     task_duration_ms: int
 
-    def __init__(self, bundle_fqin: str, is_heartbeat_monitored: bool, initial_delay_ms: int, period_ms: int, num_periods: int, task_duration_ms: int):
+    def __init__(self, bundle_fqin: str, initial_delay_ms: int, period_ms: int, num_periods: int, task_duration_ms: int):
         self.bundle_fqin = bundle_fqin
-        self.is_heartbeat_monitored = is_heartbeat_monitored
         self.initial_delay_ms = initial_delay_ms
         self.period_ms = period_ms
         self.num_periods = num_periods
@@ -137,7 +136,6 @@ class SdvHmTwoVmIntegrationTest(
 
         self.start_monitored_service(self.monitored_service_device_1, MonitoredServiceBundleConfiguration(
             bundle_fqin=monitored_service_one_fqin,
-            is_heartbeat_monitored=True,
             initial_delay_ms=50,
             task_duration_ms=5,
             num_periods=1,
@@ -145,7 +143,6 @@ class SdvHmTwoVmIntegrationTest(
         ))
         self.start_monitored_service(self.monitored_service_device_2, MonitoredServiceBundleConfiguration(
             bundle_fqin=monitored_service_two_fqin,
-            is_heartbeat_monitored=True,
             initial_delay_ms=50,
             task_duration_ms=5,
             num_periods=1,
