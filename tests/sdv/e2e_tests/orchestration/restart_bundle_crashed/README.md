@@ -25,6 +25,14 @@ After setting any mode, the evaluation of each bundle state is triggered again a
 
 Read [SDV Testing instructions](/vendor/google_testing/software_defined_vehicle/README.md) for detailed information.
 
+### Set Up
+
+Test must be set up with default retries configuration by launching the VM with:
+
+```bash
+cvd create --extra_kernel_cmdline="androidboot.ro.boot.sdv.orchestrator.recovery.max_retries=2"
+```
+
 ### Mobly
 
 ```
