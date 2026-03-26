@@ -43,11 +43,16 @@ class SdvE2ERecoveryServiceBundlesHmOrchTest(
     LIFECYCLE_SAMPLE_BUNDLE_NAME = "LifecycleCppSampleServiceBundle"
     NOT_MONITORED_NON_RESTARTABLE_LIFECYCLE_INSTANCE = "crashed-restarted"
 
+    ORCHESTRATOR_SAMPLE_PACKAGE_NAME = "com.android.sdv.test.orchestrator"
+    ORCHESTRATOR_SAMPLE_BUNDLE_NAME = "OrchestratorSampleRustServiceBundle"
+    LONG_RECOVERY_BUNDLE_INSTANCE_NAME = "crash-on-start-long-recovery"
+
     VM_HEALTHY_HM_LOG = "VM is HEALTHY"
     VM_UNHEALTHY_HM_LOG = "VM is UNHEALTHY"
     ALL_SERVICES_ALIVE_HM_LOG = "All service bundles are ALIVE"
     NOT_ALL_SERVICES_ALIVE_HM_LOG = "Not all service bundles are ALIVE"
     LIST_CRASHING_SERVICES_HM_LOG = r'List of crashing services in VM .*:.*".*:{package}.{bundle}/{instance}".*'
+    LIST_RECOVERING_SERVICES_HM_LOG = r'List of recovering services in VM .*:.*".*:{package}.{bundle}/{instance}".*'
     LIST_ALL_SERVICES_HM_LOG = r'List of all services in VM .*:.*".*:{package}.{bundle}/{instance}".*'
     LIST_UNHEALTHY_BUNDLES_HM_LOG = r'List of unhealthy services in VM .*:.*".*:{package}.{bundle}/{instance}".*'
 
@@ -59,6 +64,7 @@ class SdvE2ERecoveryServiceBundlesHmOrchTest(
     RESET_CUSTOM_MODE = "reset"
     HEALTH_MONITORED_BUNDLE_START_MODE = "health-monitored-start"
     HEALTH_MONITORING_AND_MONITORED_BUNDLES_START_MODE = "monitoring-and-monitored-bundles-start"
+    MONITORING_AND_RECOVERING_BUNDLES_START_MODE = "monitoring-and-recovering-bundles-start"
 
     def kill_bundle(self, bundle_name, instance_name):
         # Process name for service bundle is constructed as: bundle_name:instance_name
@@ -483,6 +489,39 @@ class SdvE2ERecoveryServiceBundlesHmOrchTest(
         asserts.assert_in(
             expected_dump_destroyed, report,
             f"Did not find dump:\n{expected_dump_destroyed}\n\nin dumpsys report:\n{report}"
+        )
+
+        logging.info(
+            f"{self.get_suite_name()}#{self.current_test_info.name} completed."
+        )
+
+    def test_hm_reports_recovering_bundle_on_crash(self):
+        logging.info(
+            f"{self.get_suite_name()}#{self.current_test_info.name} started"
+        )
+
+        # Trigger start of the monitoring bundle that will report the recovering one,
+        # and the service bundle that will crash on start with a tiny sleep so that we
+        # can capture it as recovering.
+        self.sdv_device.execute_shell_command_in_subprocess(self.CUSTOM_MODES_PROCESS, self.RUN_ORCH_CUSTOM_MODE_SAMPLE_COMMAND.format(mode=self.MONITORING_AND_RECOVERING_BUNDLES_START_MODE))
+        # Wait until mode finished enforcing so we have all the needed logs.
+        polling.wait_and_verify_expected_logs(
+            sdv_device=self.sdv_device,
+            grep_text=self.ORCHESTRATION_AGENT_LOG_NAME,
+            expected_result=self.FINISHED_ENFORCING_CUSTOM_MODE_SUCCESS_ORCH_LOG.format(mode=self.MONITORING_AND_RECOVERING_BUNDLES_START_MODE),
+            assert_msg="Custom mode was not enforced",
+        )
+
+        # Check that the bundle has reported as recovering.
+        # This bundle is not monitored by HM, but it still shows in the recovering list.
+        polling.wait_and_verify_expected_logs(
+            sdv_device=self.sdv_device,
+            grep_text=self.HEALTH_SAMPLE_LOG_NAME,
+            expected_result=self.LIST_RECOVERING_SERVICES_HM_LOG.format(
+                package=self.ORCHESTRATOR_SAMPLE_PACKAGE_NAME,
+                bundle=self.ORCHESTRATOR_SAMPLE_BUNDLE_NAME,
+                instance=self.LONG_RECOVERY_BUNDLE_INSTANCE_NAME),
+            assert_msg="Bundle recovering not reported",
         )
 
         logging.info(
