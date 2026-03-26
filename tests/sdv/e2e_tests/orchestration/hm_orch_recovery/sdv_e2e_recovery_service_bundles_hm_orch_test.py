@@ -19,8 +19,10 @@ Tests is on one SDV VM
 
 from mobly import asserts
 import logging
+from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 from sdv_test_fw.verification import polling
+
 
 class SdvE2ERecoveryServiceBundlesHmOrchTest(
     sdv_base_test.SdvBaseTestClass
@@ -29,7 +31,6 @@ class SdvE2ERecoveryServiceBundlesHmOrchTest(
     DUMPSYS_HM_COMMAND = "dumpsys com.google.sdv.ISdvAgent/hm"
     RUN_ORCH_CUSTOM_MODE_SAMPLE_COMMAND = 'orch_custom_mode_sample E2E-TESTS {mode}'
     CUSTOM_MODES_PROCESS = "custom_mode_process"
-
 
     HEALTH_SAMPLE_LOG_NAME = "oem_sample_vm_health"
     ORCHESTRATION_AGENT_LOG_NAME = "sdv_orchestration_agent"
@@ -68,7 +69,8 @@ class SdvE2ERecoveryServiceBundlesHmOrchTest(
 
     def kill_bundle(self, bundle_name, instance_name):
         # Process name for service bundle is constructed as: bundle_name:instance_name
-        process_id = self.sdv_device.execute_shell_command(f"pgrep -f {bundle_name}:{instance_name}")
+        process_id = self.sdv_device.execute_shell_command(
+            f"pgrep -f {bundle_name}:{instance_name}")
 
         asserts.assert_is_not_none(process_id)
 
@@ -79,15 +81,19 @@ class SdvE2ERecoveryServiceBundlesHmOrchTest(
     def setup_class(self):
         super().setup_class()
         self.sdv_device = self.get_device("device1").adb()
+        self.device_name = self.sdv_device.prop.get(
+            SdvDeviceProperty.INSTANCE_NAME)
 
     def setup_test(self):
         super().setup_test()
         # Make sure we are in a clean state and all bundles are destroyed.
-        self.sdv_device.execute_shell_command_in_subprocess("setup_process", self.RUN_ORCH_CUSTOM_MODE_SAMPLE_COMMAND.format(mode=self.RESET_CUSTOM_MODE))
+        self.sdv_device.execute_shell_command_in_subprocess(
+            "setup_process", self.RUN_ORCH_CUSTOM_MODE_SAMPLE_COMMAND.format(mode=self.RESET_CUSTOM_MODE))
         polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.ORCHESTRATION_AGENT_LOG_NAME,
-            expected_result=self.FINISHED_ENFORCING_CUSTOM_MODE_SUCCESS_ORCH_LOG.format(mode=self.RESET_CUSTOM_MODE),
+            expected_result=self.FINISHED_ENFORCING_CUSTOM_MODE_SUCCESS_ORCH_LOG.format(
+                mode=self.RESET_CUSTOM_MODE),
             assert_msg="Custom mode did not reset",
         )
         # Make sure we start the test with clean logcat
@@ -99,7 +105,8 @@ class SdvE2ERecoveryServiceBundlesHmOrchTest(
         )
 
         # Trigger initial start of the service bundle
-        self.sdv_device.execute_shell_command_in_subprocess(self.CUSTOM_MODES_PROCESS, self.RUN_ORCH_CUSTOM_MODE_SAMPLE_COMMAND.format(mode=self.HEALTH_MONITORED_BUNDLE_START_MODE))
+        self.sdv_device.execute_shell_command_in_subprocess(
+            self.CUSTOM_MODES_PROCESS, self.RUN_ORCH_CUSTOM_MODE_SAMPLE_COMMAND.format(mode=self.HEALTH_MONITORED_BUNDLE_START_MODE))
         # And verify that the bundle was transitioned to the required state.
         polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
@@ -112,7 +119,8 @@ class SdvE2ERecoveryServiceBundlesHmOrchTest(
         )
 
         # Kill the non restartable bundle
-        self.kill_bundle(self.HM_SAMPLE_BUNDLE_NAME, self.MONITORED_NON_RESTARTABLE_HM_INSTANCE_NAME)
+        self.kill_bundle(self.HM_SAMPLE_BUNDLE_NAME,
+                         self.MONITORED_NON_RESTARTABLE_HM_INSTANCE_NAME)
 
         # Verify bundle has crashed
         polling.wait_and_verify_expected_logs(
@@ -127,7 +135,7 @@ class SdvE2ERecoveryServiceBundlesHmOrchTest(
 
         # Verify health status of bundles through dumpsys
         expected_dump = (
-            f"ID: FQIN: local-vm:{self.HM_MONITORED_SAMPLE_PACKAGE_NAME}.{self.HM_SAMPLE_BUNDLE_NAME}/{self.MONITORED_NON_RESTARTABLE_HM_INSTANCE_NAME}\n"
+            f"ID: FQIN: {self.device_name}:{self.HM_MONITORED_SAMPLE_PACKAGE_NAME}.{self.HM_SAMPLE_BUNDLE_NAME}/{self.MONITORED_NON_RESTARTABLE_HM_INSTANCE_NAME}\n"
             "Recovery State: FailedRecovery\n"
             "Lifecycle State: Started\n"
             "Health Status: Unhealthy"
@@ -149,7 +157,8 @@ class SdvE2ERecoveryServiceBundlesHmOrchTest(
         )
 
         # Trigger initial start of the service bundle
-        self.sdv_device.execute_shell_command_in_subprocess(self.CUSTOM_MODES_PROCESS, self.RUN_ORCH_CUSTOM_MODE_SAMPLE_COMMAND.format(mode=self.HEALTH_MONITORED_BUNDLE_START_MODE))
+        self.sdv_device.execute_shell_command_in_subprocess(
+            self.CUSTOM_MODES_PROCESS, self.RUN_ORCH_CUSTOM_MODE_SAMPLE_COMMAND.format(mode=self.HEALTH_MONITORED_BUNDLE_START_MODE))
         # And verify that the bundle was transitioned to the required state.
         polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
@@ -165,7 +174,8 @@ class SdvE2ERecoveryServiceBundlesHmOrchTest(
         self.sdv_device.clear_logcat()
 
         # Kill the restartable bundle
-        self.kill_bundle(self.HM_SAMPLE_BUNDLE_NAME, self.MONITORED_RESTARTABLE_HM_INSTANCE_NAME)
+        self.kill_bundle(self.HM_SAMPLE_BUNDLE_NAME,
+                         self.MONITORED_RESTARTABLE_HM_INSTANCE_NAME)
 
         # Verify that the bundle crashed and restarted
         polling.wait_and_verify_expected_logs(
@@ -189,7 +199,7 @@ class SdvE2ERecoveryServiceBundlesHmOrchTest(
 
         # Verify health status of bundles through dumpsys
         expected_dump = (
-            f"ID: FQIN: local-vm:{self.HM_MONITORED_SAMPLE_PACKAGE_NAME}.{self.HM_SAMPLE_BUNDLE_NAME}/{self.MONITORED_RESTARTABLE_HM_INSTANCE_NAME}\n"
+            f"ID: FQIN: {self.device_name}:{self.HM_MONITORED_SAMPLE_PACKAGE_NAME}.{self.HM_SAMPLE_BUNDLE_NAME}/{self.MONITORED_RESTARTABLE_HM_INSTANCE_NAME}\n"
             "Recovery State: Normal\n"
             "Lifecycle State: Started\n"
             "Health Status: Healthy"
@@ -210,7 +220,8 @@ class SdvE2ERecoveryServiceBundlesHmOrchTest(
         )
 
         # Trigger initial start of the service bundles
-        self.sdv_device.execute_shell_command_in_subprocess(self.CUSTOM_MODES_PROCESS, self.RUN_ORCH_CUSTOM_MODE_SAMPLE_COMMAND.format(mode=self.HEALTH_MONITORING_AND_MONITORED_BUNDLES_START_MODE))
+        self.sdv_device.execute_shell_command_in_subprocess(self.CUSTOM_MODES_PROCESS, self.RUN_ORCH_CUSTOM_MODE_SAMPLE_COMMAND.format(
+            mode=self.HEALTH_MONITORING_AND_MONITORED_BUNDLES_START_MODE))
 
         # Verify that the bundle that will be killed is running
         polling.wait_and_verify_expected_logs(
@@ -238,7 +249,8 @@ class SdvE2ERecoveryServiceBundlesHmOrchTest(
         )
 
         # WHEN the monitored service bundle crashes
-        self.kill_bundle(self.HM_SAMPLE_BUNDLE_NAME, self.MONITORED_NON_RESTARTABLE_HM_INSTANCE_NAME)
+        self.kill_bundle(self.HM_SAMPLE_BUNDLE_NAME,
+                         self.MONITORED_NON_RESTARTABLE_HM_INSTANCE_NAME)
 
         # Check that the VM became unhealthy
         polling.wait_and_verify_expected_logs(
@@ -288,14 +300,14 @@ class SdvE2ERecoveryServiceBundlesHmOrchTest(
             f"{self.get_suite_name()}#{self.current_test_info.name} completed."
         )
 
-
     def test_hm_reports_vm_and_bundle_state_on_non_monitored_bundle_crash(self):
         logging.info(
             f"{self.get_suite_name()}#{self.current_test_info.name} started"
         )
 
         # Trigger initial start of the service bundles
-        self.sdv_device.execute_shell_command_in_subprocess(self.CUSTOM_MODES_PROCESS, self.RUN_ORCH_CUSTOM_MODE_SAMPLE_COMMAND.format(mode=self.HEALTH_MONITORING_AND_MONITORED_BUNDLES_START_MODE))
+        self.sdv_device.execute_shell_command_in_subprocess(self.CUSTOM_MODES_PROCESS, self.RUN_ORCH_CUSTOM_MODE_SAMPLE_COMMAND.format(
+            mode=self.HEALTH_MONITORING_AND_MONITORED_BUNDLES_START_MODE))
 
         # Verify that the bundle is running
         polling.wait_and_verify_expected_logs(
@@ -323,7 +335,8 @@ class SdvE2ERecoveryServiceBundlesHmOrchTest(
         )
 
         # WHEN the not monitored service bundle crashes
-        self.kill_bundle(self.LIFECYCLE_SAMPLE_BUNDLE_NAME, self.NOT_MONITORED_NON_RESTARTABLE_LIFECYCLE_INSTANCE)
+        self.kill_bundle(self.LIFECYCLE_SAMPLE_BUNDLE_NAME,
+                         self.NOT_MONITORED_NON_RESTARTABLE_LIFECYCLE_INSTANCE)
 
         # Check that the bundle is reported as crashing by orchestrator
         polling.wait_and_verify_expected_logs(
@@ -389,18 +402,20 @@ class SdvE2ERecoveryServiceBundlesHmOrchTest(
         )
 
         # Trigger initial start of the service bundles
-        self.sdv_device.execute_shell_command_in_subprocess(self.CUSTOM_MODES_PROCESS, self.RUN_ORCH_CUSTOM_MODE_SAMPLE_COMMAND.format(mode=self.HEALTH_MONITORED_BUNDLE_START_MODE))
+        self.sdv_device.execute_shell_command_in_subprocess(
+            self.CUSTOM_MODES_PROCESS, self.RUN_ORCH_CUSTOM_MODE_SAMPLE_COMMAND.format(mode=self.HEALTH_MONITORED_BUNDLE_START_MODE))
         # Wait until mode finished enforcing
         polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.ORCHESTRATION_AGENT_LOG_NAME,
-            expected_result=self.FINISHED_ENFORCING_CUSTOM_MODE_SUCCESS_ORCH_LOG.format(mode=self.HEALTH_MONITORED_BUNDLE_START_MODE),
+            expected_result=self.FINISHED_ENFORCING_CUSTOM_MODE_SUCCESS_ORCH_LOG.format(
+                mode=self.HEALTH_MONITORED_BUNDLE_START_MODE),
             assert_msg="Custom mode was not enforced",
         )
 
         # Verify that HM dump contains the initial bundle state
         expected_dump_started = (
-            f"ID: FQIN: local-vm:{self.HM_MONITORED_SAMPLE_PACKAGE_NAME}.{self.HM_SAMPLE_BUNDLE_NAME}/{self.MONITORED_NON_RESTARTABLE_HM_INSTANCE_NAME}\n"
+            f"ID: FQIN: {self.device_name}:{self.HM_MONITORED_SAMPLE_PACKAGE_NAME}.{self.HM_SAMPLE_BUNDLE_NAME}/{self.MONITORED_NON_RESTARTABLE_HM_INSTANCE_NAME}\n"
             "Recovery State: Normal\n"
             "Lifecycle State: Started\n"
             "Health Status: Healthy"
@@ -413,18 +428,20 @@ class SdvE2ERecoveryServiceBundlesHmOrchTest(
 
         # Trigger reset mode to destroy all service bundles
         # This needs to be run in separate subprocess to avoid blocking the test
-        self.sdv_device.execute_shell_command_in_subprocess("reset_mode_process", self.RUN_ORCH_CUSTOM_MODE_SAMPLE_COMMAND.format(mode=self.RESET_CUSTOM_MODE))
+        self.sdv_device.execute_shell_command_in_subprocess(
+            "reset_mode_process", self.RUN_ORCH_CUSTOM_MODE_SAMPLE_COMMAND.format(mode=self.RESET_CUSTOM_MODE))
         # Wait until mode finished enforcing
         polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.ORCHESTRATION_AGENT_LOG_NAME,
-            expected_result=self.FINISHED_ENFORCING_CUSTOM_MODE_SUCCESS_ORCH_LOG.format(mode=self.RESET_CUSTOM_MODE),
+            expected_result=self.FINISHED_ENFORCING_CUSTOM_MODE_SUCCESS_ORCH_LOG.format(
+                mode=self.RESET_CUSTOM_MODE),
             assert_msg="Custom mode did not reset",
         )
 
         # Verify that HM dump contains the new bundle state
         expected_dump_destroyed = (
-            f"ID: FQIN: local-vm:{self.HM_MONITORED_SAMPLE_PACKAGE_NAME}.{self.HM_SAMPLE_BUNDLE_NAME}/{self.MONITORED_NON_RESTARTABLE_HM_INSTANCE_NAME}\n"
+            f"ID: FQIN: {self.device_name}:{self.HM_MONITORED_SAMPLE_PACKAGE_NAME}.{self.HM_SAMPLE_BUNDLE_NAME}/{self.MONITORED_NON_RESTARTABLE_HM_INSTANCE_NAME}\n"
             "Recovery State: Normal\n"
             "Lifecycle State: Destroyed\n"
             "Health Status: Healthy"
@@ -445,18 +462,20 @@ class SdvE2ERecoveryServiceBundlesHmOrchTest(
         )
 
         # Trigger initial start of the service bundles
-        self.sdv_device.execute_shell_command_in_subprocess(self.CUSTOM_MODES_PROCESS, self.RUN_ORCH_CUSTOM_MODE_SAMPLE_COMMAND.format(mode=self.HEALTH_MONITORED_BUNDLE_START_MODE))
+        self.sdv_device.execute_shell_command_in_subprocess(
+            self.CUSTOM_MODES_PROCESS, self.RUN_ORCH_CUSTOM_MODE_SAMPLE_COMMAND.format(mode=self.HEALTH_MONITORED_BUNDLE_START_MODE))
         # Wait until mode finished enforcing
         polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.ORCHESTRATION_AGENT_LOG_NAME,
-            expected_result=self.FINISHED_ENFORCING_CUSTOM_MODE_SUCCESS_ORCH_LOG.format(mode=self.HEALTH_MONITORED_BUNDLE_START_MODE),
+            expected_result=self.FINISHED_ENFORCING_CUSTOM_MODE_SUCCESS_ORCH_LOG.format(
+                mode=self.HEALTH_MONITORED_BUNDLE_START_MODE),
             assert_msg="Custom mode was not enforced",
         )
 
         # Verify that HM dump contains the initial bundle state
         expected_dump_started = (
-            f"ID: FQIN: local-vm:{self.HM_MONITORED_SAMPLE_PACKAGE_NAME}.{self.HM_SAMPLE_BUNDLE_NAME}/{self.MONITORED_RESTARTABLE_HM_INSTANCE_NAME}\n"
+            f"ID: FQIN: {self.device_name}:{self.HM_MONITORED_SAMPLE_PACKAGE_NAME}.{self.HM_SAMPLE_BUNDLE_NAME}/{self.MONITORED_RESTARTABLE_HM_INSTANCE_NAME}\n"
             "Recovery State: Normal\n"
             "Lifecycle State: Started\n"
             "Health Status: Healthy"
@@ -469,18 +488,20 @@ class SdvE2ERecoveryServiceBundlesHmOrchTest(
 
         # Trigger reset mode to destroy all service bundles
         # This needs to be run in separate subprocess to avoid blocking the test
-        self.sdv_device.execute_shell_command_in_subprocess("reset_mode_process", self.RUN_ORCH_CUSTOM_MODE_SAMPLE_COMMAND.format(mode=self.RESET_CUSTOM_MODE))
+        self.sdv_device.execute_shell_command_in_subprocess(
+            "reset_mode_process", self.RUN_ORCH_CUSTOM_MODE_SAMPLE_COMMAND.format(mode=self.RESET_CUSTOM_MODE))
         # Wait until mode finished enforcing
         polling.wait_and_verify_expected_logs(
             sdv_device=self.sdv_device,
             grep_text=self.ORCHESTRATION_AGENT_LOG_NAME,
-            expected_result=self.FINISHED_ENFORCING_CUSTOM_MODE_SUCCESS_ORCH_LOG.format(mode=self.RESET_CUSTOM_MODE),
+            expected_result=self.FINISHED_ENFORCING_CUSTOM_MODE_SUCCESS_ORCH_LOG.format(
+                mode=self.RESET_CUSTOM_MODE),
             assert_msg="Custom mode did not reset",
         )
 
         # Verify that HM dump contains the new bundle state
         expected_dump_destroyed = (
-            f"ID: FQIN: local-vm:{self.HM_MONITORED_SAMPLE_PACKAGE_NAME}.{self.HM_SAMPLE_BUNDLE_NAME}/{self.MONITORED_RESTARTABLE_HM_INSTANCE_NAME}\n"
+            f"ID: FQIN: {self.device_name}:{self.HM_MONITORED_SAMPLE_PACKAGE_NAME}.{self.HM_SAMPLE_BUNDLE_NAME}/{self.MONITORED_RESTARTABLE_HM_INSTANCE_NAME}\n"
             "Recovery State: Normal\n"
             "Lifecycle State: Destroyed\n"
             "Health Status: Healthy"
