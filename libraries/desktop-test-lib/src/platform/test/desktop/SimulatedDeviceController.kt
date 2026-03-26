@@ -43,9 +43,9 @@ class SimulatedDeviceController : PeripheralsController {
     private var currentDisplaysPeripherals: List<Pair<DisplayPeripheral, Display>>? = null
     private val displayMonitor = DisplayMonitor(TAG)
 
-    fun close() {
-        displayMonitor.close()
-    }
+    fun close() = displayMonitor.close()
+
+    fun assertNoFailedConditions() = displayMonitor.assertNoFailedConditions()
 
     fun startMonitoring(timeout: Duration) = displayMonitor.waitForCondition(timeout)
 

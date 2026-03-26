@@ -47,7 +47,7 @@ sealed interface PeripheralDevice {
 /** An interface for a display device returned by a [PeripheralsController]. */
 sealed interface DisplayDevice : PeripheralDevice {
     val displayId: Int
-    val display: Display?
+    val display: Display
 }
 
 /**
@@ -62,7 +62,7 @@ internal data class AnyDisplayDevice(
     override val peripheral: Peripheral,
     override val connected: Boolean,
     override val displayId: Int,
-    override val display: Display?,
+    override val display: Display,
 ) : DisplayDevice
 
 /** Interface for peripherals to simplify their classification. */
@@ -142,6 +142,18 @@ class PeripheralsResponse(val devices: List<PeripheralDevice> = emptyList()) {
 
     operator fun plus(other: PeripheralsResponse): PeripheralsResponse =
         PeripheralsResponse(devices + other.devices)
+
+    fun getDevices(connected: Boolean = true): List<PeripheralDevice> =
+        devices.filter { it.connected == connected }
+
+    fun getDisplayDevices(connected: Boolean = true): List<DisplayDevice> =
+        getDevices(connected).filterIsInstance<DisplayDevice>()
+
+    fun getDisplays(connected: Boolean = true): List<Display> =
+        getDisplayDevices(connected).map { it.display }
+
+    fun getDisplayIds(connected: Boolean = true): List<Int> =
+        getDisplays(connected).map { it.getDisplayId() }
 }
 
 /**
@@ -168,10 +180,12 @@ class PeripheralDeviceTestRule : TestRule, PeripheralsController {
                     // to do it explicitly, or don't pass
                     // [DesktopTestOptions.KEEP_PERIPHERALS_BEFORE_TEST] option
                     if (!optionsProvider.keepPeripheralsBeforeTest()) {
-                        // Ensure no peripherals connected before the test
+                        // Ensure no peripherals connected before the test.
+                        // May throw an exception, therefore it is called within
+                        // CleanupExecutor try-with-resources statement.
                         disconnectAll()
                     }
-                    // First cleanup step: disconnect all peripherals
+                    // Second cleanup step: disconnect all peripherals
                     cl.addCleanup {
                         // Don't implicitly cleanup peripherals after the test, e.g. in case of
                         // before-reboot tests, if these tests need to cleanup peripherals, tests
@@ -182,8 +196,15 @@ class PeripheralDeviceTestRule : TestRule, PeripheralsController {
                             disconnectAll()
                         }
                     }
-                    // Run the test
-                    base.evaluate()
+                    // First cleanup step: assert no failed conditions
+                    cl.addCleanup(simulatedController::assertNoFailedConditions)
+                    cl.addCleanup(physicalController::assertNoFailedConditions)
+
+                    // Run the test: wrapped in cleanup because it may
+                    // throw an exception, if so - cl.hasException() will be true, and
+                    // disconnectAll() call above must be called regardless of
+                    // keepPeripheralsAfterTest() option.
+                    cl.addCleanup(base::evaluate)
                 }
             }
         }
