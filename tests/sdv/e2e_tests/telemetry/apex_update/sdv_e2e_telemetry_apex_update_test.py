@@ -243,11 +243,11 @@ class SdvE2ETelemetryApexUpdateTest(
         # for each test to avoid that.
 
         num_configs = self.sdv_device1.adb().execute_shell_command(
-            'rm -vf /data/vendor/telemetry/*active_configs/* | wc -l'
+            'rm -vf /data/telemetry/*active_configs/* | wc -l'
         )
         if int(num_configs) != 0:
             self.sdv_device1.adb().log().info(
-                f'Removed {num_configs} configs from /data/vendor/telemetry/, '
+                f'Removed {num_configs} configs from /data/telemetry/, '
                 'rebooting the device to restart Telemetry Service'
             )
             self.sdv_device1.adb().reboot_device()

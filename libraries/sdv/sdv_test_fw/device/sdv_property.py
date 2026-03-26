@@ -47,7 +47,7 @@ class SdvDeviceProperty(enum.Enum):
     # Writable non-persistent
     AUTHZ_ENABLE = "sdv.authz.enable"
     VPM_POWER_STATE = "sdv.vpm.power.state"
-    TELEMETRY_RESUMED_AT_TIMESTAMP = "vendor.sdv.telemetry.resumed_at_timestamp"
+    TELEMETRY_RESUMED_AT_TIMESTAMP = "sdv.telemetry.resumed_at_timestamp"
 
 
 class SdvProperty:
