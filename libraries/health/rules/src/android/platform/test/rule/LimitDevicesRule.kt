@@ -201,6 +201,21 @@ class LimitDevicesRule(
     }
 }
 
+/**
+ * Checks if the current device is a known desktop product.
+ *
+ * **Warning:** This relies on a hardcoded, non-exhaustive list of `Build.PRODUCT`
+ * strings. It may incorrectly return `false` for unlisted or newer desktop devices.
+ */
+fun isDesktop(): Boolean {
+    val desktopDeviceProducts = setOf(
+        DeviceProduct.CF_DESKTOP.product,
+        DeviceProduct.BRYA.product
+    )
+
+    return Build.PRODUCT in desktopDeviceProducts
+}
+
 enum class DeviceProduct(val product: String) {
     CF_PHONE("cf_x86_64_phone"),
     CF_TABLET("cf_x86_64_tablet"),
