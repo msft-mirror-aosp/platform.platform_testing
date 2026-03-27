@@ -36,7 +36,7 @@ triggers {
 }
 
 # Triggers whenever `counting_publisher_trigger` triggers, but only after the
-# first 30 seconds after boot or resume.
+# first 60 seconds after boot or resume.
 triggers {
   name: "finish_trigger"
   conditional_trigger {
@@ -47,7 +47,7 @@ triggers {
 }
 
 # Triggers whenever `counting_publisher_trigger` triggers, but only during the
-# first 30 seconds after boot or resume.
+# first 60 seconds after boot or resume.
 triggers {
   name: "filtered_counting_publisher_trigger"
   conditional_trigger {
@@ -83,7 +83,7 @@ expression_nodes {
 # index 2
 expression_nodes {
   constant_leaf_node {
-    int64_value: 30000000  # 30 seconds
+    int64_value: 60000000  # 60 seconds
   }
 }
 
