@@ -23,6 +23,8 @@ validation behavior.
 import logging
 import time
 from mobly import asserts
+from mobly import signals
+from mobly.controllers.android_device_lib import adb
 import qnx_process_management
 import sdv_baseline_hw_suspend_resume_mixin as hw_suspend_resume
 
@@ -30,11 +32,14 @@ import sdv_baseline_hw_suspend_resume_mixin as hw_suspend_resume
 class SdvBaselineHwSuspendResumeTestVerification:
     VERIFY_CONNECTION_TEXT = "Connection works"
 
-    def log_vm_status(self, vm_config):
+    def log_vm_info(self, vm_config) -> str | None:
         """Log VM status and QVM pid for debugging.
 
         Args:
             vm_config: The VM config for the device to debug.
+
+        Returns:
+            qvm_pid: PID of the qvm process
         """
         # _device_status and extract_current_qvm_pid log the data for debugging
         # purposes. We log the information at info level in purpose to appear as
@@ -47,6 +52,50 @@ class SdvBaselineHwSuspendResumeTestVerification:
         )
         qvm_pid = vm_config.extract_current_qvm_pid(qvm_processes_info)
         logging.info(f"{vm_config.sdv_guest_name} qvm process pid: {qvm_pid}")
+
+        return qvm_pid
+
+    def infra_error_if_device_is_not_responsive(self, device, vm_config):
+        """Raises error if the device is not responsive.
+
+        Checks connectivity to the device via ADB. If the device is offline or
+        the shell is unreachable, we cannot proceed with the test and an infra
+        error is raised.
+
+        Args:
+            device: The device to check.
+            vm_config: The VM config for the device to check
+
+        Raises:
+            ControllerError: An infrastructure issue impedes reaching the
+              device.
+        """
+        # TODO(crisguerrero): Create subclass of ControllerError in the
+        # framework to identify the infra errors where the device is not
+        # reachable.
+        try:
+            device.adb().wait_for_device_online(timeout=30)
+        except adb.AdbTimeoutError:
+            # We check if the VM is running to distinguish between the case
+            # where the device is offline vs the VM is not running at all.
+            # Log the device status for helping with debugging.
+            qvm_pid = self.log_vm_info(vm_config)
+            if qvm_pid is None:
+                raise signals.ControllerError(
+                    f"VM {vm_config.sdv_guest_name} not running during setup,"
+                    " not possible to start test"
+                )
+
+            raise signals.ControllerError(
+                "Device not online during setup, not possible to start test"
+            )
+
+        if not device.adb().is_shell_reachable():
+            self.log_vm_info(vm_config)
+            raise signals.ControllerError(
+                "Device not reachable through adb during setup, not possible to"
+                " start test"
+            )
 
     def verify_host_connection(self):
         """Verifies the connection to the QNX hypervisor.
