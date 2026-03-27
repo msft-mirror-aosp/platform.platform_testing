@@ -10,13 +10,13 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<configuration description="SDV VSIDL Stable Sample">
+<configuration description="SDV Quickstart Sample">
     <!-- Template for Device Configuration -->
     <template-include name="device-config" default="sdv-device-config/one-device" />
 
     <!-- Plan. Use the same name as the file name -->
-    <option name="plan" value="sdv-sample-vsidl-stable-test"/>
+    <option name="plan" value="sdv-sample-quickstart-test"/>
 
     <!-- Test: mobly-par-file-name should match the module name -->
-    <option name="mobly-host:mobly-par-file-name" value="SdvSampleVsidlStableTest" />
+    <option name="mobly-host:mobly-par-file-name" value="SdvSampleQuickstartTest" />
 </configuration>

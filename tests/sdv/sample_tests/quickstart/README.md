@@ -11,11 +11,11 @@
   limitations under the License.
 -->
 
-# Sample: SDV VSIDL Stable
+# Sample: SDV Quickstart
 
 ## Sample
 
-This test automates the [VSIDL Stable Sample](/system/software_defined_vehicle/samples/vsidl/stable/README.md).
+This test automates the [Quickstart Sample](/system/software_defined_vehicle/samples/quickstart/README.md).
 
 ## Test Execution
 
@@ -33,17 +33,17 @@ sdv-cf create --instance_name=instance1
 ### Mobly test execution
 
 ```bash
-atest SdvSampleVsidlStableTest
+atest SdvSampleQuickstartTest
 ```
 
 ### CATBox test execution
 
 ```bash
 NOTIFY_AS_NATIVE=0.0.0.0:6520 catbox-tradefed run commandAndExit \
-    sdv-sample-vsidl-stable-test \
+    sdv-sample-quickstart-test \
     --{device1}serial 0.0.0.0:6520
 ```
 
 ## CI/CD execution
 
-- Name: `sdv/sample/vsidl_stable_test`
+- Name: `sdv/sample/quickstart_test`
