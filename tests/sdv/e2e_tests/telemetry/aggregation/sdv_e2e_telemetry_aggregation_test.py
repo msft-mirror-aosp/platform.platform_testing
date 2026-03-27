@@ -19,14 +19,14 @@ from pathlib import Path
 from sdv_telemetry_test_execution import expects, telemetry_base_test
 from sdv_telemetry_test_execution.telemetry_utils import shlex_join
 from sdv_test_fw.device import sdv_device
-from sdv_test_fw.test_execution import sdv_test_runner
 from sdv_test_fw.device.sdv_property import SdvDeviceProperty
+from sdv_test_fw.test_execution import sdv_test_runner
 
 
 class SdvE2ETelemetryAggregationTest(
     telemetry_base_test.SdvTelemetryBaseTestClass
 ):
-    SIMULATION_TIME = timedelta(seconds=5)
+    SIMULATION_TIME = timedelta(seconds=1)
 
     METRICS_CONFIG_UUID = 'be6bf4a0-4cc1-46ca-91c0-da43db3f0c90'
 
@@ -89,10 +89,20 @@ class SdvE2ETelemetryAggregationTest(
 
         super().teardown_test()
 
-    # Must start with `test_` to be recognized as a test!
-    def test_aggregations(
-        self,
-    ):
+    def _fetch_and_decode_report(self, report_number: int):
+        report_path = self.pull_report(
+            device=self.sdv_device,
+            simulator_out_dir=self._simulator_out_dir,
+            config_uuid=self.METRICS_CONFIG_UUID,
+            report_name=self.metrics_config.metrics_report_configs[0].name,
+            report_number=report_number,
+        )
+        report = self.parse_binary_report(report_path)
+        return self.decode_report_payload(
+            self.metrics_config.descriptor_protos, report
+        )
+
+    def test_aggregations(self):
         self.sdv_device.adb().log().info('Starting Simulator')
         self.sdv_device.adb().execute_shell_command(
             self._get_simulator_command(
@@ -105,57 +115,73 @@ class SdvE2ETelemetryAggregationTest(
         )
         self.sdv_device.adb().log().info('Simulation finished')
 
-        # Load Report
-        report_path = self.pull_report(
-            device=self.sdv_device,
-            simulator_out_dir=self._simulator_out_dir,
-            config_uuid=self.METRICS_CONFIG_UUID,
-            report_name=self.metrics_config.metrics_report_configs[0].name,
-            report_number=1,
-        )
-        report = self.parse_binary_report(report_path)
-        # Decode Report
-        report_payload = self.decode_report_payload(
-            self.metrics_config.descriptor_protos, report
-        )
-        # Evaluate payload
+        # Verify Report 1 (empty)
+        report_1 = self._fetch_and_decode_report(report_number=1)
+
+        absent_fields = [
+            'meters_per_hour',
+            'max_meters_per_hour',
+            'min_meters_per_hour',
+            'avg_meters_per_hour',
+            'stddev_meters_per_hour',
+            'delta_meters_per_hour',
+        ]
+        for field in absent_fields:
+            expects.expect_false(
+                report_1.HasField(field), f'Unexpected field: {field}'
+            )
+
+        # Technically, `vec_meters_per_hour` should also not be present, but
+        # it's a repeated field which can't be checked with `HasField`.
         expects.expect_equal(
-            report.metrics_config_uuid,
-            self.METRICS_CONFIG_UUID,
-            'Unexpected UUID',
+            report_1.vec_meters_per_hour,
+            [],
+            'Unexpected value for vec_meters_per_hour',
         )
-        expects.expect_equal(
-            report_payload.meters_per_hour, -20.0, 'Unexpected Last Value'
-        )
-        expects.expect_equal(
-            report_payload.vec_meters_per_hour,
-            [30.0, 10.0, -10.0, -20.0],
-            'Unexpected Vector Value',
-        )
-        expects.expect_equal(
-            report_payload.max_meters_per_hour, 30.0, 'Unexpected Max Value'
+        expects.expect_true(
+            report_1.HasField('count_meters_per_hour'),
+            'Field count_meters_per_hour should be present',
         )
         expects.expect_equal(
-            report_payload.min_meters_per_hour, -20.0, 'Unexpected Min Value'
+            report_1.count_meters_per_hour,
+            0,
+            'Unexpected value for count_meters_per_hour',
+        )
+        expects.expect_true(
+            report_1.HasField('sum_meters_per_hour'),
+            'Field sum_meters_per_hour should be present',
         )
         expects.expect_equal(
-            report_payload.avg_meters_per_hour, 2.5, 'Unexpected Avg Value'
+            report_1.sum_meters_per_hour,
+            0,
+            'Unexpected value for sum_meters_per_hour',
         )
+
+        # Verify Report 2
+        report_2 = self._fetch_and_decode_report(report_number=2)
+
+        expected_values = {
+            'meters_per_hour': -20.0,
+            'vec_meters_per_hour': [30.0, 10.0, -10.0, -20.0],
+            'max_meters_per_hour': 30.0,
+            'min_meters_per_hour': -20.0,
+            'avg_meters_per_hour': 2.5,
+            'count_meters_per_hour': 4,
+            'sum_meters_per_hour': 10,
+            'delta_meters_per_hour': -10.0,
+        }
+
+        for field, expected_val in expected_values.items():
+            actual_val = getattr(report_2, field)
+            expects.expect_equal(
+                actual_val, expected_val, f'Unexpected value for {field}'
+            )
+
+        # Validate stddev separately as it requires rounding
         expects.expect_equal(
-            report_payload.count_meters_per_hour, 4, 'Unexpected Value Count'
-        )
-        expects.expect_equal(
-            report_payload.sum_meters_per_hour, 10, 'Unexpected Sum Value'
-        )
-        expects.expect_equal(
-            round(report_payload.stddev_meters_per_hour, 2),
+            round(report_2.stddev_meters_per_hour, 2),
             19.20,
-            'Unexpected StdDev Value',
-        )
-        expects.expect_equal(
-            report_payload.delta_meters_per_hour,
-            -10.0,
-            'Unexpected Delta Value',
+            'Unexpected value for stddev_meters_per_hour',
         )
 
 

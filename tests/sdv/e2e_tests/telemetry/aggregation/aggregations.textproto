@@ -44,8 +44,8 @@ descriptor_protos {
   syntax: "proto2"
 }
 triggers {
-  name: "periodic_3s"
-  periodic_trigger { interval { seconds: 3 } }
+  name: "periodic_500ms"
+  periodic_trigger { interval { nanos: 500000000 } }
 }
 triggers {
   name: "speed_data_trigger"
@@ -144,8 +144,8 @@ expression_nodes {
 }
 metrics_report_configs {
   name: "aggregation_report"
-  trigger_names: "periodic_3s"
-  report_incomplete: true
+  trigger_names: "periodic_500ms"
+  report_initial: true
   message_builder {
     message_type: ".aaos.sdv.telemetry.adhoc.aggregation_report"
     field_assignments {
