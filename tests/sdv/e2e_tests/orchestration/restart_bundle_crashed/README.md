@@ -30,7 +30,7 @@ Read [SDV Testing instructions](/vendor/google_testing/software_defined_vehicle/
 Test must be set up with default retries configuration by launching the VM with:
 
 ```bash
-cvd create --extra_kernel_cmdline="androidboot.ro.boot.sdv.orchestrator.recovery.max_retries=2"
+cvd create --extra_kernel_cmdline="androidboot.sdv.orchestrator.recovery.max_retries=2"
 ```
 
 ### Mobly
