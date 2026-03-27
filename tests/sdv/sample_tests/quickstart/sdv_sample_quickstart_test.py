@@ -12,16 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""SDV sample 'VSIDL Stable' test."""
+"""SDV 'Quickstart' sample test."""
 
 import logging
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 from sdv_test_fw.verification import polling
 
-class SdvSampleVsidlStableTest(sdv_base_test.SdvBaseTestClass):
+class SdvSampleQuickstartTest(sdv_base_test.SdvBaseTestClass):
 
-    MANAGER_FQIN = "local-vm:com.android.sdv.sample.vsidl.Manager/instance"
-    MONITOR_FQIN = "local-vm:com.android.sdv.sample.vsidl.Monitor/instance"
+    MANAGER_FQIN = "local-vm:com.android.sdv.sample.quickstart.Manager/instance"
+    MONITOR_FQIN = "local-vm:com.android.sdv.sample.quickstart.Monitor/instance"
 
     def setup_class(self):
         super().setup_class()
@@ -33,7 +33,7 @@ class SdvSampleVsidlStableTest(sdv_base_test.SdvBaseTestClass):
         self.sdv_device.wait_for_device_online()
         self.sdv_device.root_device()
 
-    def test_vsidl_stable_communication(self):
+    def test_quickstart_communication(self):
         logging.info(f'{self.get_suite_name()} :: Start Test {self.current_test_info.name}')
 
         # Start service bundles
@@ -44,7 +44,7 @@ class SdvSampleVsidlStableTest(sdv_base_test.SdvBaseTestClass):
         polling.wait_and_verify_expected_logs(
             self.sdv_device,
             grep_text="Starting service bundle 'Manager'",
-            logcat_args="*:F com_android_sdv_sample_vsidl_Manager_instance:*",
+            logcat_args="*:F com_android_sdv_sample_quickstart_Manager_instance:*",
             assert_msg=f"{self.MANAGER_FQIN} failed to start."
         )
 
@@ -52,7 +52,7 @@ class SdvSampleVsidlStableTest(sdv_base_test.SdvBaseTestClass):
         polling.wait_and_verify_expected_logs(
             self.sdv_device,
             grep_text="Starting service bundle 'Monitor'",
-            logcat_args="*:F com_android_sdv_sample_vsidl_Monitor_instance:*",
+            logcat_args="*:F com_android_sdv_sample_quickstart_Monitor_instance:*",
             assert_msg=f"{self.MONITOR_FQIN} failed to start."
         )
 
@@ -60,7 +60,7 @@ class SdvSampleVsidlStableTest(sdv_base_test.SdvBaseTestClass):
         polling.wait_and_verify_expected_logs(
             self.sdv_device,
             grep_text="Publishing on TirePressure#PRESSURE",
-            logcat_args="*:F com_android_sdv_sample_vsidl_Manager_instance:*",
+            logcat_args="*:F com_android_sdv_sample_quickstart_Manager_instance:*",
             assert_msg=f"{self.MANAGER_FQIN} failed to publish on TirePressure#PRESSURE."
         )
 
@@ -68,7 +68,7 @@ class SdvSampleVsidlStableTest(sdv_base_test.SdvBaseTestClass):
         polling.wait_and_verify_expected_logs(
             self.sdv_device,
             grep_text="Received message on TirePressure#PRESSURE",
-            logcat_args="*:F com_android_sdv_sample_vsidl_Monitor_instance:*",
+            logcat_args="*:F com_android_sdv_sample_quickstart_Monitor_instance:*",
             assert_msg=f"{self.MONITOR_FQIN} failed to receive message on TirePressure#PRESSURE."
         )
 
@@ -76,7 +76,7 @@ class SdvSampleVsidlStableTest(sdv_base_test.SdvBaseTestClass):
         polling.wait_and_verify_expected_logs(
             self.sdv_device,
             grep_text="Sending request on Monitor/TireService",
-            logcat_args="*:F com_android_sdv_sample_vsidl_Monitor_instance:*",
+            logcat_args="*:F com_android_sdv_sample_quickstart_Monitor_instance:*",
             assert_msg=f"{self.MONITOR_FQIN} failed to send request on Monitor/TireService."
         )
 
@@ -84,7 +84,7 @@ class SdvSampleVsidlStableTest(sdv_base_test.SdvBaseTestClass):
         polling.wait_and_verify_expected_logs(
             self.sdv_device,
             grep_text="Received request on Manager/TireService",
-            logcat_args="*:F com_android_sdv_sample_vsidl_Manager_instance:*",
+            logcat_args="*:F com_android_sdv_sample_quickstart_Manager_instance:*",
             assert_msg=f"{self.MANAGER_FQIN} failed to receive request on Manager/TireService."
         )
 
@@ -92,7 +92,7 @@ class SdvSampleVsidlStableTest(sdv_base_test.SdvBaseTestClass):
         polling.wait_and_verify_expected_logs(
             self.sdv_device,
             grep_text="Received response on Monitor/TireService",
-            logcat_args="*:F com_android_sdv_sample_vsidl_Monitor_instance:*",
+            logcat_args="*:F com_android_sdv_sample_quickstart_Monitor_instance:*",
             assert_msg=f"{self.MONITOR_FQIN} failed to receive response on Monitor/TireService."
         )
 

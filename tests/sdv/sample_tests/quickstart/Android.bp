@@ -17,9 +17,9 @@ package {
 }
 
 python_test_host {
-    name: "SdvSampleVsidlStableTest",
-    main: "sdv_sample_vsidl_stable_test.py",
-    srcs: ["sdv_sample_vsidl_stable_test.py"],
+    name: "SdvSampleQuickstartTest",
+    main: "sdv_sample_quickstart_test.py",
+    srcs: ["sdv_sample_quickstart_test.py"],
     data: [":sdv_test_fw_device_configs"],
     test_options: {
         unit_test: false,
