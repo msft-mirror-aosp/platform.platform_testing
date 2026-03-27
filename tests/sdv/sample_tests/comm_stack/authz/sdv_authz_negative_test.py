@@ -206,7 +206,44 @@ class SdvAuthzNegativeTest(sdv_base_test.SdvBaseTestClass):
     def test_permissions(self):
         """Tests the Authz permissions configuration."""
 
+        # 1. Check standard logs for the non-connectable endpoints
         for grep_text, assert_msg in self._get_expected_logs('permissions'):
+            self.assert_logcat(
+                sdv_device=self.test_driver_device,
+                logcat_args=self.PERMISSIONS_TESTING_SERVICES_LOGCAT_ARGS,
+                grep_text=grep_text,
+                assert_msg=assert_msg
+            )
+
+        # 2. Check local VM-denied validations on the tested service (VM 1)
+        for grep_text, assert_msg in [
+            (
+                'Successfully performed local request to VM denied server, response: hello_world',
+                '\n[FAILURE]: Tested service is expected to successfully connect locally to the VM-denied server.'
+            ),
+            (
+                'Successfully received message locally from VM denied publisher',
+                '\n[FAILURE]: Tested service is expected to successfully subscribe locally to the VM-denied publisher.'
+            )
+        ]:
+            self.assert_logcat(
+                sdv_device=self.tested_service_device,
+                logcat_args=self.PERMISSIONS_TESTING_SERVICES_LOGCAT_ARGS,
+                grep_text=grep_text,
+                assert_msg=assert_msg
+            )
+
+        # 3. Check cross-VM VM-denied non-discoverability on the test driver (VM 2)
+        for grep_text, assert_msg in [
+            (
+                'VM-denied RPC server was not discovered due to VM permissions configuration as it was expected.',
+                '\n[FAILURE]: RPC client is expected to fail to discover the VM-denied RPC server due to VM permissions configuration.'
+            ),
+            (
+                'VM-denied DT publisher was not discovered due to VM permissions configuration as it was expected.',
+                '\n[FAILURE]: DT subscriber is expected to fail to discover the VM-denied DT publisher due to VM permissions configuration.'
+            )
+        ]:
             self.assert_logcat(
                 sdv_device=self.test_driver_device,
                 logcat_args=self.PERMISSIONS_TESTING_SERVICES_LOGCAT_ARGS,
