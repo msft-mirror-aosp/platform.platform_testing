@@ -60,6 +60,8 @@ class PhysicalDeviceController : PeripheralsController {
 
     fun close() = displayMonitor.close()
 
+    fun assertNoFailedConditions() = displayMonitor.assertNoFailedConditions()
+
     fun startMonitoring(timeout: Duration) = displayMonitor.waitForCondition(timeout)
 
     fun stopMonitoring() = displayMonitor.stopMonitoring()
