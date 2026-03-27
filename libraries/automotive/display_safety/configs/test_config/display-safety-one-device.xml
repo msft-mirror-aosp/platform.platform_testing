@@ -36,7 +36,7 @@
       <option name="dep-module" value="numpy" />
       <option name="dep-module" value="Pillow" />
       <option name="dep-module" value="google-genai" />
-      <option name="dep-module" value="httplib2" />"
+      <option name="dep-module" value="httplib2" />
     </target_preparer>
 
     <!-- ADB Root -->

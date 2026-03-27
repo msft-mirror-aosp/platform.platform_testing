@@ -68,9 +68,9 @@ class DisplaySafetyHarScreenshotTest(
 
     self.device1.adb.execute_shell_command(f'date -s {device1_system_datetime}')
     with self.display_safety_client() as client:
-      client.post_vehicle_speed('VEHICLE_SPEED', speed)
-      client.post_current_gear('GEAR', gear)
-      client.post_engine_rpm('ENGINE_RPM', engine_rpm)
+      client.post_vehicle_speed('vehicle-speed', speed)
+      client.post_current_gear('current-gear', gear)
+      client.post_engine_rpm('engine-rpm', engine_rpm)
 
     # Wait for the vehicle state to be applied.
     time.sleep(5)
