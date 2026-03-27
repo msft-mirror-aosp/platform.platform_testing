@@ -17,6 +17,7 @@
 import logging
 from sdv_test_fw.test_execution import sdv_base_test, sdv_test_runner
 from sdv_test_fw.verification import polling
+from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 
 # ServiceBundle names
 LATEST_BUNDLE_NAME = "FullBundle"
@@ -37,12 +38,18 @@ class SdvSampleVsidlCompatibilityTest(sdv_base_test.SdvBaseTestClass):
     def setup_class(self):
         super().setup_class()
         self.sdv_device = self.get_device('device1').adb()
+        self.original_authz_enable_value = self.sdv_device.prop.get(SdvDeviceProperty.AUTHZ_ENABLE)
 
     def setup_test(self):
         super().setup_test()
         self.sdv_device.reboot_device()
         self.sdv_device.wait_for_device_online()
         self.sdv_device.root_device()
+        self.sdv_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, "lenient")
+
+    def teardown_class(self):
+        self.sdv_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, self.original_authz_enable_value)
+        super().teardown_class()
 
     def test_vsidl_compatibility(self):
         logging.info(f'{self.get_suite_name()} :: Start Test {self.current_test_info.name}')
