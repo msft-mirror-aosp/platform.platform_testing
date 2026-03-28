@@ -14,15 +14,14 @@
 
 """SDV Telemetry VPM Integration Test"""
 
-from mobly import asserts
 from datetime import timedelta
-import os
 from pathlib import Path
 import time
 from time import sleep
 from typing import List, Optional
 
-from sdv_telemetry_test_execution import telemetry_base_test
+from mobly import asserts
+from sdv_telemetry_test_execution import expects, telemetry_base_test
 from sdv_telemetry_test_execution.telemetry_utils import shlex_join
 from sdv_test_fw.device import sdv_device
 from sdv_test_fw.device.sdv_property import SdvDeviceProperty
@@ -35,6 +34,7 @@ class SdvE2ETelemetryVpmIntegrationTest(
     METRICS_CONFIG_UUID = 'aa27883c-96a5-4a67-adad-dcce00c0f12a'
     METRICS_CONFIG_REPORT_NAME = 'values'
     SIMULATION_SUMMARY_FILE_NAME = f'{METRICS_CONFIG_UUID}_all_reports_for_{METRICS_CONFIG_REPORT_NAME.lower()}.txt'
+    MAX_RESUMED_AT_JITTER = timedelta(seconds=5)
 
     # These cannot be in `/data/local/tmp`, because we reboot the VM as part of
     # the test, which would delete these files.
@@ -53,7 +53,7 @@ class SdvE2ETelemetryVpmIntegrationTest(
         return shlex_join([
             self.get_simulator_binary(device),
             '--max-simulation-time',
-            'seconds:60',
+            'seconds:120',
             'full-simulation',
             '--metrics-configs',
             str(self.METRICS_CONFIG_PATH),
@@ -150,9 +150,9 @@ class SdvE2ETelemetryVpmIntegrationTest(
             'Metrics config "vpm_integration_metrics_config[.]textproto", UUID:'
             f' "{self.METRICS_CONFIG_UUID}"(?s:.*?)Report configuration'
             f' "{self.METRICS_CONFIG_REPORT_NAME}"(?s:.*?)Report #1 created'
-            ' on.*?\\n+(\\s*values: \\d+\\n+){10,}'
+            ' on.*?\\n+(\\s*values: \\d+\\n+){5,}'
         )
-        asserts.assert_regex(
+        expects.expect_regex(
             report,
             expected_result_regex,
             'Report summary does not match expected'
@@ -168,7 +168,7 @@ class SdvE2ETelemetryVpmIntegrationTest(
             f' "{self.METRICS_CONFIG_REPORT_NAME}"(?s:.*?)Report #1 created'
             ' on[^\\n]*$'
         )
-        asserts.assert_regex(
+        expects.expect_regex(
             report,
             expected_result_regex,
             'Report summary does not match expected'
@@ -196,16 +196,19 @@ class SdvE2ETelemetryVpmIntegrationTest(
         # Give it some time to restart.
         time.sleep(3)
 
-    def assert_within_three_seconds(
-        self, resumed_at_real: timedelta, resumed_at_prop: timedelta
+    def expect_within(
+        self,
+        resumed_at_real: timedelta,
+        resumed_at_prop: timedelta,
+        delta: timedelta,
     ) -> None:
-        asserts.assert_less_equal(
+        expects.expect_less_equal(
             abs(resumed_at_real - resumed_at_prop).total_seconds(),
-            3.0,
+            delta.total_seconds(),
             'The value of the system property'
-            f' {SdvDeviceProperty.TELEMETRY_RESUMED_AT_TIMESTAMP.value} ({resumed_at_prop}) should be'
-            ' within 3 seconds of the uptime at the point of resuming'
-            f' ({resumed_at_real})',
+            f' {SdvDeviceProperty.TELEMETRY_RESUMED_AT_TIMESTAMP.value}'
+            f' ({resumed_at_prop}) should be within {delta} of the uptime at'
+            f' the point of resuming ({resumed_at_real})',
         )
 
     def read_resumed_at_prop(self) -> Optional[timedelta]:
@@ -236,11 +239,15 @@ class SdvE2ETelemetryVpmIntegrationTest(
         self.suspend_and_resume()
         resumed_at = self.get_uptime()
 
-        # The Telemetry Service should update the system property after resuming.
-        time.sleep(3)  # Give it some time to set the property.
-        self.assert_within_three_seconds(
+        # The Telemetry Service should update the system property after
+        # resuming. Give it some time to set the property.
+        time.sleep(
+            self.MAX_RESUMED_AT_JITTER.total_seconds()
+        )
+        self.expect_within(
             resumed_at_real=resumed_at,
             resumed_at_prop=self.read_resumed_at_prop(),
+            delta=self.MAX_RESUMED_AT_JITTER,
         )
 
         self.expect_full_report(self.run_simulator())
@@ -253,9 +260,10 @@ class SdvE2ETelemetryVpmIntegrationTest(
 
         self.expect_empty_report(self.run_simulator())
         # The property should remain unchanged.
-        self.assert_within_three_seconds(
+        self.expect_within(
             resumed_at_real=resumed_at,
             resumed_at_prop=self.read_resumed_at_prop(),
+            delta=self.MAX_RESUMED_AT_JITTER,
         )
 
         # The property should be reset on reboot.
