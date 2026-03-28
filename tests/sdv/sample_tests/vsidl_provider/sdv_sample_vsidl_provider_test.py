@@ -28,8 +28,8 @@ from sdv_test_fw.device.sdv_property import SdvDeviceProperty
 class SdvSampleVsidlProviderTest(
     sdv_base_test.SdvBaseTestClass, parameterized.TestCase
 ):
-    APEX_WITH_PER_BUNDLE_CONFIG_FILE = 'com.android.sdv.sample.quickstart_provider.apex_with_per_bundle_config_file'
-    APEX_WITH_SHARED_CONFIG_FILE = 'com.android.sdv.sample.quickstart_provider.apex_with_shared_config_file'
+    APEX_WITH_PER_BUNDLE_CONFIG_FILE = 'com.android.sdv.sample.vsidl_provider.apex_with_per_bundle_config_file'
+    APEX_WITH_SHARED_CONFIG_FILE = 'com.android.sdv.sample.vsidl_provider.apex_with_shared_config_file'
 
     VSIDL_DIAGNOSTICS_QUERY = (
         'sdv_vsidl_provider_query --server-vm-name {to_vm}'
