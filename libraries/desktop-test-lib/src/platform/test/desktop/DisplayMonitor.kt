@@ -114,6 +114,7 @@ class DisplayMonitor(caller: String, val allowDisablingDisplays: Boolean = false
     @GuardedBy("this") @Volatile private var latch: CountDownLatch = CountDownLatch(1)
 
     @GuardedBy("this") @Volatile private var condition: Condition? = null
+    @GuardedBy("this") @Volatile private var firstFailedCondition: Condition? = null
 
     @GuardedBy("this") @Volatile private var monitoringEnabled = false
     private var adoptedManageDisplaysPermission = false
@@ -130,6 +131,13 @@ class DisplayMonitor(caller: String, val allowDisablingDisplays: Boolean = false
             uiAutomation.dropShellPermissionIdentity()
             adoptedManageDisplaysPermission = false
         }
+    }
+
+    fun assertNoFailedConditions() {
+        assertWithMessage("Failed condition: state was valid but became invalid"
+                    +" '$firstFailedCondition'")
+            .that(firstFailedCondition)
+            .isNull()
     }
 
     fun getConnectedDisplays(): List<Display> =
@@ -171,7 +179,8 @@ class DisplayMonitor(caller: String, val allowDisablingDisplays: Boolean = false
         if (matched.size != peripherals.size) {
             logW(
                 isWaitingForCondition,
-                "matchPeripherals: matched size(${matched.size}) != peripherals.size(${peripherals.size})",
+                "matchPeripherals: matched size(${matched.size})"
+                    + " != peripherals.size(${peripherals.size})",
             )
             logD("matchPeripherals: connectedDisplays=$connectedDisplays")
             logD("matchPeripherals: peripherals=$peripherals")
@@ -267,9 +276,10 @@ class DisplayMonitor(caller: String, val allowDisablingDisplays: Boolean = false
         // we are waiting initially - it is fine, but if isWaitingForCondition is already false,
         // this is not fine. It means that something changed and condition is no longer satisfied
         // for some reason.
-        assertWithMessage("Failed condition: state was valid but became invalid '$targetCondition'")
-            .that(isWaitingForCondition)
-            .isTrue()
+        if (!isWaitingForCondition && firstFailedCondition == null) {
+            Log.e(tag, "Failed condition: state was valid but became invalid '$targetCondition'")
+            firstFailedCondition = targetCondition
+        }
         return false
     }
 
@@ -311,6 +321,7 @@ class DisplayMonitor(caller: String, val allowDisablingDisplays: Boolean = false
 
     private fun initIfNeeded() {
         if (initialized) return
+        firstFailedCondition = null
 
         try {
             Log.i(tag, "register listeners")
@@ -331,15 +342,15 @@ class DisplayMonitor(caller: String, val allowDisablingDisplays: Boolean = false
     ): Boolean {
         val allEnabledDisplayIds = allEnabledDisplays.map { it.displayId }
         val displayIds = matchedDisplays.map { it.displayId }
-        val mirroringState =
-            Settings.Secure.getInt(
+        val desktopState = DesktopModeTestUtil(context.getResources()).canEnterDesktopMode() &&
+            0 == Settings.Secure.getInt(
                 context.contentResolver,
                 Settings.Secure.MIRROR_BUILT_IN_DISPLAY,
                 0,
             )
-        // If we are not mirroring, need to validate that topology is consistent with the displays
+        // If we are in desktop mode, need to validate that topology is consistent with the displays
         val idsInTopology = topology?.getAbsoluteBounds()?.getKeys()
-        if (mirroringState == 0) {
+        if (desktopState) {
             if (idsInTopology == null) {
                 logW(isWaitingForCondition, "No topology received")
                 return false

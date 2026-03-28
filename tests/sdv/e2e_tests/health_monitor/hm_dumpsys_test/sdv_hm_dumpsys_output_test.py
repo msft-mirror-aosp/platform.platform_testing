@@ -32,11 +32,17 @@ class SdvHmDumpsysOutputTest(sdv_base_test.SdvBaseTestClass):
         self.sdv_device = self.get_device('device1').adb()
         self.sdv_device.root_device()
 
-        self.sdv_authz_enable_value = self.sdv_device.prop.get(SdvDeviceProperty.AUTHZ_ENABLE)
-        self.sdv_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, "permissions_only")
+        self.device_name = self.sdv_device.prop.get(
+            SdvDeviceProperty.INSTANCE_NAME)
+
+        self.sdv_authz_enable_value = self.sdv_device.prop.get(
+            SdvDeviceProperty.AUTHZ_ENABLE)
+        self.sdv_device.prop.set(
+            SdvDeviceProperty.AUTHZ_ENABLE, "permissions_only")
 
     def teardown_class(self):
-        self.sdv_device.prop.set(SdvDeviceProperty.AUTHZ_ENABLE, self.sdv_authz_enable_value)
+        self.sdv_device.prop.set(
+            SdvDeviceProperty.AUTHZ_ENABLE, self.sdv_authz_enable_value)
         super().teardown_class()
 
     def wait_for_bundles_to_register(self, timeout=10):
@@ -65,9 +71,8 @@ class SdvHmDumpsysOutputTest(sdv_base_test.SdvBaseTestClass):
 
         hm_binder_name = "com.google.sdv.ISdvAgent/hm"
 
-        # The vm name is overridden by orch to "local-vm"
         self.expected_recovery_data_dump = (
-            'ID: FQIN: local-vm:com.android.sdv.sample.oem.health.monitored.SampleHMBundle/dumpsys-e2e-test\n'
+            f'ID: FQIN: {self.device_name}:com.android.sdv.sample.oem.health.monitored.SampleHMBundle/dumpsys-e2e-test\n'
             "Recovery State: Normal\n"
             "Lifecycle State: Started\n"
             "Health Status: Healthy"
@@ -151,7 +156,8 @@ class SdvHmDumpsysOutputTest(sdv_base_test.SdvBaseTestClass):
         self.sdv_device.execute_shell_command(
             start_service_command.format(fqin=self.monitored_service_2_fqin))
         # start monitored bundle through orchestrator to assert recovery data
-        self.sdv_device.execute_shell_command_in_subprocess("custom_mode_process", 'orch_custom_mode_sample E2E-TESTS health-monitor-dumpsys-start')
+        self.sdv_device.execute_shell_command_in_subprocess(
+            "custom_mode_process", 'orch_custom_mode_sample E2E-TESTS health-monitor-dumpsys-start')
 
         # wait for bundles to log registration with HM:
         self.wait_for_bundles_to_register()

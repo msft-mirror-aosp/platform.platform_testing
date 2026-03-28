@@ -21,7 +21,7 @@ import statistics
 from sdv_perfetto import perfetto_trace_processor
 
 
-PROCESS_NAME = '/vendor/bin/sdv_telemetry_service_agent'
+PROCESS_NAME = '/system_ext/bin/sdv_telemetry_service_agent'
 
 
 def calculate_metrics(

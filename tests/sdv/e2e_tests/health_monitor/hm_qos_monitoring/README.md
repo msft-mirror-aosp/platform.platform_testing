@@ -11,30 +11,26 @@
   limitations under the License.
 -->
 
-# SDV E2E VM Discovery Attributes
+# SDV E2E Hm Qos Monitoring Test
 
-Tests that VMs connect to the VM specified by `vm_name` in `SubscribeOptions` (for PubSub) or `create_rpc_client`'s `server` parameter (for RPC).
-This tests validates that messages and RPC answers from the requested VM are received and messages and RPC answers from a different VM are not received.
+Test requires 1 device, SDV Core image
 
 ## Test Execution
 
 Read [SDV Testing instructions](/vendor/google_testing/software_defined_vehicle/README.md) for detailed information.
 
-### Mobly
+### Atest
 
-```bash
-atest SdvVmDiscoveryAttributeTest
+```shell
+atest SDVE2EHmQosMonitoringTest
 ```
 
 ### CATBox
 
-```bash
-NOTIFY_AS_NATIVE=0.0.0.0:6520,0.0.0.0:6521 ./tools/catbox-tradefed run commandAndExit \
-  sdv-e2e-vm-discovery-attributes-test \
-  --{device1}serial 0.0.0.0:6520 \
-  --{device2}serial 0.0.0.0:6521
+```shell
+NOTIFY_AS_NATIVE=0.0.0.0:6520 ./tools/catbox-tradefed run commandAndExit sdv-e2e-hm-qos-monitoring-test --{device1}serial 0.0.0.0:6520
 ```
 
 ## CI/CD execution
 
-- Name: `vm_core_core/sdv/e2e/vm_discovery_attributes_test`
+- Name: `sdv/e2e/hm_qos_monitoring_test`

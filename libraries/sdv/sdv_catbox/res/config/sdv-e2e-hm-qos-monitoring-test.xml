@@ -10,13 +10,13 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 -->
-<configuration description="SDV VSIDL VM Discovery Attributes Test">
-    <!-- Template for Device Configuration -->
-    <template-include name="device-config" default="sdv-device-config/two-devices" />
+<configuration description="SDV E2E Hm Qos Monitoring Test">
+  <!-- Template for Device Configuration -->
+  <template-include name="device-config" default="sdv-device-config/one-device" />
 
-    <!-- Plan. Use the same name as the file name -->
-    <option name="plan" value="sdv-e2e-vm-discovery-attributes-test"/>
+  <!-- Plan. Use the same name as the file name -->
+  <option name="plan" value="sdv-e2e-hm-qos-monitoring-test" />
 
-    <!-- Test: mobly-par-file-name should match the module name -->
-    <option name="mobly-host:mobly-par-file-name" value="SdvVmDiscoveryAttributeTest" />
+  <!-- Test: mobly-par-file-name should match the module name -->
+  <option name="mobly-host:mobly-par-file-name" value="SDVE2EHmQosMonitoringTest" />
 </configuration>

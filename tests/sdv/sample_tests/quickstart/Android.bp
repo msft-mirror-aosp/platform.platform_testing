@@ -11,26 +11,21 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 package {
     default_team: "trendy_team_automotive",
     default_applicable_licenses: ["sdv_tests_license"],
 }
 
 python_test_host {
-    name: "SdvVmDiscoveryAttributeTest",
-    main: "sdv_vm_discovery_attributes_test.py",
-    srcs: [
-        "sdv_vm_discovery_attributes_test.py",
-    ],
-    data: [
-        ":sdv_test_fw_device_configs",
-    ],
+    name: "SdvSampleQuickstartTest",
+    main: "sdv_sample_quickstart_test.py",
+    srcs: ["sdv_sample_quickstart_test.py"],
+    data: [":sdv_test_fw_device_configs"],
     test_options: {
         unit_test: false,
     },
+    test_config_template: ":sdv_one_device",
     defaults: [
         "sdv_test_fw_defaults",
     ],
-    test_config_template: ":sdv_two_devices",
 }
