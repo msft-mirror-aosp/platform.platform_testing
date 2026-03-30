@@ -47,7 +47,7 @@ class SDVE2EHmQosMonitoringTest(sdv_base_test.SdvBaseTestClass):
         "* HB unit_name: com-android-sdv-health-qos-heartbeat-qos-hb-left-fog-light-status\n"
         "* FQIN of receiver: instance1:com.android.sdv.sample.oem.health.qos_monitoring.QosMonitoredSubscriberBundle/instance1\n"
         "MONITOR INTERNAL DATA:\n"
-        "health status: Ok(QosStatus { hb_frequency_violation_detected: true, wire_frequency_violation_detected: false, latency_violation_detected: false })\n"
+        "health status: Ok(QosStatus { hb_frequency_violation_detected: true, wire_frequency_violation_detected: true, latency_violation_detected: false })\n"
         "task running: true"
     )
 
