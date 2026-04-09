@@ -36,7 +36,7 @@ class SdvFactoryProvisioningTest(sdv_base_test.SdvBaseTestClass):
     UDS_PUBS_EXPECTED_SELINUX_LABEL = 'u:object_r:uds_pubs_file:s0'
     # Regular expression to match the full file attributes, including SELinux context.
     # system_ext_sdv_sd user is used on Core, system_ext_sdv_sd_agent on IVI.
-    UDS_PUBS_REGEX = r'-rw------- 1 system_ext_sdv_sd(_agent)? system %s.* %s' % (
+    UDS_PUBS_REGEX = r'-rw------- 1 sdv_sd_agent system %s.* %s' % (
         UDS_PUBS_EXPECTED_SELINUX_LABEL, UDS_PUBS_FILE_PATH)
 
     def setup_class(self):
